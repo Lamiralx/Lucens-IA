@@ -36,34 +36,41 @@ if ('serviceWorker' in navigator) {
       .then((reg) => console.log('[Lucens] SW enregistré scope:', reg.scope))
       .catch((err) => console.warn('[Lucens] SW échec enregistrement:', err?.message));
   });
-  /* V38 fix F-06 — Écoute des notifications du SW (mise à jour disponible).
-     Affiche une bannière discrète au lieu d'un force-reload brutal qui faisait
-     perdre la saisie en cours sur le terrain HACCP. */
+  /* V40 — Notification SW "Mise à jour disponible" en composant premium.
+     Remplace l'ancienne pill V38 inline-stylée par une carte intégrée au
+     design system Lucens (CSS dans <style>, accent teal, IBM Plex, radius,
+     shadows, hairline). Position fixed bottom-center, animation slide-up
+     élégante. Dismiss persistant par version (localStorage) : si l'user
+     ignore v39, on ne lui re-affiche plus pour v39 — mais on lui affiche
+     v40, v41, etc. dès qu'elles arrivent. */
   navigator.serviceWorker.addEventListener('message', (event) => {
-    if (event && event.data && event.data.type === 'SW_UPDATE_AVAILABLE') {
-      const existing = document.getElementById('lucensSwUpdate');
-      if (existing) return; /* déjà affichée */
-      const bar = document.createElement('div');
-      bar.id = 'lucensSwUpdate';
-      bar.setAttribute('role', 'status');
-      bar.setAttribute('aria-live', 'polite');
-      bar.style.cssText = 'position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);z-index:99999;display:flex;align-items:center;gap:12px;padding:10px 14px 10px 16px;background:#0E8C84;color:#fff;border-radius:999px;font:600 13px/1.2 \'IBM Plex Sans\',sans-serif;box-shadow:0 8px 24px rgba(14,140,132,0.35),0 2px 6px rgba(0,0,0,0.25);max-width:calc(100vw - 24px);';
-      bar.innerHTML = '<span>Mise à jour disponible</span>';
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.textContent = 'Recharger';
-      btn.style.cssText = 'background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.32);color:#fff;padding:6px 12px;border-radius:999px;font:600 12px/1 \'IBM Plex Sans\',sans-serif;cursor:pointer;';
-      btn.addEventListener('click', () => { location.reload(); });
-      const close = document.createElement('button');
-      close.type = 'button';
-      close.setAttribute('aria-label', 'Ignorer la mise à jour');
-      close.textContent = '×';
-      close.style.cssText = 'background:transparent;border:0;color:#fff;font-size:18px;line-height:1;cursor:pointer;padding:2px 4px;';
-      close.addEventListener('click', () => { bar.remove(); });
-      bar.appendChild(btn);
-      bar.appendChild(close);
-      document.body.appendChild(bar);
-    }
+    if (!event || !event.data || event.data.type !== 'SW_UPDATE_AVAILABLE') return;
+    const version = event.data.version || 'unknown';
+    /* Skip si déjà dismiss pour cette version exacte */
+    try {
+      const skipped = localStorage.getItem('lucens_sw_update_dismissed');
+      if (skipped === version) return;
+    } catch {}
+    /* Skip si déjà affichée */
+    if (document.getElementById('lucensSwUpdate')) return;
+    const tpl = document.getElementById('lucensSwUpdateTpl');
+    if (!tpl || !tpl.content) return;
+    const node = tpl.content.firstElementChild.cloneNode(true);
+    /* Wire actions */
+    node.querySelector('[data-sw-action="reload"]').addEventListener('click', () => {
+      try { localStorage.removeItem('lucens_sw_update_dismissed'); } catch {}
+      location.reload();
+    });
+    node.querySelector('[data-sw-action="dismiss"]').addEventListener('click', () => {
+      try { localStorage.setItem('lucens_sw_update_dismissed', version); } catch {}
+      node.classList.remove('is-visible');
+      setTimeout(() => node.remove(), 280);
+    });
+    document.body.appendChild(node);
+    /* Animation d'entrée en 2 frames (force reflow + ajout classe) */
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => node.classList.add('is-visible'));
+    });
   });
 }
 </script>
@@ -5793,6 +5800,153 @@ input[type="file"] { display: none; }
   .prob-bar { transition: none; }
   .loader-bar::after { animation: none; }
   .fb-overlay, .fb-modal { transition: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   V40 — BANNIÈRE "MISE À JOUR DISPONIBLE" (SW update notification)
+   ────────────────────────────────────────────────────────────────────────────
+   Composant premium intégré au design system Lucens. Apparaît après que le
+   service worker a installé une nouvelle version (postMessage SW_UPDATE_
+   AVAILABLE depuis sw.js V38+). Position bottom-center, fixed, au-dessus
+   des modals d'analyse mais sous les overlays critiques (codepad, etc.).
+   Dismiss persistant par version via localStorage.
+   ─────────────────────────────────────────────────────────────────────────── */
+.lucens-sw-update {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+  transform: translateX(-50%) translateY(20px);
+  z-index: 99998;            /* sous codepad (99999) et overlays modaux critiques */
+  width: min(420px, calc(100vw - 28px));
+  background: var(--surface-overlay, #15181F);
+  border: 1px solid var(--accent, #2DD4BF);
+  border-radius: 18px;
+  padding: 16px 18px 14px;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.55),
+    0 4px 12px rgba(45, 212, 191, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s var(--ease-out, cubic-bezier(.16, 1, .3, 1)),
+              transform 0.34s cubic-bezier(.16, 1, .3, 1);
+}
+.lucens-sw-update.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+.lucens-sw-update-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.lucens-sw-update-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(45, 212, 191, 0.14);
+  border: 1px solid rgba(45, 212, 191, 0.32);
+  color: var(--accent, #2DD4BF);
+}
+.lucens-sw-update-icon svg {
+  width: 18px;
+  height: 18px;
+}
+.lucens-sw-update-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 1px;
+}
+.lucens-sw-update-eyebrow {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent, #2DD4BF);
+  line-height: 1;
+}
+.lucens-sw-update-title {
+  margin: 0;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  line-height: 1.3;
+  color: #F5F7FA;
+}
+.lucens-sw-update-desc {
+  margin: 2px 0 0;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: rgba(245, 247, 250, 0.66);
+}
+.lucens-sw-update-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+.lucens-sw-update-btn {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 0;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.16s var(--ease-out, ease-out), transform 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.lucens-sw-update-btn.is-primary {
+  background: var(--accent, #2DD4BF);
+  color: #06070A;
+  flex: 1 1 auto;
+  max-width: 200px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.lucens-sw-update-btn.is-primary:hover { background: #1FB8A4; }
+.lucens-sw-update-btn.is-primary:active { transform: scale(0.97); }
+.lucens-sw-update-btn.is-ghost {
+  background: transparent;
+  color: rgba(245, 247, 250, 0.62);
+  padding: 0 12px;
+}
+.lucens-sw-update-btn.is-ghost:hover {
+  color: #F5F7FA;
+  background: rgba(255, 255, 255, 0.06);
+}
+@media (max-width: 380px) {
+  .lucens-sw-update {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+    padding: 14px 14px 12px;
+    border-radius: 16px;
+  }
+  .lucens-sw-update-title { font-size: 13.5px; }
+  .lucens-sw-update-desc { font-size: 12px; }
+  .lucens-sw-update-btn { height: 36px; font-size: 12.5px; padding: 0 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lucens-sw-update { transition: opacity 0.2s ease; transform: translateX(-50%) translateY(0); }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -19720,7 +19874,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v39</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v40</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
@@ -23380,6 +23534,37 @@ const Annotator = (() => {
   });
 })();
 </script>
+
+<!-- V40 — Template de la bannière "Mise à jour disponible" (SW update).
+     Cloné par le listener navigator.serviceWorker.message dans le <head>.
+     Le template HTML reste invisible jusqu'à utilisation effective. -->
+<template id="lucensSwUpdateTpl">
+  <aside class="lucens-sw-update" id="lucensSwUpdate" role="status" aria-live="polite" aria-label="Nouvelle version de Lucens IA disponible">
+    <div class="lucens-sw-update-head">
+      <span class="lucens-sw-update-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a9 9 0 1 1-3.5-7.1"/>
+          <polyline points="21 4 21 10 15 10"/>
+        </svg>
+      </span>
+      <div class="lucens-sw-update-text">
+        <span class="lucens-sw-update-eyebrow">Lucens IA</span>
+        <h3 class="lucens-sw-update-title">Nouvelle version disponible</h3>
+        <p class="lucens-sw-update-desc">Rechargez pour profiter des dernières améliorations et correctifs.</p>
+      </div>
+    </div>
+    <div class="lucens-sw-update-actions">
+      <button type="button" class="lucens-sw-update-btn is-ghost" data-sw-action="dismiss">Plus tard</button>
+      <button type="button" class="lucens-sw-update-btn is-primary" data-sw-action="reload">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:14px;height:14px">
+          <path d="M15.5 9a6.5 6.5 0 1 1-2.4-5.1"/>
+          <polyline points="15.5 2.5 15.5 6.5 11.5 6.5"/>
+        </svg>
+        Recharger
+      </button>
+    </div>
+  </aside>
+</template>
 
 </body>
 </html>
