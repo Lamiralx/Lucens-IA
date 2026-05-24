@@ -42,7 +42,10 @@ if ('serviceWorker' in navigator) {
      shadows, hairline). Position fixed bottom-center, animation slide-up
      élégante. Dismiss persistant par version (localStorage) : si l'user
      ignore v39, on ne lui re-affiche plus pour v39 — mais on lui affiche
-     v40, v41, etc. dès qu'elles arrivent. */
+     v40, v41, etc. dès qu'elles arrivent.
+     V47 — Toggle de classe body.has-sw-update pour que le CSS pousse le
+     contenu de .home vers le haut (évite que la bannière chevauche le
+     dernier accordéon "Avertissement légal"). */
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (!event || !event.data || event.data.type !== 'SW_UPDATE_AVAILABLE') return;
     const version = event.data.version || 'unknown';
@@ -64,9 +67,12 @@ if ('serviceWorker' in navigator) {
     node.querySelector('[data-sw-action="dismiss"]').addEventListener('click', () => {
       try { localStorage.setItem('lucens_sw_update_dismissed', version); } catch {}
       node.classList.remove('is-visible');
+      document.body.classList.remove('has-sw-update');
       setTimeout(() => node.remove(), 280);
     });
     document.body.appendChild(node);
+    /* V47 — signale au CSS que le contenu doit réserver de l'espace bas */
+    document.body.classList.add('has-sw-update');
     /* Animation d'entrée en 2 frames (force reflow + ajout classe) */
     requestAnimationFrame(() => {
       requestAnimationFrame(() => node.classList.add('is-visible'));
@@ -6005,6 +6011,24 @@ input[type="file"] { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .lucens-sw-update { transition: opacity 0.2s ease; transform: translateY(0); }
+}
+
+/* V47 — Quand la bannière SW update est visible, on RÉSERVE l'espace en
+   bas pour éviter qu'elle chevauche le dernier accordéon "Avertissement
+   légal" de la home. Hauteur réservée = hauteur estimée de la bannière
+   (~140px) + marge bottom (~18px) + safe-area iOS.
+   Appliqué à .home (max-height interne) et à la zone des accordéons
+   qui devient légèrement compressée mais reste utilisable. */
+body.has-sw-update .home {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 160px);
+}
+@media (min-width: 600px) {
+  /* Sur desktop la bannière est dans le viewport mais centrée — l'espace
+     additionnel est plus réduit car le contenu home est dans un container
+     plus étroit (max-width 440-720px). */
+  body.has-sw-update .home {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 180px);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -20078,7 +20102,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v46</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v47</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
