@@ -378,6 +378,12 @@ html, body {
   overscroll-behavior-y: contain;
   /* Pas de zoom involontaire sur les inputs en orientation paysage */
   -webkit-text-size-adjust: 100%;
+  /* V45 — Réserve l'espace de la scrollbar verticale même quand elle est
+     absente. Empêche le viewport (et donc le header sticky) de "sauter"
+     latéralement quand le contenu d'une zone interne change et fait
+     apparaître/disparaître une scrollbar (ex: ouverture d'accordéon, sync,
+     toast d'erreur). Le bouton Contexte reste fixe. */
+  scrollbar-gutter: stable;
 }
 body {
   /* Prévient les marges horizontales sur iPhone notch/island en mode paysage */
@@ -500,8 +506,10 @@ body.has-offline-banner .hdr {
   z-index: 50;
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
-  /* V31 — transition fluide quand le banner offline apparaît/disparaît */
-  transition: top 0.24s ease;
+  /* V45 — Pas de transition sur `top` : le header doit se positionner
+     instantanément quand le banner offline apparaît/disparaît, sinon le
+     décalage continu de 240ms fait sauter visuellement le bouton Contexte
+     pendant les changements de layout (ouverture d'accordéon, sync, etc.). */
 }
 @media (max-width: 640px) {
   .hdr {
@@ -614,14 +622,19 @@ body.has-offline-banner .hdr {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: all .15s ease;
+  /* V45 — Transitions explicites (pas `all`). `all` réanime toute prop qui
+     change implicitement (width, padding...) lors d'un reflow déclenché
+     ailleurs sur la page → bouton qui saute à l'ouverture d'un accordéon
+     du fait du recalcul de layout/backdrop-filter du header sticky. */
+  transition: background .12s ease, color .12s ease, border-color .12s ease;
 }
 .hdr-ctx-btn:hover {
   color: var(--ink-primary);
   border-color: var(--hairline-hi);
   background: var(--surface-low);
 }
-.hdr-ctx-btn:active { transform: scale(0.96); }
+/* V45 — Retiré le scale(0.96) au :active : produisait un saut visible
+   quand le user tapait sur d'autres éléments à proximité (event bubbling). */
 .hdr-ctx-btn svg {
   flex-shrink: 0;
   width: 15px; height: 15px;
@@ -7530,8 +7543,9 @@ input[type="file"] { display: none; }
   background: #FFB020;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  transition: width 0.18s ease, height 0.18s ease,
-              background 0.18s ease, border 0.18s ease;
+  /* V45 — Pas de transition width/height : variait la taille du dot à
+     chaque changement d'état, donnait l'impression que le réticule
+     "respirait". Couleur change instantanément, taille constante. */
 }
 
 /* V19 — États du réticule pilotés par data-state.
@@ -7539,13 +7553,12 @@ input[type="file"] { display: none; }
    pending : ambre pulsant — Claude analyse la zone
    fluo    : cyan plein + halo cyan — fluorescence confirmée
    object  : rouge bref — Claude dit "pas une fluorescence" */
+/* V45 — Plus de pulse scale(1.7) sur le crosshair pending : le saut
+   visuel chaque seconde était distrayant et faisait "sauter" la cible
+   pendant les transitions zones détectées ↔ aucune fluo. Couleur ambre
+   statique suffisante pour indiquer l'attente IA. */
 .lv-crosshair[data-state="pending"] .lv-crosshair-dot {
   background: #FFB020;
-  animation: lv-crosshair-pulse 0.9s ease-in-out infinite;
-}
-@keyframes lv-crosshair-pulse {
-  0%, 100% { transform: translate(-50%, -50%) scale(1);   opacity: 1; }
-  50%      { transform: translate(-50%, -50%) scale(1.7); opacity: 0.55; }
 }
 .lv-crosshair[data-state="fluo"]::before,
 .lv-crosshair[data-state="fluo"]::after {
@@ -7597,7 +7610,10 @@ input[type="file"] { display: none; }
   pointer-events: none;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  transition: background 0.2s ease, border-color 0.2s ease;
+  /* V45 — Plus de transition de couleur. Les changements d'état (idle ↔
+     fluo ↔ object) sont des informations INSTANTANÉES pour le user terrain
+     HACCP — ne doivent pas être enrobés d'une animation 200ms qui fait
+     "respirer" le banner constamment et crée une sensation d'instabilité. */
   text-align: center;
   box-sizing: border-box;
   /* V35 — centre auto dans le flex de la topbar */
@@ -7629,8 +7645,11 @@ input[type="file"] { display: none; }
   background: rgba(180, 180, 200, 0.65);
   flex-shrink: 0;
 }
+/* V45 — Plus d'animation pulse infinie sur le dot. Indicateur statique
+   suffisant : la couleur communique déjà l'état. Une pulsation 1.6s
+   constante pendant qu'on cherche à viser une zone est distrayante. */
 .lv-status-banner[data-state="idle"]    .lv-status-dot { background: rgba(180, 180, 200, 0.65); }
-.lv-status-banner[data-state="pending"] .lv-status-dot { background: #FFB020; animation: lv-prescan-pulse 1.6s ease-in-out infinite; }
+.lv-status-banner[data-state="pending"] .lv-status-dot { background: #FFB020; }
 .lv-status-banner[data-state="fluo"]    .lv-status-dot { background: #2DD4BF; box-shadow: 0 0 8px rgba(45,212,191,0.7); }
 .lv-status-banner[data-state="object"]  .lv-status-dot { background: #d04848; }
 
@@ -20059,7 +20078,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v44</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v45</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
