@@ -17162,24 +17162,33 @@ const Annotator = (() => {
     } catch (err) {
       console.error(err);
       stopProgressCreep(creepTimer);
-      /* Sprint 1+ : identification des erreurs réseau pour message clair.
-         fetch() lance un TypeError sur perte de connexion, timeout DNS,
-         offline. Le err.message peut être "Failed to fetch" en chrome ou
-         "NetworkError" en firefox — peu lisible pour le pro. */
-      let displayMsg = err && err.message;
-      if (err && err._prevalidate) {
-        /* Erreur de pré-validation : on garde le message tel quel */
-      } else if (err && err.name === 'TypeError' && /fetch/i.test(err.message || '')) {
-        displayMsg = t('err_network_offline');
-      } else if (err && /networkerror|network request failed|err_internet|offline/i.test(err.message || '')) {
-        displayMsg = t('err_network_offline');
-      } else if (err && /timeout|timed out/i.test(err.message || '')) {
-        displayMsg = t('err_network_timeout');
-      } else if (!displayMsg) {
-        displayMsg = t('err_load');
+      /* V43 fix Bug 1 — AbortError : l'utilisateur a annulé (bouton ANNULER)
+         OU le watchdog V35 a tiré à 90s avec son propre toast déjà affiché.
+         On NE veut PAS afficher un SECOND toast d'erreur (double-toast couvrait
+         la zone basse de l'écran pendant 4s, donnant l'impression d'app figée).
+         On se contente de revenir à l'accueil. Le finally fait le ménage. */
+      if (err && err.name === 'AbortError') {
+        uploadHub.style.display = '';
+      } else {
+        /* Sprint 1+ : identification des erreurs réseau pour message clair.
+           fetch() lance un TypeError sur perte de connexion, timeout DNS,
+           offline. Le err.message peut être "Failed to fetch" en chrome ou
+           "NetworkError" en firefox — peu lisible pour le pro. */
+        let displayMsg = err && err.message;
+        if (err && err._prevalidate) {
+          /* Erreur de pré-validation : on garde le message tel quel */
+        } else if (err && err.name === 'TypeError' && /fetch/i.test(err.message || '')) {
+          displayMsg = t('err_network_offline');
+        } else if (err && /networkerror|network request failed|err_internet|offline/i.test(err.message || '')) {
+          displayMsg = t('err_network_offline');
+        } else if (err && /timeout|timed out/i.test(err.message || '')) {
+          displayMsg = t('err_network_timeout');
+        } else if (!displayMsg) {
+          displayMsg = t('err_load');
+        }
+        toast(displayMsg, 'error');
+        uploadHub.style.display = '';
       }
-      toast(displayMsg, 'error');
-      uploadHub.style.display = '';
     } finally {
       /* V35 — Clear le watchdog : l'analyse s'est terminée (succès ou erreur)
          dans les temps, donc inutile de forcer le close à 90s. */
@@ -17188,6 +17197,9 @@ const Annotator = (() => {
       stopTipRotation();
       stopMicroRotation();      /* arrête la rotation des micro-status */
       stopLoaderTimer();        /* arrête le timer écoulé */
+      /* V43 fix Bug 1 — Reset défensif de l'AbortController, sinon il reste
+         "mort" en mémoire et peut polluer la prochaine analyse. */
+      currentAnalyzeAbort = null;
       setTimeout(() => setLoaderProgress(0), 400);
     }
   }
@@ -19128,27 +19140,35 @@ const Annotator = (() => {
       if (n > 0 && typeof OfflineQueue.syncNow === 'function') {
         console.log('[OfflineQueue] Sync (' + n + ' en attente)');
         let syncedCount = 0;
-        OfflineQueue.syncNow({
+        /* V43 fix Bug 2 — On AWAIT syncNow et on supprime les refresh() des
+           callbacks onSuccess/onReject. Avant : refresh() était appelé en
+           parallèle par chaque entrée synchronisée + par le .then() final.
+           Comme refresh() contient un `await OfflineQueue.count()` (asynchrone),
+           plusieurs invocations s'entrelaçaient et laissaient le banner dans
+           un état incohérent (is-syncing retiré avant lv-hidden), produisant
+           un "voile transparent" teal sur l'UI. Un seul refresh() final
+           garantit un état banner cohérent. */
+        await OfflineQueue.syncNow({
           onSuccess: (entry, data) => {
             syncedCount++;
             const title = (data && data.result && data.result.title) ? data.result.title : 'Analyse';
             if (typeof toast === 'function') {
               toast('✓ ' + title + ' — synchronisée et sauvegardée dans l\'historique', 'success');
             }
-            refresh();
+            /* refresh() retiré — un seul refresh() final ci-dessous */
           },
           onReject: (entry, reason) => {
             if (typeof toast === 'function') {
               toast('Analyse rejetée : ' + reason, 'error');
             }
-            refresh();
+            /* refresh() retiré — un seul refresh() final ci-dessous */
           },
-        }).then(res => {
-          if (syncedCount > 1 && typeof toast === 'function') {
-            toast(syncedCount + ' analyses synchronisées au total', 'success');
-          }
-          refresh();
         });
+        if (syncedCount > 1 && typeof toast === 'function') {
+          toast(syncedCount + ' analyses synchronisées au total', 'success');
+        }
+        /* Refresh unique final : état banner + compteur cohérent à 100% */
+        refresh();
       }
     }
 
@@ -20007,7 +20027,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v42</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v43</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
