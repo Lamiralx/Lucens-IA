@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens Inspector — Concept</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0A0B0F; color: #E8EAF0;
+    font-family: 'IBM Plex Sans', -apple-system, system-ui, sans-serif;
+    min-height: 100vh; padding: 28px 18px;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  .head { margin-bottom: 22px; }
+  h1 {
+    font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
+    background: linear-gradient(120deg,#FFB020,#6FCF8E);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .sub { font-size: 13px; color: #969CAB; margin-top: 4px; }
+  .stage {
+    background: radial-gradient(ellipse at 40% 30%, #16181F 0%, #0A0B0F 70%);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px; padding: 20px;
+  }
+  svg { width: 100%; height: auto; display: block; }
+  .specs {
+    display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+    gap: 12px; margin-top: 20px;
+  }
+  .spec {
+    background: #14171E; border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px; padding: 12px 14px;
+  }
+  .spec .t { font-size: 11px; color: #FFB020; text-transform: uppercase;
+             letter-spacing: 0.08em; font-weight: 600; }
+  .spec .d { font-size: 13px; color: #C2C8D4; margin-top: 4px; line-height: 1.45; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1>LUCENS INSPECTOR</h1>
+    <div class="sub">Concept — lampe UV-A 365 nm + caméra + écran tactile · base Ryobi ONE+ 18V</div>
+  </div>
+
+  <div class="stage">
+  <svg viewBox="0 0 920 620" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#2A2F3D"/>
+        <stop offset="1" stop-color="#14171E"/>
+      </linearGradient>
+      <linearGradient id="grip" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#1E222C"/>
+        <stop offset="1" stop-color="#0C0E13"/>
+      </linearGradient>
+      <linearGradient id="amber" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#FFC247"/>
+        <stop offset="1" stop-color="#E89A0E"/>
+      </linearGradient>
+      <radialGradient id="uvglow" cx="0.5" cy="0.5" r="0.5">
+        <stop offset="0" stop-color="#9B6CFF"/>
+        <stop offset="0.6" stop-color="#5B3FA8"/>
+        <stop offset="1" stop-color="#2A1F4A"/>
+      </radialGradient>
+      <linearGradient id="screen" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#0C1015"/>
+        <stop offset="1" stop-color="#06070A"/>
+      </linearGradient>
+    </defs>
+
+    <!-- ─── BATTERIE Ryobi ONE+ (base) ─── -->
+    <rect x="250" y="500" width="240" height="86" rx="14" fill="url(#amber)"/>
+    <rect x="270" y="516" width="200" height="34" rx="8" fill="#0C0E13" opacity="0.55"/>
+    <text x="370" y="538" font-family="IBM Plex Mono,monospace" font-size="15"
+          font-weight="700" fill="#FFC247" text-anchor="middle">ONE+ 18V</text>
+    <rect x="300" y="556" width="140" height="10" rx="5" fill="#0C0E13" opacity="0.4"/>
+
+    <!-- ─── POIGNÉE ergonomique ─── -->
+    <path d="M300 300 Q288 430 320 505 L455 505 Q470 430 455 300 Z"
+          fill="url(#grip)" stroke="#000" stroke-width="1.5"/>
+    <!-- texture grip -->
+    <g opacity="0.5" stroke="#3A4150" stroke-width="2" fill="none">
+      <path d="M325 350 Q340 360 360 354"/>
+      <path d="M322 385 Q340 397 365 390"/>
+      <path d="M322 420 Q342 433 367 425"/>
+      <path d="M325 455 Q344 466 366 459"/>
+    </g>
+    <!-- gâchette capture -->
+    <path d="M300 330 Q272 348 280 392 Q296 380 304 352 Z"
+          fill="url(#amber)" stroke="#000" stroke-width="1.5"/>
+
+    <!-- ─── CORPS / liaison ─── -->
+    <path d="M300 300 Q300 235 360 215 L520 215 Q560 235 555 305 L455 320 Q420 300 360 305 Z"
+          fill="url(#body)" stroke="#000" stroke-width="1.5"/>
+
+    <!-- ─── ÉCRAN TACTILE (face arrière, vers l'opérateur) ─── -->
+    <g transform="rotate(-14 540 200)">
+      <rect x="430" y="120" width="230" height="172" rx="16"
+            fill="#23272F" stroke="#000" stroke-width="2"/>
+      <rect x="444" y="134" width="202" height="144" rx="8" fill="url(#screen)"/>
+      <!-- live view dans l'écran : halos verts -->
+      <ellipse cx="505" cy="190" rx="30" ry="22" fill="#6FCF8E" opacity="0.22"/>
+      <ellipse cx="505" cy="190" rx="17" ry="12" fill="none" stroke="#6FCF8E"
+               stroke-width="1.4" opacity="0.85"/>
+      <ellipse cx="585" cy="225" rx="22" ry="16" fill="#6FCF8E" opacity="0.22"/>
+      <ellipse cx="585" cy="225" rx="12" ry="9" fill="none" stroke="#6FCF8E"
+               stroke-width="1.4" opacity="0.85"/>
+      <!-- réticule ambre -->
+      <g stroke="#FFB020" stroke-width="1.6">
+        <line x1="545" y1="195" x2="545" y2="211"/>
+        <line x1="545" y1="227" x2="545" y2="243"/>
+        <line x1="521" y1="219" x2="537" y2="219"/>
+        <line x1="553" y1="219" x2="569" y2="219"/>
+      </g>
+      <!-- barre bouton ANALYSER -->
+      <rect x="470" y="256" width="150" height="16" rx="8" fill="#FFFFFF"/>
+      <text x="545" y="268" font-family="IBM Plex Sans,sans-serif" font-size="9"
+            font-weight="700" fill="#06070A" text-anchor="middle">ANALYSER</text>
+      <!-- statut -->
+      <text x="455" y="148" font-family="IBM Plex Mono,monospace" font-size="8"
+            fill="#6FCF8E">UV-A · LIVE</text>
+    </g>
+
+    <!-- ─── TÊTE OPTIQUE — lampe UV + caméra ─── -->
+    <g transform="rotate(-26 250 200)">
+      <!-- collier de la tête -->
+      <rect x="150" y="120" width="210" height="190" rx="34"
+            fill="url(#body)" stroke="#000" stroke-width="2"/>
+      <!-- réflecteur UV -->
+      <circle cx="225" cy="215" r="78" fill="#0C0E13" stroke="#000" stroke-width="2"/>
+      <circle cx="225" cy="215" r="62" fill="url(#uvglow)"/>
+      <circle cx="225" cy="215" r="26" fill="#C9B6FF" opacity="0.9"/>
+      <circle cx="225" cy="215" r="11" fill="#FFFFFF"/>
+      <!-- module caméra (petit, en haut de la tête) -->
+      <circle cx="320" cy="150" r="20" fill="#06070A" stroke="#3A4150" stroke-width="2"/>
+      <circle cx="320" cy="150" r="11" fill="#1A2230"/>
+      <circle cx="324" cy="146" r="3.5" fill="#5B7BBF" opacity="0.8"/>
+    </g>
+
+    <!-- ─── CALLOUTS ─── -->
+    <g font-family="IBM Plex Sans,sans-serif" font-size="13" fill="#C2C8D4">
+      <!-- tête optique -->
+      <line x1="200" y1="150" x2="120" y2="95" stroke="#FFB020" stroke-width="1.4"/>
+      <circle cx="120" cy="95" r="3" fill="#FFB020"/>
+      <text x="60" y="80" fill="#FFB020" font-weight="600" font-size="11">TÊTE OPTIQUE</text>
+      <text x="60" y="98" font-size="11">Lampe UV-A 365 nm</text>
+      <text x="60" y="113" font-size="11">+ caméra intégrée</text>
+
+      <!-- écran -->
+      <line x1="650" y1="160" x2="800" y2="120" stroke="#FFB020" stroke-width="1.4"/>
+      <circle cx="800" cy="120" r="3" fill="#FFB020"/>
+      <text x="700" y="100" fill="#FFB020" font-weight="600" font-size="11">ÉCRAN TACTILE</text>
+      <text x="700" y="118" font-size="11">Live view + analyse IA</text>
+
+      <!-- gâchette -->
+      <line x1="285" y1="365" x2="150" y2="400" stroke="#FFB020" stroke-width="1.4"/>
+      <circle cx="150" cy="400" r="3" fill="#FFB020"/>
+      <text x="40" y="392" fill="#FFB020" font-weight="600" font-size="11">GÂCHETTE</text>
+      <text x="40" y="410" font-size="11">Capture &amp; analyse</text>
+
+      <!-- batterie -->
+      <line x1="490" y1="545" x2="650" y2="560" stroke="#FFB020" stroke-width="1.4"/>
+      <circle cx="650" cy="560" r="3" fill="#FFB020"/>
+      <text x="668" y="552" fill="#FFB020" font-weight="600" font-size="11">BATTERIE</text>
+      <text x="668" y="570" font-size="11">Ryobi ONE+ 18V</text>
+      <text x="668" y="585" font-size="11">(interchangeable)</text>
+    </g>
+  </svg>
+  </div>
+
+  <div class="specs">
+    <div class="spec">
+      <div class="t">Tête optique</div>
+      <div class="d">Lampe UV-A 365 nm calibrée + caméra haute résolution coaxiale pour le live view.</div>
+    </div>
+    <div class="spec">
+      <div class="t">Écran tactile</div>
+      <div class="d">Affichage live view orienté vers l'opérateur — halos de détection en temps réel, bouton ANALYSER.</div>
+    </div>
+    <div class="spec">
+      <div class="t">Gâchette</div>
+      <div class="d">Capture multi-frames + lance l'analyse Lucens IA d'une seule main.</div>
+    </div>
+    <div class="spec">
+      <div class="t">Énergie</div>
+      <div class="d">Batterie Ryobi ONE+ 18V standard — autonomie terrain, échange à chaud.</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

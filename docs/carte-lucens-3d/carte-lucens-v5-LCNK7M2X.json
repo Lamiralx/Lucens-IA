@@ -1,0 +1,54 @@
+{
+  "product": "Lucens IA Calibration Card",
+  "version": "V5 (monobloc, textures soudées)",
+  "serial": "LCNK7M2X",
+  "qr_payload": "LUCENS:CALIBV4:LCNK7M2X",
+  "dimensions_mm": {
+    "width": 75.0,
+    "height": 50.0,
+    "thickness": 2.0
+  },
+  "relief_height_mm": 0.5,
+  "patches": {
+    "count": 9,
+    "layout": "3×3",
+    "patch_dimensions_mm": {
+      "w": 21.33,
+      "h": 5.67
+    },
+    "texture_names": [
+      "TOPO",
+      "VORONOI",
+      "HEXAGONE",
+      "FIBONACCI",
+      "FRESNEL",
+      "MOIRE",
+      "VAGUES",
+      "GRADIENT",
+      "CODEBARRE"
+    ]
+  },
+  "aruco": {
+    "dict": "DICT_4X4_50",
+    "ids": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "corners": [
+      "TL",
+      "TR",
+      "BL",
+      "BR"
+    ],
+    "size_mm": 6.0
+  },
+  "print_strategy": {
+    "method": "bi-material CFS recommandé (swap au layer 12 avec layer_height 0.16)",
+    "slot_1": "PLA NOIR mat (base)",
+    "slot_2": "PLA FLUO bleu-vert (tous les reliefs : patches, logo, fonds QR/ArUco, modules)",
+    "alternative": "mono-PLA fluo bleu-vert seul : reliefs lisibles par ombres sous UV"
+  },
+  "adherence": "Tous les reliefs sont attachés à la base par union manifold — pas de pièce flottante"
+}

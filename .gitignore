@@ -1,0 +1,43 @@
+node_modules/
+.env
+.env.local
+.env*.local
+.vercel
+.DS_Store
+Thumbs.db
+
+# Claude Code local config (per-user)
+.claude/
+
+# ─── Données / dataset privé (jamais commiter) ───
+UV PHOTOS/
+training/dataset/
+training/images/
+training/data/
+training/checkpoints/
+training/runs/
+training/outputs/
+training/annotations/
+training/extracted/
+training/calibration_workdir/
+training/results/
+*.ckpt
+*.pth
+*.safetensors
+**/__pycache__/
+**/.ipynb_checkpoints/
+*.pyc
+*.log
+
+# ─── Artefacts lourds (binaires 3D, sauvegardes) ───
+*.stl
+*.3mf
+*.bak_*
+*.html.bak_v34
+lucens_audit.html
+
+# ─── Notes perso / audits externes (jamais publier) ───
+Voici mon audit*.txt
+audit_*.txt
+notes_*.txt
+ui-ux-pro-max-skill/

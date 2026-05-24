@@ -1,0 +1,29 @@
+# ─── Données privées : NE JAMAIS DÉPLOYER ───
+# Photos brutes (privacité, taille) — restent locales
+UV PHOTOS/
+training/dataset/
+training/images/
+training/data/
+*.zip
+*.tar.gz
+
+# Sorties d'entraînement / checkpoints
+training/checkpoints/
+training/runs/
+training/outputs/
+*.ckpt
+*.pth
+*.safetensors
+
+# Artefacts notebooks
+**/__pycache__/
+**/.ipynb_checkpoints/
+*.pyc
+
+# Système
+.DS_Store
+Thumbs.db
+node_modules/
+
+# Logs
+*.log

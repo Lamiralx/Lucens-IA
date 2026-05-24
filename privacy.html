@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#F4F6F8">
+<!-- Thème + langue : applique les choix sauvegardés par l'app AVANT le rendu (anti-flash) -->
+<script>
+(function(){
+  try {
+    var t = localStorage.getItem('lucens_theme');
+    if (t === 'light' || t === 'dark') {
+      document.documentElement.setAttribute('data-theme', t);
+      var mc = document.querySelector('meta[name="theme-color"]');
+      if (mc) mc.setAttribute('content', t === 'light' ? '#F4F6F8' : '#06070A');
+    }
+  } catch (e) {}
+  try {
+    var l = localStorage.getItem('uvLang');
+    if (l && ['fr','en','es','de'].indexOf(l) >= 0) {
+      document.documentElement.lang = l;
+    }
+  } catch (e) {}
+})();
+</script>
+<title>Confidentialité · Lucens IA</title>
+<meta name="description" content="Politique de confidentialité Lucens IA, expliquée simplement : quelles données sont utilisées, combien de temps, et comment tout faire supprimer.">
+<meta name="robots" content="index, follow">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ─── Tokens — mêmes thèmes que l'app (clair par défaut + sombre) ─── */
+:root {
+  --terra: #D84315;
+  --accent: #0E8C84;
+  --font-display: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SF Mono', Consolas, monospace;
+  --bg: #06070A;
+  --surface: #14171E;
+  --header-bg: rgba(6, 7, 10, 0.82);
+  --border: rgba(255,255,255,0.10);
+  --border-hi: rgba(255,255,255,0.26);
+  --hairline: rgba(255,255,255,0.07);
+  --ink-primary: #F5F7FA;
+  --ink-secondary: #C7CCD6;
+  --ink-tertiary: #969CAB;
+  --ink-dim: #6E7484;
+}
+:root[data-theme="light"] {
+  --accent: #0E8C84;
+  --bg: #F4F6F8;
+  --surface: #FFFFFF;
+  --header-bg: rgba(255, 255, 255, 0.86);
+  --border: #E2E5EA;
+  --border-hi: #CBD0DA;
+  --hairline: rgba(12,14,19,0.07);
+  --ink-primary: #0C0E13;
+  --ink-secondary: #3A4150;
+  --ink-tertiary: #6B7280;
+  --ink-dim: #969CAB;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  color: var(--ink-secondary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+body { min-height: 100dvh; }
+
+.privacy-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  width: 100%;
+  background: var(--header-bg);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
+  backdrop-filter: saturate(180%) blur(16px);
+  border-bottom: 1px solid var(--hairline);
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.privacy-header-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px max(16px, env(safe-area-inset-left)) 11px max(16px, env(safe-area-inset-right));
+  min-height: 60px;
+}
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 21px;
+  letter-spacing: -0.022em;
+  color: var(--ink-primary);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.wordmark::after {
+  content: '';
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--terra);
+  margin-left: 5px;
+  vertical-align: 0.14em;
+}
+.header-actions { display: flex; align-items: center; gap: 8px; }
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px; height: 40px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--ink-tertiary);
+  cursor: pointer;
+  transition: color .15s, border-color .15s, transform .12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.theme-toggle:hover { color: var(--ink-primary); border-color: var(--border-hi); }
+.theme-toggle:active { transform: scale(0.92); }
+.theme-toggle svg { width: 18px; height: 18px; }
+.theme-ico-sun { display: block; }
+.theme-ico-moon { display: none; }
+:root[data-theme="light"] .theme-ico-sun { display: none; }
+:root[data-theme="light"] .theme-ico-moon { display: block; }
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 15px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-secondary);
+  text-decoration: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: color .15s, border-color .15s, background .15s;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+.back-link:hover { color: var(--ink-primary); border-color: var(--border-hi); background: var(--hairline); }
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 26px 18px calc(56px + env(safe-area-inset-bottom, 0px));
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--terra);
+  margin-bottom: 12px;
+}
+h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(27px, 8vw, 38px);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  color: var(--ink-primary);
+  margin: 0 0 14px;
+}
+.lead {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--ink-secondary);
+  margin: 0 0 24px;
+}
+
+.essential {
+  margin: 0;
+  padding: 18px 18px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.essential-title {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-tertiary);
+  margin-bottom: 12px;
+}
+.essential-list { list-style: none; margin: 0; padding: 0; }
+.essential-list li {
+  position: relative;
+  padding-left: 26px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-primary);
+}
+.essential-list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0; top: 0;
+  color: var(--terra);
+  font-weight: 700;
+}
+
+h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: -0.005em;
+  color: var(--ink-primary);
+  margin: 30px 0 10px;
+  padding-top: 22px;
+  border-top: 1px solid var(--hairline);
+}
+p {
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--ink-secondary);
+  margin: 0 0 12px;
+}
+ul:not(.essential-list) { margin: 0 0 14px; padding-left: 20px; }
+ul:not(.essential-list) li {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--ink-secondary);
+  margin-bottom: 7px;
+}
+strong { color: var(--ink-primary); font-weight: 600; }
+
+footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--hairline);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 16px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+footer a {
+  color: var(--ink-dim);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  transition: color .15s;
+}
+footer a:hover { color: var(--ink-primary); }
+
+@media (min-width: 640px) {
+  .privacy-header-inner { padding: 13px 32px; }
+  .wordmark { font-size: 22px; }
+  .container { padding: 36px 32px 64px; }
+  h1 { margin-bottom: 16px; }
+  .lead { font-size: 16px; margin-bottom: 30px; }
+  .essential { padding: 22px 22px 12px; }
+  .essential-list li { font-size: 14.5px; }
+  h2 { font-size: 18px; margin-top: 38px; padding-top: 26px; }
+  p, ul:not(.essential-list) li { font-size: 15px; }
+}
+</style>
+</head>
+<body>
+
+<header class="privacy-header">
+  <div class="privacy-header-inner">
+    <a href="/" class="wordmark">LUCENS</a>
+    <div class="header-actions">
+      <button type="button" class="theme-toggle" id="themeToggle" data-i18n-aria="theme_aria" aria-label="Changer de thème">
+        <svg class="theme-ico theme-ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+        </svg>
+        <svg class="theme-ico theme-ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+      <a href="/" class="back-link" data-i18n-aria="back_aria" aria-label="Revenir à l'application Lucens">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M15 6l-6 6 6 6"/>
+        </svg>
+        <span data-i18n="back_label">Retour</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+<div class="eyebrow" data-i18n="eyebrow">Confidentialité</div>
+<h1 data-i18n="h1">Vos données, en clair</h1>
+<p class="lead" data-i18n="lead">Lucens analyse des photos prises sous lampe UV pour vous aider à repérer des traces d'hygiène. Cette page explique simplement quelles données sont utilisées, combien de temps elles sont gardées, et comment tout faire supprimer, sans jargon.</p>
+
+<div class="essential">
+  <div class="essential-title" data-i18n="essential_title">L'essentiel</div>
+  <ul class="essential-list">
+    <li data-i18n="essential_1">Votre photo sert à produire votre analyse, puis elle n'est pas conservée.</li>
+    <li data-i18n="essential_2">Vous ne partagez une image que si vous le décidez vous-même. Jamais automatiquement.</li>
+    <li data-i18n="essential_3">Vous pouvez faire supprimer vos données à tout moment, gratuitement et sans créer de compte.</li>
+  </ul>
+</div>
+
+<h2 data-i18n="h2_uses">Ce que Lucens utilise</h2>
+<p data-i18n="p_uses_lead">Pour réaliser une analyse, Lucens traite :</p>
+<ul>
+  <li data-i18n="li_uses_1">la photo que vous envoyez ;</li>
+  <li data-i18n="li_uses_2">le résultat produit par l'analyse Lucens IA ;</li>
+  <li data-i18n="li_uses_3">le contexte que vous indiquez (type de lieu, secteur, moment de la prise de vue) ;</li>
+  <li data-i18n="li_uses_4">quelques informations techniques nécessaires au bon fonctionnement du service.</li>
+</ul>
+<p data-i18n="p_uses_closing">Et, uniquement si vous le faites volontairement, les retours que vous nous envoyez via le bouton de feedback.</p>
+
+<h2 data-i18n="h2_photos">Vos photos ne sont pas gardées, sauf si vous le choisissez</h2>
+<p data-i18n="p_photos_1" data-i18n-rich>Quand vous lancez une analyse, votre photo sert à produire le résultat, puis elle <strong>n'est pas conservée</strong>.</p>
+<p data-i18n="p_photos_2" data-i18n-rich>La seule exception : si, après une analyse, vous décidez d'envoyer un <strong>feedback correctif</strong> (une version réduite de l'image accompagnée de vos annotations) pour nous aider à améliorer Lucens. Cet envoi est toujours un choix explicite de votre part ; il n'a jamais lieu tout seul.</p>
+
+<h2 data-i18n="h2_feedback">Le feedback est optionnel</h2>
+<p data-i18n="p_feedback_lead">À la fin d'une analyse, vous pouvez nous dire si la détection était juste. C'est entièrement facultatif. Ces retours nous servent à :</p>
+<ul>
+  <li data-i18n="li_feedback_1">améliorer la précision de Lucens ;</li>
+  <li data-i18n="li_feedback_2">repérer les erreurs qui reviennent ;</li>
+  <li data-i18n="li_feedback_3">tester la qualité des futures versions.</li>
+</ul>
+<p data-i18n="p_feedback_closing">Aucune image n'est utilisée pour améliorer Lucens sans votre accord explicite.</p>
+
+<h2 data-i18n="h2_retention">Combien de temps les données sont gardées</h2>
+<ul>
+  <li data-i18n="li_retention_1" data-i18n-rich><strong>Les retours simples</strong> (une note, sans image) : conservés sous forme groupée et anonymisée.</li>
+  <li data-i18n="li_retention_2" data-i18n-rich><strong>Les images correctives</strong> : 12 mois maximum, ou moins si vous demandez leur suppression avant.</li>
+</ul>
+<p data-i18n="p_retention_note">Lucens n'enregistre pas volontairement votre adresse IP avec ces retours. Une image peut être reliée à un identifiant technique anonyme. Cela limite fortement les risques, mais ne rend pas les données totalement intraçables : c'est pourquoi le droit à l'oubli ci-dessous existe.</p>
+
+<h2 data-i18n="h2_oubli">Votre droit à l'oubli, tout faire supprimer</h2>
+<p data-i18n="p_oubli_intro" data-i18n-rich>Dès que vous envoyez un feedback ou une image corrective, Lucens vous remet un <strong>code de suppression personnel</strong>, à usage unique.</p>
+<ul>
+  <li data-i18n="li_oubli_1" data-i18n-rich><strong>Conservez ce code.</strong> C'est lui qui identifie vos données.</li>
+  <li data-i18n="li_oubli_2" data-i18n-rich>Pour faire effacer les données liées, transmettez-nous ce code (voir <strong>Nous contacter</strong> ci-dessous).</li>
+  <li data-i18n="li_oubli_3">La suppression est gratuite, ne demande aucun compte, et est définitive.</li>
+</ul>
+<p data-i18n="p_oubli_warn">Sans ce code, nous ne pouvons pas garantir de retrouver précisément vos données parmi les autres. Gardez-le donc en lieu sûr.</p>
+
+<h2 data-i18n="h2_dont">Ce que vous ne devez pas photographier</h2>
+<p data-i18n="p_dont_lead">Pour protéger tout le monde, n'envoyez pas d'images montrant :</p>
+<ul>
+  <li data-i18n="li_dont_1">des personnes reconnaissables ou des badges ;</li>
+  <li data-i18n="li_dont_2">des documents confidentiels, des plans de site, des informations sur des clients ;</li>
+  <li data-i18n="li_dont_3">tout élément couvert par un secret professionnel ou industriel,</li>
+</ul>
+<p data-i18n="p_dont_closing">sauf si vous y êtes expressément autorisé.</p>
+
+<h2 data-i18n="h2_processors">Qui traite vos données</h2>
+<p data-i18n="p_processors_lead">Lucens s'appuie sur deux prestataires techniques :</p>
+<ul>
+  <li data-i18n="li_proc_1" data-i18n-rich><strong>Vercel</strong> : hébergement du site et stockage ;</li>
+  <li data-i18n="li_proc_2" data-i18n-rich><strong>Anthropic</strong> : analyse des images par Lucens IA.</li>
+</ul>
+<p data-i18n="p_processors_closing">Ils n'interviennent que pour faire fonctionner le service, le sécuriser et en améliorer la qualité. L'accès aux cas annotés et aux statistiques internes est réservé aux administrateurs autorisés, et les suppressions sont journalisées pour la traçabilité.</p>
+
+<h2 data-i18n="h2_not">Ce que Lucens n'est pas</h2>
+<p data-i18n="p_not_1" data-i18n-rich>Lucens est une <strong>aide visuelle</strong>. Ce n'est pas un diagnostic microbiologique, chimique ou médical, et ce n'est pas une décision réglementaire automatisée.</p>
+<p data-i18n="p_not_2" data-i18n-rich>La décision finale (valider une surface, libérer un produit, conclure sur l'hygiène) reste toujours <strong>humaine</strong>. Elle doit être confirmée par les méthodes de terrain appropriées : ATP-métrie, écouvillonnages, analyses de laboratoire accréditées, contrôles HACCP.</p>
+
+<h2 data-i18n="h2_contact">Nous contacter</h2>
+<p data-i18n="p_contact">Pour toute question sur vos données, ou pour faire supprimer un feedback, écrivez à l'équipe Lucens à l'adresse de contact indiquée sur le site. Si vous avez un code de suppression, joignez-le à votre message.</p>
+
+<footer>
+  <span data-i18n="footer_brand">Lucens IA · Confidentialité</span>
+  <span data-i18n="footer_update">Mise à jour : mai 2026</span>
+  <a href="/" data-i18n="footer_back">Retour à l'app</a>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  /* ── i18n : 4 langues, autonome (ne dépend pas de l'app) ── */
+  var I18N = {
+    fr: {
+      title: "Confidentialité · Lucens IA",
+      meta_desc: "Politique de confidentialité Lucens IA, expliquée simplement : quelles données sont utilisées, combien de temps, et comment tout faire supprimer.",
+      theme_aria: "Changer de thème",
+      back_aria: "Revenir à l'application Lucens",
+      back_label: "Retour",
+      eyebrow: "Confidentialité",
+      h1: "Vos données, en clair",
+      lead: "Lucens analyse des photos prises sous lampe UV pour vous aider à repérer des traces d'hygiène. Cette page explique simplement quelles données sont utilisées, combien de temps elles sont gardées, et comment tout faire supprimer, sans jargon.",
+      essential_title: "L'essentiel",
+      essential_1: "Votre photo sert à produire votre analyse, puis elle n'est pas conservée.",
+      essential_2: "Vous ne partagez une image que si vous le décidez vous-même. Jamais automatiquement.",
+      essential_3: "Vous pouvez faire supprimer vos données à tout moment, gratuitement et sans créer de compte.",
+      h2_uses: "Ce que Lucens utilise",
+      p_uses_lead: "Pour réaliser une analyse, Lucens traite :",
+      li_uses_1: "la photo que vous envoyez ;",
+      li_uses_2: "le résultat produit par l'analyse Lucens IA ;",
+      li_uses_3: "le contexte que vous indiquez (type de lieu, secteur, moment de la prise de vue) ;",
+      li_uses_4: "quelques informations techniques nécessaires au bon fonctionnement du service.",
+      p_uses_closing: "Et, uniquement si vous le faites volontairement, les retours que vous nous envoyez via le bouton de feedback.",
+      h2_photos: "Vos photos ne sont pas gardées, sauf si vous le choisissez",
+      p_photos_1: "Quand vous lancez une analyse, votre photo sert à produire le résultat, puis elle <strong>n'est pas conservée</strong>.",
+      p_photos_2: "La seule exception : si, après une analyse, vous décidez d'envoyer un <strong>feedback correctif</strong> (une version réduite de l'image accompagnée de vos annotations) pour nous aider à améliorer Lucens. Cet envoi est toujours un choix explicite de votre part ; il n'a jamais lieu tout seul.",
+      h2_feedback: "Le feedback est optionnel",
+      p_feedback_lead: "À la fin d'une analyse, vous pouvez nous dire si la détection était juste. C'est entièrement facultatif. Ces retours nous servent à :",
+      li_feedback_1: "améliorer la précision de Lucens ;",
+      li_feedback_2: "repérer les erreurs qui reviennent ;",
+      li_feedback_3: "tester la qualité des futures versions.",
+      p_feedback_closing: "Aucune image n'est utilisée pour améliorer Lucens sans votre accord explicite.",
+      h2_retention: "Combien de temps les données sont gardées",
+      li_retention_1: "<strong>Les retours simples</strong> (une note, sans image) : conservés sous forme groupée et anonymisée.",
+      li_retention_2: "<strong>Les images correctives</strong> : 12 mois maximum, ou moins si vous demandez leur suppression avant.",
+      p_retention_note: "Lucens n'enregistre pas volontairement votre adresse IP avec ces retours. Une image peut être reliée à un identifiant technique anonyme. Cela limite fortement les risques, mais ne rend pas les données totalement intraçables : c'est pourquoi le droit à l'oubli ci-dessous existe.",
+      h2_oubli: "Votre droit à l'oubli, tout faire supprimer",
+      p_oubli_intro: "Dès que vous envoyez un feedback ou une image corrective, Lucens vous remet un <strong>code de suppression personnel</strong>, à usage unique.",
+      li_oubli_1: "<strong>Conservez ce code.</strong> C'est lui qui identifie vos données.",
+      li_oubli_2: "Pour faire effacer les données liées, transmettez-nous ce code (voir <strong>Nous contacter</strong> ci-dessous).",
+      li_oubli_3: "La suppression est gratuite, ne demande aucun compte, et est définitive.",
+      p_oubli_warn: "Sans ce code, nous ne pouvons pas garantir de retrouver précisément vos données parmi les autres. Gardez-le donc en lieu sûr.",
+      h2_dont: "Ce que vous ne devez pas photographier",
+      p_dont_lead: "Pour protéger tout le monde, n'envoyez pas d'images montrant :",
+      li_dont_1: "des personnes reconnaissables ou des badges ;",
+      li_dont_2: "des documents confidentiels, des plans de site, des informations sur des clients ;",
+      li_dont_3: "tout élément couvert par un secret professionnel ou industriel,",
+      p_dont_closing: "sauf si vous y êtes expressément autorisé.",
+      h2_processors: "Qui traite vos données",
+      p_processors_lead: "Lucens s'appuie sur deux prestataires techniques :",
+      li_proc_1: "<strong>Vercel</strong> : hébergement du site et stockage ;",
+      li_proc_2: "<strong>Anthropic</strong> : analyse des images par Lucens IA.",
+      p_processors_closing: "Ils n'interviennent que pour faire fonctionner le service, le sécuriser et en améliorer la qualité. L'accès aux cas annotés et aux statistiques internes est réservé aux administrateurs autorisés, et les suppressions sont journalisées pour la traçabilité.",
+      h2_not: "Ce que Lucens n'est pas",
+      p_not_1: "Lucens est une <strong>aide visuelle</strong>. Ce n'est pas un diagnostic microbiologique, chimique ou médical, et ce n'est pas une décision réglementaire automatisée.",
+      p_not_2: "La décision finale (valider une surface, libérer un produit, conclure sur l'hygiène) reste toujours <strong>humaine</strong>. Elle doit être confirmée par les méthodes de terrain appropriées : ATP-métrie, écouvillonnages, analyses de laboratoire accréditées, contrôles HACCP.",
+      h2_contact: "Nous contacter",
+      p_contact: "Pour toute question sur vos données, ou pour faire supprimer un feedback, écrivez à l'équipe Lucens à l'adresse de contact indiquée sur le site. Si vous avez un code de suppression, joignez-le à votre message.",
+      footer_brand: "Lucens IA · Confidentialité",
+      footer_update: "Mise à jour : mai 2026",
+      footer_back: "Retour à l'app",
+    },
+    en: {
+      title: "Privacy · Lucens IA",
+      meta_desc: "Lucens IA privacy policy, explained plainly: what data is used, for how long, and how to have everything deleted.",
+      theme_aria: "Switch theme",
+      back_aria: "Back to the Lucens app",
+      back_label: "Back",
+      eyebrow: "Privacy",
+      h1: "Your data, in plain words",
+      lead: "Lucens analyses photos taken under a UV lamp to help you spot hygiene traces. This page explains plainly what data is used, how long it is kept, and how to have everything deleted, without jargon.",
+      essential_title: "The essentials",
+      essential_1: "Your photo is used to produce your analysis, then it is not kept.",
+      essential_2: "You only share an image if you choose to. Never automatically.",
+      essential_3: "You can have your data deleted at any time, free of charge and without creating an account.",
+      h2_uses: "What Lucens uses",
+      p_uses_lead: "To produce an analysis, Lucens processes:",
+      li_uses_1: "the photo you send;",
+      li_uses_2: "the result produced by the Lucens IA analysis;",
+      li_uses_3: "the context you provide (place type, sector, moment of capture);",
+      li_uses_4: "a few technical pieces of information needed for the service to work.",
+      p_uses_closing: "And, only if you do so deliberately, the feedback you send through the feedback button.",
+      h2_photos: "Your photos are not kept, unless you choose to",
+      p_photos_1: "When you launch an analysis, your photo is used to produce the result, then it is <strong>not kept</strong>.",
+      p_photos_2: "The only exception: if, after an analysis, you decide to send <strong>corrective feedback</strong> (a reduced version of the image with your annotations) to help us improve Lucens. This is always an explicit choice on your part; it never happens on its own.",
+      h2_feedback: "Feedback is optional",
+      p_feedback_lead: "At the end of an analysis, you can tell us whether the detection was right. It is entirely optional. These returns help us:",
+      li_feedback_1: "improve the precision of Lucens;",
+      li_feedback_2: "spot recurring errors;",
+      li_feedback_3: "test the quality of future versions.",
+      p_feedback_closing: "No image is used to improve Lucens without your explicit consent.",
+      h2_retention: "How long data is kept",
+      li_retention_1: "<strong>Simple ratings</strong> (a score, without image): kept in aggregated, anonymised form.",
+      li_retention_2: "<strong>Corrective images</strong>: 12 months maximum, or less if you ask for their deletion sooner.",
+      p_retention_note: "Lucens does not intentionally record your IP address with these returns. An image may be linked to an anonymous technical identifier. This strongly limits the risk, but does not make the data fully untraceable: that is why the right to be forgotten below exists.",
+      h2_oubli: "Your right to be forgotten, delete everything",
+      p_oubli_intro: "As soon as you send feedback or a corrective image, Lucens gives you a <strong>personal deletion code</strong>, single use.",
+      li_oubli_1: "<strong>Keep this code.</strong> It is what identifies your data.",
+      li_oubli_2: "To have the linked data erased, send us this code (see <strong>Contact us</strong> below).",
+      li_oubli_3: "Deletion is free, requires no account, and is final.",
+      p_oubli_warn: "Without this code, we cannot guarantee we will precisely retrieve your data among the others. Keep it safe.",
+      h2_dont: "What you must not photograph",
+      p_dont_lead: "To protect everyone, do not send images showing:",
+      li_dont_1: "recognisable people or badges;",
+      li_dont_2: "confidential documents, site plans, information about clients;",
+      li_dont_3: "anything covered by professional or industrial secrecy,",
+      p_dont_closing: "unless you are expressly authorised.",
+      h2_processors: "Who processes your data",
+      p_processors_lead: "Lucens relies on two technical providers:",
+      li_proc_1: "<strong>Vercel</strong>: site hosting and storage;",
+      li_proc_2: "<strong>Anthropic</strong>: image analysis by Lucens IA.",
+      p_processors_closing: "They only intervene to make the service run, secure it and improve its quality. Access to annotated cases and internal statistics is restricted to authorised administrators, and deletions are logged for traceability.",
+      h2_not: "What Lucens is not",
+      p_not_1: "Lucens is a <strong>visual aid</strong>. It is not a microbiological, chemical or medical diagnosis, and it is not an automated regulatory decision.",
+      p_not_2: "The final decision (validating a surface, releasing a product, concluding on hygiene) always remains <strong>human</strong>. It must be confirmed by the appropriate field methods: ATP testing, swabbing, accredited lab analyses, HACCP controls.",
+      h2_contact: "Contact us",
+      p_contact: "For any question about your data, or to have feedback deleted, write to the Lucens team at the contact address shown on the site. If you have a deletion code, include it in your message.",
+      footer_brand: "Lucens IA · Privacy",
+      footer_update: "Updated: May 2026",
+      footer_back: "Back to the app",
+    },
+    es: {
+      title: "Privacidad · Lucens IA",
+      meta_desc: "Política de privacidad de Lucens IA, explicada con claridad: qué datos se utilizan, durante cuánto tiempo y cómo hacer que se eliminen.",
+      theme_aria: "Cambiar de tema",
+      back_aria: "Volver a la aplicación Lucens",
+      back_label: "Volver",
+      eyebrow: "Privacidad",
+      h1: "Sus datos, en claro",
+      lead: "Lucens analiza fotos tomadas con lámpara UV para ayudarle a detectar trazas de higiene. Esta página explica con claridad qué datos se utilizan, cuánto tiempo se conservan y cómo hacer que se eliminen, sin jerga.",
+      essential_title: "Lo esencial",
+      essential_1: "Su foto sirve para producir su análisis, después no se conserva.",
+      essential_2: "Solo comparte una imagen si usted lo decide. Nunca de forma automática.",
+      essential_3: "Puede solicitar la eliminación de sus datos en cualquier momento, de forma gratuita y sin crear una cuenta.",
+      h2_uses: "Lo que Lucens utiliza",
+      p_uses_lead: "Para realizar un análisis, Lucens procesa:",
+      li_uses_1: "la foto que envía;",
+      li_uses_2: "el resultado producido por el análisis Lucens IA;",
+      li_uses_3: "el contexto que indica (tipo de lugar, sector, momento de la captura);",
+      li_uses_4: "algunos datos técnicos necesarios para el correcto funcionamiento del servicio.",
+      p_uses_closing: "Y, únicamente si lo hace voluntariamente, los comentarios que nos envía mediante el botón de feedback.",
+      h2_photos: "Sus fotos no se conservan, salvo que usted lo decida",
+      p_photos_1: "Cuando inicia un análisis, su foto sirve para producir el resultado, después <strong>no se conserva</strong>.",
+      p_photos_2: "La única excepción: si, tras un análisis, decide enviar un <strong>feedback correctivo</strong> (una versión reducida de la imagen acompañada de sus anotaciones) para ayudarnos a mejorar Lucens. Este envío es siempre una decisión explícita por su parte; nunca se produce de forma automática.",
+      h2_feedback: "El feedback es opcional",
+      p_feedback_lead: "Al finalizar un análisis, puede indicarnos si la detección fue acertada. Es totalmente opcional. Estos comentarios nos sirven para:",
+      li_feedback_1: "mejorar la precisión de Lucens;",
+      li_feedback_2: "detectar los errores recurrentes;",
+      li_feedback_3: "probar la calidad de las futuras versiones.",
+      p_feedback_closing: "Ninguna imagen se utiliza para mejorar Lucens sin su consentimiento explícito.",
+      h2_retention: "Cuánto tiempo se conservan los datos",
+      li_retention_1: "<strong>Los comentarios simples</strong> (una nota, sin imagen): se conservan de forma agrupada y anónima.",
+      li_retention_2: "<strong>Las imágenes correctivas</strong>: 12 meses como máximo, o menos si solicita su eliminación antes.",
+      p_retention_note: "Lucens no registra voluntariamente su dirección IP con estos comentarios. Una imagen puede vincularse a un identificador técnico anónimo. Esto limita en gran medida los riesgos, pero no hace que los datos sean totalmente irrastreables: por eso existe el derecho al olvido a continuación.",
+      h2_oubli: "Su derecho al olvido, eliminar todo",
+      p_oubli_intro: "En cuanto envía un feedback o una imagen correctiva, Lucens le entrega un <strong>código de eliminación personal</strong>, de un solo uso.",
+      li_oubli_1: "<strong>Conserve este código.</strong> Es lo que identifica sus datos.",
+      li_oubli_2: "Para que se borren los datos vinculados, transmítanos este código (consulte <strong>Contáctenos</strong> a continuación).",
+      li_oubli_3: "La eliminación es gratuita, no requiere cuenta y es definitiva.",
+      p_oubli_warn: "Sin este código no podemos garantizar la recuperación precisa de sus datos entre los demás. Consérvelo en un lugar seguro.",
+      h2_dont: "Lo que no debe fotografiar",
+      p_dont_lead: "Para proteger a todos, no envíe imágenes que muestren:",
+      li_dont_1: "personas reconocibles o credenciales;",
+      li_dont_2: "documentos confidenciales, planos de instalaciones, información sobre clientes;",
+      li_dont_3: "cualquier elemento cubierto por secreto profesional o industrial,",
+      p_dont_closing: "salvo que esté expresamente autorizado a hacerlo.",
+      h2_processors: "Quién trata sus datos",
+      p_processors_lead: "Lucens se apoya en dos proveedores técnicos:",
+      li_proc_1: "<strong>Vercel</strong>: alojamiento del sitio y almacenamiento;",
+      li_proc_2: "<strong>Anthropic</strong>: análisis de las imágenes mediante Lucens IA.",
+      p_processors_closing: "Solo intervienen para hacer funcionar el servicio, asegurarlo y mejorar su calidad. El acceso a los casos anotados y a las estadísticas internas queda reservado a administradores autorizados, y las eliminaciones se registran para la trazabilidad.",
+      h2_not: "Lo que Lucens no es",
+      p_not_1: "Lucens es una <strong>ayuda visual</strong>. No es un diagnóstico microbiológico, químico o médico, ni una decisión normativa automatizada.",
+      p_not_2: "La decisión final (validar una superficie, liberar un producto, concluir sobre la higiene) sigue siendo siempre <strong>humana</strong>. Debe confirmarse mediante los métodos de campo apropiados: ATP-metría, hisopos, análisis de laboratorio acreditados, controles APPCC.",
+      h2_contact: "Contáctenos",
+      p_contact: "Para cualquier consulta sobre sus datos, o para eliminar un feedback, escriba al equipo Lucens a la dirección de contacto indicada en el sitio. Si dispone de un código de eliminación, adjúntelo a su mensaje.",
+      footer_brand: "Lucens IA · Privacidad",
+      footer_update: "Actualización: mayo de 2026",
+      footer_back: "Volver a la app",
+    },
+    de: {
+      title: "Datenschutz · Lucens IA",
+      meta_desc: "Datenschutzerklärung von Lucens IA, klar erklärt: welche Daten genutzt werden, wie lange und wie alles gelöscht werden kann.",
+      theme_aria: "Design wechseln",
+      back_aria: "Zurück zur Lucens-App",
+      back_label: "Zurück",
+      eyebrow: "Datenschutz",
+      h1: "Ihre Daten, klar erklärt",
+      lead: "Lucens analysiert Fotos, die unter UV-Lampe aufgenommen wurden, um Sie beim Erkennen von Hygienespuren zu unterstützen. Diese Seite erklärt klar, welche Daten verwendet werden, wie lange sie aufbewahrt werden und wie alles gelöscht werden kann, ohne Fachjargon.",
+      essential_title: "Das Wesentliche",
+      essential_1: "Ihr Foto dient der Erstellung Ihrer Analyse und wird danach nicht aufbewahrt.",
+      essential_2: "Sie teilen ein Bild nur, wenn Sie es selbst entscheiden. Niemals automatisch.",
+      essential_3: "Sie können Ihre Daten jederzeit kostenlos und ohne Konto löschen lassen.",
+      h2_uses: "Was Lucens verwendet",
+      p_uses_lead: "Zur Erstellung einer Analyse verarbeitet Lucens:",
+      li_uses_1: "das von Ihnen gesendete Foto;",
+      li_uses_2: "das von Lucens IA erzeugte Ergebnis;",
+      li_uses_3: "den von Ihnen angegebenen Kontext (Ortstyp, Branche, Aufnahmezeitpunkt);",
+      li_uses_4: "einige technische Informationen, die für den Betrieb des Dienstes erforderlich sind.",
+      p_uses_closing: "Und, ausschließlich wenn Sie es bewusst tun, die Rückmeldungen, die Sie über die Feedback-Schaltfläche senden.",
+      h2_photos: "Ihre Fotos werden nicht aufbewahrt, außer Sie entscheiden anders",
+      p_photos_1: "Wenn Sie eine Analyse starten, dient Ihr Foto der Erstellung des Ergebnisses und wird anschließend <strong>nicht aufbewahrt</strong>.",
+      p_photos_2: "Die einzige Ausnahme: Wenn Sie sich nach einer Analyse entschließen, ein <strong>korrigierendes Feedback</strong> zu senden (eine verkleinerte Version des Bildes mit Ihren Anmerkungen), um uns zu helfen, Lucens zu verbessern. Diese Übermittlung ist immer eine bewusste Entscheidung Ihrerseits; sie erfolgt niemals von selbst.",
+      h2_feedback: "Feedback ist freiwillig",
+      p_feedback_lead: "Am Ende einer Analyse können Sie uns mitteilen, ob die Erkennung korrekt war. Das ist vollkommen freiwillig. Diese Rückmeldungen helfen uns:",
+      li_feedback_1: "die Präzision von Lucens zu verbessern;",
+      li_feedback_2: "wiederkehrende Fehler zu erkennen;",
+      li_feedback_3: "die Qualität künftiger Versionen zu prüfen.",
+      p_feedback_closing: "Kein Bild wird ohne Ihre ausdrückliche Zustimmung zur Verbesserung von Lucens verwendet.",
+      h2_retention: "Wie lange Daten aufbewahrt werden",
+      li_retention_1: "<strong>Einfache Bewertungen</strong> (eine Note, ohne Bild): in aggregierter und anonymisierter Form aufbewahrt.",
+      li_retention_2: "<strong>Korrigierende Bilder</strong>: höchstens 12 Monate, oder kürzer, wenn Sie vorher die Löschung anfordern.",
+      p_retention_note: "Lucens speichert Ihre IP-Adresse nicht absichtlich mit diesen Rückmeldungen. Ein Bild kann mit einer anonymen technischen Kennung verknüpft sein. Das begrenzt die Risiken stark, macht die Daten aber nicht vollständig unauffindbar: deshalb gibt es das nachstehende Recht auf Löschung.",
+      h2_oubli: "Ihr Recht auf Vergessenwerden, alles löschen",
+      p_oubli_intro: "Sobald Sie ein Feedback oder ein korrigierendes Bild senden, übermittelt Ihnen Lucens einen <strong>persönlichen Löschcode</strong> zur einmaligen Verwendung.",
+      li_oubli_1: "<strong>Bewahren Sie diesen Code auf.</strong> Er ist es, der Ihre Daten identifiziert.",
+      li_oubli_2: "Um die verknüpften Daten löschen zu lassen, übermitteln Sie uns diesen Code (siehe <strong>Kontakt</strong> unten).",
+      li_oubli_3: "Die Löschung ist kostenlos, verlangt kein Konto und ist endgültig.",
+      p_oubli_warn: "Ohne diesen Code können wir nicht garantieren, dass wir Ihre Daten unter den anderen genau wiederfinden. Bewahren Sie ihn daher sicher auf.",
+      h2_dont: "Was Sie nicht fotografieren dürfen",
+      p_dont_lead: "Zum Schutz aller senden Sie bitte keine Bilder, die Folgendes zeigen:",
+      li_dont_1: "erkennbare Personen oder Ausweise;",
+      li_dont_2: "vertrauliche Dokumente, Standortpläne, Kundeninformationen;",
+      li_dont_3: "alles, was durch Berufs- oder Industriegeheimnis geschützt ist,",
+      p_dont_closing: "es sei denn, Sie sind dazu ausdrücklich befugt.",
+      h2_processors: "Wer Ihre Daten verarbeitet",
+      p_processors_lead: "Lucens stützt sich auf zwei technische Anbieter:",
+      li_proc_1: "<strong>Vercel</strong>: Hosting der Website und Speicherung;",
+      li_proc_2: "<strong>Anthropic</strong>: Bildanalyse durch Lucens IA.",
+      p_processors_closing: "Sie greifen nur ein, um den Dienst zu betreiben, abzusichern und seine Qualität zu verbessern. Der Zugriff auf annotierte Fälle und interne Statistiken ist autorisierten Administratoren vorbehalten, und Löschungen werden zur Nachvollziehbarkeit protokolliert.",
+      h2_not: "Was Lucens nicht ist",
+      p_not_1: "Lucens ist eine <strong>visuelle Hilfe</strong>. Es ist keine mikrobiologische, chemische oder medizinische Diagnose und keine automatisierte regulatorische Entscheidung.",
+      p_not_2: "Die endgültige Entscheidung (eine Oberfläche freigeben, ein Produkt freigeben, ein Hygieneurteil fällen) bleibt stets <strong>menschlich</strong>. Sie muss durch die geeigneten Feldmethoden bestätigt werden: ATP-Messung, Abstriche, akkreditierte Laboranalysen, HACCP-Kontrollen.",
+      h2_contact: "Kontakt",
+      p_contact: "Bei Fragen zu Ihren Daten oder zur Löschung eines Feedbacks schreiben Sie an das Lucens-Team an die auf der Website angegebene Kontaktadresse. Wenn Sie einen Löschcode haben, fügen Sie ihn Ihrer Nachricht bei.",
+      footer_brand: "Lucens IA · Datenschutz",
+      footer_update: "Aktualisiert: Mai 2026",
+      footer_back: "Zurück zur App",
+    },
+  };
+
+  /* Parseur sûr : applique uniquement <strong>...</strong>, le reste reste du texte. */
+  function applyRich(el, raw) {
+    while (el.firstChild) el.removeChild(el.firstChild);
+    var parts = raw.split(/<strong>(.*?)<\/strong>/);
+    parts.forEach(function(part, idx){
+      if (!part) return;
+      if (idx % 2 === 1) {
+        var s = document.createElement('strong');
+        s.textContent = part;
+        el.appendChild(s);
+      } else {
+        el.appendChild(document.createTextNode(part));
+      }
+    });
+  }
+
+  /* Application de la langue ─────────────────────────────── */
+  var lang = (document.documentElement.lang || 'fr').toLowerCase();
+  if (!I18N[lang]) lang = 'fr';
+  var dict = I18N[lang];
+
+  document.title = dict.title;
+  var metaDesc = document.querySelector('meta[name="description"]');
+  if (metaDesc) metaDesc.setAttribute('content', dict.meta_desc);
+
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var key = el.getAttribute('data-i18n');
+    var val = dict[key];
+    if (val === undefined) return;
+    if (el.hasAttribute('data-i18n-rich')) applyRich(el, val);
+    else el.textContent = val;
+  });
+  document.querySelectorAll('[data-i18n-aria]').forEach(function(el){
+    var k = el.getAttribute('data-i18n-aria');
+    var v = dict[k];
+    if (v) el.setAttribute('aria-label', v);
+  });
+
+  /* Toggle clair/sombre ──────────────────────────────────── */
+  var btn = document.getElementById('themeToggle');
+  if (btn) {
+    btn.addEventListener('click', function(){
+      var cur = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+      var next = cur === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      var mc = document.querySelector('meta[name="theme-color"]');
+      if (mc) mc.setAttribute('content', next === 'light' ? '#F4F6F8' : '#06070A');
+      try { localStorage.setItem('lucens_theme', next); } catch (e) {}
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

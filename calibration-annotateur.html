@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Annotateur de signatures — Lucens IA</title>
+<style>
+  *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#06070A; --surf:#14171E; --surf2:#1E222C;
+    --ink:#FFFFFF; --ink2:#C2C8D4; --ink3:#969CAB;
+    --amber:#FFB020; --green:#6FCF8E; --red:#E85A4A;
+    --line:rgba(255,255,255,0.08);
+  }
+  html,body { background:var(--bg); color:var(--ink);
+    font-family:'IBM Plex Sans',-apple-system,system-ui,sans-serif; min-height:100vh; }
+  body { padding:18px; max-width:1100px; margin:0 auto; }
+  h1 { font-size:19px; font-weight:700; letter-spacing:-0.02em; margin-bottom:4px; }
+  .sub { color:var(--ink3); font-size:13px; margin-bottom:18px; }
+
+  .drop { border:2px dashed var(--line); border-radius:14px; padding:48px 24px;
+    text-align:center; background:var(--surf); cursor:pointer;
+    transition:border-color .15s,background .15s; }
+  .drop:hover,.drop.over { border-color:var(--amber); background:var(--surf2); }
+  .drop h2 { font-size:15px; margin-bottom:6px; }
+  .drop p { color:var(--ink3); font-size:13px; }
+  .drop input { display:none; }
+
+  .ws { display:none; }
+  .ws.active { display:block; }
+  .topline { display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:12px; gap:12px; flex-wrap:wrap; }
+  .counter { font:600 14px 'IBM Plex Mono',monospace; color:var(--ink2); }
+  .progress { flex:1; min-width:120px; height:4px; background:var(--surf2);
+    border-radius:100px; overflow:hidden; }
+  .progress > div { height:100%; background:var(--amber); transition:width .2s; }
+
+  .stage { position:relative; background:#000; border-radius:12px; overflow:hidden;
+    user-select:none; display:flex; align-items:center; justify-content:center;
+    min-height:300px; }
+  #photoCanvas { max-width:100%; max-height:56vh; display:block; cursor:crosshair; }
+  .hint-overlay { position:absolute; top:10px; left:50%; transform:translateX(-50%);
+    background:rgba(0,0,0,0.75); padding:6px 14px; border-radius:100px;
+    font-size:12px; color:var(--amber); pointer-events:none; white-space:nowrap; }
+
+  .panel { background:var(--surf); border:1px solid var(--line);
+    border-radius:12px; padding:14px 16px; margin-top:12px; }
+  .label { font-size:12px; color:var(--ink3); text-transform:uppercase;
+    letter-spacing:0.06em; font-weight:600; }
+  .cats { display:flex; gap:7px; flex-wrap:wrap; margin:8px 0 12px; }
+  .cat { padding:9px 14px; border-radius:10px; cursor:pointer; background:var(--surf2);
+    border:1px solid var(--line); font-size:13px; font-weight:500; color:var(--ink2);
+    transition:all .12s; }
+  .cat:hover { border-color:rgba(255,255,255,0.2); }
+  .cat.sel { background:var(--amber); color:#06070A; border-color:transparent; font-weight:600; }
+
+  .sig { font:600 14px 'IBM Plex Mono',monospace; color:var(--ink);
+    background:var(--surf2); padding:8px 12px; border-radius:8px;
+    display:inline-flex; align-items:center; gap:12px; }
+  .sig .swatch { width:26px; height:26px; border-radius:6px;
+    border:1px solid rgba(255,255,255,0.2); }
+  .sig.empty { color:var(--ink3); }
+
+  .addzone { margin-top:12px; width:100%; padding:12px; border-radius:11px; border:0;
+    background:var(--amber); color:#06070A; font-size:14px; font-weight:600; cursor:pointer; }
+  .addzone:disabled { opacity:.35; cursor:default; }
+
+  /* Zones de la photo courante */
+  .photozones { margin-top:12px; }
+  .photozones .label { display:block; margin-bottom:6px; }
+  .pzrow { display:flex; align-items:center; gap:9px; padding:6px 9px;
+    background:var(--surf2); border-radius:7px; margin-bottom:4px; font-size:12px; }
+  .pzrow .sw { width:16px; height:16px; border-radius:4px;
+    border:1px solid rgba(255,255,255,0.15); flex-shrink:0; }
+  .pzrow .cn { font-weight:600; min-width:88px; }
+  .pzrow .cv { font-family:'IBM Plex Mono',monospace; color:var(--ink3); flex:1; }
+  .pzrow .del { color:var(--red); cursor:pointer; font-size:16px; padding:0 4px; }
+
+  .actions { display:flex; gap:10px; margin-top:14px; }
+  button.act { flex:1; padding:13px; border-radius:11px; border:0;
+    font-size:14px; font-weight:600; cursor:pointer; transition:transform .1s; }
+  button.act:active { transform:scale(.98); }
+  .act.skip { background:var(--surf2); color:var(--ink2); border:1px solid var(--line); }
+  .act.next { background:var(--green); color:#06070A; }
+
+  .collected { margin-top:18px; }
+  .collected h3 { font-size:13px; color:var(--ink3); margin-bottom:8px;
+    text-transform:uppercase; letter-spacing:0.06em; }
+  .collrow { display:flex; align-items:center; gap:10px; padding:7px 10px;
+    background:var(--surf); border-radius:8px; margin-bottom:5px; font-size:12px; }
+  .collrow .sw { width:18px; height:18px; border-radius:4px;
+    border:1px solid rgba(255,255,255,0.15); flex-shrink:0; }
+  .collrow .cn { font-weight:600; min-width:90px; }
+  .collrow .cv { font-family:'IBM Plex Mono',monospace; color:var(--ink3); }
+
+  .export { margin-top:16px; width:100%; padding:15px; background:var(--amber);
+    color:#06070A; border:0; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; }
+  .export:disabled { opacity:.35; cursor:default; }
+  .done { margin-top:14px; padding:14px; background:rgba(111,207,142,0.12);
+    border:1px solid rgba(111,207,142,0.3); border-radius:10px;
+    font-size:13px; color:var(--green); display:none; }
+</style>
+</head>
+<body>
+
+<h1>Annotateur de signatures — Lucens IA</h1>
+<p class="sub">Trace chaque zone de contamination (plusieurs possibles par photo). L'outil extrait la signature couleur exacte.</p>
+
+<div class="drop" id="dropZone">
+  <input type="file" id="fileInput" accept="image/*" multiple>
+  <h2>Glisse tes photos UV ici</h2>
+  <p>ou clique pour parcourir — sélectionne tout le contenu du dossier "UV PHOTOS"</p>
+</div>
+
+<div class="ws" id="workspace">
+  <div class="topline">
+    <span class="counter" id="counter">1 / 1</span>
+    <div class="progress"><div id="progressBar" style="width:0%"></div></div>
+  </div>
+
+  <div class="stage">
+    <canvas id="photoCanvas"></canvas>
+    <div class="hint-overlay" id="hintOverlay">Trace un rectangle sur une zone de contamination</div>
+  </div>
+
+  <div class="panel">
+    <span class="label" id="catLabel">Trace une zone, puis touche sa catégorie</span>
+    <div class="cats" id="cats"></div>
+    <div style="margin-top:6px">
+      <span class="sig empty" id="sigOut">Aucune zone tracée</span>
+    </div>
+
+    <div class="photozones" id="photoZonesWrap" style="display:none">
+      <span class="label">Zones validées sur cette photo (<span id="pzCount">0</span>)</span>
+      <div id="pzList"></div>
+    </div>
+
+    <div class="actions">
+      <button class="act skip" id="skipBtn">Ignorer cette photo</button>
+      <button class="act next" id="nextBtn">Photo suivante</button>
+    </div>
+  </div>
+
+  <div class="collected" id="collectedWrap" style="display:none">
+    <h3>Total signatures collectées (<span id="collCount">0</span>)</h3>
+    <div id="collList"></div>
+    <button class="export" id="exportBtn" disabled>Exporter signatures.json</button>
+    <div class="done" id="doneMsg"></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  const CATS = ['organic','fatty','chemical','biofilm','mineral','dust','pigmented','mixed'];
+  const CAT_FR = {
+    organic:'Organique', fatty:'Gras/Lipides', chemical:'Chimique', biofilm:'Biofilm',
+    mineral:'Minéral/Tartre', dust:'Poussière', pigmented:'Pigment', mixed:'Mixte'
+  };
+  const $ = (id) => document.getElementById(id);
+  const clear = (el) => { while (el.firstChild) el.removeChild(el.firstChild); };
+
+  const state = {
+    photos: [], idx: 0,
+    selCat: null, box: null, sig: null,
+    photoZones: [],   /* zones de la photo courante : {box,category,h,s,v} */
+    collected: [],    /* toutes les signatures : {category,h,s,v,photo} */
+  };
+
+  function guessCat(name) {
+    const n = name.toLowerCase();
+    if (/biofilm|moissure|moisissure/.test(n)) return 'biofilm';
+    if (/chimique|chemical/.test(n)) return 'chemical';
+    if (/tartre|mineral/.test(n)) return 'mineral';
+    if (/pousiere|poussiere|dust/.test(n)) return 'dust';
+    if (/gras|lipide|fatty/.test(n)) return 'fatty';
+    if (/organique|organic|viande|proteine/.test(n)) return 'organic';
+    if (/pigment/.test(n)) return 'pigmented';
+    if (/mix/.test(n)) return 'mixed';
+    return null;
+  }
+
+  function rgb2hsv(r,g,b){
+    r/=255;g/=255;b/=255;
+    const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;
+    let h=0;
+    if(d){
+      if(mx===r)h=((g-b)/d)%6;
+      else if(mx===g)h=(b-r)/d+2;
+      else h=(r-g)/d+4;
+      h*=60; if(h<0)h+=360;
+    }
+    return {h, s: mx===0?0:d/mx, v: mx};
+  }
+  function hsv2rgb(h,s,v){
+    const c=v*s, x=c*(1-Math.abs((h/60)%2-1)), m=v-c;
+    let r,g,b;
+    if(h<60)[r,g,b]=[c,x,0];
+    else if(h<120)[r,g,b]=[x,c,0];
+    else if(h<180)[r,g,b]=[0,c,x];
+    else if(h<240)[r,g,b]=[0,x,c];
+    else if(h<300)[r,g,b]=[x,0,c];
+    else[r,g,b]=[c,0,x];
+    return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
+  }
+  const swatchCss = (h,s,v) => { const c=hsv2rgb(h,s,v); return 'rgb('+c[0]+','+c[1]+','+c[2]+')'; };
+
+  /* ─── Drop zone ─── */
+  const dz = $('dropZone');
+  dz.addEventListener('click', () => $('fileInput').click());
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('over'); loadFiles(e.dataTransfer.files); });
+  $('fileInput').addEventListener('change', e => loadFiles(e.target.files));
+
+  function loadFiles(fileList) {
+    const files = [...fileList].filter(f => /^image\//.test(f.type));
+    if (!files.length) { alert('Aucune image trouvee.'); return; }
+    let loaded = 0;
+    files.forEach(file => {
+      const img = new Image();
+      const done = () => { loaded++; if (loaded === files.length) startWorkspace(); };
+      img.onload = () => { state.photos.push({ name: file.name, img }); done(); };
+      img.onerror = done;
+      img.src = URL.createObjectURL(file);
+    });
+  }
+  function startWorkspace() {
+    if (!state.photos.length) return;
+    dz.style.display = 'none';
+    $('workspace').classList.add('active');
+    buildCats();
+    showPhoto(0);
+  }
+
+  function buildCats() {
+    const c = $('cats');
+    clear(c);
+    CATS.forEach(cat => {
+      const el = document.createElement('div');
+      el.className = 'cat';
+      el.textContent = CAT_FR[cat];
+      el.dataset.cat = cat;
+      el.addEventListener('click', () => {
+        state.selCat = cat;
+        [...c.children].forEach(x => x.classList.toggle('sel', x.dataset.cat === cat));
+        /* Si une zone est tracée → toucher une catégorie la VALIDE direct */
+        if (state.sig && state.box) commitZone(cat);
+      });
+      c.appendChild(el);
+    });
+  }
+  function selectCatChip(cat) {
+    state.selCat = cat;
+    [...$('cats').children].forEach(x => x.classList.toggle('sel', x.dataset.cat === cat));
+  }
+
+  /* Valide la zone tracée avec la catégorie choisie */
+  function commitZone(category) {
+    if (!state.sig || !state.box) return;
+    const zone = {
+      box: state.box, category,
+      h: state.sig.h, s: state.sig.s, v: state.sig.v,
+    };
+    state.photoZones.push(zone);
+    state.collected.push({
+      category, h: zone.h, s: zone.s, v: zone.v,
+      photo: state.photos[state.idx].name,
+    });
+    resetSig();
+    redraw();
+    renderPhotoZones();
+    renderCollected();
+  }
+
+  const canvas = $('photoCanvas');
+  const cctx = canvas.getContext('2d', { willReadFrequently: true });
+
+  function showPhoto(i) {
+    if (i >= state.photos.length) { finish(); return; }
+    state.idx = i;
+    state.box = null; state.sig = null; state.photoZones = [];
+    const photo = state.photos[i];
+    const maxW = 980, maxH = Math.round(window.innerHeight * 0.56);
+    let w = photo.img.naturalWidth, h = photo.img.naturalHeight;
+    const sc = Math.min(maxW / w, maxH / h, 1);
+    canvas.width = Math.max(1, Math.round(w * sc));
+    canvas.height = Math.max(1, Math.round(h * sc));
+    redraw();
+
+    selectCatChip(guessCat(photo.name));
+    $('counter').textContent = (i + 1) + ' / ' + state.photos.length;
+    $('progressBar').style.width = (i / state.photos.length * 100) + '%';
+    resetSig();
+    renderPhotoZones();
+    $('hintOverlay').style.display = 'block';
+  }
+  function resetSig() {
+    const s = $('sigOut');
+    s.className = 'sig empty';
+    clear(s);
+    s.textContent = 'Aucune zone tracée';
+    state.sig = null; state.box = null;
+    const lbl = $('catLabel');
+    if (lbl) lbl.textContent = 'Trace une zone, puis touche sa catégorie';
+  }
+
+  /* ─── Tracé ─── */
+  let drawing = false, sx = 0, sy = 0;
+  function canvasPos(e) {
+    const r = canvas.getBoundingClientRect();
+    const cx = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+    const cy = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+    return {
+      x: Math.max(0, Math.min(canvas.width,  cx * canvas.width  / r.width)),
+      y: Math.max(0, Math.min(canvas.height, cy * canvas.height / r.height)),
+    };
+  }
+  function startDraw(e){ e.preventDefault(); const p=canvasPos(e); drawing=true; sx=p.x; sy=p.y; }
+  function moveDraw(e){
+    if(!drawing) return;
+    e.preventDefault();
+    const p = canvasPos(e);
+    redraw();
+    cctx.strokeStyle='#FFB020'; cctx.lineWidth=2; cctx.setLineDash([6,4]);
+    cctx.strokeRect(sx,sy,p.x-sx,p.y-sy);
+    cctx.setLineDash([]);
+  }
+  function endDraw(e){
+    if(!drawing) return;
+    drawing=false;
+    const src = e.changedTouches ? {clientX:e.changedTouches[0].clientX,clientY:e.changedTouches[0].clientY} : e;
+    const p = canvasPos(src);
+    const x0=Math.min(sx,p.x), y0=Math.min(sy,p.y), x1=Math.max(sx,p.x), y1=Math.max(sy,p.y);
+    if(x1-x0<8 || y1-y0<8){ redraw(); return; }
+    state.box = {x0,y0,x1,y1};
+    extractSignature();
+  }
+  function redraw() {
+    cctx.drawImage(state.photos[state.idx].img, 0, 0, canvas.width, canvas.height);
+    /* zones déjà ajoutées sur cette photo */
+    cctx.font = '600 11px IBM Plex Sans, sans-serif';
+    state.photoZones.forEach((z, n) => {
+      cctx.strokeStyle = '#6FCF8E'; cctx.lineWidth = 2;
+      cctx.strokeRect(z.box.x0, z.box.y0, z.box.x1-z.box.x0, z.box.y1-z.box.y0);
+      const lbl = (n+1) + '. ' + (CAT_FR[z.category]||z.category);
+      const tw = cctx.measureText(lbl).width + 8;
+      cctx.fillStyle = 'rgba(6,7,10,0.85)';
+      cctx.fillRect(z.box.x0, Math.max(0,z.box.y0-16), tw, 15);
+      cctx.fillStyle = '#6FCF8E';
+      cctx.fillText(lbl, z.box.x0+4, Math.max(11,z.box.y0-4));
+    });
+    /* boîte en cours */
+    if (state.box) {
+      cctx.strokeStyle='#FFB020'; cctx.lineWidth=2;
+      cctx.strokeRect(state.box.x0,state.box.y0,
+        state.box.x1-state.box.x0, state.box.y1-state.box.y0);
+    }
+  }
+  canvas.addEventListener('mousedown', startDraw);
+  canvas.addEventListener('mousemove', moveDraw);
+  window.addEventListener('mouseup', endDraw);
+  canvas.addEventListener('touchstart', startDraw, {passive:false});
+  canvas.addEventListener('touchmove', moveDraw, {passive:false});
+  canvas.addEventListener('touchend', endDraw, {passive:false});
+
+  function extractSignature() {
+    const b = state.box;
+    const w=Math.max(1,Math.round(b.x1-b.x0)), h=Math.max(1,Math.round(b.y1-b.y0));
+    const data = cctx.getImageData(Math.round(b.x0),Math.round(b.y0),w,h).data;
+    const pix=[];
+    for(let i=0;i<data.length;i+=4) pix.push(rgb2hsv(data[i],data[i+1],data[i+2]));
+    pix.sort((a,c)=>c.v-a.v);
+    const keep = pix.slice(0, Math.max(10, Math.floor(pix.length*0.6)));
+    let hx=0,hy=0;
+    keep.forEach(p=>{hx+=Math.cos(p.h*Math.PI/180);hy+=Math.sin(p.h*Math.PI/180);});
+    let mh=Math.atan2(hy/keep.length,hx/keep.length)*180/Math.PI;
+    if(mh<0)mh+=360;
+    const ss=keep.map(p=>p.s).sort((a,c)=>a-c);
+    const vs=keep.map(p=>p.v).sort((a,c)=>a-c);
+    state.sig={h:+mh.toFixed(1),s:+ss[ss.length>>1].toFixed(3),v:+vs[vs.length>>1].toFixed(3)};
+
+    const sigEl=$('sigOut');
+    sigEl.className='sig'; clear(sigEl);
+    const sw=document.createElement('span');
+    sw.className='swatch';
+    sw.style.background=swatchCss(state.sig.h,state.sig.s,state.sig.v);
+    const txt=document.createElement('span');
+    txt.textContent='H '+state.sig.h+'°  S '+state.sig.s+'  V '+state.sig.v;
+    sigEl.appendChild(sw); sigEl.appendChild(txt);
+    $('hintOverlay').style.display='none';
+    /* Zone tracée → invite à choisir la catégorie pour valider */
+    const lbl = $('catLabel');
+    if (lbl) lbl.textContent = '↓ Touche la catégorie pour VALIDER cette zone';
+  }
+
+  function renderPhotoZones() {
+    const wrap = $('photoZonesWrap');
+    const list = $('pzList');
+    clear(list);
+    if (!state.photoZones.length) { wrap.style.display='none'; return; }
+    wrap.style.display='block';
+    $('pzCount').textContent = state.photoZones.length;
+    state.photoZones.forEach((z, n) => {
+      const row=document.createElement('div'); row.className='pzrow';
+      const sw=document.createElement('span'); sw.className='sw';
+      sw.style.background=swatchCss(z.h,z.s,z.v);
+      const cn=document.createElement('span'); cn.className='cn';
+      cn.textContent=(n+1)+'. '+(CAT_FR[z.category]||z.category);
+      const cv=document.createElement('span'); cv.className='cv';
+      cv.textContent='H'+z.h+' S'+z.s+' V'+z.v;
+      const del=document.createElement('span'); del.className='del';
+      del.textContent='×'; del.title='Supprimer';
+      del.addEventListener('click', () => {
+        /* retire de photoZones ET de collected (dernière occurrence correspondante) */
+        const removed = state.photoZones.splice(n,1)[0];
+        for (let k=state.collected.length-1;k>=0;k--){
+          const c=state.collected[k];
+          if (c.photo===state.photos[state.idx].name && c.category===removed.category
+              && c.h===removed.h && c.s===removed.s && c.v===removed.v){
+            state.collected.splice(k,1); break;
+          }
+        }
+        redraw(); renderPhotoZones(); renderCollected();
+      });
+      row.appendChild(sw); row.appendChild(cn); row.appendChild(cv); row.appendChild(del);
+      list.appendChild(row);
+    });
+  }
+
+  /* ─── Navigation ─── */
+  $('skipBtn').addEventListener('click', () => showPhoto(state.idx+1));
+  $('nextBtn').addEventListener('click', () => showPhoto(state.idx+1));
+
+  function renderCollected() {
+    const wrap=$('collectedWrap');
+    if (!state.collected.length){ wrap.style.display='none'; return; }
+    wrap.style.display='block';
+    $('collCount').textContent=state.collected.length;
+    const list=$('collList'); clear(list);
+    state.collected.slice().reverse().slice(0,40).forEach(c=>{
+      const row=document.createElement('div'); row.className='collrow';
+      const sw=document.createElement('span'); sw.className='sw';
+      sw.style.background=swatchCss(c.h,c.s,c.v);
+      const cn=document.createElement('span'); cn.className='cn';
+      cn.textContent=CAT_FR[c.category]||c.category;
+      const cv=document.createElement('span'); cv.className='cv';
+      cv.textContent='H'+c.h+' S'+c.s+' V'+c.v;
+      row.appendChild(sw); row.appendChild(cn); row.appendChild(cv);
+      list.appendChild(row);
+    });
+    $('exportBtn').disabled = state.collected.length===0;
+  }
+
+  function finish() {
+    $('progressBar').style.width='100%';
+    $('counter').textContent='Terminé';
+    $('hintOverlay').style.display='none';
+    cctx.fillStyle='#06070A'; cctx.fillRect(0,0,canvas.width,canvas.height);
+    cctx.fillStyle='#6FCF8E';
+    cctx.font='600 18px IBM Plex Sans,sans-serif'; cctx.textAlign='center';
+    cctx.fillText('Toutes les photos annotées', canvas.width/2, canvas.height/2);
+    $('nextBtn').disabled=true; $('skipBtn').disabled=true;
+  }
+
+  $('exportBtn').addEventListener('click', () => {
+    const byCat={};
+    state.collected.forEach(c=>{(byCat[c.category]=byCat[c.category]||[]).push(c);});
+    const library={};
+    Object.keys(byCat).forEach(cat=>{
+      const arr=byCat[cat];
+      let hx=0,hy=0;
+      arr.forEach(c=>{hx+=Math.cos(c.h*Math.PI/180);hy+=Math.sin(c.h*Math.PI/180);});
+      let mh=Math.atan2(hy/arr.length,hx/arr.length)*180/Math.PI;
+      if(mh<0)mh+=360;
+      const ss=arr.map(c=>c.s).sort((a,b)=>a-b);
+      const vs=arr.map(c=>c.v).sort((a,b)=>a-b);
+      library[cat]={
+        h:+mh.toFixed(1), s:+ss[ss.length>>1].toFixed(3), v:+vs[vs.length>>1].toFixed(3),
+        samples:arr.length,
+      };
+    });
+    const out={
+      generated:new Date().toISOString(),
+      totalSamples:state.collected.length,
+      library, raw:state.collected,
+    };
+    const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download='lucens-signatures.json'; a.click();
+    URL.revokeObjectURL(url);
+    const dm=$('doneMsg');
+    dm.style.display='block';
+    dm.textContent='Exporté : lucens-signatures.json ('+state.collected.length
+      +' échantillons, '+Object.keys(library).length+' catégories). Envoie-moi ce fichier.';
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lucens carto — formes</title>
+<style>
+  body {
+    margin: 0;
+    padding: 24px;
+    background: #0a0d12;
+    color: #e6e8ed;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+  .sub {
+    color: #8a92a3;
+    font-size: 12px;
+    margin-bottom: 32px;
+  }
+  .demo {
+    margin-bottom: 28px;
+    border: 1px solid #1c2230;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0e1218;
+  }
+  .demo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 18px;
+    border-bottom: 1px solid #1c2230;
+  }
+  .demo-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .demo-caption {
+    padding: 8px 18px 12px;
+    font-size: 11px;
+    color: #a3aaba;
+    line-height: 1.5;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+</style>
+</head>
+<body>
+
+<h1>Lucens IA — cartographie par formes</h1>
+<div class="sub">Au lieu de pixels denses, agrégation par cellules en petites formes géométriques. Couleur amber instrument #FFB300.</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Référence</span>
+  </div>
+  <canvas id="cBase" width="500" height="380"></canvas>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Petits carrés 3px espacés</span>
+  </div>
+  <canvas id="cSquare" width="500" height="380"></canvas>
+  <div class="demo-caption">Grille de 6px, carrés de 3px aux cellules détectées. Aspect mosaïque scientifique aérée.</div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Diamants (carrés rotation 45°)</span>
+  </div>
+  <canvas id="cDiamond" width="500" height="380"></canvas>
+  <div class="demo-caption">Grille de 7px, diamants taille modulée par intensité. Esthétique précieuse, pierre taillée.</div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Hexagones honeycomb</span>
+  </div>
+  <canvas id="cHex" width="500" height="380"></canvas>
+  <div class="demo-caption">Maillage hexagonal régulier, alvéoles modulés par densité. Aspect scientifique molecular, instrument optique.</div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Cercles modulés</span>
+  </div>
+  <canvas id="cCircle" width="500" height="380"></canvas>
+  <div class="demo-caption">Grille de 7px, cercles taille modulée par densité de détection locale. Look stippling premium scientifique.</div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Carrés gradient intensité</span>
+  </div>
+  <canvas id="cSquareInt" width="500" height="380"></canvas>
+  <div class="demo-caption">Carrés 4px avec alpha modulé par intensité locale. Gradient invisible en bord, dense au centre.</div>
+</div>
+
+<script>
+'use strict';
+
+const W = 500, H = 380;
+const SIGNATURE_HEX = '#FFB300';
+const sigR = 255, sigG = 179, sigB = 0;
+
+function buildBase(ctx) {
+  const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W, H));
+  grad.addColorStop(0, '#1a2245');
+  grad.addColorStop(0.5, '#0c1228');
+  grad.addColorStop(1, '#03050d');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  const img = ctx.getImageData(0, 0, W, H);
+  const d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const n = (Math.random() - 0.5) * 12;
+    d[i]   = Math.max(0, Math.min(255, d[i]   + n));
+    d[i+1] = Math.max(0, Math.min(255, d[i+1] + n));
+    d[i+2] = Math.max(0, Math.min(255, d[i+2] + n));
+  }
+  ctx.putImageData(img, 0, 0);
+
+  for (let i = 0; i < 90; i++) {
+    const x = Math.random() * W;
+    const y = Math.random() * H;
+    const r = Math.random() * 1.2 + 0.5;
+    ctx.fillStyle = `rgba(150, 200, 255, ${0.4 + Math.random() * 0.3})`;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const cx = W * 0.52, cy = H * 0.55;
+  const halo = ctx.createRadialGradient(cx, cy, 30, cx, cy, 160);
+  halo.addColorStop(0, 'rgba(80, 200, 220, 0.55)');
+  halo.addColorStop(0.4, 'rgba(60, 160, 200, 0.35)');
+  halo.addColorStop(1, 'rgba(20, 80, 140, 0)');
+  ctx.fillStyle = halo;
+  ctx.fillRect(0, 0, W, H);
+
+  for (let i = 0; i < 4500; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const dist = Math.pow(Math.random(), 0.6) * 100;
+    const px = cx + Math.cos(a) * dist + (Math.random() - 0.5) * 15;
+    const py = cy + Math.sin(a) * dist * 0.7 + (Math.random() - 0.5) * 12;
+    const intensity = 1 - dist / 110;
+    const r = Math.random() * 1.3 + 0.3;
+
+    const cyanWeight = intensity * 0.9;
+    const baseR = 60 + 180 * (1 - cyanWeight) + Math.random() * 30;
+    const baseG = 180 + 50 * cyanWeight + Math.random() * 25;
+    const baseB = 200 + 30 * cyanWeight + Math.random() * 25;
+
+    ctx.fillStyle = `rgba(${Math.min(255, baseR)|0}, ${Math.min(255, baseG)|0}, ${Math.min(255, baseB)|0}, ${0.4 + intensity * 0.5})`;
+    ctx.beginPath();
+    ctx.arc(px, py, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const orangeX = cx + 75, orangeY = cy - 35;
+  const orangeGrad = ctx.createRadialGradient(orangeX, orangeY, 0, orangeX, orangeY, 22);
+  orangeGrad.addColorStop(0, 'rgba(255, 130, 50, 0.95)');
+  orangeGrad.addColorStop(0.5, 'rgba(255, 90, 30, 0.7)');
+  orangeGrad.addColorStop(1, 'rgba(220, 60, 20, 0)');
+  ctx.fillStyle = orangeGrad;
+  ctx.beginPath();
+  ctx.arc(orangeX, orangeY, 22, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function detectFluo(ctx) {
+  const img = ctx.getImageData(0, 0, W, H);
+  const d = img.data;
+  const mask = new Uint8Array(W * H);
+  const intens = new Float32Array(W * H);
+
+  for (let i = 0, p = 0; i < d.length; i += 4, p++) {
+    const r = d[i], g = d[i+1], b = d[i+2];
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const lum = (r + g + b) / 3;
+    const sat = max === 0 ? 0 : (max - min) / max;
+    if (sat > 0.25 && lum > 90) {
+      mask[p] = 1;
+      intens[p] = Math.min(1, (sat * 1.5 + lum / 255) / 1.6);
+    }
+  }
+  return { mask, intens };
+}
+
+// Agrège la densité dans une cellule donnée
+function cellDensity(mask, intens, x0, y0, cellSize) {
+  let count = 0;
+  let totalIntens = 0;
+  let total = 0;
+  for (let y = y0; y < y0 + cellSize && y < H; y++) {
+    for (let x = x0; x < x0 + cellSize && x < W; x++) {
+      const p = y * W + x;
+      total++;
+      if (mask[p]) {
+        count++;
+        totalIntens += intens[p];
+      }
+    }
+  }
+  return {
+    density: count / total,
+    avgIntens: count > 0 ? totalIntens / count : 0,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────
+// Petits carrés 3px espacés (grille 6px)
+// ─────────────────────────────────────────────────────────────
+
+function styleSquare(ctx, mask, intens) {
+  const cell = 6, sq = 3;
+  for (let y = 0; y < H; y += cell) {
+    for (let x = 0; x < W; x += cell) {
+      const { density, avgIntens } = cellDensity(mask, intens, x, y, cell);
+      if (density < 0.30) continue;
+      const alpha = 0.55 + avgIntens * 0.40;
+      ctx.fillStyle = `rgba(${sigR}, ${sigG}, ${sigB}, ${alpha})`;
+      ctx.fillRect(x + (cell - sq) / 2, y + (cell - sq) / 2, sq, sq);
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Diamants modulés (grille 7px)
+// ─────────────────────────────────────────────────────────────
+
+function styleDiamond(ctx, mask, intens) {
+  const cell = 7;
+  for (let y = 0; y < H; y += cell) {
+    for (let x = 0; x < W; x += cell) {
+      const { density, avgIntens } = cellDensity(mask, intens, x, y, cell);
+      if (density < 0.30) continue;
+      const r = 1.5 + avgIntens * 1.8;
+      const alpha = 0.55 + avgIntens * 0.40;
+      const cx = x + cell / 2, cy = y + cell / 2;
+      ctx.fillStyle = `rgba(${sigR}, ${sigG}, ${sigB}, ${alpha})`;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - r);
+      ctx.lineTo(cx + r, cy);
+      ctx.lineTo(cx, cy + r);
+      ctx.lineTo(cx - r, cy);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Hexagones honeycomb
+// ─────────────────────────────────────────────────────────────
+
+function styleHex(ctx, mask, intens) {
+  const r = 4;
+  const dx = r * 1.732;  // sqrt(3) * r
+  const dy = r * 1.5;
+
+  for (let row = 0; row * dy < H + r; row++) {
+    const yy = row * dy + r;
+    const xOff = (row % 2) * (dx / 2);
+    for (let col = 0; col * dx < W + dx; col++) {
+      const xx = col * dx + xOff + r;
+      if (xx < 0 || xx >= W || yy < 0 || yy >= H) continue;
+
+      // Sample density around hex center
+      const cellX = Math.max(0, (xx - r) | 0);
+      const cellY = Math.max(0, (yy - r) | 0);
+      const cellSize = (2 * r) | 0;
+      const { density, avgIntens } = cellDensity(mask, intens, cellX, cellY, cellSize);
+      if (density < 0.30) continue;
+
+      const innerR = r * 0.55 + avgIntens * r * 0.30;
+      const alpha = 0.55 + avgIntens * 0.40;
+
+      ctx.fillStyle = `rgba(${sigR}, ${sigG}, ${sigB}, ${alpha})`;
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const angle = Math.PI / 3 * i - Math.PI / 2;
+        const px = xx + innerR * Math.cos(angle);
+        const py = yy + innerR * Math.sin(angle);
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Cercles modulés par densité
+// ─────────────────────────────────────────────────────────────
+
+function styleCircle(ctx, mask, intens) {
+  const cell = 7;
+  for (let y = 0; y < H; y += cell) {
+    for (let x = 0; x < W; x += cell) {
+      const { density, avgIntens } = cellDensity(mask, intens, x, y, cell);
+      if (density < 0.25) continue;
+      const r = 1.0 + density * 1.5 + avgIntens * 1.2;
+      const alpha = 0.50 + avgIntens * 0.45;
+      ctx.fillStyle = `rgba(${sigR}, ${sigG}, ${sigB}, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(x + cell / 2, y + cell / 2, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Carrés 4px alpha gradient
+// ─────────────────────────────────────────────────────────────
+
+function styleSquareInt(ctx, mask, intens) {
+  const cell = 6, sq = 4;
+  for (let y = 0; y < H; y += cell) {
+    for (let x = 0; x < W; x += cell) {
+      const { density, avgIntens } = cellDensity(mask, intens, x, y, cell);
+      if (density < 0.20) continue;
+      // Alpha entièrement modulé par density × intensity
+      const score = density * (0.4 + avgIntens * 0.6);
+      const alpha = 0.30 + score * 0.65;
+      ctx.fillStyle = `rgba(${sigR}, ${sigG}, ${sigB}, ${alpha})`;
+      ctx.fillRect(x + (cell - sq) / 2, y + (cell - sq) / 2, sq, sq);
+    }
+  }
+}
+
+// Rendu
+['cBase', 'cSquare', 'cDiamond', 'cHex', 'cCircle', 'cSquareInt'].forEach(id => {
+  buildBase(document.getElementById(id).getContext('2d'));
+});
+
+const ref = document.getElementById('cBase');
+const { mask, intens } = detectFluo(ref.getContext('2d'));
+
+styleSquare(document.getElementById('cSquare').getContext('2d'), mask, intens);
+styleDiamond(document.getElementById('cDiamond').getContext('2d'), mask, intens);
+styleHex(document.getElementById('cHex').getContext('2d'), mask, intens);
+styleCircle(document.getElementById('cCircle').getContext('2d'), mask, intens);
+styleSquareInt(document.getElementById('cSquareInt').getContext('2d'), mask, intens);
+
+</script>
+</body>
+</html>

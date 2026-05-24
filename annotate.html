@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lucens — Outil d'annotation de référence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06070A;
+  --surface-low: #0C0E13;
+  --surface: #14171E;
+  --surface-hi: #1E222C;
+  --border: #232732;
+  --border-hi: #3A4054;
+  --hairline: rgba(255,255,255,0.08);
+  --ink-primary: #FFFFFF;
+  --ink-secondary: #C2C8D4;
+  --ink-tertiary: #969CAB;
+  --ink-dim: #6B7280;
+  --accent: #FF1493;
+  --accent-soft: rgba(255, 20, 147, 0.15);
+  --r-sm: 4px;
+  --r-md: 8px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --font-display: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'JetBrains Mono', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink-primary);
+  font-family: var(--font-display);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+body {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  grid-template-columns: 1fr 320px;
+  grid-template-areas:
+    "header header"
+    "toolbar toolbar"
+    "main   sidebar"
+    "footer footer";
+  gap: 0;
+}
+.hdr {
+  grid-area: header;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--hairline);
+  background: var(--surface-low);
+}
+.hdr-brand { display: flex; align-items: baseline; gap: var(--space-3); }
+.hdr-wordmark {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.hdr-wordmark::after {
+  content: '';
+  display: inline-block;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #FFF;
+  margin-left: 4px;
+  vertical-align: 0.18em;
+  box-shadow: 0 0 6px rgba(255,255,255,0.5);
+}
+.hdr-tagline {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-tertiary);
+}
+.hdr-status {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-tertiary);
+  display: flex; align-items: center; gap: var(--space-2);
+}
+.hdr-status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+}
+
+.toolbar {
+  grid-area: toolbar;
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--hairline);
+  background: var(--surface);
+  flex-wrap: wrap;
+}
+.tool-group {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding-right: var(--space-3);
+  border-right: 1px solid var(--hairline);
+}
+.tool-group:last-child { border-right: none; padding-right: 0; }
+.btn {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: 7px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--ink-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--surface-hi); border-color: var(--border-hi); color: var(--ink-primary); }
+.btn.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #FFF;
+}
+.btn-primary:hover { background: #FF3DA1; border-color: #FF3DA1; color: #FFF; }
+.btn-danger { color: #E85A4A; border-color: rgba(232,90,74,0.40); }
+.btn-danger:hover { background: rgba(232,90,74,0.10); border-color: #E85A4A; color: #E85A4A; }
+.btn svg { width: 14px; height: 14px; }
+
+.brush-size {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--ink-tertiary);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.brush-size input[type="range"] {
+  width: 110px;
+  accent-color: var(--accent);
+}
+.brush-size-value {
+  min-width: 36px;
+  text-align: right;
+  color: var(--ink-secondary);
+  font-weight: 600;
+}
+
+main {
+  grid-area: main;
+  display: flex; align-items: center; justify-content: center;
+  background:
+    repeating-conic-gradient(#0a0c10 0% 25%, #06070A 0% 50%) 0 0 / 24px 24px;
+  overflow: auto;
+  position: relative;
+}
+.canvas-stage {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  background: #000;
+  cursor: none;
+}
+.canvas-stage canvas {
+  display: block;
+  max-width: 90vw;
+  max-height: calc(100vh - 200px);
+}
+.canvas-stage canvas.mask-canvas {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  mix-blend-mode: normal;
+  opacity: 0.85;
+}
+.brush-cursor {
+  position: fixed;
+  pointer-events: none;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.5), 0 0 8px rgba(255,20,147,0.5);
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  display: none;
+}
+.brush-cursor.eraser {
+  border-color: #E85A4A;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.5), 0 0 8px rgba(232,90,74,0.5);
+}
+.canvas-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-10);
+  text-align: center;
+  color: var(--ink-tertiary);
+}
+.canvas-empty-icon {
+  width: 60px; height: 60px;
+  border: 1px dashed var(--border-hi);
+  border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center;
+}
+.canvas-empty p {
+  font-size: 13px;
+  max-width: 380px;
+  line-height: 1.5;
+}
+.canvas-empty .eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+aside.sidebar {
+  grid-area: sidebar;
+  background: var(--surface);
+  border-left: 1px solid var(--hairline);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.sidebar-hdr {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--hairline);
+}
+.sidebar-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-tertiary);
+}
+.sidebar-stat {
+  margin-top: var(--space-2);
+}
+.sidebar-stat-num {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.sidebar-stat-label {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  display: block;
+  margin-top: 2px;
+}
+.sidebar-section {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--hairline);
+}
+.sidebar-section-title {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-tertiary);
+  margin-bottom: var(--space-3);
+}
+.tip-block {
+  font-size: 12.5px;
+  color: var(--ink-secondary);
+  line-height: 1.55;
+}
+.tip-block strong { color: var(--accent); font-weight: 600; }
+.tip-block kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  background: var(--surface-hi);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  margin: 0 1px;
+}
+
+footer {
+  grid-area: footer;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-3) var(--space-5);
+  border-top: 1px solid var(--hairline);
+  background: var(--surface-low);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.footer-shortcuts { display: flex; gap: var(--space-4); flex-wrap: wrap; }
+
+#fileInput { display: none; }
+
+.json-modal {
+  position: fixed; inset: 0;
+  background: rgba(6,7,10,0.85);
+  display: none;
+  align-items: center; justify-content: center;
+  z-index: 100;
+  padding: var(--space-5);
+}
+.json-modal.visible { display: flex; }
+.json-modal-box {
+  background: var(--surface-low);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  max-width: 800px;
+  width: 100%;
+  max-height: 80vh;
+  display: flex; flex-direction: column;
+}
+.json-modal-hdr {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--hairline);
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-tertiary);
+}
+.json-modal pre {
+  flex: 1;
+  overflow: auto;
+  padding: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-secondary);
+  white-space: pre-wrap;
+  word-break: break-all;
+  line-height: 1.5;
+}
+.json-modal-close {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--ink-secondary);
+  padding: 4px 10px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.10em;
+}
+
+@media (max-width: 880px) {
+  body {
+    grid-template-rows: auto auto 1fr auto auto;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "toolbar"
+      "main"
+      "sidebar"
+      "footer";
+  }
+  aside.sidebar {
+    border-left: none;
+    border-top: 1px solid var(--hairline);
+    max-height: 220px;
+  }
+  .footer-shortcuts { display: none; }
+}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="hdr-brand">
+    <span class="hdr-wordmark">LUCENS</span>
+    <span class="hdr-tagline">Outil d'annotation de référence</span>
+  </div>
+  <div class="hdr-status">
+    <span class="hdr-status-dot"></span>
+    <span id="statusText">Prêt</span>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="tool-group">
+    <button class="btn" id="loadBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>
+      Importer photo
+    </button>
+    <input type="file" id="fileInput" accept="image/*">
+    <button class="btn" id="priorityCasesBtn" title="Charger un cas prioritaire (active learning Vague 4B)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15 8L21 9L17 14L18 20L12 17L6 20L7 14L3 9L9 8L12 2Z"/></svg>
+      Cas prioritaires
+    </button>
+  </div>
+  <div class="tool-group">
+    <button class="btn active" id="toolBrush" data-tool="brush" title="Pinceau (B)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.06 11.9l8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08M7.07 14.94c-1.66 0-3 1.35-3 3.02C4.07 19.97 2.5 21 2 21c2.96.99 7.07.4 7.07-3.06A3.03 3.03 0 0 0 7.07 14.94z"/></svg>
+      Pinceau
+    </button>
+    <button class="btn" id="toolEraser" data-tool="eraser" title="Gomme (E)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 13l-5.5-5.5L5 16l3.5 3.5L19 13zM10 14l4 4M22 21H7"/></svg>
+      Gomme
+    </button>
+  </div>
+  <div class="tool-group">
+    <span class="brush-size">
+      <span>Taille</span>
+      <input type="range" id="brushSize" min="6" max="120" value="36">
+      <span class="brush-size-value" id="brushSizeValue">36</span>
+    </span>
+  </div>
+  <div class="tool-group">
+    <button class="btn" id="undoBtn" title="Annuler (Ctrl+Z)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6M21 17a9 9 0 0 0-15-6.7L3 13"/></svg>
+      Annuler
+    </button>
+    <button class="btn btn-danger" id="clearAllBtn">
+      Tout effacer
+    </button>
+  </div>
+  <div class="tool-group" style="margin-left: auto;">
+    <button class="btn" id="copyJsonBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Copier données
+    </button>
+    <button class="btn btn-primary" id="downloadBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+      Télécharger
+    </button>
+  </div>
+</div>
+
+<main id="canvasArea">
+  <div class="canvas-empty" id="emptyState">
+    <div class="canvas-empty-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9.06 11.9l8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/>
+        <path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02C4.07 19.97 2.5 21 2 21c2.96.99 7.07.4 7.07-3.06A3.03 3.03 0 0 0 7.07 14.94z"/>
+      </svg>
+    </div>
+    <span class="eyebrow">Étape 1</span>
+    <p>Glisse-dépose ta photo UV-A 365 nm ici, ou clique <strong>« Importer photo »</strong>.<br>Puis <strong>peins directement avec le pinceau magenta</strong> sur les zones de contamination réelles — exactement comme tu les vois.</p>
+  </div>
+  <div class="canvas-stage" id="canvasStage" style="display:none;">
+    <canvas id="photoCanvas"></canvas>
+    <canvas id="maskCanvas" class="mask-canvas"></canvas>
+  </div>
+</main>
+
+<div class="brush-cursor" id="brushCursor"></div>
+
+<aside class="sidebar">
+  <div class="sidebar-hdr">
+    <div class="sidebar-title">Couverture annotée</div>
+    <div class="sidebar-stat">
+      <span class="sidebar-stat-num" id="coverageVal">0.0</span>
+      <span class="sidebar-stat-label">% de l'image peinte</span>
+    </div>
+    <div class="sidebar-stat" style="margin-top: var(--space-3);">
+      <span class="sidebar-stat-num" id="zonesCount">0</span>
+      <span class="sidebar-stat-label">Zones connectées détectées</span>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Comment annoter</div>
+    <div class="tip-block">
+      <p style="margin-bottom: var(--space-2);">1. Choisis le <strong>Pinceau</strong> et ajuste la taille</p>
+      <p style="margin-bottom: var(--space-2);">2. Peins en <strong>magenta</strong> sur les zones de contamination</p>
+      <p style="margin-bottom: var(--space-2);">3. Utilise la <strong>Gomme</strong> pour corriger</p>
+      <p>4. Clique <strong>Télécharger</strong> ou <strong>Copier données</strong></p>
+    </div>
+  </div>
+  <div class="sidebar-section" style="border-bottom: none;">
+    <div class="sidebar-section-title">Raccourcis</div>
+    <div class="tip-block">
+      <p><kbd>B</kbd> Pinceau · <kbd>E</kbd> Gomme</p>
+      <p style="margin-top: var(--space-2);"><kbd>[</kbd> / <kbd>]</kbd> Taille du pinceau</p>
+      <p style="margin-top: var(--space-2);"><kbd>Ctrl</kbd>+<kbd>Z</kbd> Annuler</p>
+    </div>
+  </div>
+</aside>
+
+<footer>
+  <div>Outil d'annotation Lucens · Mask peint (PNG embarqué)</div>
+  <div class="footer-shortcuts">
+    <span><kbd>B</kbd> Pinceau</span>
+    <span><kbd>E</kbd> Gomme</span>
+    <span><kbd>[</kbd> / <kbd>]</kbd> Taille</span>
+    <span><kbd>Ctrl+Z</kbd> Annuler</span>
+  </div>
+</footer>
+
+<div class="json-modal" id="jsonModal">
+  <div class="json-modal-box">
+    <div class="json-modal-hdr">
+      <span>Export JSON — sélectionne tout puis copie</span>
+      <button class="json-modal-close" id="jsonModalCloseBtn">Fermer</button>
+    </div>
+    <pre id="jsonModalContent"></pre>
+  </div>
+</div>
+
+<script>
+(function() {
+  const canvasArea  = document.getElementById('canvasArea');
+  const canvasStage = document.getElementById('canvasStage');
+  const photoCanvas = document.getElementById('photoCanvas');
+  const maskCanvas  = document.getElementById('maskCanvas');
+  const emptyState  = document.getElementById('emptyState');
+  const fileInput   = document.getElementById('fileInput');
+  const loadBtn     = document.getElementById('loadBtn');
+  const toolBrushBtn = document.getElementById('toolBrush');
+  const toolEraserBtn = document.getElementById('toolEraser');
+  const brushSizeInput = document.getElementById('brushSize');
+  const brushSizeValue = document.getElementById('brushSizeValue');
+  const undoBtn     = document.getElementById('undoBtn');
+  const clearAllBtn = document.getElementById('clearAllBtn');
+  const copyJsonBtn = document.getElementById('copyJsonBtn');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const brushCursor = document.getElementById('brushCursor');
+  const coverageVal = document.getElementById('coverageVal');
+  const zonesCount  = document.getElementById('zonesCount');
+  const statusText  = document.getElementById('statusText');
+  const jsonModal   = document.getElementById('jsonModal');
+  const jsonModalContent = document.getElementById('jsonModalContent');
+  const jsonModalCloseBtn = document.getElementById('jsonModalCloseBtn');
+
+  const photoCtx = photoCanvas.getContext('2d');
+  const maskCtx  = maskCanvas.getContext('2d');
+
+  let img = null;
+  let imgW = 0, imgH = 0;
+  let imageFileName = '';
+  let currentTool = 'brush';
+  let brushSize = 36;
+  let drawing = false;
+  let lastPoint = null;
+  /* Historique pour undo : on garde les snapshots du mask */
+  const history = [];
+  const HISTORY_MAX = 30;
+
+  function setStatus(msg) { statusText.textContent = msg; }
+
+  loadBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files && e.target.files[0]) loadImage(e.target.files[0]);
+  });
+  canvasArea.addEventListener('dragover', (e) => { e.preventDefault(); canvasArea.style.background = 'var(--accent-soft)'; });
+  canvasArea.addEventListener('dragleave', () => { canvasArea.style.background = ''; });
+  canvasArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    canvasArea.style.background = '';
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) loadImage(e.dataTransfer.files[0]);
+  });
+
+  function loadImage(file) {
+    if (!file.type.startsWith('image/')) { setStatus('Fichier non image'); return; }
+    imageFileName = file.name;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const i = new Image();
+      i.onload = () => {
+        img = i;
+        imgW = i.naturalWidth;
+        imgH = i.naturalHeight;
+        emptyState.style.display = 'none';
+        canvasStage.style.display = 'block';
+        /* Setup les canvases */
+        photoCanvas.width = imgW;
+        photoCanvas.height = imgH;
+        maskCanvas.width = imgW;
+        maskCanvas.height = imgH;
+        photoCtx.drawImage(i, 0, 0);
+        maskCtx.clearRect(0, 0, imgW, imgH);
+        history.length = 0;
+        pushHistory();
+        updateStats();
+        setStatus(file.name + ' · ' + imgW + '×' + imgH + 'px');
+      };
+      i.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  /* ─── Outils ─────────────────────────────────────────────── */
+  function setTool(t) {
+    currentTool = t;
+    document.querySelectorAll('[data-tool]').forEach(b => {
+      b.classList.toggle('active', b.dataset.tool === t);
+    });
+    if (t === 'eraser') brushCursor.classList.add('eraser');
+    else brushCursor.classList.remove('eraser');
+  }
+  toolBrushBtn.addEventListener('click', () => setTool('brush'));
+  toolEraserBtn.addEventListener('click', () => setTool('eraser'));
+
+  brushSizeInput.addEventListener('input', () => {
+    brushSize = +brushSizeInput.value;
+    brushSizeValue.textContent = brushSize;
+    updateBrushCursor();
+  });
+
+  /* ─── Brush cursor (custom circle) ───────────────────────── */
+  function updateBrushCursor() {
+    /* Convertit la taille brush (en pixels image) en taille écran */
+    if (!img) return;
+    const rect = photoCanvas.getBoundingClientRect();
+    const scale = rect.width / imgW;
+    const screenSize = brushSize * scale;
+    brushCursor.style.width = screenSize + 'px';
+    brushCursor.style.height = screenSize + 'px';
+  }
+  document.addEventListener('mousemove', (e) => {
+    if (!img) return;
+    brushCursor.style.left = e.clientX + 'px';
+    brushCursor.style.top = e.clientY + 'px';
+    /* Affiche le curseur uniquement quand on est sur le canvas */
+    const rect = photoCanvas.getBoundingClientRect();
+    const inside = e.clientX >= rect.left && e.clientX <= rect.right &&
+                   e.clientY >= rect.top && e.clientY <= rect.bottom;
+    brushCursor.style.display = inside ? 'block' : 'none';
+    if (inside) updateBrushCursor();
+  });
+
+  /* ─── Painting ────────────────────────────────────────────── */
+  function eventToImageCoords(e, isTouch) {
+    const rect = photoCanvas.getBoundingClientRect();
+    const cx = isTouch ? e.touches[0].clientX : e.clientX;
+    const cy = isTouch ? e.touches[0].clientY : e.clientY;
+    return {
+      x: ((cx - rect.left) / rect.width) * imgW,
+      y: ((cy - rect.top) / rect.height) * imgH,
+    };
+  }
+
+  function paintAt(p) {
+    maskCtx.save();
+    if (currentTool === 'eraser') {
+      maskCtx.globalCompositeOperation = 'destination-out';
+      maskCtx.fillStyle = '#000';
+    } else {
+      maskCtx.globalCompositeOperation = 'source-over';
+      maskCtx.fillStyle = 'rgba(255, 20, 147, 0.85)';
+    }
+    maskCtx.beginPath();
+    maskCtx.arc(p.x, p.y, brushSize / 2, 0, Math.PI * 2);
+    maskCtx.fill();
+    /* Si on a un point précédent, on relie pour un trait continu */
+    if (lastPoint) {
+      maskCtx.lineWidth = brushSize;
+      maskCtx.lineCap = 'round';
+      maskCtx.lineJoin = 'round';
+      maskCtx.strokeStyle = currentTool === 'eraser'
+        ? '#000'
+        : 'rgba(255, 20, 147, 0.85)';
+      maskCtx.beginPath();
+      maskCtx.moveTo(lastPoint.x, lastPoint.y);
+      maskCtx.lineTo(p.x, p.y);
+      maskCtx.stroke();
+    }
+    maskCtx.restore();
+  }
+
+  function startPaint(p) {
+    drawing = true;
+    lastPoint = null;
+    paintAt(p);
+    lastPoint = p;
+  }
+  function continuePaint(p) {
+    if (!drawing) return;
+    paintAt(p);
+    lastPoint = p;
+  }
+  function endPaint() {
+    if (!drawing) return;
+    drawing = false;
+    lastPoint = null;
+    pushHistory();
+    updateStats();
+  }
+
+  photoCanvas.addEventListener('mousedown', (e) => {
+    if (!img) return;
+    startPaint(eventToImageCoords(e, false));
+  });
+  maskCanvas.addEventListener('mousedown', (e) => {
+    /* mask-canvas a pointer-events:none par défaut, mais on intercepte sur photoCanvas */
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!drawing) return;
+    continuePaint(eventToImageCoords(e, false));
+  });
+  document.addEventListener('mouseup', endPaint);
+
+  /* Touch events */
+  photoCanvas.addEventListener('touchstart', (e) => {
+    if (!img) return;
+    e.preventDefault();
+    startPaint(eventToImageCoords(e, true));
+  });
+  photoCanvas.addEventListener('touchmove', (e) => {
+    if (!drawing) return;
+    e.preventDefault();
+    continuePaint(eventToImageCoords(e, true));
+  });
+  photoCanvas.addEventListener('touchend', endPaint);
+  photoCanvas.addEventListener('touchcancel', endPaint);
+
+  /* ─── Stats ─────────────────────────────────────────────── */
+  function updateStats() {
+    if (!img) {
+      coverageVal.textContent = '0.0';
+      zonesCount.textContent = '0';
+      return;
+    }
+    /* Calcul couverture : compte les pixels de l'alpha > 0 */
+    const id = maskCtx.getImageData(0, 0, imgW, imgH);
+    const data = id.data;
+    let painted = 0;
+    /* Sous-échantillonnage pour vitesse */
+    const stride = 4 * 4; /* 1 pixel sur 4 */
+    for (let i = 3; i < data.length; i += stride) {
+      if (data[i] > 0) painted++;
+    }
+    const totalSampled = data.length / stride;
+    const pct = totalSampled > 0 ? (painted / totalSampled) * 100 : 0;
+    coverageVal.textContent = pct.toFixed(1);
+    /* Estimation rapide du nombre de zones connectées via connected-components
+       sur grille 64×64 (suffisant pour un comptage approximatif) */
+    zonesCount.textContent = countConnectedZones();
+  }
+
+  function countConnectedZones() {
+    const N = 64;
+    const cellW = imgW / N;
+    const cellH = imgH / N;
+    const grid = new Uint8Array(N * N);
+    /* Échantillonne le mask sur grille N×N */
+    for (let cy = 0; cy < N; cy++) {
+      for (let cx = 0; cx < N; cx++) {
+        const px = Math.floor((cx + 0.5) * cellW);
+        const py = Math.floor((cy + 0.5) * cellH);
+        const data = maskCtx.getImageData(px, py, 1, 1).data;
+        if (data[3] > 30) grid[cy * N + cx] = 1;
+      }
+    }
+    /* Flood fill pour compter les groupes */
+    const visited = new Uint8Array(N * N);
+    let count = 0;
+    for (let i = 0; i < N * N; i++) {
+      if (grid[i] && !visited[i]) {
+        const cx0 = i % N, cy0 = Math.floor(i / N);
+        const stack = [[cx0, cy0]];
+        let size = 0;
+        while (stack.length) {
+          const [cx, cy] = stack.pop();
+          const k = cy * N + cx;
+          if (cx < 0 || cx >= N || cy < 0 || cy >= N) continue;
+          if (visited[k] || !grid[k]) continue;
+          visited[k] = 1;
+          size++;
+          stack.push([cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1]);
+        }
+        if (size >= 2) count++; /* Filtre singletons isolés */
+      }
+    }
+    return count;
+  }
+
+  /* ─── Historique (undo) ──────────────────────────────────── */
+  function pushHistory() {
+    if (!img) return;
+    if (history.length >= HISTORY_MAX) history.shift();
+    history.push(maskCtx.getImageData(0, 0, imgW, imgH));
+  }
+  function undo() {
+    if (history.length < 2) return;
+    history.pop(); /* Drop l'état actuel */
+    const prev = history[history.length - 1];
+    maskCtx.putImageData(prev, 0, 0);
+    updateStats();
+    setStatus('Annulation');
+  }
+  undoBtn.addEventListener('click', undo);
+
+  clearAllBtn.addEventListener('click', () => {
+    if (!img) return;
+    if (!confirm('Effacer toutes les annotations peintes ?')) return;
+    maskCtx.clearRect(0, 0, imgW, imgH);
+    pushHistory();
+    updateStats();
+    setStatus('Toutes les annotations effacées');
+  });
+
+  /* ─── Export ─────────────────────────────────────────────── */
+  function buildExport() {
+    const maskDataUrl = maskCanvas.toDataURL('image/png');
+    /* PHOTO SOURCE EMBARQUÉE — encodée en JPEG q=0.85 pour limiter la taille
+       tout en gardant assez de fidélité pour comparer au pixel près.
+       Permet une calibration complète sans envoi séparé du fichier source. */
+    const photoDataUrl = photoCanvas.toDataURL('image/jpeg', 0.85);
+    /* Grille de présence 96×96 (downsampled) pour analyse rapide */
+    const gridN = 96;
+    const cellW = imgW / gridN;
+    const cellH = imgH / gridN;
+    const presenceGrid = [];
+    for (let cy = 0; cy < gridN; cy++) {
+      const row = [];
+      for (let cx = 0; cx < gridN; cx++) {
+        const px = Math.floor((cx + 0.5) * cellW);
+        const py = Math.floor((cy + 0.5) * cellH);
+        const data = maskCtx.getImageData(px, py, 1, 1).data;
+        row.push(data[3] > 30 ? 1 : 0);
+      }
+      presenceGrid.push(row);
+    }
+    return {
+      version: 3,                              /* v3 — embarque aussi la photo source */
+      tool: 'lucens-annotate',
+      mode: 'painted-mask',
+      timestamp: new Date().toISOString(),
+      image: {
+        filename: imageFileName,
+        width: imgW,
+        height: imgH,
+      },
+      coveragePercent: +coverageVal.textContent,
+      connectedZonesEstimate: +zonesCount.textContent,
+      presenceGrid96: presenceGrid,
+      maskPng: maskDataUrl,
+      photoJpeg: photoDataUrl,                 /* Source UV-A embarquée pour calibration auto */
+    };
+  }
+
+  copyJsonBtn.addEventListener('click', async () => {
+    if (!img) { setStatus('Importe d\'abord une photo'); return; }
+    const data = JSON.stringify(buildExport(), null, 2);
+    try {
+      await navigator.clipboard.writeText(data);
+      setStatus('Données copiées · ' + coverageVal.textContent + '% peints');
+    } catch (e) {
+      jsonModalContent.textContent = data;
+      jsonModal.classList.add('visible');
+      setStatus('Sélectionne le texte ci-dessous puis copie manuellement');
+    }
+  });
+
+  jsonModalCloseBtn.addEventListener('click', () => {
+    jsonModal.classList.remove('visible');
+  });
+  jsonModal.addEventListener('click', (e) => {
+    if (e.target === jsonModal) jsonModal.classList.remove('visible');
+  });
+
+  downloadBtn.addEventListener('click', () => {
+    if (!img) { setStatus('Importe d\'abord une photo'); return; }
+    const data = JSON.stringify(buildExport(), null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const base = imageFileName ? imageFileName.replace(/\.[^.]+$/, '') : 'lucens-annotation';
+    a.href = url;
+    a.download = base + '_annotation.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setStatus('Fichier téléchargé');
+  });
+
+  /* ─── Raccourcis clavier ─────────────────────────────────── */
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (jsonModal.classList.contains('visible')) jsonModal.classList.remove('visible');
+      return;
+    }
+    const target = e.target;
+    const isInput = target && (target.tagName === 'INPUT' || target.tagName === 'SELECT' || target.tagName === 'TEXTAREA');
+    if (isInput) return;
+
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+      e.preventDefault();
+      undo();
+      return;
+    }
+    if (e.key === 'b' || e.key === 'B') setTool('brush');
+    else if (e.key === 'e' || e.key === 'E') setTool('eraser');
+    else if (e.key === '[') {
+      brushSize = Math.max(6, brushSize - 4);
+      brushSizeInput.value = brushSize;
+      brushSizeValue.textContent = brushSize;
+      updateBrushCursor();
+    } else if (e.key === ']') {
+      brushSize = Math.min(120, brushSize + 4);
+      brushSizeInput.value = brushSize;
+      brushSizeValue.textContent = brushSize;
+      updateBrushCursor();
+    }
+  });
+
+  setStatus('Outil prêt — importe une photo UV-A pour commencer');
+
+  /* ─── Vague 4B — Intégration review queue active learning ──────────
+     Bouton "Cas prioritaires" qui fetch /api/lucens-prioritize?k=5 et
+     propose les 5 cas à plus haute valeur d'annotation. Au clic sur un
+     cas, on télécharge son JSON et on l'injecte dans l'éditeur. */
+  const priorityBtn = document.getElementById('priorityCasesBtn');
+  if (priorityBtn) {
+    priorityBtn.addEventListener('click', openPriorityPicker);
+  }
+
+  let _priorityToken = sessionStorage.getItem('lucens_admin_token_session') || '';
+
+  function openPriorityPicker() {
+    if (!_priorityToken) {
+      const t = prompt('Token admin Lucens (session-only, non persisté) :');
+      if (!t) return;
+      _priorityToken = t.trim();
+      try { sessionStorage.setItem('lucens_admin_token_session', _priorityToken); } catch {}
+    }
+    showPicker();
+  }
+
+  async function showPicker() {
+    const old = document.getElementById('priorityPicker');
+    if (old) old.remove();
+    const overlay = document.createElement('div');
+    overlay.id = 'priorityPicker';
+    Object.assign(overlay.style, {
+      position: 'fixed', inset: '0', background: 'rgba(0,0,0,0.75)',
+      zIndex: '1000', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    });
+    const box = document.createElement('div');
+    Object.assign(box.style, {
+      background: '#14171E', border: '1px solid #232732', borderRadius: '8px',
+      padding: '24px', width: 'min(680px, calc(100vw - 32px))', maxHeight: '85vh',
+      overflowY: 'auto', fontFamily: 'IBM Plex Sans, sans-serif', color: '#F5F7FA',
+    });
+    const title = document.createElement('h2');
+    title.textContent = 'Cas prioritaires à annoter';
+    title.style.cssText = 'margin: 0 0 8px; font-size: 18px; font-weight: 700;';
+    box.appendChild(title);
+    const sub = document.createElement('p');
+    sub.textContent = 'Triés par uncertainty × surprise + diversité (Core-Set).';
+    sub.style.cssText = 'margin: 0 0 16px; color: #969CAB; font-size: 12px;';
+    box.appendChild(sub);
+    const loading = document.createElement('div');
+    loading.textContent = 'Chargement…';
+    loading.style.cssText = 'padding: 24px; text-align: center; color: #969CAB; font-family: monospace; font-size: 11px;';
+    box.appendChild(loading);
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '×';
+    closeBtn.style.cssText = 'position: absolute; top: 18px; right: 26px; background: transparent; border: 0; color: #969CAB; font-size: 24px; cursor: pointer;';
+    closeBtn.addEventListener('click', () => overlay.remove());
+    box.style.position = 'relative';
+    box.appendChild(closeBtn);
+    overlay.appendChild(box);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+    try {
+      const r = await fetch('/api/lucens-prioritize?k=5', { headers: { 'x-lucens-admin': _priorityToken } });
+      if (r.status === 401) {
+        sessionStorage.removeItem('lucens_admin_token_session');
+        _priorityToken = '';
+        loading.textContent = 'Token refusé. Cliquez à nouveau pour réessayer.';
+        return;
+      }
+      const data = await r.json();
+      loading.remove();
+      if (!data.cases || !data.cases.length) {
+        const empty = document.createElement('div');
+        empty.textContent = 'Aucun cas à annoter pour le moment.';
+        empty.style.cssText = 'padding: 24px; text-align: center; color: #969CAB;';
+        box.appendChild(empty);
+        return;
+      }
+      for (const c of data.cases) {
+        const card = document.createElement('div');
+        Object.assign(card.style, {
+          padding: '14px', marginBottom: '10px', background: '#0E1013',
+          border: '1px solid #232732', borderRadius: '6px', cursor: 'pointer',
+        });
+        card.addEventListener('mouseenter', () => { card.style.borderColor = '#FF1493'; });
+        card.addEventListener('mouseleave', () => { card.style.borderColor = '#232732'; });
+        const row1 = document.createElement('div');
+        row1.style.cssText = 'display: flex; justify-content: space-between; margin-bottom: 6px;';
+        const cid = document.createElement('span');
+        cid.textContent = c.id.slice(0, 28) + '…';
+        cid.style.cssText = 'font-family: monospace; font-size: 11px; color: #C7CCD6;';
+        row1.appendChild(cid);
+        const score = document.createElement('span');
+        score.textContent = 'Score ' + c.combinedScore.toFixed(3);
+        score.style.cssText = 'font-family: monospace; font-size: 11px; color: #FF1493; font-weight: 600;';
+        row1.appendChild(score);
+        card.appendChild(row1);
+        const row2 = document.createElement('div');
+        row2.style.cssText = 'font-size: 11px; color: #969CAB; font-family: monospace;';
+        row2.textContent = 'IoU: ' + (c.iou != null ? c.iou.toFixed(3) : '—')
+          + ' · Uncert: ' + c.uncertaintyScore.toFixed(2)
+          + ' · Surprise: ' + c.surpriseScore.toFixed(2)
+          + ' · Cluster C' + c.clusterId
+          + ' · ' + (c.establishmentType || '—') + ' / ' + (c.moment || '—');
+        card.appendChild(row2);
+        if (c.comment) {
+          const cm = document.createElement('div');
+          cm.textContent = '“' + c.comment + '”';
+          cm.style.cssText = 'margin-top: 8px; font-size: 12px; color: #C7CCD6; font-style: italic;';
+          card.appendChild(cm);
+        }
+        card.addEventListener('click', () => loadCaseIntoEditor(c.id, overlay));
+        box.appendChild(card);
+      }
+    } catch (err) {
+      loading.textContent = 'Erreur : ' + err.message;
+    }
+  }
+
+  async function loadCaseIntoEditor(caseId, overlay) {
+    try {
+      setStatus('Chargement du cas ' + caseId.slice(0, 20) + '…');
+      const r = await fetch('/api/lucens-cases?mode=download&id=' + encodeURIComponent(caseId), { headers: { 'x-lucens-admin': _priorityToken } });
+      if (!r.ok) { setStatus('Erreur HTTP ' + r.status); return; }
+      const doc = await r.json();
+      if (overlay) overlay.remove();
+      /* Le format compatible annotate.html stocke photoJpeg + maskPng en
+         dataURL base64. On charge l'image dans l'éditeur via le mécanisme
+         d'import existant : on crée un File et on le passe à handleFile. */
+      if (doc.photoJpeg && typeof doc.photoJpeg === 'string') {
+        const blob = dataURLToBlob(doc.photoJpeg);
+        const file = new File([blob], caseId + '.jpg', { type: 'image/jpeg' });
+        /* Déclenche le handler du fileInput */
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        const fi = document.getElementById('fileInput');
+        if (fi) {
+          fi.files = dt.files;
+          fi.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+      setStatus('Cas ' + caseId.slice(0, 14) + '… chargé. Annotez le masque puis téléchargez.');
+    } catch (err) {
+      setStatus('Erreur : ' + err.message);
+    }
+  }
+  function dataURLToBlob(dataUrl) {
+    const arr = dataUrl.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8 = new Uint8Array(n);
+    while (n--) u8[n] = bstr.charCodeAt(n);
+    return new Blob([u8], { type: mime });
+  }
+})();
+</script>
+</body>
+</html>

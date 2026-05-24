@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carte de calibration Lucens — modèle à imprimer</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #111; background: #fff;
+    padding: 24px;
+  }
+  .noprint { max-width: 720px; margin: 0 auto 24px; }
+  h1 { font-size: 20px; margin-bottom: 8px; }
+  p { font-size: 14px; line-height: 1.5; color: #333; margin-bottom: 6px; }
+  ol { font-size: 14px; line-height: 1.7; margin: 10px 0 10px 22px; }
+  .printbtn {
+    margin-top: 14px; padding: 12px 24px;
+    background: #111; color: #fff; border: 0; border-radius: 8px;
+    font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+
+  /* ─── La carte elle-même ─── */
+  .card {
+    width: 150mm; height: 100mm;
+    margin: 0 auto;
+    border: 2.5px solid #111;
+    border-radius: 6px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+  }
+  .cell {
+    border: 1.5px dashed #999;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 6px;
+  }
+  .cell .name {
+    font-size: 15px; font-weight: 700; letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .cell .what {
+    font-size: 11px; color: #444; line-height: 1.3;
+  }
+  .cell .fillbox {
+    width: 70%; height: 38%;
+    margin-top: 8px;
+    border: 1px solid #bbb;
+    border-radius: 3px;
+  }
+  .cell.black .fillbox { background: #111; }
+  .card-title {
+    text-align: center; font-size: 11px; color: #666;
+    margin-top: 6px; letter-spacing: 1px;
+  }
+
+  @media print {
+    .noprint { display: none; }
+    body { padding: 0; }
+    .card { margin-top: 20mm; }
+  }
+</style>
+</head>
+<body>
+
+<div class="noprint">
+  <h1>Carte de calibration Lucens — mode d'emploi</h1>
+  <p>Cette carte sert à calibrer la détection du Live View sur ta caméra et ta lampe UV.</p>
+  <ol>
+    <li><b>Imprime cette page</b> sur du papier blanc épais (ou colle-la sur un carton rigide).</li>
+    <li><b>Colorie chaque case</b> avec le surligneur indiqué — remplis bien le rectangle.</li>
+    <li>La case <b>BLANC</b> : ne touche à rien, laisse le papier blanc.</li>
+    <li>La case <b>NOIR</b> : colorie-la avec un marqueur permanent noir.</li>
+    <li>Découpe la carte le long du cadre noir.</li>
+    <li>Dans l'app : <b>LIVE → ⚙ → Calibrer</b>, allume ta lampe UV, aligne la carte dans le cadre-guide, valide.</li>
+  </ol>
+  <p><b>Surligneurs nécessaires :</b> jaune fluo, vert fluo, bleu/cyan fluo, rose fluo (pack de 4-5 surligneurs, ~5 €).</p>
+  <button class="printbtn" onclick="window.print()">Imprimer la carte</button>
+</div>
+
+<div class="card">
+  <div class="cell">
+    <div class="name">BLANC</div>
+    <div class="what">Ne rien colorier<br>(laisser blanc)</div>
+    <div class="fillbox"></div>
+  </div>
+  <div class="cell">
+    <div class="name">JAUNE</div>
+    <div class="what">Surligneur<br>jaune fluo</div>
+    <div class="fillbox"></div>
+  </div>
+  <div class="cell">
+    <div class="name">VERT</div>
+    <div class="what">Surligneur<br>vert fluo</div>
+    <div class="fillbox"></div>
+  </div>
+  <div class="cell">
+    <div class="name">CYAN</div>
+    <div class="what">Surligneur<br>bleu / cyan fluo</div>
+    <div class="fillbox"></div>
+  </div>
+  <div class="cell">
+    <div class="name">ROSE</div>
+    <div class="what">Surligneur<br>rose fluo</div>
+    <div class="fillbox"></div>
+  </div>
+  <div class="cell black">
+    <div class="name">NOIR</div>
+    <div class="what">Marqueur<br>permanent noir</div>
+    <div class="fillbox"></div>
+  </div>
+</div>
+<div class="card-title">LUCENS — CARTE DE CALIBRATION</div>
+
+</body>
+</html>

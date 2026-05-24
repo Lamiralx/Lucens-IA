@@ -1,0 +1,27 @@
+{
+  "name": "Lucens IA",
+  "short_name": "Lucens IA",
+  "description": "Détection IA des contaminations par fluorescence UV-A 365 nm",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#06070A",
+  "theme_color": "#06070A",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjMwIiBmaWxsPSIjMDYwNzBBIi8+PHBhdGggZD0iTTUzIDMyIEw1MyAxNTggTDEzOSAxNTggTDEzOSAxMzIgTDc5IDEzMiBMNzkgMzIgWiIgZmlsbD0iI0ZGRkZGRiIvPjwvc3ZnPg==",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjgwIiBmaWxsPSIjMDYwNzBBIi8+PHBhdGggZD0iTTE0MCA4MCBMMTQwIDQyMCBMMzcyIDQyMCBMMzcyIDM1MCBMMjEwIDM1MCBMMjEwIDgwIFoiIGZpbGw9IiNGRkZGRkYiLz48L3N2Zz4=",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "lang": "fr",
+  "categories": ["business", "productivity"]
+}

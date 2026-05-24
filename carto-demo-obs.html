@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lucens IA — refonte composant observations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --surface-page:    #06070A;
+    --surface-low:     #0C0E13;
+    --surface-mid:     #14171E;
+    --surface-hi:      #1E222C;
+    --border:          #232732;
+    --hairline:        rgba(255,255,255,0.08);
+    --ink-primary:     #FFFFFF;
+    --ink-secondary:   #C2C8D4;
+    --ink-tertiary:    #969CAB;
+    --ink-dim:         #6B7280;
+    --terra:           #D84315;
+    --terra-soft:      rgba(216, 67, 21, 0.14);
+    --terra-line:      rgba(216, 67, 21, 0.45);
+    --terra-dim:       rgba(216, 67, 21, 0.25);
+
+    --font-display: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-mono:    'IBM Plex Mono', ui-monospace, monospace;
+    --font-serif:   'IBM Plex Serif', ui-serif, Georgia, serif;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 24px;
+    background: var(--surface-page);
+    color: var(--ink-secondary);
+    font-family: var(--font-display);
+    font-size: 14px;
+    line-height: 1.55;
+    font-feature-settings: "ss01" 1, "tnum" 1, "kern" 1;
+    -webkit-font-smoothing: antialiased;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    color: var(--ink-primary);
+    margin: 0 0 8px;
+  }
+  .sub {
+    color: var(--ink-tertiary);
+    font-size: 13px;
+    margin-bottom: 40px;
+  }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--terra);
+    margin: 48px 0 12px;
+  }
+
+  /* ════════════════════════════════════════════════════════
+     CONCEPT 0 — Existant (problème actuel)
+     ════════════════════════════════════════════════════════ */
+  .obs-current {
+    background: var(--surface-mid);
+    border: 1px solid var(--border);
+    border-left: 3px solid #FFFFFF;
+    border-radius: 6px;
+    padding: 14px 18px;
+  }
+  .obs-current-hdr {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-primary);
+    margin-bottom: 10px;
+  }
+  .obs-current-text {
+    font-size: 14px;
+    color: var(--ink-secondary);
+    line-height: 1.65;
+  }
+
+  /* ════════════════════════════════════════════════════════
+     CONCEPT 1 — Numbered Log (Hamilton/clinical scientific notebook)
+     ════════════════════════════════════════════════════════ */
+  .obs-log {
+    background: var(--surface-mid);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .obs-log-hdr {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--hairline);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    background: linear-gradient(180deg, rgba(216,67,21,0.04) 0%, transparent 100%);
+  }
+  .obs-log-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--terra);
+  }
+  .obs-log-count {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--ink-tertiary);
+  }
+  .obs-log-list {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+  .obs-log-item {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 16px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--hairline);
+  }
+  .obs-log-item:first-child { border-top: none; }
+  .obs-log-index {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--terra);
+    line-height: 1.6;
+    padding-top: 2px;
+  }
+  .obs-log-body {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--ink-secondary);
+  }
+  .obs-log-body em {
+    font-style: normal;
+    color: var(--ink-primary);
+    font-weight: 500;
+  }
+
+  /* ════════════════════════════════════════════════════════
+     CONCEPT 2 — Tagged Editorial (Aesop / magazine)
+     ════════════════════════════════════════════════════════ */
+  .obs-edit {
+    background: var(--surface-mid);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 24px 28px 28px;
+  }
+  .obs-edit-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--terra);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .obs-edit-eyebrow::before {
+    content: '';
+    width: 18px;
+    height: 1px;
+    background: var(--terra);
+  }
+  .obs-edit-item {
+    margin-bottom: 22px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .obs-edit-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+  .obs-edit-tag {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--terra);
+    margin-bottom: 6px;
+    display: inline-block;
+  }
+  .obs-edit-body {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.55;
+    color: var(--ink-secondary);
+  }
+  .obs-edit-body em {
+    font-style: normal;
+    color: var(--ink-primary);
+    font-weight: 500;
+  }
+
+  /* ════════════════════════════════════════════════════════
+     CONCEPT 3 — Markered Timeline (Bloomberg/instrument)
+     ════════════════════════════════════════════════════════ */
+  .obs-tl {
+    background: var(--surface-mid);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 24px 24px;
+  }
+  .obs-tl-hdr {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--terra);
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .obs-tl-list {
+    position: relative;
+    padding-left: 24px;
+  }
+  .obs-tl-list::before {
+    content: '';
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    left: 5px;
+    width: 1px;
+    background: linear-gradient(180deg, var(--terra-line) 0%, var(--terra-dim) 100%);
+  }
+  .obs-tl-item {
+    position: relative;
+    padding: 0 0 16px 0;
+  }
+  .obs-tl-item:last-child { padding-bottom: 0; }
+  .obs-tl-item::before {
+    content: '';
+    position: absolute;
+    top: 7px;
+    left: -23px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--surface-mid);
+    border: 1.5px solid var(--terra);
+  }
+  .obs-tl-item.major::before {
+    background: var(--terra);
+    box-shadow: 0 0 0 3px rgba(216, 67, 21, 0.18);
+  }
+  .obs-tl-body {
+    font-family: var(--font-display);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink-secondary);
+  }
+  .obs-tl-body em {
+    font-style: normal;
+    color: var(--ink-primary);
+    font-weight: 500;
+  }
+
+  /* ════════════════════════════════════════════════════════
+     CONCEPT 4 — Specimen Plate (high-end refined)
+     ════════════════════════════════════════════════════════ */
+  .obs-spec {
+    background: var(--surface-mid);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+  }
+  .obs-spec::before {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    width: 2px;
+    background: linear-gradient(180deg, var(--terra) 0%, var(--terra-dim) 100%);
+  }
+  .obs-spec-hdr {
+    padding: 18px 28px 16px;
+    border-bottom: 1px solid var(--hairline);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .obs-spec-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-primary);
+  }
+  .obs-spec-meta {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 500;
+    letter-spacing: 0.10em;
+    color: var(--ink-tertiary);
+    text-transform: uppercase;
+  }
+  .obs-spec-meta span {
+    color: var(--terra);
+  }
+  .obs-spec-list {
+    padding: 8px 28px 24px;
+  }
+  .obs-spec-item {
+    padding: 16px 0;
+    border-bottom: 1px dashed var(--hairline);
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 14px;
+  }
+  .obs-spec-item:last-child { border-bottom: none; }
+  .obs-spec-marker {
+    padding-top: 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--terra);
+    letter-spacing: 0.04em;
+  }
+  .obs-spec-body {
+    font-family: var(--font-display);
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--ink-secondary);
+  }
+  .obs-spec-body em {
+    font-style: normal;
+    color: var(--ink-primary);
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+
+<h1>Lucens IA — refonte composant Observations</h1>
+<div class="sub">4 concepts de refonte sur l'exemple réel de la sortie actuelle (tube avec biofilm cyan). Tous utilisent le design system existant (IBM Plex, surfaces, hairlines) + l'accent terra cotta nouvellement validé.</div>
+
+<div class="section-label">État actuel — bloc unique illisible</div>
+<div class="obs-current">
+  <div class="obs-current-hdr">Observations Lucens IA</div>
+  <div class="obs-current-text">La paroi interne du tube est entièrement tapissée d'un film cyan saturé continu, avec texture granuleuse adhérente qui épouse la géométrie cylindrique. La signature cyan en film humide dans un recoin de tuyauterie démontée est compatible avec un biofilm bactérien avancé mélangé à des résidus de produit de nettoyage mal rincé. Une goutte cyan distincte au point bas de la bride indique un drainage incomplet et un point de stagnation chronique. Le niveau d'accumulation et la continuité du film suggèrent plusieurs cycles de nettoyage insuffisants, le protocole en place ne décroche pas la matière sur cette pièce. Risque sanitaire élevé en zone process alimentaire : le tube transporte un fluide qui entre en contact avec un panier filtre en aval, vecteur direct vers le produit.</div>
+</div>
+
+<div class="section-label">Concept 1 — Numbered Log (clinical scientific notebook)</div>
+<div class="obs-log">
+  <div class="obs-log-hdr">
+    <span class="obs-log-eyebrow">Observations</span>
+    <span class="obs-log-count">05 entrées</span>
+  </div>
+  <ul class="obs-log-list">
+    <li class="obs-log-item">
+      <span class="obs-log-index">01</span>
+      <div class="obs-log-body">La paroi interne du tube est tapissée d'un <em>film cyan continu</em> avec texture granuleuse adhérente qui épouse la géométrie cylindrique.</div>
+    </li>
+    <li class="obs-log-item">
+      <span class="obs-log-index">02</span>
+      <div class="obs-log-body">Le mélange contient une <em>trace humide bactérienne probable</em> et des résidus de produit de nettoyage mal rincé.</div>
+    </li>
+    <li class="obs-log-item">
+      <span class="obs-log-index">03</span>
+      <div class="obs-log-body">Une goutte au point bas de la bride indique un <em>drainage incomplet</em> et une stagnation chronique de l'eau.</div>
+    </li>
+    <li class="obs-log-item">
+      <span class="obs-log-index">04</span>
+      <div class="obs-log-body">Le niveau et la continuité du film signalent <em>plusieurs cycles de nettoyage insuffisants</em>. Le protocole en place ne décroche pas la matière.</div>
+    </li>
+    <li class="obs-log-item">
+      <span class="obs-log-index">05</span>
+      <div class="obs-log-body"><em>Risque sanitaire élevé</em> en zone de production alimentaire. Le tube transporte un fluide vers un panier filtre, transfert direct possible vers le produit.</div>
+    </li>
+  </ul>
+</div>
+
+<div class="section-label">Concept 2 — Tagged Editorial (magazine premium)</div>
+<div class="obs-edit">
+  <div class="obs-edit-eyebrow">Observations Lucens IA</div>
+
+  <div class="obs-edit-item">
+    <span class="obs-edit-tag">Constat visuel</span>
+    <div class="obs-edit-body">La paroi interne du tube est tapissée d'un <em>film cyan continu</em>, texture granuleuse adhérente épousant la géométrie cylindrique.</div>
+  </div>
+
+  <div class="obs-edit-item">
+    <span class="obs-edit-tag">Composition probable</span>
+    <div class="obs-edit-body">Mélange d'une <em>trace humide bactérienne</em> et de résidus de produit de nettoyage mal rincé.</div>
+  </div>
+
+  <div class="obs-edit-item">
+    <span class="obs-edit-tag">Indice de fonctionnement</span>
+    <div class="obs-edit-body">Goutte au point bas de la bride : <em>drainage incomplet</em>, stagnation chronique de l'eau dans cette zone.</div>
+  </div>
+
+  <div class="obs-edit-item">
+    <span class="obs-edit-tag">Lecture procédurale</span>
+    <div class="obs-edit-body">Le niveau d'accumulation signale <em>plusieurs cycles de nettoyage insuffisants</em>. Le protocole en place ne décroche pas la matière sur cette pièce.</div>
+  </div>
+
+  <div class="obs-edit-item">
+    <span class="obs-edit-tag">Risque associé</span>
+    <div class="obs-edit-body"><em>Risque sanitaire élevé</em>. Le tube transporte un fluide vers un panier filtre, transfert direct possible vers le produit final.</div>
+  </div>
+</div>
+
+<div class="section-label">Concept 3 — Markered Timeline (instrument)</div>
+<div class="obs-tl">
+  <div class="obs-tl-hdr">Observations</div>
+  <div class="obs-tl-list">
+    <div class="obs-tl-item major">
+      <div class="obs-tl-body">Paroi interne tapissée d'un <em>film cyan continu</em>, texture granuleuse adhérente qui épouse la géométrie cylindrique.</div>
+    </div>
+    <div class="obs-tl-item">
+      <div class="obs-tl-body">Le mélange contient une trace humide bactérienne probable et des résidus de produit de nettoyage mal rincé.</div>
+    </div>
+    <div class="obs-tl-item">
+      <div class="obs-tl-body">Goutte cyan au point bas de la bride : <em>drainage incomplet</em>, stagnation chronique.</div>
+    </div>
+    <div class="obs-tl-item">
+      <div class="obs-tl-body">Plusieurs cycles de nettoyage insuffisants. Le protocole ne décroche pas la matière sur cette pièce.</div>
+    </div>
+    <div class="obs-tl-item major">
+      <div class="obs-tl-body"><em>Risque sanitaire élevé</em> en zone de production alimentaire. Transfert direct possible vers le produit en aval.</div>
+    </div>
+  </div>
+</div>
+
+<div class="section-label">Concept 4 — Specimen Plate (high-end refined)</div>
+<div class="obs-spec">
+  <div class="obs-spec-hdr">
+    <span class="obs-spec-eyebrow">Observations</span>
+    <span class="obs-spec-meta">Lucens IA · <span>5 findings</span></span>
+  </div>
+  <div class="obs-spec-list">
+    <div class="obs-spec-item">
+      <span class="obs-spec-marker">i</span>
+      <div class="obs-spec-body">Paroi interne du tube tapissée d'un <em>film cyan continu</em> à texture granuleuse adhérente qui épouse la géométrie cylindrique.</div>
+    </div>
+    <div class="obs-spec-item">
+      <span class="obs-spec-marker">ii</span>
+      <div class="obs-spec-body">Mélange d'une trace humide bactérienne probable et de résidus de produit de nettoyage mal rincé.</div>
+    </div>
+    <div class="obs-spec-item">
+      <span class="obs-spec-marker">iii</span>
+      <div class="obs-spec-body">Goutte au point bas de la bride : <em>drainage incomplet</em>, point de stagnation chronique de l'eau.</div>
+    </div>
+    <div class="obs-spec-item">
+      <span class="obs-spec-marker">iv</span>
+      <div class="obs-spec-body">Plusieurs cycles de nettoyage insuffisants. Le protocole ne décroche pas la matière sur cette pièce.</div>
+    </div>
+    <div class="obs-spec-item">
+      <span class="obs-spec-marker">v</span>
+      <div class="obs-spec-body"><em>Risque sanitaire élevé</em> en zone de production. Transfert direct possible vers le produit via le panier filtre en aval.</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

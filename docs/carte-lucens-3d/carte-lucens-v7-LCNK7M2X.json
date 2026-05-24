@@ -1,0 +1,32 @@
+{
+  "product": "Lucens IA Calibration Card V7 (heightmap dense)",
+  "serial": "LCNK7M2X",
+  "qr_payload": "LUCENS:CALIBV4:LCNK7M2X",
+  "dimensions_mm": {
+    "w": 75.0,
+    "h": 50.0,
+    "t": 2.0
+  },
+  "plateau_height_mm": 0.4,
+  "texture_relief_range_mm": [
+    0.15,
+    0.55
+  ],
+  "cell_size_mm": 0.6,
+  "patches": {
+    "count": 9,
+    "layout": "3x3",
+    "textures": [
+      "POUSSIERE",
+      "TACHE",
+      "COULEE",
+      "EMPREINTE",
+      "FIBRES",
+      "CROUTE",
+      "CRATERES",
+      "VEINES",
+      "GRAIN"
+    ]
+  },
+  "approach": "Chaque patch ENTIÈREMENT rempli par grille de cellules de hauteur variable (heightmap pixel). Pas de petits points épars."
+}

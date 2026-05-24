@@ -1,0 +1,41 @@
+{
+  "product": "Lucens IA Calibration Card",
+  "version": "V6 (textures organiques réalistes)",
+  "serial": "LCNK7M2X",
+  "qr_payload": "LUCENS:CALIBV4:LCNK7M2X",
+  "dimensions_mm": {
+    "width": 75.0,
+    "height": 50.0,
+    "thickness": 2.0
+  },
+  "patches": {
+    "count": 9,
+    "layout": "3x3",
+    "patch_dimensions_mm": {
+      "w": 22.2,
+      "h": 8.03
+    },
+    "textures": {
+      "POUSSIERE": "Constellation grains de poussière, densité gaussienne",
+      "TACHE": "Tache liquide séché avec halo périphérique",
+      "COULEE": "Coulées verticales (3 traces sèches)",
+      "EMPREINTE": "Boucles d empreinte digitale",
+      "FIBRES": "Fibres textiles entrelacées",
+      "CROUTE": "Croûte écaillée multi-couches",
+      "CRATERES": "Cratères concaves en anneaux",
+      "VEINES": "Réseau de veines ramifiées (style biofilm)",
+      "GRAIN": "Grain dégradé densité variable"
+    }
+  },
+  "layout": {
+    "QR": "haut-centre",
+    "logo_LUCENS_IA": "bas-centre",
+    "ArUco": "4 coins",
+    "patches_grid": "3x3 au centre"
+  },
+  "print_strategy": {
+    "method": "bi-material CFS",
+    "slot_1_noir": "base + QR modules + ArUco cells",
+    "slot_2_fluo": "plateaux patches + reliefs textures + logo + fonds QR/ArUco"
+  }
+}

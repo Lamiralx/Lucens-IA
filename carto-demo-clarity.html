@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lucens carto — variantes clarté</title>
+<style>
+  body {
+    margin: 0;
+    padding: 24px;
+    background: #0a0d12;
+    color: #e6e8ed;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+  .sub {
+    color: #8a92a3;
+    font-size: 12px;
+    margin-bottom: 28px;
+  }
+  .demo {
+    margin-bottom: 28px;
+    border: 1px solid #1c2230;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0e1218;
+  }
+  .demo-header {
+    padding: 12px 18px;
+    border-bottom: 1px solid #1c2230;
+  }
+  .demo-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .demo-tag {
+    display: block;
+    font-family: 'SF Mono', Consolas, monospace;
+    font-size: 10px;
+    color: #D84315;
+    margin-top: 4px;
+    letter-spacing: 0.08em;
+  }
+  .demo-caption {
+    padding: 10px 18px 14px;
+    font-size: 12px;
+    color: #a3aaba;
+    line-height: 1.5;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+</style>
+</head>
+<body>
+
+<h1>Lucens IA — clarté du double trait terra cotta</h1>
+<div class="sub">Le hairline 0.7px était trop fin à l'écran. Voici 4 variantes qui restent vectorielles précises mais nettement plus lisibles.</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Référence</span>
+  </div>
+  <canvas id="cBase" width="700" height="540"></canvas>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">V1 — Traits épaissis sans fill</span>
+    <span class="demo-tag">extérieur 1.6px + intérieur 0.9px, aucun fill</span>
+  </div>
+  <canvas id="cV1" width="700" height="540"></canvas>
+  <div class="demo-caption">Traits plus visibles, lecture immédiate du contour. Photo respectée à 100%.</div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">V2 — Traits épaissis + tint subtil 6%</span>
+    <span class="demo-tag">extérieur 1.6px + intérieur 0.9px + fill alpha 0.06</span>
+  </div>
+  <canvas id="cV2" width="700" height="540"></canvas>
+  <div class="demo-caption">Tracés visibles + tint très léger à l'intérieur de la zone érodée pour signaler la présence sans masquer la photo.</div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">V3 — Traits avec glow subtil</span>
+    <span class="demo-tag">extérieur 1.4px + glow 2px + intérieur 0.8px</span>
+  </div>
+  <canvas id="cV3" width="700" height="540"></canvas>
+  <div class="demo-caption">Glow discret derrière les traits pour les détacher du fond sombre, sans rentrer dans l'effet "halo".</div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">V4 — Triple trait sans fill</span>
+    <span class="demo-tag">contour à 3 niveaux 1.4px / 0.9px / 0.5px</span>
+  </div>
+  <canvas id="cV4" width="700" height="540"></canvas>
+  <div class="demo-caption">Trois contours concentriques à érosion croissante, aucun fill. Très lisible et donne un effet "bande de précision" plus large.</div>
+</div>
+
+<script>
+'use strict';
+
+const W = 700, H = 540;
+const SIG_R = 216, SIG_G = 67, SIG_B = 21;
+
+function buildBase(ctx) {
+  const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W, H));
+  grad.addColorStop(0, '#1a2245');
+  grad.addColorStop(0.5, '#0c1228');
+  grad.addColorStop(1, '#03050d');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  const img = ctx.getImageData(0, 0, W, H);
+  const d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const n = (Math.random() - 0.5) * 12;
+    d[i]   = Math.max(0, Math.min(255, d[i]   + n));
+    d[i+1] = Math.max(0, Math.min(255, d[i+1] + n));
+    d[i+2] = Math.max(0, Math.min(255, d[i+2] + n));
+  }
+  ctx.putImageData(img, 0, 0);
+
+  for (let i = 0; i < 130; i++) {
+    const x = Math.random() * W;
+    const y = Math.random() * H;
+    const r = Math.random() * 1.4 + 0.6;
+    ctx.fillStyle = `rgba(150, 200, 255, ${0.4 + Math.random() * 0.3})`;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const cx = W * 0.52, cy = H * 0.55;
+  const halo = ctx.createRadialGradient(cx, cy, 40, cx, cy, 220);
+  halo.addColorStop(0, 'rgba(80, 200, 220, 0.55)');
+  halo.addColorStop(0.4, 'rgba(60, 160, 200, 0.35)');
+  halo.addColorStop(1, 'rgba(20, 80, 140, 0)');
+  ctx.fillStyle = halo;
+  ctx.fillRect(0, 0, W, H);
+
+  for (let i = 0; i < 7000; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const dist = Math.pow(Math.random(), 0.6) * 140;
+    const px = cx + Math.cos(a) * dist + (Math.random() - 0.5) * 18;
+    const py = cy + Math.sin(a) * dist * 0.7 + (Math.random() - 0.5) * 14;
+    const intensity = 1 - dist / 150;
+    const r = Math.random() * 1.5 + 0.4;
+    const cyanWeight = intensity * 0.9;
+    const baseR = 60 + 180 * (1 - cyanWeight) + Math.random() * 30;
+    const baseG = 180 + 50 * cyanWeight + Math.random() * 25;
+    const baseB = 200 + 30 * cyanWeight + Math.random() * 25;
+    ctx.fillStyle = `rgba(${Math.min(255, baseR)|0}, ${Math.min(255, baseG)|0}, ${Math.min(255, baseB)|0}, ${0.4 + intensity * 0.5})`;
+    ctx.beginPath();
+    ctx.arc(px, py, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const orangeX = cx + 100, orangeY = cy - 50;
+  const orangeGrad = ctx.createRadialGradient(orangeX, orangeY, 0, orangeX, orangeY, 30);
+  orangeGrad.addColorStop(0, 'rgba(255, 130, 50, 0.95)');
+  orangeGrad.addColorStop(0.5, 'rgba(255, 90, 30, 0.7)');
+  orangeGrad.addColorStop(1, 'rgba(220, 60, 20, 0)');
+  ctx.fillStyle = orangeGrad;
+  ctx.beginPath();
+  ctx.arc(orangeX, orangeY, 30, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function detectFluo(ctx) {
+  const img = ctx.getImageData(0, 0, W, H);
+  const d = img.data;
+  const mask = new Uint8Array(W * H);
+  for (let i = 0, p = 0; i < d.length; i += 4, p++) {
+    const r = d[i], g = d[i+1], b = d[i+2];
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const lum = (r + g + b) / 3;
+    const sat = max === 0 ? 0 : (max - min) / max;
+    if (sat > 0.25 && lum > 90) mask[p] = 1;
+  }
+  return mask;
+}
+
+function marchingSquares(mask, w, h) {
+  const segments = [];
+  for (let y = 0; y < h - 1; y++) {
+    for (let x = 0; x < w - 1; x++) {
+      const tl = mask[y * w + x] || 0;
+      const tr = mask[y * w + (x + 1)] || 0;
+      const bl = mask[(y + 1) * w + x] || 0;
+      const br = mask[(y + 1) * w + (x + 1)] || 0;
+      const code = (tl << 3) | (tr << 2) | (br << 1) | bl;
+      if (code === 0 || code === 15) continue;
+      const top    = [x + 0.5, y];
+      const right  = [x + 1, y + 0.5];
+      const bottom = [x + 0.5, y + 1];
+      const left   = [x, y + 0.5];
+      const cases = {
+        1:  [[left, bottom]], 2:  [[bottom, right]], 3:  [[left, right]],
+        4:  [[top, right]],   5:  [[left, top], [bottom, right]],
+        6:  [[top, bottom]],  7:  [[left, top]],    8:  [[left, top]],
+        9:  [[top, bottom]],  10: [[left, bottom], [top, right]],
+        11: [[top, right]],   12: [[left, right]],  13: [[bottom, right]],
+        14: [[left, bottom]],
+      };
+      const segs = cases[code] || [];
+      for (const [a, b] of segs) segments.push([a[0], a[1], b[0], b[1]]);
+    }
+  }
+  return segments;
+}
+
+function drawSegs(ctx, segments, strokeStyle, lineWidth, shadow = null) {
+  ctx.save();
+  if (shadow) {
+    ctx.shadowColor = shadow.color;
+    ctx.shadowBlur = shadow.blur;
+  }
+  ctx.strokeStyle = strokeStyle;
+  ctx.lineWidth = lineWidth;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  for (const [x1, y1, x2, y2] of segments) {
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+function erode(mask, radius) {
+  const e = new Uint8Array(W * H);
+  for (let y = radius; y < H - radius; y++) {
+    for (let x = radius; x < W - radius; x++) {
+      const p = y * W + x;
+      if (!mask[p]) continue;
+      let all = true;
+      for (let dy = -radius; dy <= radius && all; dy++) {
+        for (let dx = -radius; dx <= radius && all; dx++) {
+          if (!mask[(y + dy) * W + (x + dx)]) all = false;
+        }
+      }
+      if (all) e[p] = 1;
+    }
+  }
+  return e;
+}
+
+function fillMaskAlpha(ctx, mask, alpha) {
+  const img = ctx.createImageData(W, H);
+  const d = img.data;
+  const aBy = (alpha * 255) | 0;
+  for (let p = 0, j = 0; p < mask.length; p++, j += 4) {
+    if (!mask[p]) continue;
+    d[j] = SIG_R; d[j+1] = SIG_G; d[j+2] = SIG_B; d[j+3] = aBy;
+  }
+  const off = document.createElement('canvas');
+  off.width = W; off.height = H;
+  off.getContext('2d').putImageData(img, 0, 0);
+  ctx.drawImage(off, 0, 0);
+}
+
+// V1 — Traits épaissis sans fill
+function styleV1(ctx, mask) {
+  const outer = marchingSquares(mask, W, H);
+  drawSegs(ctx, outer, `rgba(${SIG_R}, ${SIG_G}, ${SIG_B}, 0.95)`, 1.6);
+  const eroded = erode(mask, 3);
+  const inner = marchingSquares(eroded, W, H);
+  drawSegs(ctx, inner, `rgba(${SIG_R}, ${SIG_G}, ${SIG_B}, 0.50)`, 0.9);
+}
+
+// V2 — Traits épaissis + tint subtil
+function styleV2(ctx, mask) {
+  const eroded = erode(mask, 3);
+  fillMaskAlpha(ctx, eroded, 0.06);
+  const outer = marchingSquares(mask, W, H);
+  drawSegs(ctx, outer, `rgba(${SIG_R}, ${SIG_G}, ${SIG_B}, 0.95)`, 1.6);
+  const inner = marchingSquares(eroded, W, H);
+  drawSegs(ctx, inner, `rgba(${SIG_R}, ${SIG_G}, ${SIG_B}, 0.50)`, 0.9);
+}
+
+// V3 — Glow subtil derrière les traits
+function styleV3(ctx, mask) {
+  const outer = marchingSquares(mask, W, H);
+  drawSegs(ctx, outer, `rgba(${SIG_R}, ${SIG_G}, ${SIG_B}, 0.95)`, 1.4, {
+    color: `rgba(${SIG_R}, ${SIG_G}, ${SIG_B}, 0.55)`, blur: 2
+  });
+  const eroded = erode(mask, 3);
+  const inner = marchingSquares(eroded, W, H);
+  drawSegs(ctx, inner, `rgba(${SIG_R}, ${SIG_G}, ${SIG_B}, 0.55)`, 0.8);
+}
+
+// V4 — Triple trait sans fill
+function styleV4(ctx, mask) {
+  const outer = marchingSquares(mask, W, H);
+  drawSegs(ctx, outer, `rgba(${SIG_R}, ${SIG_G}, ${SIG_B}, 0.95)`, 1.4);
+  const e2 = erode(mask, 2);
+  const mid = marchingSquares(e2, W, H);
+  drawSegs(ctx, mid, `rgba(${SIG_R}, ${SIG_G}, ${SIG_B}, 0.68)`, 0.9);
+  const e5 = erode(mask, 5);
+  const innermost = marchingSquares(e5, W, H);
+  drawSegs(ctx, innermost, `rgba(${SIG_R}, ${SIG_G}, ${SIG_B}, 0.40)`, 0.5);
+}
+
+['cBase', 'cV1', 'cV2', 'cV3', 'cV4'].forEach(id => {
+  buildBase(document.getElementById(id).getContext('2d'));
+});
+
+const ref = document.getElementById('cBase');
+const mask = detectFluo(ref.getContext('2d'));
+
+styleV1(document.getElementById('cV1').getContext('2d'), mask);
+styleV2(document.getElementById('cV2').getContext('2d'), mask);
+styleV3(document.getElementById('cV3').getContext('2d'), mask);
+styleV4(document.getElementById('cV4').getContext('2d'), mask);
+
+</script>
+</body>
+</html>

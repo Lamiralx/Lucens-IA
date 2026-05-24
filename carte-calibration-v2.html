@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carte de calibration Lucens V2 — modèle imprimable</title>
+<!-- QR code generator pure-JS (qrcodejs) -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink: #0C0E13;
+    --line: #111;
+    --hairline: #999;
+    --bg: #FFFFFF;
+    --accent: #0E8C84;
+  }
+  body {
+    font-family: 'Inter', 'Segoe UI', system-ui, Arial, sans-serif;
+    color: var(--ink);
+    background: #F4F6F8;
+    padding: 24px 16px;
+    min-height: 100vh;
+  }
+  .doc { max-width: 760px; margin: 0 auto; }
+
+  /* ─── Bloc instructions (caché à l'impression) ─── */
+  .noprint {
+    background: #FFFFFF;
+    padding: 28px 28px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    margin-bottom: 28px;
+  }
+  .noprint h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 6px;
+  }
+  .noprint .sub {
+    font-size: 13px;
+    color: #6B7280;
+    margin-bottom: 16px;
+  }
+  .noprint h2 {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    margin: 18px 0 8px;
+  }
+  .noprint ol { margin: 0 0 12px 22px; font-size: 14px; line-height: 1.7; }
+  .noprint p { font-size: 14px; line-height: 1.55; margin-bottom: 8px; }
+  .noprint .printbtn {
+    margin-top: 18px;
+    padding: 14px 28px;
+    background: var(--accent);
+    color: #FFFFFF;
+    border: 0;
+    border-radius: 10px;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer;
+  }
+  .noprint .printbtn:hover { background: #0B6F69; }
+  .noprint .printbtn:active { transform: scale(0.98); }
+  .tag {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: rgba(14,140,132,0.10);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  /* ─── La carte elle-même — dimensions RÉELLES en mm ─── */
+  .card-wrap {
+    display: flex; justify-content: center;
+    padding: 20px 0;
+  }
+  .card {
+    position: relative;
+    width: 150mm;
+    height: 100mm;
+    border: 1.2mm solid var(--line);
+    border-radius: 2mm;
+    background: #FFFFFF;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+    overflow: hidden;
+  }
+
+  /* QR code — top-left, centre à (16,16) mm = origin (5,5) avec taille 22mm */
+  .qr-zone {
+    position: absolute;
+    top: 5mm; left: 5mm;
+    width: 22mm; height: 22mm;
+    background: #FFFFFF;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .qr-zone canvas, .qr-zone img {
+    width: 22mm; height: 22mm; display: block;
+  }
+  .qr-fallback {
+    font-size: 7pt; color: #999; text-align: center; padding: 4px;
+  }
+  .qr-label {
+    position: absolute;
+    top: 28mm; left: 5mm;
+    width: 22mm;
+    text-align: center;
+    font-size: 6pt; color: #555;
+    letter-spacing: 0.05em;
+  }
+
+  /* Wordmark Lucens à droite du QR, en haut */
+  .wordmark {
+    position: absolute;
+    top: 8mm; left: 32mm;
+    font-size: 14pt;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .wordmark::after {
+    content: '';
+    display: inline-block;
+    width: 3pt; height: 3pt;
+    border-radius: 50%;
+    background: #D84315;
+    margin-left: 2pt;
+    vertical-align: 0.15em;
+  }
+  .wordmark-sub {
+    position: absolute;
+    top: 14mm; left: 32mm;
+    font-size: 7pt;
+    color: #6B7280;
+    letter-spacing: 0.05em;
+  }
+
+  /* Grille des 6 patchs — positions exactes selon la spec */
+  .patches {
+    position: absolute;
+    top: 17mm; left: 40mm;
+    width: 105mm;
+    height: 75mm;
+    display: grid;
+    grid-template-columns: 30mm 30mm 30mm;
+    grid-template-rows: 30mm 30mm;
+    gap: 5mm;
+    align-content: center;
+    justify-content: start;
+  }
+  .patch {
+    border: 1px dashed var(--hairline);
+    border-radius: 1mm;
+    position: relative;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 2mm;
+  }
+  .patch.white { background: #FFFFFF; }
+  .patch.black { background: #0A0A0A; color: #FFFFFF; border-color: #333; }
+  .patch.fluo  {
+    background: repeating-linear-gradient(
+      45deg, rgba(14,140,132,0.04), rgba(14,140,132,0.04) 2mm,
+             rgba(14,140,132,0.10) 2mm, rgba(14,140,132,0.10) 4mm
+    );
+    border-color: var(--accent);
+    border-style: solid;
+    border-width: 0.5mm;
+  }
+  .patch-label {
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .patch-sub {
+    font-size: 6pt;
+    color: #555;
+    margin-top: 1mm;
+    line-height: 1.3;
+  }
+  .patch.black .patch-sub { color: #BBB; }
+
+  /* Footer carte : référentiel + version */
+  .card-foot {
+    position: absolute;
+    bottom: 2mm; left: 5mm; right: 5mm;
+    display: flex; justify-content: space-between;
+    font-size: 5pt; color: #6B7280;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* ─── Print rules ─── */
+  @media print {
+    @page {
+      size: A4;
+      margin: 15mm;
+    }
+    body { background: #FFFFFF; padding: 0; }
+    .noprint { display: none; }
+    .card-wrap { padding: 0; }
+    .card { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+<div class="doc">
+
+<div class="noprint">
+  <span class="tag">Carte Lucens V2 · à imprimer</span>
+  <h1>Carte de calibration Lucens — modèle imprimable</h1>
+  <p class="sub">Format final 150 × 100 mm · imprime à l'échelle 100% sur A4 papier blanc épais.</p>
+
+  <h2>Préparation</h2>
+  <ol>
+    <li><b>Imprimer cette page</b> à l'échelle <b>100%</b> sur du papier blanc épais (180 g/m² minimum recommandé).</li>
+    <li><b>Coller sur un support rigide</b> (carton fort, plastique souple, ou laminer entre 2 films plastiques pour la longévité).</li>
+    <li><b>Découper</b> le long du cadre noir extérieur.</li>
+  </ol>
+
+  <h2>Peinture des patchs fluo</h2>
+  <ol>
+    <li>Acheter <b>un pot d'acrylique fluorescent UV</b> (recommandé : Liquitex Heavy Body Fluorescent ROSE ou JAUNE, Pébéo Fluo, Schmincke).</li>
+    <li>Appliquer la peinture sur les <b>4 zones marquées « FLUO »</b> (cases hachurées teal). Une seule couleur sur les 4 cases pour la reproductibilité maximale.</li>
+    <li><b>Sécher à plat 24 h</b>. Optionnel : vernis acrylique mat transparent pour protéger des rayures.</li>
+  </ol>
+
+  <h2>Patchs blanc et noir</h2>
+  <p><b>Blanc</b> : laisser le papier blanc nu (déjà imprimé).</p>
+  <p><b>Noir</b> : <b>déjà imprimé en noir aplat</b>. Si tu trouves le rendu pas assez sombre, repasse au feutre noir permanent type Posca ou marqueur noir mat.</p>
+
+  <h2>Utilisation dans l'app Lucens IA</h2>
+  <ol>
+    <li>Ouvre Live View dans l'app (<code>analyse-uv.vercel.app</code>) → ⚙ Réglages → <b>Carte Lucens</b>.</li>
+    <li>Allume ta lampe UV-A 365 nm.</li>
+    <li>Présente la carte à la caméra <b>QR vers le téléphone</b>, à environ 25 cm.</li>
+    <li>L'app détecte automatiquement le QR (« Carte Lucens ✓ »), maintiens la carte 1 s, la calibration se déclenche.</li>
+  </ol>
+
+  <button class="printbtn" onclick="window.print()">Imprimer la carte</button>
+</div>
+
+<div class="card-wrap">
+  <div class="card">
+    <!-- QR code généré dynamiquement — contenu LUCENS:CALIBV2 -->
+    <div class="qr-zone" id="qrZone"></div>
+    <div class="qr-label">QR Lucens — ne pas modifier</div>
+
+    <!-- Wordmark -->
+    <div class="wordmark">LUCENS</div>
+    <div class="wordmark-sub">Calibration card · v2</div>
+
+    <!-- Grille 6 patchs (positions selon spec V2.0) -->
+    <div class="patches">
+      <!-- Row 1 : white | fluo | fluo -->
+      <div class="patch white">
+        <span class="patch-label">Blanc</span>
+        <span class="patch-sub">Laisser nu</span>
+      </div>
+      <div class="patch fluo">
+        <span class="patch-label">Fluo</span>
+        <span class="patch-sub">Acrylique UV</span>
+      </div>
+      <div class="patch fluo">
+        <span class="patch-label">Fluo</span>
+        <span class="patch-sub">Acrylique UV</span>
+      </div>
+      <!-- Row 2 : fluo | fluo | black -->
+      <div class="patch fluo">
+        <span class="patch-label">Fluo</span>
+        <span class="patch-sub">Acrylique UV</span>
+      </div>
+      <div class="patch fluo">
+        <span class="patch-label">Fluo</span>
+        <span class="patch-sub">Acrylique UV</span>
+      </div>
+      <div class="patch black">
+        <span class="patch-label">Noir</span>
+        <span class="patch-sub">Imprimé aplat</span>
+      </div>
+    </div>
+
+    <!-- Footer carte -->
+    <div class="card-foot">
+      <span>Lucens IA · Codex Alimentarius</span>
+      <span>CALIBV2 · 150×100mm</span>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+  /* Génère le QR Lucens dans la zone dédiée. Contenu fixe = LUCENS:CALIBV2.
+     Niveau de correction H (30%) pour résistance maximale aux salissures. */
+  (function() {
+    const zone = document.getElementById('qrZone');
+    if (!zone) return;
+    if (typeof QRCode === 'undefined') {
+      /* Fallback en cas de lib non chargée — message texte simple */
+      const fallback = document.createElement('div');
+      fallback.className = 'qr-fallback';
+      fallback.textContent = 'QR non chargé. Vérifiez la connexion internet et rechargez.';
+      zone.appendChild(fallback);
+      return;
+    }
+    new QRCode(zone, {
+      text: 'LUCENS:CALIBV2',
+      width: 260,
+      height: 260,
+      correctLevel: QRCode.CorrectLevel.H,
+      colorDark:  '#000000',
+      colorLight: '#FFFFFF',
+    });
+  })();
+</script>
+</body>
+</html>

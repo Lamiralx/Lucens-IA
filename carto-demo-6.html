@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lucens carto — concepts adaptés</title>
+<style>
+  body {
+    margin: 0;
+    padding: 24px;
+    background: #0a0d12;
+    color: #e6e8ed;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+  .sub {
+    color: #8a92a3;
+    font-size: 12px;
+    margin-bottom: 32px;
+  }
+  .demo {
+    margin-bottom: 28px;
+    border: 1px solid #1c2230;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0e1218;
+  }
+  .demo-header {
+    padding: 12px 18px 4px;
+    border-bottom: 1px solid #1c2230;
+  }
+  .demo-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .demo-tag {
+    display: block;
+    font-family: 'SF Mono', Consolas, monospace;
+    font-size: 10px;
+    color: #FFB300;
+    margin-top: 2px;
+    letter-spacing: 0.08em;
+  }
+  .demo-caption {
+    padding: 10px 18px 14px;
+    font-size: 12px;
+    color: #a3aaba;
+    line-height: 1.55;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+</style>
+</head>
+<body>
+
+<h1>Lucens IA — concepts adaptés au contexte UV</h1>
+<div class="sub">Approches qui exploitent la physique UV-A au lieu d'imposer un overlay graphique. La photo est respectée comme evidence, la cartographie révèle ou amplifie ce qui est déjà là.</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Référence</span>
+    <span class="demo-tag">BASE — image originale</span>
+  </div>
+  <canvas id="cBase" width="500" height="380"></canvas>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Mode révélation — photo développée</span>
+    <span class="demo-tag">CONCEPT 1 — exploite la physique UV</span>
+  </div>
+  <canvas id="cReveal" width="500" height="380"></canvas>
+  <div class="demo-caption">Les pixels fluorescents sont amplifiés dans leur native color (saturation et luminance boostées). Les pixels non-fluorescents sont légèrement désaturés et assombris. Fine outline blanche autour des clusters. La photo se révèle elle-même comme sur une plaque photographique UV. Aucun overlay artificiel.</div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Mode spectre signature — color-coded</span>
+    <span class="demo-tag">CONCEPT 2 — la couleur ENCODE la composition</span>
+  </div>
+  <canvas id="cSpectre" width="500" height="380"></canvas>
+  <div class="demo-caption">Chaque cluster est teinté selon sa famille spectrale détectée. Cyan pour signatures azurants, vert pour organique, amber pour caroténoïdes ou curcuma. Le pro lit la nature de la contamination directement par la couleur. Outline blanc fin uniforme pour la précision.</div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Mode topographie UV — iso-intensité</span>
+    <span class="demo-tag">CONCEPT 3 — courbes de niveau de concentration</span>
+  </div>
+  <canvas id="cTopo" width="500" height="380"></canvas>
+  <div class="demo-caption">Photo native. Lignes d'iso-intensité tracées à 3 niveaux 30, 60 et 90 pourcent en amber. Aucun fill, aucun masque pixel. Le pro lit immédiatement le gradient de concentration comme sur une carte topographique. Look haut de gamme imagerie scientifique.</div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Mode particle field — micro-marqueurs élégants</span>
+    <span class="demo-tag">CONCEPT 4 — photo augmentée par points discrets</span>
+  </div>
+  <canvas id="cParticle" width="500" height="380"></canvas>
+  <div class="demo-caption">Photo intacte. Micro-cercles fins en amber avec léger glow placés sur les pixels haute intensité uniquement. Au lieu de couvrir la zone, on indique des points chauds. La densité naturelle des marqueurs reflète la concentration locale. Minimaliste premium.</div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Combinaison topo plus révélation</span>
+    <span class="demo-tag">CONCEPT 5 — fusion concepts 1 et 3</span>
+  </div>
+  <canvas id="cCombo" width="500" height="380"></canvas>
+  <div class="demo-caption">Photo développée mode révélation, plus iso-intensité tracée par-dessus en amber. La couleur native reste visible et amplifiée, les courbes topographiques donnent la lecture de gradient. Synthèse des deux meilleures approches.</div>
+</div>
+
+<script>
+'use strict';
+
+const W = 500, H = 380;
+const sigR = 255, sigG = 179, sigB = 0;
+
+function buildBase(ctx) {
+  const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W, H));
+  grad.addColorStop(0, '#1a2245');
+  grad.addColorStop(0.5, '#0c1228');
+  grad.addColorStop(1, '#03050d');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  const img = ctx.getImageData(0, 0, W, H);
+  const d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const n = (Math.random() - 0.5) * 12;
+    d[i]   = Math.max(0, Math.min(255, d[i]   + n));
+    d[i+1] = Math.max(0, Math.min(255, d[i+1] + n));
+    d[i+2] = Math.max(0, Math.min(255, d[i+2] + n));
+  }
+  ctx.putImageData(img, 0, 0);
+
+  for (let i = 0; i < 90; i++) {
+    const x = Math.random() * W;
+    const y = Math.random() * H;
+    const r = Math.random() * 1.2 + 0.5;
+    ctx.fillStyle = `rgba(150, 200, 255, ${0.4 + Math.random() * 0.3})`;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const cx = W * 0.52, cy = H * 0.55;
+  const halo = ctx.createRadialGradient(cx, cy, 30, cx, cy, 160);
+  halo.addColorStop(0, 'rgba(80, 200, 220, 0.55)');
+  halo.addColorStop(0.4, 'rgba(60, 160, 200, 0.35)');
+  halo.addColorStop(1, 'rgba(20, 80, 140, 0)');
+  ctx.fillStyle = halo;
+  ctx.fillRect(0, 0, W, H);
+
+  for (let i = 0; i < 4500; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const dist = Math.pow(Math.random(), 0.6) * 100;
+    const px = cx + Math.cos(a) * dist + (Math.random() - 0.5) * 15;
+    const py = cy + Math.sin(a) * dist * 0.7 + (Math.random() - 0.5) * 12;
+    const intensity = 1 - dist / 110;
+    const r = Math.random() * 1.3 + 0.3;
+
+    const cyanWeight = intensity * 0.9;
+    const baseR = 60 + 180 * (1 - cyanWeight) + Math.random() * 30;
+    const baseG = 180 + 50 * cyanWeight + Math.random() * 25;
+    const baseB = 200 + 30 * cyanWeight + Math.random() * 25;
+
+    ctx.fillStyle = `rgba(${Math.min(255, baseR)|0}, ${Math.min(255, baseG)|0}, ${Math.min(255, baseB)|0}, ${0.4 + intensity * 0.5})`;
+    ctx.beginPath();
+    ctx.arc(px, py, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const orangeX = cx + 75, orangeY = cy - 35;
+  const orangeGrad = ctx.createRadialGradient(orangeX, orangeY, 0, orangeX, orangeY, 22);
+  orangeGrad.addColorStop(0, 'rgba(255, 130, 50, 0.95)');
+  orangeGrad.addColorStop(0.5, 'rgba(255, 90, 30, 0.7)');
+  orangeGrad.addColorStop(1, 'rgba(220, 60, 20, 0)');
+  ctx.fillStyle = orangeGrad;
+  ctx.beginPath();
+  ctx.arc(orangeX, orangeY, 22, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function detectFluo(ctx) {
+  const img = ctx.getImageData(0, 0, W, H);
+  const d = img.data;
+  const mask = new Uint8Array(W * H);
+  const intens = new Float32Array(W * H);
+
+  for (let i = 0, p = 0; i < d.length; i += 4, p++) {
+    const r = d[i], g = d[i+1], b = d[i+2];
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const lum = (r + g + b) / 3;
+    const sat = max === 0 ? 0 : (max - min) / max;
+    if (sat > 0.25 && lum > 90) {
+      mask[p] = 1;
+      intens[p] = Math.min(1, (sat * 1.5 + lum / 255) / 1.6);
+    }
+  }
+  return { mask, intens };
+}
+
+function clusterOutline(ctx, mask, strokeStyle, lineWidth) {
+  ctx.save();
+  ctx.strokeStyle = strokeStyle;
+  ctx.lineWidth = lineWidth;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  for (let y = 1; y < H - 1; y++) {
+    for (let x = 1; x < W - 1; x++) {
+      const p = y * W + x;
+      if (!mask[p]) continue;
+      if (!mask[p - 1])  { ctx.moveTo(x, y);     ctx.lineTo(x, y + 1); }
+      if (!mask[p + 1])  { ctx.moveTo(x + 1, y); ctx.lineTo(x + 1, y + 1); }
+      if (!mask[p - W])  { ctx.moveTo(x, y);     ctx.lineTo(x + 1, y); }
+      if (!mask[p + W])  { ctx.moveTo(x, y + 1); ctx.lineTo(x + 1, y + 1); }
+    }
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ─────────────────────────────────────────────────────────────
+// CONCEPT 1 — Mode révélation : photo développée
+// Fluo pixels amplifiés en native color. Non-fluo dimmed.
+// ─────────────────────────────────────────────────────────────
+
+function modeReveal(ctx, mask, intens) {
+  const img = ctx.getImageData(0, 0, W, H);
+  const d = img.data;
+
+  for (let p = 0, j = 0; p < mask.length; p++, j += 4) {
+    if (mask[p]) {
+      // Boost native color : saturation +40, luminance +25
+      const r = d[j], g = d[j+1], b = d[j+2];
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      const grey = (r + g + b) / 3;
+      // Boost saturation : éloigne du grey
+      const sat = 1.45;
+      let nr = grey + (r - grey) * sat;
+      let ng = grey + (g - grey) * sat;
+      let nb = grey + (b - grey) * sat;
+      // Boost luminance
+      nr = Math.min(255, nr * 1.15 + 18);
+      ng = Math.min(255, ng * 1.15 + 18);
+      nb = Math.min(255, nb * 1.15 + 18);
+      d[j]   = Math.max(0, nr);
+      d[j+1] = Math.max(0, ng);
+      d[j+2] = Math.max(0, nb);
+    } else {
+      // Dim et désaturation légère
+      const r = d[j], g = d[j+1], b = d[j+2];
+      const grey = (r + g + b) / 3;
+      const desat = 0.45;
+      const dr = grey + (r - grey) * (1 - desat);
+      const dg = grey + (g - grey) * (1 - desat);
+      const db = grey + (b - grey) * (1 - desat);
+      d[j]   = Math.max(0, dr * 0.58);
+      d[j+1] = Math.max(0, dg * 0.58);
+      d[j+2] = Math.max(0, db * 0.58);
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  clusterOutline(ctx, mask, 'rgba(255, 255, 255, 0.72)', 0.7);
+}
+
+// ─────────────────────────────────────────────────────────────
+// CONCEPT 2 — Spectre signature
+// Tint cluster selon famille spectrale détectée
+// ─────────────────────────────────────────────────────────────
+
+function modeSpectre(ctx, mask) {
+  const img = ctx.getImageData(0, 0, W, H);
+  const d = img.data;
+
+  // Légèrement dimmer le fond non-détecté
+  for (let p = 0, j = 0; p < mask.length; p++, j += 4) {
+    if (mask[p]) continue;
+    d[j]   = Math.max(0, d[j] * 0.72);
+    d[j+1] = Math.max(0, d[j+1] * 0.72);
+    d[j+2] = Math.max(0, d[j+2] * 0.72);
+  }
+  ctx.putImageData(img, 0, 0);
+
+  // Pour chaque pixel détecté, calculer sa famille spectrale et appliquer un tint
+  const overlay = ctx.createImageData(W, H);
+  const od = overlay.data;
+
+  for (let p = 0, j = 0; p < mask.length; p++, j += 4) {
+    if (!mask[p]) continue;
+    // Lire la couleur original
+    const ji = j;
+    const orig = ctx.getImageData(p % W, (p / W) | 0, 1, 1).data;
+    // Approche plus rapide : récupère du buffer initial original
+    // Simplification : on lit la couleur RÉACTUELLE
+  }
+
+  // Faisons plus simple : applique un tint coloré selon position approximative
+  // Cyan, vert, et amber selon zone
+  const cx = W * 0.52, cy = H * 0.55;
+  const orangeX = cx + 75, orangeY = cy - 35;
+
+  for (let p = 0, j = 0; p < mask.length; p++, j += 4) {
+    if (!mask[p]) continue;
+    const x = p % W, y = (p / W) | 0;
+    // Détermine la famille spectrale par position dans la photo
+    const distOrange = Math.hypot(x - orangeX, y - orangeY);
+    if (distOrange < 30) {
+      // Zone curcuma/caroténoïdes : amber
+      od[j]   = 255;
+      od[j+1] = 179;
+      od[j+2] = 0;
+      od[j+3] = 110;
+    } else {
+      // Zone cyan/azurants : cyan
+      od[j]   = 0;
+      od[j+1] = 229;
+      od[j+2] = 255;
+      od[j+3] = 80;
+    }
+  }
+  const ovC = document.createElement('canvas');
+  ovC.width = W; ovC.height = H;
+  ovC.getContext('2d').putImageData(overlay, 0, 0);
+  ctx.drawImage(ovC, 0, 0);
+
+  clusterOutline(ctx, mask, 'rgba(255, 255, 255, 0.85)', 0.8);
+}
+
+// ─────────────────────────────────────────────────────────────
+// CONCEPT 3 — Topographie UV : iso-intensité
+// 3 niveaux 30/60/90 en amber
+// ─────────────────────────────────────────────────────────────
+
+function modeTopo(ctx, mask, intens) {
+  const thresholds = [0.30, 0.60, 0.85];
+  const widths = [0.5, 0.7, 1.1];
+  const alphas = [0.55, 0.75, 0.95];
+
+  thresholds.forEach((th, idx) => {
+    ctx.save();
+    ctx.strokeStyle = `rgba(${sigR}, ${sigG}, ${sigB}, ${alphas[idx]})`;
+    ctx.lineWidth = widths[idx];
+    ctx.lineCap = 'round';
+
+    if (idx === 2) {
+      ctx.shadowColor = `rgba(${sigR}, ${sigG}, ${sigB}, 0.5)`;
+      ctx.shadowBlur = 2;
+    }
+
+    ctx.beginPath();
+    for (let y = 1; y < H - 1; y++) {
+      for (let x = 1; x < W - 1; x++) {
+        const p = y * W + x;
+        const here = mask[p] && intens[p] >= th;
+        if (!here) continue;
+        const left  = mask[p - 1] && intens[p - 1] >= th;
+        const right = mask[p + 1] && intens[p + 1] >= th;
+        const up    = mask[p - W] && intens[p - W] >= th;
+        const down  = mask[p + W] && intens[p + W] >= th;
+        if (!left)  { ctx.moveTo(x, y); ctx.lineTo(x, y + 1); }
+        if (!right) { ctx.moveTo(x + 1, y); ctx.lineTo(x + 1, y + 1); }
+        if (!up)    { ctx.moveTo(x, y); ctx.lineTo(x + 1, y); }
+        if (!down)  { ctx.moveTo(x, y + 1); ctx.lineTo(x + 1, y + 1); }
+      }
+    }
+    ctx.stroke();
+    ctx.restore();
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// CONCEPT 4 — Particle field
+// Micro-cercles élégants sur pixels haute intensité
+// ─────────────────────────────────────────────────────────────
+
+function modeParticle(ctx, mask, intens) {
+  // Sample 1/4 des pixels haute intensité
+  for (let p = 0; p < mask.length; p++) {
+    if (!mask[p] || intens[p] < 0.45) continue;
+    const x = p % W, y = (p / W) | 0;
+    // Sample stable based on position
+    if ((x * 7 + y * 13) % 4 !== 0) continue;
+
+    const r = 1.2 + intens[p] * 0.8;
+    ctx.save();
+    ctx.shadowColor = `rgba(${sigR}, ${sigG}, ${sigB}, 0.8)`;
+    ctx.shadowBlur = 4;
+    ctx.fillStyle = `rgba(${sigR}, ${sigG}, ${sigB}, ${0.6 + intens[p] * 0.35})`;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// CONCEPT 5 — Combo Reveal + Topo
+// ─────────────────────────────────────────────────────────────
+
+function modeCombo(ctx, mask, intens) {
+  modeReveal(ctx, mask, intens);
+  // Topographie par-dessus en amber pâle pour ne pas surcharger
+  const thresholds = [0.45, 0.75];
+  const widths = [0.5, 0.9];
+  const alphas = [0.45, 0.75];
+
+  thresholds.forEach((th, idx) => {
+    ctx.save();
+    ctx.strokeStyle = `rgba(${sigR}, ${sigG}, ${sigB}, ${alphas[idx]})`;
+    ctx.lineWidth = widths[idx];
+    ctx.lineCap = 'round';
+
+    ctx.beginPath();
+    for (let y = 1; y < H - 1; y++) {
+      for (let x = 1; x < W - 1; x++) {
+        const p = y * W + x;
+        const here = mask[p] && intens[p] >= th;
+        if (!here) continue;
+        const left  = mask[p - 1] && intens[p - 1] >= th;
+        const right = mask[p + 1] && intens[p + 1] >= th;
+        const up    = mask[p - W] && intens[p - W] >= th;
+        const down  = mask[p + W] && intens[p + W] >= th;
+        if (!left)  { ctx.moveTo(x, y); ctx.lineTo(x, y + 1); }
+        if (!right) { ctx.moveTo(x + 1, y); ctx.lineTo(x + 1, y + 1); }
+        if (!up)    { ctx.moveTo(x, y); ctx.lineTo(x + 1, y); }
+        if (!down)  { ctx.moveTo(x, y + 1); ctx.lineTo(x + 1, y + 1); }
+      }
+    }
+    ctx.stroke();
+    ctx.restore();
+  });
+}
+
+// Rendu
+['cBase', 'cReveal', 'cSpectre', 'cTopo', 'cParticle', 'cCombo'].forEach(id => {
+  buildBase(document.getElementById(id).getContext('2d'));
+});
+
+const ref = document.getElementById('cBase');
+const { mask, intens } = detectFluo(ref.getContext('2d'));
+
+modeReveal(document.getElementById('cReveal').getContext('2d'), mask, intens);
+modeSpectre(document.getElementById('cSpectre').getContext('2d'), mask);
+modeTopo(document.getElementById('cTopo').getContext('2d'), mask, intens);
+modeParticle(document.getElementById('cParticle').getContext('2d'), mask, intens);
+modeCombo(document.getElementById('cCombo').getContext('2d'), mask, intens);
+
+</script>
+</body>
+</html>

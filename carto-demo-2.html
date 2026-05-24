@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lucens carto — 3 signatures visuelles</title>
+<style>
+  body {
+    margin: 0;
+    padding: 24px;
+    background: #0a0d12;
+    color: #e6e8ed;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    letter-spacing: 0.02em;
+  }
+  .sub {
+    color: #8a92a3;
+    font-size: 12px;
+    margin-bottom: 32px;
+  }
+  .demo {
+    margin-bottom: 36px;
+    border: 1px solid #1c2230;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0e1218;
+  }
+  .demo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 14px 18px 8px;
+    border-bottom: 1px solid #1c2230;
+  }
+  .demo-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .demo-letter {
+    font-family: 'SF Mono', 'Consolas', monospace;
+    font-size: 11px;
+    color: #56607a;
+    letter-spacing: 0.1em;
+  }
+  .demo-caption {
+    padding: 10px 18px 14px;
+    font-size: 12px;
+    color: #a3aaba;
+    line-height: 1.5;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+</style>
+</head>
+<body>
+
+<h1>Lucens IA — 3 signatures visuelles pro</h1>
+<div class="sub">Image UV simulée commune : fond bleu ambient avec zone fluorescente cyan-vert et foyer orange-rouge type curcuma</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Référence sans cartographie</span>
+    <span class="demo-letter">BASE</span>
+  </div>
+  <canvas id="cBase" width="500" height="380"></canvas>
+  <div class="demo-caption">Image originale telle quelle.</div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Inspection industrielle Keyence-Cognex</span>
+    <span class="demo-letter">STYLE F</span>
+  </div>
+  <canvas id="cF" width="500" height="380"></canvas>
+  <div class="demo-caption">Photo intacte. Masque vert phosphorescent fin sur les pixels détectés. Contour blanc précis autour des clusters. Tags de zone numérotés en typo monospace. Aspect machine de tri industrielle.</div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Forensique sombre exposure</span>
+    <span class="demo-letter">STYLE G</span>
+  </div>
+  <canvas id="cG" width="500" height="380"></canvas>
+  <div class="demo-caption">Fond fortement assombri et désaturé. Pixels fluorescents conservent leur native color avec luminance et saturation boostées. La contamination se "révèle" toute seule comme sur une plaque photographique. Fine outline blanche pour la précision.</div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Médical haut de gamme</span>
+    <span class="demo-letter">STYLE H</span>
+  </div>
+  <canvas id="cH" width="500" height="380"></canvas>
+  <div class="demo-caption">Photo en niveaux de gris. Zones détectées avec contour cyan diagnostic fin et léger fill. Cross-mire au centre de chaque cluster. Numérotation Z1, Z2 en monospace. Aspect imagerie médicale haut de gamme.</div>
+</div>
+
+<script>
+'use strict';
+
+const W = 500, H = 380;
+
+function buildBase(ctx) {
+  // Fond UV ambient gradient radial
+  const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W, H));
+  grad.addColorStop(0, '#1a2245');
+  grad.addColorStop(0.5, '#0c1228');
+  grad.addColorStop(1, '#03050d');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Bruit subtil du fond
+  const img = ctx.getImageData(0, 0, W, H);
+  const d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const n = (Math.random() - 0.5) * 12;
+    d[i]   = Math.max(0, Math.min(255, d[i]   + n));
+    d[i+1] = Math.max(0, Math.min(255, d[i+1] + n));
+    d[i+2] = Math.max(0, Math.min(255, d[i+2] + n));
+  }
+  ctx.putImageData(img, 0, 0);
+
+  // Particules scattered
+  for (let i = 0; i < 90; i++) {
+    const x = Math.random() * W;
+    const y = Math.random() * H;
+    const r = Math.random() * 1.2 + 0.5;
+    ctx.fillStyle = `rgba(150, 200, 255, ${0.4 + Math.random() * 0.3})`;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Blob fluorescent central
+  const cx = W * 0.52, cy = H * 0.55;
+
+  // Halo extérieur diffus
+  const halo = ctx.createRadialGradient(cx, cy, 30, cx, cy, 160);
+  halo.addColorStop(0, 'rgba(80, 200, 220, 0.55)');
+  halo.addColorStop(0.4, 'rgba(60, 160, 200, 0.35)');
+  halo.addColorStop(1, 'rgba(20, 80, 140, 0)');
+  ctx.fillStyle = halo;
+  ctx.fillRect(0, 0, W, H);
+
+  // Zone dense centrale avec texture mottled
+  for (let i = 0; i < 4500; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const dist = Math.pow(Math.random(), 0.6) * 100;
+    const px = cx + Math.cos(a) * dist + (Math.random() - 0.5) * 15;
+    const py = cy + Math.sin(a) * dist * 0.7 + (Math.random() - 0.5) * 12;
+    const intensity = 1 - dist / 110;
+    const r = Math.random() * 1.3 + 0.3;
+
+    const cyanWeight = intensity * 0.9;
+    const baseR = 60 + 180 * (1 - cyanWeight) + Math.random() * 30;
+    const baseG = 180 + 50 * cyanWeight + Math.random() * 25;
+    const baseB = 200 + 30 * cyanWeight + Math.random() * 25;
+
+    ctx.fillStyle = `rgba(${Math.min(255, baseR)|0}, ${Math.min(255, baseG)|0}, ${Math.min(255, baseB)|0}, ${0.4 + intensity * 0.5})`;
+    ctx.beginPath();
+    ctx.arc(px, py, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Foyer orange-rouge (curcuma)
+  const orangeX = cx + 75, orangeY = cy - 35;
+  const orangeGrad = ctx.createRadialGradient(orangeX, orangeY, 0, orangeX, orangeY, 22);
+  orangeGrad.addColorStop(0, 'rgba(255, 130, 50, 0.95)');
+  orangeGrad.addColorStop(0.5, 'rgba(255, 90, 30, 0.7)');
+  orangeGrad.addColorStop(1, 'rgba(220, 60, 20, 0)');
+  ctx.fillStyle = orangeGrad;
+  ctx.beginPath();
+  ctx.arc(orangeX, orangeY, 22, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function detectFluo(ctx) {
+  const img = ctx.getImageData(0, 0, W, H);
+  const d = img.data;
+  const mask = new Uint8Array(W * H);
+  const intens = new Float32Array(W * H);
+
+  for (let i = 0, p = 0; i < d.length; i += 4, p++) {
+    const r = d[i], g = d[i+1], b = d[i+2];
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const lum = (r + g + b) / 3;
+    const sat = max === 0 ? 0 : (max - min) / max;
+
+    if (sat > 0.25 && lum > 90) {
+      mask[p] = 1;
+      intens[p] = Math.min(1, (sat * 1.5 + lum / 255) / 1.6);
+    }
+  }
+
+  return { mask, intens };
+}
+
+// Flood fill pour identifier les clusters et leurs bounding boxes
+function findClusters(mask) {
+  const visited = new Uint8Array(W * H);
+  const clusters = [];
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const p = y * W + x;
+      if (!mask[p] || visited[p]) continue;
+      const stack = [[x, y]];
+      const pixels = [];
+      let minX = x, minY = y, maxX = x, maxY = y;
+      while (stack.length) {
+        const [cx, cy] = stack.pop();
+        const cp = cy * W + cx;
+        if (cx < 0 || cy < 0 || cx >= W || cy >= H || visited[cp] || !mask[cp]) continue;
+        visited[cp] = 1;
+        pixels.push([cx, cy]);
+        minX = Math.min(minX, cx); maxX = Math.max(maxX, cx);
+        minY = Math.min(minY, cy); maxY = Math.max(maxY, cy);
+        stack.push([cx+1, cy]); stack.push([cx-1, cy]);
+        stack.push([cx, cy+1]); stack.push([cx, cy-1]);
+      }
+      if (pixels.length > 50) {
+        clusters.push({ pixels, minX, minY, maxX, maxY,
+          cx: (minX + maxX) / 2, cy: (minY + maxY) / 2 });
+      }
+    }
+  }
+  return clusters;
+}
+
+// ─────────────────────────────────────────────────────────────
+// STYLE F — Inspection industrielle Keyence/Cognex
+// Photo intacte. Masque vert phosphorescent fin. Contour blanc.
+// Tags de zone numérotés.
+// ─────────────────────────────────────────────────────────────
+
+function styleF(ctx, mask, intens) {
+  // Masque vert phosphorescent fin par pixel
+  const overlay = ctx.createImageData(W, H);
+  const od = overlay.data;
+  for (let p = 0, j = 0; p < mask.length; p++, j += 4) {
+    if (!mask[p]) continue;
+    // Vert phosphorescent #39FF14
+    od[j]   = 57;
+    od[j+1] = 255;
+    od[j+2] = 20;
+    od[j+3] = (90 + intens[p] * 80) | 0;
+  }
+  const ovC = document.createElement('canvas');
+  ovC.width = W; ovC.height = H;
+  ovC.getContext('2d').putImageData(overlay, 0, 0);
+  ctx.drawImage(ovC, 0, 0);
+
+  // Contour pixel par pixel autour des zones détectées
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+  ctx.lineWidth = 1.0;
+  ctx.beginPath();
+  for (let y = 1; y < H - 1; y++) {
+    for (let x = 1; x < W - 1; x++) {
+      const p = y * W + x;
+      if (!mask[p]) continue;
+      if (!mask[p - 1])  { ctx.moveTo(x, y);     ctx.lineTo(x, y + 1); }
+      if (!mask[p + 1])  { ctx.moveTo(x + 1, y); ctx.lineTo(x + 1, y + 1); }
+      if (!mask[p - W])  { ctx.moveTo(x, y);     ctx.lineTo(x + 1, y); }
+      if (!mask[p + W])  { ctx.moveTo(x, y + 1); ctx.lineTo(x + 1, y + 1); }
+    }
+  }
+  ctx.stroke();
+  ctx.restore();
+
+  // Bounding box + tag par cluster
+  const clusters = findClusters(mask);
+  clusters.forEach((cluster, i) => {
+    const { minX, minY, maxX, maxY } = cluster;
+    const w = maxX - minX, h = maxY - minY;
+
+    // Bounding box pointillée
+    ctx.save();
+    ctx.strokeStyle = 'rgba(57, 255, 20, 0.9)';
+    ctx.lineWidth = 1.0;
+    ctx.setLineDash([3, 3]);
+    ctx.strokeRect(minX - 4, minY - 4, w + 8, h + 8);
+    ctx.restore();
+
+    // Tag de zone
+    const tag = `Z${i + 1}`;
+    ctx.save();
+    ctx.font = 'bold 10px "SF Mono", Consolas, monospace';
+    const txtW = ctx.measureText(tag).width + 8;
+    ctx.fillStyle = 'rgba(57, 255, 20, 0.95)';
+    ctx.fillRect(minX - 4, minY - 18, txtW, 14);
+    ctx.fillStyle = '#0a0d12';
+    ctx.fillText(tag, minX, minY - 8);
+    ctx.restore();
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// STYLE G — Forensique sombre exposure
+// Fond assombri et désaturé. Pixels fluo conservent native color
+// avec boost de luminance. Fine outline blanche.
+// ─────────────────────────────────────────────────────────────
+
+function styleG(ctx, mask) {
+  const img = ctx.getImageData(0, 0, W, H);
+  const d = img.data;
+
+  for (let p = 0, j = 0; p < mask.length; p++, j += 4) {
+    if (mask[p]) {
+      // Boost luminance + saturation pour faire ressortir
+      const r = d[j], g = d[j+1], b = d[j+2];
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      const grey = (r + g + b) / 3;
+      // Pousse vers la couleur native, boost +30% luminance
+      d[j]   = Math.min(255, r * 1.15 + 30);
+      d[j+1] = Math.min(255, g * 1.15 + 30);
+      d[j+2] = Math.min(255, b * 1.15 + 30);
+    } else {
+      // Désaturation forte + assombrissement
+      const r = d[j], g = d[j+1], b = d[j+2];
+      const grey = (r + g + b) / 3;
+      const desatFactor = 0.7;
+      const dr = grey + (r - grey) * (1 - desatFactor);
+      const dg = grey + (g - grey) * (1 - desatFactor);
+      const db = grey + (b - grey) * (1 - desatFactor);
+      d[j]   = Math.max(0, dr * 0.35);
+      d[j+1] = Math.max(0, dg * 0.35);
+      d[j+2] = Math.max(0, db * 0.35);
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+
+  // Fine outline blanche autour des clusters
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+  ctx.lineWidth = 0.6;
+  ctx.beginPath();
+  for (let y = 1; y < H - 1; y++) {
+    for (let x = 1; x < W - 1; x++) {
+      const p = y * W + x;
+      if (!mask[p]) continue;
+      if (!mask[p - 1])  { ctx.moveTo(x, y);     ctx.lineTo(x, y + 1); }
+      if (!mask[p + 1])  { ctx.moveTo(x + 1, y); ctx.lineTo(x + 1, y + 1); }
+      if (!mask[p - W])  { ctx.moveTo(x, y);     ctx.lineTo(x + 1, y); }
+      if (!mask[p + W])  { ctx.moveTo(x, y + 1); ctx.lineTo(x + 1, y + 1); }
+    }
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ─────────────────────────────────────────────────────────────
+// STYLE H — Médical haut de gamme
+// Photo en niveaux de gris. Zones détectées avec contour cyan
+// et cross-mire au centre. Numérotation monospace.
+// ─────────────────────────────────────────────────────────────
+
+function styleH(ctx, mask) {
+  const img = ctx.getImageData(0, 0, W, H);
+  const d = img.data;
+
+  // Tout en niveaux de gris
+  for (let i = 0; i < d.length; i += 4) {
+    const grey = (d[i] + d[i+1] + d[i+2]) / 3;
+    d[i] = d[i+1] = d[i+2] = grey;
+  }
+  ctx.putImageData(img, 0, 0);
+
+  // Léger fill cyan diagnostic sur zones détectées
+  const overlay = ctx.createImageData(W, H);
+  const od = overlay.data;
+  for (let p = 0, j = 0; p < mask.length; p++, j += 4) {
+    if (!mask[p]) continue;
+    od[j]   = 0;
+    od[j+1] = 188;
+    od[j+2] = 212;
+    od[j+3] = 40;
+  }
+  const ovC = document.createElement('canvas');
+  ovC.width = W; ovC.height = H;
+  ovC.getContext('2d').putImageData(overlay, 0, 0);
+  ctx.drawImage(ovC, 0, 0);
+
+  // Contour cyan diagnostic fin et précis
+  ctx.save();
+  ctx.strokeStyle = 'rgba(0, 220, 255, 0.95)';
+  ctx.lineWidth = 1.2;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  for (let y = 1; y < H - 1; y++) {
+    for (let x = 1; x < W - 1; x++) {
+      const p = y * W + x;
+      if (!mask[p]) continue;
+      if (!mask[p - 1])  { ctx.moveTo(x, y);     ctx.lineTo(x, y + 1); }
+      if (!mask[p + 1])  { ctx.moveTo(x + 1, y); ctx.lineTo(x + 1, y + 1); }
+      if (!mask[p - W])  { ctx.moveTo(x, y);     ctx.lineTo(x + 1, y); }
+      if (!mask[p + W])  { ctx.moveTo(x, y + 1); ctx.lineTo(x + 1, y + 1); }
+    }
+  }
+  ctx.stroke();
+  ctx.restore();
+
+  // Cross-mire + tag numéroté par cluster
+  const clusters = findClusters(mask);
+  clusters.forEach((cluster, i) => {
+    const { cx, cy, minX, minY, maxX, maxY } = cluster;
+
+    // Cross-mire
+    ctx.save();
+    ctx.strokeStyle = 'rgba(0, 220, 255, 0.95)';
+    ctx.lineWidth = 1.0;
+    ctx.beginPath();
+    ctx.moveTo(cx - 8, cy); ctx.lineTo(cx + 8, cy);
+    ctx.moveTo(cx, cy - 8); ctx.lineTo(cx, cy + 8);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // Tag
+    const tag = `Z${i + 1}`;
+    ctx.save();
+    ctx.font = '11px "SF Mono", Consolas, monospace';
+    ctx.fillStyle = 'rgba(0, 220, 255, 0.95)';
+    ctx.fillText(tag, maxX + 6, minY + 8);
+    ctx.restore();
+  });
+}
+
+// Rendu
+['cBase', 'cF', 'cG', 'cH'].forEach(id => {
+  const c = document.getElementById(id);
+  const ctx = c.getContext('2d');
+  buildBase(ctx);
+});
+
+const ref = document.getElementById('cBase');
+const { mask, intens } = detectFluo(ref.getContext('2d'));
+
+styleF(document.getElementById('cF').getContext('2d'), mask, intens);
+styleG(document.getElementById('cG').getContext('2d'), mask);
+styleH(document.getElementById('cH').getContext('2d'), mask);
+
+</script>
+</body>
+</html>

@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lucens carto — démos visuelles</title>
+<style>
+  body {
+    margin: 0;
+    padding: 24px;
+    background: #0a0d12;
+    color: #e6e8ed;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    letter-spacing: 0.02em;
+  }
+  .sub {
+    color: #8a92a3;
+    font-size: 12px;
+    margin-bottom: 32px;
+  }
+  .demo {
+    margin-bottom: 36px;
+    border: 1px solid #1c2230;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0e1218;
+  }
+  .demo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 14px 18px 8px;
+    border-bottom: 1px solid #1c2230;
+  }
+  .demo-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .demo-letter {
+    font-family: 'SF Mono', 'Consolas', monospace;
+    font-size: 11px;
+    color: #56607a;
+    letter-spacing: 0.1em;
+  }
+  .demo-caption {
+    padding: 10px 18px 14px;
+    font-size: 12px;
+    color: #a3aaba;
+    line-height: 1.5;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+</style>
+</head>
+<body>
+
+<h1>Lucens IA — propositions de cartographie</h1>
+<div class="sub">Image UV simulée : fond bleu ambient + zone fluorescente avec gradient d'intensité et particules scattered</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Référence sans cartographie</span>
+    <span class="demo-letter">BASE</span>
+  </div>
+  <canvas id="cBase" width="500" height="380"></canvas>
+  <div class="demo-caption">Image originale telle quelle, aucune annotation. Sert de point de comparaison.</div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Heatmap scientifique gradient</span>
+    <span class="demo-letter">STYLE A</span>
+  </div>
+  <canvas id="cA" width="500" height="380"></canvas>
+  <div class="demo-caption">Couleur modulée par intensité. Bleu profond pour faible, violet et orange pour moyen, jaune et blanc pour fort. Référence : microscopie confocale, imagerie médicale.</div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Glow halo isoluminescent</span>
+    <span class="demo-letter">STYLE B</span>
+  </div>
+  <canvas id="cB" width="500" height="380"></canvas>
+  <div class="demo-caption">Luminescence douce diffusée en gaussian, couleur signature unique. Référence : forensique UV laboratoire, post-production cinéma haut de gamme.</div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Isocontours plus tint léger</span>
+    <span class="demo-letter">STYLE C</span>
+  </div>
+  <canvas id="cC" width="500" height="380"></canvas>
+  <div class="demo-caption">Lignes de contour à plusieurs seuils d'intensité, léger tint entre les contours. Référence : cartographie topographique, imagerie médicale CT scan.</div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Outline pixel-perfect sans remplissage</span>
+    <span class="demo-letter">STYLE D</span>
+  </div>
+  <canvas id="cD" width="500" height="380"></canvas>
+  <div class="demo-caption">Uniquement le contour exact, aucun fill. Image originale visible à 100 pour cent partout. Référence : outil sélection magique, contrôle qualité industriel.</div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Color-shift hue rotation</span>
+    <span class="demo-letter">STYLE E</span>
+  </div>
+  <canvas id="cE" width="500" height="380"></canvas>
+  <div class="demo-caption">Pixels détectés conservent luminance et structure mais subissent un décalage de teinte et saturation augmentée. Aucun overlay. Référence : réalité augmentée scientifique, false color satellite.</div>
+</div>
+
+<div class="demo">
+  <div class="demo-header">
+    <span class="demo-title">Combinaison B plus D — recommandation</span>
+    <span class="demo-letter">B + D</span>
+  </div>
+  <canvas id="cBD" width="500" height="380"></canvas>
+  <div class="demo-caption">Glow halo doux pour la qualité visuelle premium plus outline précis pour la rigueur technique du contour. Combinaison utilisée par les logiciels d'imagerie médicale et industrielle haut de gamme.</div>
+</div>
+
+<script>
+'use strict';
+
+const W = 500, H = 380;
+
+// ─────────────────────────────────────────────────────────────
+// Génère une image UV synthétique : fond bleu ambient + blob fluorescent
+// avec gradient d'intensité et particules scattered
+// ─────────────────────────────────────────────────────────────
+
+function noise(x, y, seed) {
+  return Math.sin(x * 12.9898 + y * 78.233 + seed * 43.5453) * 0.5 + 0.5;
+}
+
+function buildBase(ctx) {
+  // Fond UV ambient gradient radial
+  const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W, H));
+  grad.addColorStop(0, '#1a2245');
+  grad.addColorStop(0.5, '#0c1228');
+  grad.addColorStop(1, '#03050d');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Bruit subtil du fond
+  const img = ctx.getImageData(0, 0, W, H);
+  const d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const n = (Math.random() - 0.5) * 12;
+    d[i]   = Math.max(0, Math.min(255, d[i]   + n));
+    d[i+1] = Math.max(0, Math.min(255, d[i+1] + n));
+    d[i+2] = Math.max(0, Math.min(255, d[i+2] + n));
+  }
+  ctx.putImageData(img, 0, 0);
+
+  // Particules scattered (poussière fluo) sur tout le fond
+  for (let i = 0; i < 90; i++) {
+    const x = Math.random() * W;
+    const y = Math.random() * H;
+    const r = Math.random() * 1.2 + 0.5;
+    ctx.fillStyle = `rgba(150, 200, 255, ${0.4 + Math.random() * 0.3})`;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Blob fluorescent central — gradient d'intensité avec texture
+  const cx = W * 0.52, cy = H * 0.55;
+  const rx = 140, ry = 95;
+
+  // Couche 1 : halo extérieur diffus
+  const halo = ctx.createRadialGradient(cx, cy, 30, cx, cy, 160);
+  halo.addColorStop(0, 'rgba(80, 200, 220, 0.55)');
+  halo.addColorStop(0.4, 'rgba(60, 160, 200, 0.35)');
+  halo.addColorStop(1, 'rgba(20, 80, 140, 0)');
+  ctx.fillStyle = halo;
+  ctx.fillRect(0, 0, W, H);
+
+  // Couche 2 : zone dense centrale avec texture mottled
+  for (let i = 0; i < 4500; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const dist = Math.pow(Math.random(), 0.6) * 100;
+    const px = cx + Math.cos(a) * dist + (Math.random() - 0.5) * 15;
+    const py = cy + Math.sin(a) * dist * 0.7 + (Math.random() - 0.5) * 12;
+    const intensity = 1 - dist / 110;
+    const r = Math.random() * 1.3 + 0.3;
+
+    // Mélange de teintes cyan vers vert-jaune au centre
+    const cyanWeight = intensity * 0.9;
+    const baseR = 60 + 180 * (1 - cyanWeight) + Math.random() * 30;
+    const baseG = 180 + 50 * cyanWeight + Math.random() * 25;
+    const baseB = 200 + 30 * cyanWeight + Math.random() * 25;
+
+    ctx.fillStyle = `rgba(${Math.min(255, baseR)|0}, ${Math.min(255, baseG)|0}, ${Math.min(255, baseB)|0}, ${0.4 + intensity * 0.5})`;
+    ctx.beginPath();
+    ctx.arc(px, py, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Couche 3 : foyer orange-rouge concentré (curcuma simulé)
+  const orangeX = cx + 75, orangeY = cy - 35;
+  const orangeGrad = ctx.createRadialGradient(orangeX, orangeY, 0, orangeX, orangeY, 22);
+  orangeGrad.addColorStop(0, 'rgba(255, 130, 50, 0.95)');
+  orangeGrad.addColorStop(0.5, 'rgba(255, 90, 30, 0.7)');
+  orangeGrad.addColorStop(1, 'rgba(220, 60, 20, 0)');
+  ctx.fillStyle = orangeGrad;
+  ctx.beginPath();
+  ctx.arc(orangeX, orangeY, 22, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// ─────────────────────────────────────────────────────────────
+// Détecte les pixels "fluorescents" — simule testPixel : sat haute + lum décente
+// Retourne pixelMask Uint8Array (1 = détecté) + intensité Float32Array (0-1)
+// ─────────────────────────────────────────────────────────────
+
+function detectFluo(ctx) {
+  const img = ctx.getImageData(0, 0, W, H);
+  const d = img.data;
+  const mask = new Uint8Array(W * H);
+  const intens = new Float32Array(W * H);
+
+  for (let i = 0, p = 0; i < d.length; i += 4, p++) {
+    const r = d[i], g = d[i+1], b = d[i+2];
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const lum = (r + g + b) / 3;
+    const sat = max === 0 ? 0 : (max - min) / max;
+
+    // Seuil : pixel "fluorescent" si saturé ET pas trop sombre
+    if (sat > 0.25 && lum > 90) {
+      mask[p] = 1;
+      // Intensité 0..1 selon force du signal
+      intens[p] = Math.min(1, (sat * 1.5 + lum / 255) / 1.6);
+    }
+  }
+
+  return { mask, intens };
+}
+
+// ─────────────────────────────────────────────────────────────
+// STYLE A — Heatmap scientifique gradient
+// ─────────────────────────────────────────────────────────────
+
+function styleA(ctx, mask, intens) {
+  const overlay = ctx.createImageData(W, H);
+  const od = overlay.data;
+
+  function colormap(t) {
+    // Gradient bleu → violet → orange → jaune → blanc
+    t = Math.max(0, Math.min(1, t));
+    const stops = [
+      [0.00, [25,  35,  120]],   // bleu profond
+      [0.25, [80,  40,  170]],   // violet
+      [0.50, [220, 70,  120]],   // magenta
+      [0.70, [250, 130, 40]],    // orange
+      [0.85, [255, 215, 60]],    // jaune
+      [1.00, [255, 255, 220]],   // blanc lumineux
+    ];
+    for (let i = 0; i < stops.length - 1; i++) {
+      const [t0, c0] = stops[i], [t1, c1] = stops[i+1];
+      if (t >= t0 && t <= t1) {
+        const u = (t - t0) / (t1 - t0);
+        return [
+          c0[0] + (c1[0] - c0[0]) * u,
+          c0[1] + (c1[1] - c0[1]) * u,
+          c0[2] + (c1[2] - c0[2]) * u,
+        ];
+      }
+    }
+    return stops[stops.length-1][1];
+  }
+
+  for (let p = 0, j = 0; p < mask.length; p++, j += 4) {
+    if (!mask[p]) continue;
+    const t = intens[p];
+    const [r, g, b] = colormap(t);
+    od[j]   = r|0;
+    od[j+1] = g|0;
+    od[j+2] = b|0;
+    od[j+3] = (160 + 95 * t) | 0;
+  }
+
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  c.getContext('2d').putImageData(overlay, 0, 0);
+  ctx.drawImage(c, 0, 0);
+}
+
+// ─────────────────────────────────────────────────────────────
+// STYLE B — Glow halo isoluminescent (Gaussian bloom)
+// ─────────────────────────────────────────────────────────────
+
+function styleB(ctx, mask, intens) {
+  // Crée une image binaire des pixels détectés
+  const off = document.createElement('canvas');
+  off.width = W; off.height = H;
+  const octx = off.getContext('2d');
+  const img = octx.createImageData(W, H);
+  const d = img.data;
+
+  for (let p = 0, j = 0; p < mask.length; p++, j += 4) {
+    if (!mask[p]) continue;
+    const t = intens[p];
+    // Couleur signature : cyan-or doux
+    d[j]   = 100 + 155 * t;
+    d[j+1] = 220;
+    d[j+2] = 180 + 50 * t;
+    d[j+3] = 200 + 55 * t;
+  }
+  octx.putImageData(img, 0, 0);
+
+  // Applique un blur progressif et compose avec "screen" pour effet glow
+  ctx.save();
+  ctx.globalCompositeOperation = 'screen';
+  ctx.filter = 'blur(10px)';
+  ctx.drawImage(off, 0, 0);
+  ctx.filter = 'blur(5px)';
+  ctx.drawImage(off, 0, 0);
+  ctx.filter = 'blur(2px)';
+  ctx.drawImage(off, 0, 0);
+  ctx.filter = 'blur(0.5px)';
+  ctx.drawImage(off, 0, 0);
+  ctx.restore();
+}
+
+// ─────────────────────────────────────────────────────────────
+// STYLE C — Isocontours + tint léger
+// ─────────────────────────────────────────────────────────────
+
+function styleC(ctx, mask, intens) {
+  const thresholds = [0.35, 0.55, 0.75];
+  const colors = ['rgba(255, 220, 80, 0.8)', 'rgba(255, 160, 60, 0.85)', 'rgba(255, 80, 40, 0.95)'];
+
+  // Léger tint base sur tous les pixels détectés
+  const overlay = ctx.createImageData(W, H);
+  const od = overlay.data;
+  for (let p = 0, j = 0; p < mask.length; p++, j += 4) {
+    if (!mask[p]) continue;
+    od[j]   = 255;
+    od[j+1] = 200;
+    od[j+2] = 80;
+    od[j+3] = 32 + 48 * intens[p];
+  }
+  const tintC = document.createElement('canvas');
+  tintC.width = W; tintC.height = H;
+  tintC.getContext('2d').putImageData(overlay, 0, 0);
+  ctx.drawImage(tintC, 0, 0);
+
+  // Trace les contours pour chaque seuil
+  thresholds.forEach((threshold, idx) => {
+    ctx.strokeStyle = colors[idx];
+    ctx.lineWidth = 1.1;
+    ctx.beginPath();
+
+    for (let y = 1; y < H - 1; y++) {
+      for (let x = 1; x < W - 1; x++) {
+        const p = y * W + x;
+        const here = mask[p] && intens[p] >= threshold;
+        if (!here) continue;
+        const left  = mask[p - 1] && intens[p - 1] >= threshold;
+        const right = mask[p + 1] && intens[p + 1] >= threshold;
+        const up    = mask[p - W] && intens[p - W] >= threshold;
+        const down  = mask[p + W] && intens[p + W] >= threshold;
+        if (!left)  { ctx.moveTo(x, y); ctx.lineTo(x, y + 1); }
+        if (!right) { ctx.moveTo(x + 1, y); ctx.lineTo(x + 1, y + 1); }
+        if (!up)    { ctx.moveTo(x, y); ctx.lineTo(x + 1, y); }
+        if (!down)  { ctx.moveTo(x, y + 1); ctx.lineTo(x + 1, y + 1); }
+      }
+    }
+    ctx.stroke();
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// STYLE D — Outline pixel-perfect sans remplissage
+// ─────────────────────────────────────────────────────────────
+
+function styleD(ctx, mask) {
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255, 245, 200, 0.95)';
+  ctx.lineWidth = 1.2;
+  ctx.lineCap = 'square';
+  ctx.shadowColor = 'rgba(255, 240, 150, 0.6)';
+  ctx.shadowBlur = 3;
+
+  ctx.beginPath();
+  for (let y = 1; y < H - 1; y++) {
+    for (let x = 1; x < W - 1; x++) {
+      const p = y * W + x;
+      if (!mask[p]) continue;
+      const left  = mask[p - 1];
+      const right = mask[p + 1];
+      const up    = mask[p - W];
+      const down  = mask[p + W];
+      if (!left)  { ctx.moveTo(x, y); ctx.lineTo(x, y + 1); }
+      if (!right) { ctx.moveTo(x + 1, y); ctx.lineTo(x + 1, y + 1); }
+      if (!up)    { ctx.moveTo(x, y); ctx.lineTo(x + 1, y); }
+      if (!down)  { ctx.moveTo(x, y + 1); ctx.lineTo(x + 1, y + 1); }
+    }
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ─────────────────────────────────────────────────────────────
+// STYLE E — Color-shift hue rotation
+// ─────────────────────────────────────────────────────────────
+
+function styleE(ctx, mask) {
+  const img = ctx.getImageData(0, 0, W, H);
+  const d = img.data;
+
+  function rgb2hsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0;
+    const l = (max + min) / 2;
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h *= 60;
+    }
+    return [h, s, l];
+  }
+  function hsl2rgb(h, s, l) {
+    h /= 360;
+    if (s === 0) return [l*255, l*255, l*255];
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    const c = (t) => {
+      if (t < 0) t += 1; if (t > 1) t -= 1;
+      if (t < 1/6) return p + (q - p) * 6 * t;
+      if (t < 1/2) return q;
+      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+      return p;
+    };
+    return [c(h + 1/3) * 255, c(h) * 255, c(h - 1/3) * 255];
+  }
+
+  for (let p = 0, j = 0; p < mask.length; p++, j += 4) {
+    if (!mask[p]) continue;
+    const [h, s, l] = rgb2hsl(d[j], d[j+1], d[j+2]);
+    // Décalage de teinte vers le jaune-or signature et saturation boost
+    const newH = (h + 35) % 360;
+    const newS = Math.min(1, s * 1.6 + 0.15);
+    const [r2, g2, b2] = hsl2rgb(newH, newS, l);
+    d[j]   = r2 | 0;
+    d[j+1] = g2 | 0;
+    d[j+2] = b2 | 0;
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+// ─────────────────────────────────────────────────────────────
+// Rendu sur les 7 canvases
+// ─────────────────────────────────────────────────────────────
+
+['cBase', 'cA', 'cB', 'cC', 'cD', 'cE', 'cBD'].forEach(id => {
+  const c = document.getElementById(id);
+  const ctx = c.getContext('2d');
+  buildBase(ctx);
+});
+
+const ref = document.getElementById('cBase');
+const { mask, intens } = detectFluo(ref.getContext('2d'));
+
+styleA(document.getElementById('cA').getContext('2d'), mask, intens);
+styleB(document.getElementById('cB').getContext('2d'), mask, intens);
+styleC(document.getElementById('cC').getContext('2d'), mask, intens);
+styleD(document.getElementById('cD').getContext('2d'), mask);
+styleE(document.getElementById('cE').getContext('2d'), mask);
+
+// Combinaison B + D
+const cBD = document.getElementById('cBD').getContext('2d');
+styleB(cBD, mask, intens);
+styleD(cBD, mask);
+
+</script>
+</body>
+</html>

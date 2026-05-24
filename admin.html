@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Lucens IA — Admin Dashboard</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #06070A;
+  --surface: #0E1013;
+  --surface-2: #161A20;
+  --border: rgba(255,255,255,0.10);
+  --hairline: rgba(255,255,255,0.06);
+  --ink-primary: #F5F7FA;
+  --ink-secondary: #C7CCD6;
+  --ink-tertiary: #969CAB;
+  --ink-dim: #6E7484;
+  --terra: #D84315;
+  --good: #22C55E;
+  --warn: #F59E0B;
+  --bad: #EF4444;
+  --font-display: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SF Mono', Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink-secondary); font-family: var(--font-display); -webkit-font-smoothing: antialiased; }
+body { min-height: 100dvh; padding: 24px; padding-bottom: 64px; }
+.container { max-width: 1200px; margin: 0 auto; }
+
+header.admin-header { padding: 16px 0 24px; border-bottom: 1px solid var(--hairline); margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.wordmark { font-family: var(--font-display); font-weight: 800; font-size: 18px; letter-spacing: -0.022em; color: var(--ink-primary); }
+.wordmark::after { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--terra); margin-left: 5px; vertical-align: 0.16em; }
+.badge { font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; background: rgba(216,67,21,0.15); color: var(--terra); padding: 4px 10px; border-radius: 4px; }
+.auth-bar { display: flex; align-items: center; gap: 8px; }
+.auth-bar input { font-family: var(--font-mono); font-size: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 7px 10px; color: var(--ink-primary); min-width: 220px; }
+.auth-bar button { font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; background: var(--ink-primary); color: var(--bg); border: 0; border-radius: 4px; padding: 8px 14px; cursor: pointer; }
+.auth-ok { font-family: var(--font-mono); font-size: 10px; color: var(--good); letter-spacing: 0.08em; }
+
+h1 { font-family: var(--font-display); font-weight: 700; font-size: 24px; letter-spacing: -0.018em; color: var(--ink-primary); margin: 0 0 6px; }
+h2 { font-family: var(--font-display); font-weight: 600; font-size: 15px; letter-spacing: -0.005em; color: var(--ink-primary); margin: 32px 0 14px; padding-top: 20px; border-top: 1px solid var(--hairline); position: relative; }
+h2::before { content: ''; position: absolute; top: 20px; left: 0; width: 18px; height: 1px; background: var(--terra); }
+h2:first-of-type { padding-top: 0; border-top: 0; }
+h2:first-of-type::before { display: none; }
+
+.lead { font-size: 13px; color: var(--ink-tertiary); margin: 0 0 24px; max-width: 720px; line-height: 1.55; }
+
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--hairline); margin-bottom: 24px; overflow-x: auto; }
+.tab { font-family: var(--font-mono); font-size: 10.5px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: var(--ink-tertiary); background: transparent; border: 0; padding: 12px 16px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }
+.tab.active { color: var(--ink-primary); border-bottom-color: var(--terra); }
+.tab:hover:not(.active) { color: var(--ink-secondary); }
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.kpi { padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; }
+.kpi-label { font-family: var(--font-mono); font-size: 9.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-tertiary); margin-bottom: 6px; }
+.kpi-value { font-family: var(--font-display); font-size: 26px; font-weight: 700; letter-spacing: -0.020em; color: var(--ink-primary); line-height: 1.05; }
+.kpi-sub { font-family: var(--font-mono); font-size: 10px; color: var(--ink-dim); margin-top: 6px; }
+.kpi-trend-up { color: var(--bad); }
+.kpi-trend-down { color: var(--good); }
+.kpi-good { color: var(--good); }
+.kpi-warn { color: var(--warn); }
+.kpi-bad { color: var(--bad); }
+
+table { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+table thead th { font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: var(--ink-tertiary); text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); background: var(--surface); }
+table tbody td { padding: 8px 10px; border-bottom: 1px solid var(--hairline); color: var(--ink-secondary); }
+table tbody tr:hover { background: rgba(255,255,255,0.02); }
+table .cell-mono { font-family: var(--font-mono); }
+table .cell-good { color: var(--good); }
+table .cell-warn { color: var(--warn); }
+table .cell-bad { color: var(--bad); }
+
+.empty-state { padding: 36px; text-align: center; color: var(--ink-tertiary); font-size: 13px; background: var(--surface); border: 1px dashed var(--border); border-radius: 6px; }
+.action-row { display: flex; gap: 10px; margin: 16px 0; flex-wrap: wrap; }
+.btn { font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--ink-secondary); padding: 8px 14px; cursor: pointer; transition: all .15s; }
+.btn:hover { background: var(--surface-2); color: var(--ink-primary); }
+.btn-primary { background: var(--terra); border-color: var(--terra); color: #FFFFFF; }
+.btn-primary:hover { background: #BF360C; border-color: #BF360C; }
+
+pre.json-dump { font-family: var(--font-mono); font-size: 11px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 14px; overflow-x: auto; max-height: 480px; overflow-y: auto; color: var(--ink-secondary); line-height: 1.45; white-space: pre-wrap; word-break: break-all; }
+
+.error-msg { padding: 12px 14px; background: rgba(239, 68, 68, 0.10); border: 1px solid rgba(239, 68, 68, 0.45); border-radius: 4px; color: var(--bad); font-size: 12px; margin-bottom: 14px; }
+.warning-msg { padding: 12px 14px; background: rgba(245, 158, 11, 0.10); border: 1px solid rgba(245, 158, 11, 0.45); border-radius: 4px; color: var(--warn); font-size: 12px; margin-bottom: 14px; }
+
+.locked-overlay { display: flex; flex-direction: column; gap: 16px; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; }
+.locked-overlay h2 { border: 0; padding: 0; margin: 0 0 8px; }
+.locked-overlay h2::before { display: none; }
+.locked-sub { color: var(--ink-tertiary); max-width: 480px; }
+.locked-foot { color: var(--ink-dim); font-size: 11px; font-family: var(--font-mono); }
+.exp-meta { font-family: var(--font-mono); font-size: 11px; color: var(--ink-tertiary); align-self: center; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="admin-header">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span class="wordmark">LUCENS</span>
+    <span class="badge">Admin</span>
+  </div>
+  <div class="auth-bar" id="authBar">
+    <input type="password" id="adminToken" placeholder="Token admin (header x-lucens-admin)" />
+    <button type="button" id="connectBtn">Se connecter</button>
+  </div>
+</header>
+
+<div id="lockedView" class="locked-overlay">
+  <h2>Accès restreint</h2>
+  <p class="locked-sub">Ce tableau de bord est réservé aux administrateurs Lucens IA. Renseignez le token (variable d'env LUCENS_ADMIN_TOKEN) ci-dessus.</p>
+  <p class="locked-foot">Le token n'est jamais persisté côté serveur ni stocké en localStorage. Session-only.</p>
+</div>
+
+<div id="dashboardView" style="display:none;">
+
+<div class="tabs" role="tablist">
+  <button class="tab active" data-tab="overview" type="button">Vue d'ensemble</button>
+  <button class="tab" data-tab="prioritize" type="button">Active learning</button>
+  <button class="tab" data-tab="calibrate" type="button">Calibration</button>
+  <button class="tab" data-tab="hsl" type="button">Seuils HSL</button>
+  <button class="tab" data-tab="experiments" type="button">A/B Testing</button>
+  <button class="tab" data-tab="inter" type="button">Inter-annotateurs</button>
+  <button class="tab" data-tab="raw" type="button">Données brutes</button>
+</div>
+
+<div class="panel active" id="panel-overview">
+  <h1>Vue d'ensemble — 8 semaines</h1>
+  <p class="lead">KPIs principaux et drift hebdomadaire. La semaine courante est comparée à la moyenne des 7 précédentes.</p>
+  <div id="overviewKpis" class="kpi-grid"></div>
+  <h2>Drift detection</h2>
+  <div id="driftBox"></div>
+  <h2>Activité par semaine</h2>
+  <div id="weeklyTable"></div>
+</div>
+
+<div class="panel" id="panel-prioritize">
+  <h1>Active learning — Top 20 à annoter</h1>
+  <p class="lead">Cas priorisés via Core-Set (Sener &amp; Savarese 2018) : uncertainty × surprise + clustering K-Means pour la diversité.</p>
+  <div class="action-row">
+    <button class="btn btn-primary" id="loadPrioritize">Charger top 20</button>
+    <span id="prioritizeMeta" class="exp-meta"></span>
+  </div>
+  <div id="prioritizeTable"></div>
+</div>
+
+<div class="panel" id="panel-calibrate">
+  <h1>Calibration de la confidence Claude</h1>
+  <p class="lead">Reliability diagram + ECE/MCE via Isotonic Regression PAV (Guo et al. 2017). Détecte si la confidence du modèle est fiable.</p>
+  <div class="action-row">
+    <button class="btn btn-primary" id="loadCalibrate">Lancer la calibration</button>
+  </div>
+  <div id="calibrateResult"></div>
+</div>
+
+<div class="panel" id="panel-hsl">
+  <h1>Optimisation des seuils HSL</h1>
+  <p class="lead">Grid search sur les seuils heuristiques côté client. Maximise F1 sur le dataset feedback.</p>
+  <div class="action-row">
+    <button class="btn btn-primary" id="loadHsl">Lancer l'optimisation</button>
+  </div>
+  <div id="hslResult"></div>
+</div>
+
+<div class="panel" id="panel-experiments">
+  <h1>A/B testing du prompt</h1>
+  <p class="lead">Allocation déterministe par hash + Z-test 2 proportions. Promote auto si gain significatif, rollback si guardrail violé.</p>
+  <div class="action-row">
+    <button class="btn btn-primary" id="loadExperiments">Charger les expériments</button>
+  </div>
+  <div id="experimentsList"></div>
+  <div id="experimentDetail" style="margin-top: 24px;"></div>
+</div>
+
+<div class="panel" id="panel-inter">
+  <h1>Accord inter-annotateurs</h1>
+  <p class="lead">Cohen Kappa par paire d'annotateurs + agrégation Dawid-Skene des labels. Détecte les images litigieuses qui méritent arbitrage manuel.</p>
+  <div class="action-row">
+    <button class="btn btn-primary" id="loadInter">Charger l'analyse</button>
+  </div>
+  <div id="interResult"></div>
+</div>
+
+<div class="panel" id="panel-raw">
+  <h1>Données brutes</h1>
+  <p class="lead">Dump JSON brut des derniers endpoints pour debug / audit. Cliquez sur un endpoint pour voir sa sortie.</p>
+  <div class="action-row">
+    <button class="btn" data-raw="lucens-stats?range=8w">stats?range=8w</button>
+    <button class="btn" data-raw="lucens-cases?mode=list&limit=20">cases (top 20)</button>
+    <button class="btn" data-raw="lucens-prioritize?k=10">prioritize (k=10)</button>
+    <button class="btn" data-raw="lucens-calibrate">calibrate</button>
+    <button class="btn" data-raw="lucens-hsl-tune">hsl-tune</button>
+    <button class="btn" data-raw="lucens-experiments">experiments</button>
+    <button class="btn" data-raw="lucens-inter-annotator">inter-annotator</button>
+  </div>
+  <pre class="json-dump" id="rawDump">// Sélectionnez un endpoint ci-dessus</pre>
+</div>
+
+</div>
+
+</div>
+
+<script>
+'use strict';
+
+let adminToken = null;
+
+/* DOM helper safe : tout passe par textContent, jamais innerHTML.
+   tag = nom de tag ; attrs = {class, id, ...} ; children = array ou string. */
+function el(tag, attrs, children) {
+  const node = document.createElement(tag);
+  if (attrs) {
+    for (const [k, v] of Object.entries(attrs)) {
+      if (v == null) continue;
+      if (k === 'class') node.className = v;
+      else if (k === 'text') node.textContent = String(v);
+      else if (k.startsWith('on') && typeof v === 'function') node.addEventListener(k.slice(2).toLowerCase(), v);
+      else node.setAttribute(k, v);
+    }
+  }
+  if (Array.isArray(children)) {
+    for (const c of children) {
+      if (c == null) continue;
+      if (typeof c === 'string') node.appendChild(document.createTextNode(c));
+      else node.appendChild(c);
+    }
+  } else if (typeof children === 'string') {
+    node.textContent = children;
+  }
+  return node;
+}
+function clear(target) { while (target.firstChild) target.removeChild(target.firstChild); }
+function setText(target, txt) { clear(target); target.appendChild(document.createTextNode(String(txt))); }
+function errorBox(target, msg) {
+  clear(target);
+  target.appendChild(el('div', { class: 'error-msg' }, String(msg)));
+}
+function warningBox(target, msg) {
+  clear(target);
+  target.appendChild(el('div', { class: 'warning-msg' }, String(msg)));
+}
+function emptyState(target, msg) {
+  clear(target);
+  target.appendChild(el('div', { class: 'empty-state' }, String(msg)));
+}
+
+document.getElementById('connectBtn').addEventListener('click', () => {
+  const t = document.getElementById('adminToken').value.trim();
+  if (!t || t.length < 8) { alert('Token invalide'); return; }
+  fetch('/api/lucens-stats?range=1w', { headers: { 'x-lucens-admin': t } })
+    .then(r => {
+      if (r.status === 401) { alert('Token refusé.'); return; }
+      adminToken = t;
+      document.getElementById('lockedView').style.display = 'none';
+      document.getElementById('dashboardView').style.display = '';
+      const ab = document.getElementById('authBar');
+      clear(ab);
+      ab.appendChild(el('span', { class: 'auth-ok' }, '✓ Connecté · Session uniquement'));
+      loadOverview();
+    })
+    .catch(err => alert('Erreur réseau: ' + err.message));
+});
+document.getElementById('adminToken').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('connectBtn').click();
+});
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+async function apiFetch(path) {
+  if (!adminToken) throw new Error('Not authenticated');
+  const r = await fetch('/api/' + path, { headers: { 'x-lucens-admin': adminToken } });
+  if (!r.ok) {
+    const txt = await r.text();
+    throw new Error('HTTP ' + r.status + ' — ' + txt.slice(0, 200));
+  }
+  return r.json();
+}
+
+function kpiCard(label, value, cls, sub) {
+  const v = el('div', { class: 'kpi-value' + (cls ? ' ' + cls : '') }, String(value));
+  const children = [el('div', { class: 'kpi-label' }, label), v];
+  if (sub) children.push(el('div', { class: 'kpi-sub' }, sub));
+  return el('div', { class: 'kpi' }, children);
+}
+function classifyRate(rate) {
+  if (rate == null) return '';
+  if (rate < 15) return 'kpi-good';
+  if (rate < 30) return 'kpi-warn';
+  return 'kpi-bad';
+}
+
+/* ─── Overview ───────────────────────────────────────────── */
+async function loadOverview() {
+  try {
+    const data = await apiFetch('lucens-stats?range=8w');
+    renderOverviewKpis(data);
+    renderDrift(data);
+    renderWeeklyTable(data);
+  } catch (err) {
+    errorBox(document.getElementById('overviewKpis'), err.message);
+  }
+}
+
+function renderOverviewKpis(data) {
+  const cur = (data.weekly || []).slice(-1)[0] || {};
+  const k = cur.kpis || {};
+  const cards = [
+    kpiCard('Total feedback (8w)', data.aggregate?.totalFeedback || 0),
+    kpiCard('Negative rate', ((data.aggregate?.weightedNegativeRate || 0)).toFixed(1) + '%', classifyRate(data.aggregate?.weightedNegativeRate)),
+    kpiCard('Avg quality', k.avgFeedbackQuality || 0),
+    kpiCard('Avg trust', (k.avgTrustScore || 0).toFixed(2)),
+    kpiCard('Learning value cumulée', (data.aggregate?.cumulativeLearningValue || 0).toFixed(1)),
+    kpiCard('Consent training', ((k.consentTrainingRate || 0)).toFixed(1) + '%'),
+    kpiCard('Cas avec masque', k.casesWithMask || 0),
+    kpiCard('Avg IoU', k.avgIoU != null ? k.avgIoU.toFixed(3) : '—'),
+  ];
+  const target = document.getElementById('overviewKpis');
+  clear(target);
+  for (const c of cards) target.appendChild(c);
+}
+
+function renderDrift(data) {
+  const drift = data.drift || {};
+  const target = document.getElementById('driftBox');
+  clear(target);
+  if (!drift.available) { emptyState(target, 'Pas assez de données pour calculer le drift (minimum 2 semaines).'); return; }
+  const grid = el('div', { class: 'kpi-grid' }, [
+    kpiCard('Negative rate current', drift.negativeRateCurrent.toFixed(1) + '%', null, 'Baseline : ' + drift.negativeRateBaseline.toFixed(1) + '%'),
+    kpiCard('Δ Negative', (drift.negativeRateDeltaPoints > 0 ? '+' : '') + drift.negativeRateDeltaPoints.toFixed(1) + ' pts', drift.negativeRateDeltaPoints > 0 ? 'kpi-trend-up' : 'kpi-trend-down'),
+    kpiCard('IoU current', drift.iouCurrent != null ? drift.iouCurrent.toFixed(3) : '—', null, 'Baseline : ' + (drift.iouBaseline != null ? drift.iouBaseline.toFixed(3) : '—')),
+    kpiCard('Δ IoU', drift.iouDeltaPoints != null ? ((drift.iouDeltaPoints > 0 ? '+' : '') + drift.iouDeltaPoints.toFixed(1) + ' pts') : '—', drift.iouDeltaPoints != null && drift.iouDeltaPoints < 0 ? 'kpi-trend-up' : 'kpi-trend-down'),
+  ]);
+  target.appendChild(grid);
+  if (drift.alertNegative) target.appendChild(el('div', { class: 'warning-msg' }, 'Alerte negative rate : +' + drift.negativeRateDeltaPoints.toFixed(1) + ' points vs baseline.'));
+  if (drift.alertIoU) target.appendChild(el('div', { class: 'warning-msg' }, 'Alerte IoU : ' + drift.iouDeltaPoints.toFixed(1) + ' points vs baseline.'));
+}
+
+function renderWeeklyTable(data) {
+  const weekly = data.weekly || [];
+  const target = document.getElementById('weeklyTable');
+  clear(target);
+  if (!weekly.length) { emptyState(target, 'Aucune donnée.'); return; }
+  const table = el('table');
+  const thead = el('thead');
+  const trHead = el('tr');
+  ['Semaine','Feedback','Neg %','Quality','Trust','Learn','Cas','IoU','F1'].forEach(h => trHead.appendChild(el('th', null, h)));
+  thead.appendChild(trHead);
+  table.appendChild(thead);
+  const tbody = el('tbody');
+  for (const w of weekly) {
+    const k = w.kpis;
+    const tr = el('tr');
+    tr.appendChild(el('td', { class: 'cell-mono' }, w.week));
+    tr.appendChild(el('td', null, String(w.total)));
+    tr.appendChild(el('td', null, k.negativeRate.toFixed(1) + '%'));
+    tr.appendChild(el('td', null, String(k.avgFeedbackQuality)));
+    tr.appendChild(el('td', null, k.avgTrustScore.toFixed(2)));
+    tr.appendChild(el('td', null, k.avgLearningWeight.toFixed(2)));
+    tr.appendChild(el('td', null, String(k.casesWithMask)));
+    tr.appendChild(el('td', null, k.avgIoU != null ? k.avgIoU.toFixed(3) : '—'));
+    tr.appendChild(el('td', null, k.avgF1 != null ? k.avgF1.toFixed(3) : '—'));
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  target.appendChild(table);
+}
+
+/* ─── Prioritize ─────────────────────────────────────────── */
+document.getElementById('loadPrioritize').addEventListener('click', async () => {
+  const target = document.getElementById('prioritizeTable');
+  const meta = document.getElementById('prioritizeMeta');
+  try {
+    const data = await apiFetch('lucens-prioritize?k=20');
+    setText(meta, (data.total || 0) + ' cas analysés · ' + (data.returned || 0) + ' retournés · algo : ' + (data.methodology?.algorithm || ''));
+    if (!data.cases || !data.cases.length) { emptyState(target, 'Aucun cas à annoter pour le moment.'); return; }
+    const table = el('table');
+    const thead = el('thead');
+    const trHead = el('tr');
+    ['Case','Score','Uncert','Surprise','IoU','Learn','Trust','Cluster','Contexte',''].forEach(h => trHead.appendChild(el('th', null, h)));
+    thead.appendChild(trHead);
+    table.appendChild(thead);
+    const tbody = el('tbody');
+    for (const c of data.cases) {
+      const tr = el('tr');
+      tr.appendChild(el('td', { class: 'cell-mono' }, c.id.slice(0, 20) + '…'));
+      tr.appendChild(el('td', null, c.combinedScore.toFixed(3)));
+      tr.appendChild(el('td', null, c.uncertaintyScore.toFixed(2)));
+      tr.appendChild(el('td', null, c.surpriseScore.toFixed(2)));
+      tr.appendChild(el('td', null, c.iou != null ? c.iou.toFixed(3) : '—'));
+      tr.appendChild(el('td', null, c.learningWeight.toFixed(2)));
+      tr.appendChild(el('td', null, c.trustScore.toFixed(2)));
+      tr.appendChild(el('td', null, 'C' + c.clusterId));
+      tr.appendChild(el('td', null, (c.establishmentType || '—') + ' / ' + (c.moment || '—')));
+      tr.appendChild(el('td', null, [el('button', { class: 'btn', style: 'font-size:10px;padding:4px 8px;', onclick: () => downloadCase(c.id) }, 'DL')]));
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    clear(target); target.appendChild(table);
+  } catch (err) {
+    errorBox(target, err.message);
+  }
+});
+async function downloadCase(id) {
+  try {
+    const r = await fetch('/api/lucens-cases?mode=download&id=' + encodeURIComponent(id), { headers: { 'x-lucens-admin': adminToken } });
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = id + '.json'; a.click();
+    URL.revokeObjectURL(url);
+  } catch (err) { alert('Erreur DL: ' + err.message); }
+}
+
+/* ─── Calibrate ──────────────────────────────────────────── */
+document.getElementById('loadCalibrate').addEventListener('click', async () => {
+  const target = document.getElementById('calibrateResult');
+  try {
+    const data = await apiFetch('lucens-calibrate');
+    if (!data.ready) { warningBox(target, data.message || 'Calibration impossible.'); return; }
+    const ece = data.ece;
+    const cls = ece < 0.05 ? 'kpi-good' : ece < 0.10 ? 'kpi-warn' : 'kpi-bad';
+    clear(target);
+    target.appendChild(el('div', { class: 'kpi-grid' }, [
+      kpiCard('Samples', data.samples),
+      kpiCard('ECE', ece.toFixed(4), cls),
+      kpiCard('MCE', data.mce.toFixed(4)),
+    ]));
+    target.appendChild(el('p', { style: 'color: var(--ink-secondary); font-size: 13px; margin: 14px 0;' }, data.interpretation));
+    target.appendChild(el('h2', null, 'Reliability diagram'));
+    const table = el('table');
+    const thead = el('thead');
+    const trHead = el('tr');
+    ['Bin','Range','Count','Avg confidence','Accuracy réelle','Gap'].forEach(h => trHead.appendChild(el('th', null, h)));
+    thead.appendChild(trHead);
+    table.appendChild(thead);
+    const tbody = el('tbody');
+    for (const b of data.reliability) {
+      const tr = el('tr');
+      tr.appendChild(el('td', null, String(b.bin)));
+      tr.appendChild(el('td', { class: 'cell-mono' }, b.range[0] + '–' + b.range[1]));
+      tr.appendChild(el('td', null, String(b.count)));
+      tr.appendChild(el('td', null, b.avgConfidence != null ? b.avgConfidence.toFixed(3) : '—'));
+      tr.appendChild(el('td', null, b.accuracy != null ? b.accuracy.toFixed(3) : '—'));
+      const gapCls = b.gap != null && Math.abs(b.gap) > 0.10 ? 'cell-warn' : '';
+      tr.appendChild(el('td', { class: gapCls }, b.gap != null ? ((b.gap > 0 ? '+' : '') + b.gap.toFixed(3)) : '—'));
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    target.appendChild(table);
+  } catch (err) { errorBox(target, err.message); }
+});
+
+/* ─── HSL tune ───────────────────────────────────────────── */
+document.getElementById('loadHsl').addEventListener('click', async () => {
+  const target = document.getElementById('hslResult');
+  try {
+    const data = await apiFetch('lucens-hsl-tune');
+    if (!data.ready) { warningBox(target, data.message || 'Optimisation impossible.'); return; }
+    clear(target);
+    target.appendChild(el('div', { class: 'kpi-grid' }, [
+      kpiCard('Samples', data.samples),
+      kpiCard('Baseline F1', data.methodology.baselineF1.toFixed(3)),
+      kpiCard('Expected F1', data.expectedF1.toFixed(3), 'kpi-good'),
+      kpiCard('Δ F1 pts', (data.expectedDeltaF1Points > 0 ? '+' : '') + data.expectedDeltaF1Points.toFixed(2)),
+    ]));
+    if (data.warning) target.appendChild(el('div', { class: 'warning-msg' }, data.warning));
+    target.appendChild(el('h2', null, 'Best thresholds'));
+    const dump = el('pre', { class: 'json-dump' });
+    dump.textContent = JSON.stringify(data.bestThresholds, null, 2);
+    target.appendChild(dump);
+    target.appendChild(el('h2', null, 'Top 10 combinaisons'));
+    const table = el('table');
+    const thead = el('thead');
+    const trHead = el('tr');
+    ['satMin','lumMax','cellThreshold','F1 projeté','Precision','Recall'].forEach(h => trHead.appendChild(el('th', null, h)));
+    thead.appendChild(trHead);
+    table.appendChild(thead);
+    const tbody = el('tbody');
+    for (const t of data.top10) {
+      const tr = el('tr');
+      tr.appendChild(el('td', null, String(t.satMin)));
+      tr.appendChild(el('td', null, String(t.lumMax)));
+      tr.appendChild(el('td', null, String(t.cellThreshold)));
+      tr.appendChild(el('td', null, t.projectedF1.toFixed(3)));
+      tr.appendChild(el('td', null, t.projectedPrecision.toFixed(3)));
+      tr.appendChild(el('td', null, t.projectedRecall.toFixed(3)));
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    target.appendChild(table);
+  } catch (err) { errorBox(target, err.message); }
+});
+
+/* ─── Experiments ────────────────────────────────────────── */
+document.getElementById('loadExperiments').addEventListener('click', async () => {
+  const target = document.getElementById('experimentsList');
+  try {
+    const data = await apiFetch('lucens-experiments');
+    if (!data.experiments || !data.experiments.length) {
+      emptyState(target, 'Aucun experiment configuré. POST /api/lucens-experiments avec un body config pour en créer un.');
+      return;
+    }
+    const table = el('table');
+    const thead = el('thead');
+    const trHead = el('tr');
+    ['ID','Status','Démarré le',''].forEach(h => trHead.appendChild(el('th', null, h)));
+    thead.appendChild(trHead);
+    table.appendChild(thead);
+    const tbody = el('tbody');
+    for (const e of data.experiments) {
+      const tr = el('tr');
+      tr.appendChild(el('td', { class: 'cell-mono' }, e.id));
+      tr.appendChild(el('td', null, e.status));
+      tr.appendChild(el('td', null, new Date(e.startedAt).toISOString().slice(0, 10)));
+      tr.appendChild(el('td', null, [el('button', { class: 'btn', onclick: () => loadExperimentDetail(e.id) }, 'Détails')]));
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    clear(target); target.appendChild(table);
+  } catch (err) { errorBox(target, err.message); }
+});
+async function loadExperimentDetail(id) {
+  const target = document.getElementById('experimentDetail');
+  try {
+    const data = await apiFetch('lucens-experiments?id=' + encodeURIComponent(id));
+    clear(target);
+    target.appendChild(el('h2', null, id));
+    const dump = el('pre', { class: 'json-dump' });
+    dump.textContent = JSON.stringify(data, null, 2);
+    target.appendChild(dump);
+  } catch (err) { errorBox(target, err.message); }
+}
+
+/* ─── Inter-annotator ────────────────────────────────────── */
+document.getElementById('loadInter').addEventListener('click', async () => {
+  const target = document.getElementById('interResult');
+  try {
+    const data = await apiFetch('lucens-inter-annotator');
+    if (!data.groupCount) {
+      emptyState(target, 'Aucune image annotée par plusieurs utilisateurs distincts. Continuez à collecter.');
+      return;
+    }
+    clear(target);
+    target.appendChild(el('div', { class: 'kpi-grid' }, [
+      kpiCard('Groupes multi-annotés', data.groupCount),
+      kpiCard('Avg Kappa', data.statistics.avgKappa != null ? data.statistics.avgKappa.toFixed(3) : '—'),
+      kpiCard('Litigieux (κ < 0.4)', data.statistics.litigiousCount, data.statistics.litigiousCount > 5 ? 'kpi-warn' : ''),
+      kpiCard('Paires évaluées', data.statistics.pairsEvaluated),
+    ]));
+    if (data.litigious && data.litigious.length) {
+      target.appendChild(el('h2', null, 'Cas litigieux à arbitrer'));
+      const table = el('table');
+      const thead = el('thead');
+      const trHead = el('tr');
+      ['Image hash','Annotateurs','κ moyen','Agreement'].forEach(h => trHead.appendChild(el('th', null, h)));
+      thead.appendChild(trHead);
+      table.appendChild(thead);
+      const tbody = el('tbody');
+      for (const g of data.litigious.slice(0, 20)) {
+        const tr = el('tr');
+        tr.appendChild(el('td', { class: 'cell-mono' }, g.imageHash.slice(0, 12) + '…'));
+        tr.appendChild(el('td', null, String(g.annotatorCount)));
+        tr.appendChild(el('td', { class: 'cell-bad' }, g.avgKappa != null ? g.avgKappa.toFixed(3) : '—'));
+        tr.appendChild(el('td', null, g.agreement));
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody);
+      target.appendChild(table);
+    }
+  } catch (err) { errorBox(target, err.message); }
+});
+
+/* ─── Raw ────────────────────────────────────────────────── */
+document.querySelectorAll('[data-raw]').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const dump = document.getElementById('rawDump');
+    try {
+      const data = await apiFetch(btn.dataset.raw);
+      dump.textContent = JSON.stringify(data, null, 2);
+    } catch (err) {
+      dump.textContent = '// ERROR: ' + err.message;
+    }
+  });
+});
+</script>
+</body>
+</html>

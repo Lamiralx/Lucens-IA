@@ -1,0 +1,57 @@
+{
+  "product": "Lucens IA Calibration Card",
+  "version": "V4",
+  "serial": "LCNK7M2X",
+  "qr_payload": "LUCENS:CALIBV4:LCNK7M2X",
+  "dimensions_mm": {
+    "width": 75.0,
+    "height": 50.0,
+    "thickness": 2.0
+  },
+  "patches": {
+    "count": 9,
+    "layout": "3×3",
+    "patch_dimensions_mm": {
+      "w": 21.333333333333332,
+      "h": 6.0
+    },
+    "texture_names": [
+      "TOPO",
+      "VORONOI",
+      "HEXAGONE",
+      "FIBONACCI",
+      "FRESNEL",
+      "MOIRE",
+      "VAGUES",
+      "GRADIENT",
+      "CODEBARRE"
+    ]
+  },
+  "aruco": {
+    "dict": "DICT_4X4_50",
+    "ids": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "corners": [
+      "TL",
+      "TR",
+      "BL",
+      "BR"
+    ],
+    "size_mm": 6.0
+  },
+  "print_strategy": {
+    "method": "bi-material CFS",
+    "slot_1": "PLA NOIR mat (base + QR modules + ArUco + logo background)",
+    "slot_2": "PLA FLUO bleu-vert (9 patches + LUCENS IA glyph)"
+  },
+  "detection_layers": [
+    "QR payload starts with LUCENS:CALIBV4: and matches serial pattern",
+    "4 ArUco markers DICT_4X4_50 IDs 0-3 detected at corners",
+    "9 patch positions match expected 3×3 grid coordinates",
+    "Chromatic signature in fluo blue-green band under UV-A"
+  ]
+}
