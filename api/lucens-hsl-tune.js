@@ -28,7 +28,7 @@
  * function dédiée — différé Vague 4.
  */
 
-import { applyCors } from './_lib/security.js';
+import { applyCors, safeCompare } from './_lib/security.js';
 
 const MAX_CASES_SCAN = 100;
 const PIXELS_PER_CASE_MAX = 500;     /* échantillonnage pour rester sous timeout */
@@ -52,7 +52,8 @@ export default async function handler(req, res) {
   if (!expected) {
     return res.status(503).json({ error: 'LUCENS_ADMIN_TOKEN not configured on server' });
   }
-  if (!token || token !== expected) {
+  /* V39 fix F-03 — Comparaison timing-safe. */
+  if (!safeCompare(typeof token === 'string' ? token : '', expected)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 

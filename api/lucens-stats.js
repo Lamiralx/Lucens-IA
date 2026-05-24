@@ -22,6 +22,7 @@
  */
 
 import { applyCors } from './_lib/security.js';
+import { isoWeekKey } from './_lib/isoweek.js';
 import { timingSafeEqual } from 'node:crypto';
 
 const MAX_RANGE_WEEKS = 8;
@@ -278,12 +279,10 @@ function getLastIsoWeeks(count) {
 }
 
 function getIsoWeekKey(date) {
-  /* Format aligné avec celui produit par /api/feedback.js
-     YYYY-W## en utilisant la même formule (ISO-week approximative). */
-  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  const week = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
-  return `${d.getUTCFullYear()}-W${week}`;
+  /* V39 fix F-14 — Délégué au module partagé `_lib/isoweek.js` (algo ISO 8601
+     correct, basé sur le jeudi de la semaine). Garantit cohérence d'écriture
+     (feedback.js) et de lecture (ici) des clés `lucens:stats:YYYY-Www:*`. */
+  return isoWeekKey(date);
 }
 
 function avg(arr) {

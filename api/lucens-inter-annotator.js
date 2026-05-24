@@ -25,7 +25,7 @@
  *   - litigious : top images avec désaccord fort (à arbitrer manuellement)
  */
 
-import { applyCors } from './_lib/security.js';
+import { applyCors, safeCompare } from './_lib/security.js';
 
 const MAX_CASES_SCAN = 300;
 const MIN_KAPPA_AGREE = 0.4;        /* < 0.4 = "désaccord faible/modéré" Landis-Koch */
@@ -44,7 +44,8 @@ export default async function handler(req, res) {
   if (!expected) {
     return res.status(503).json({ error: 'LUCENS_ADMIN_TOKEN not configured on server' });
   }
-  if (!token || token !== expected) {
+  /* V39 fix F-03 — Comparaison timing-safe. */
+  if (!safeCompare(typeof token === 'string' ? token : '', expected)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 

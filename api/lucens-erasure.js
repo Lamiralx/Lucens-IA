@@ -107,7 +107,8 @@ export default async function handler(req, res) {
     });
   } catch (err) {
     console.error('[ERASURE_ERROR]', err);
-    return res.status(500).json({ error: 'Internal error', detail: String(err?.message || err) });
+    /* V39 fix F-04 — Pas de détail interne dans la réponse publique. */
+    return res.status(500).json({ error: 'Internal error', type: 'InternalError' });
   }
 }
 

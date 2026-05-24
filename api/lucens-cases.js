@@ -15,7 +15,7 @@
  * Sécurité : CORS whitelist + token obligatoire + audit log + validation ID stricte.
  */
 
-import { applyCors } from './_lib/security.js';
+import { applyCors, safeCompare } from './_lib/security.js';
 
 const MAX_LIMIT = 100;
 const VALID_ID_REGEX = /^case_user_fb_[a-z0-9_]+$/i;
@@ -33,7 +33,9 @@ export default async function handler(req, res) {
   if (!expected) {
     return res.status(503).json({ error: 'LUCENS_ADMIN_TOKEN not configured on server' });
   }
-  if (!token || token !== expected) {
+  /* V39 fix F-03 — Comparaison timing-safe pour éviter qu'un attaquant
+     extraie le token caractère par caractère via mesure de latence. */
+  if (!safeCompare(typeof token === 'string' ? token : '', expected)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 

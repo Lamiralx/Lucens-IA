@@ -91,3 +91,26 @@ export function send429(res, retryAfter) {
     type: "RateLimitError",
   });
 }
+
+/**
+ * V39 fix F-03 — Comparaison de tokens en temps constant.
+ * Utilisé par tous les endpoints admin pour comparer le header `x-lucens-admin`
+ * au secret. La comparaison directe `a !== b` est vulnérable aux timing
+ * attacks : un attaquant peut extraire caractère par caractère le bon token
+ * en mesurant les microsecondes de latence de réponse.
+ *
+ * Retourne false dès qu'un des deux est falsy ou que les longueurs diffèrent,
+ * pour éviter la lecture d'un Buffer plus court.
+ */
+import { timingSafeEqual } from "node:crypto";
+
+export function safeCompare(a, b) {
+  if (typeof a !== "string" || typeof b !== "string") return false;
+  if (a.length === 0 || b.length === 0) return false;
+  if (a.length !== b.length) return false;
+  try {
+    return timingSafeEqual(Buffer.from(a, "utf8"), Buffer.from(b, "utf8"));
+  } catch {
+    return false;
+  }
+}

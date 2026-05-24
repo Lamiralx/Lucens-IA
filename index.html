@@ -94,11 +94,22 @@ if ('serviceWorker' in navigator) {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- V39 fix F-11 — Attribut `integrity` Subresource Integrity (SRI) sur les 2
+     scripts CDN. Empêche une compromission de cdnjs.cloudflare.com d'injecter
+     du code malveillant : le navigateur vérifie le hash sha384 avant exécution
+     et refuse le script si modifié. `crossorigin="anonymous"` requis pour
+     que la vérification SRI s'applique en cross-origin. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk"
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
 <!-- jsQR — détection QR code pour authentification carte de calibration Lucens.
      Pur JS, ~50 KB, MIT, utilisé pour valider que c'est bien la carte officielle
      avant déclenchement de la calibration. Marche UV allumé ou éteint. -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"
+        integrity="sha384-5MXQT3yrGpx6/FO6Z5JlMsn1xsN/OggV+b88W2CfpNqmvPfmv7JW/O8x78GzptfE"
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -8323,10 +8334,15 @@ body.lv-open { overflow: hidden; touch-action: none; }
           </div>
 
           <div class="home-actions" id="dropzone">
-            <button class="home-btn home-btn-primary" id="cameraBtn" type="button">
+            <!-- V39 fix F-15 — aria-label statiques en plus du data-i18n.
+                 Garantit un libellé accessible aux lecteurs d'écran même si
+                 la traduction tarde à charger ou si la clé i18n est manquante. -->
+            <button class="home-btn home-btn-primary" id="cameraBtn" type="button"
+                    aria-label="Prendre une photo Live View">
               <span data-i18n="inst_shoot">LIVE</span>
             </button>
-            <button class="home-btn home-btn-secondary" id="galleryBtn" type="button">
+            <button class="home-btn home-btn-secondary" id="galleryBtn" type="button"
+                    aria-label="Importer une image depuis la galerie">
               <span data-i18n="inst_alt_gallery">Importer une image</span>
             </button>
           </div>
@@ -17591,9 +17607,21 @@ const Annotator = (() => {
       try {
         resp = await doFetch();
       } catch (netErr) {
-        /* Erreur réseau → 1 retry après 1.5s */
+        /* V39 fix F-12 — Si l'utilisateur a explicitement annulé via
+           AbortController (bouton ANNULER du loader), on NE retry PAS et on
+           propage l'AbortError tel quel. Avant : le retry partait avec un
+           signal déjà annulé, échouait immédiatement, et le message d'erreur
+           "Analyse interrompue. Réessayez." s'affichait alors que l'utilisateur
+           voulait juste annuler. */
+        if (netErr && netErr.name === 'AbortError') throw netErr;
+        /* Erreur réseau réelle → 1 retry après 1.5s */
         console.warn('[DIAG] network error, retry once:', netErr);
         await new Promise(r => setTimeout(r, 1500));
+        /* Re-check signal avant le retry : l'utilisateur a peut-être annulé
+           pendant le délai d'attente. */
+        if (signal && signal.aborted) {
+          const ae = new Error('Aborted'); ae.name = 'AbortError'; throw ae;
+        }
         resp = await doFetch();
       }
       if (resp.ok || !RETRY_STATUSES.has(resp.status)) return resp;
@@ -18857,8 +18885,29 @@ const Annotator = (() => {
       }
     }
 
-    /* Refresh + sync check toutes les 30s tant que l'app est ouverte */
-    setInterval(() => { refresh(); triggerSyncIfNeeded(); }, 30000);
+    /* Refresh + sync check toutes les 30s tant que l'app est ouverte.
+       V39 fix F-09 — Le timer est suspendu quand l'app passe en arrière-plan
+       (visibility hidden) pour économiser la batterie en usage terrain HACCP,
+       et reprend dès que l'app revient au premier plan. L'ID est tracké pour
+       permettre un cleanup propre si nécessaire. */
+    let _syncInterval = null;
+    function _startSyncInterval() {
+      if (_syncInterval) return;
+      _syncInterval = setInterval(() => { refresh(); triggerSyncIfNeeded(); }, 30000);
+    }
+    function _stopSyncInterval() {
+      if (_syncInterval) { clearInterval(_syncInterval); _syncInterval = null; }
+    }
+    _startSyncInterval();
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        _stopSyncInterval();
+      } else {
+        _startSyncInterval();
+        /* Refresh immédiat au retour pour rattraper l'état réseau actuel */
+        refresh(); triggerSyncIfNeeded();
+      }
+    });
 
     /* V22 — Sync au démarrage si online + queue non vide (cas critique
        où l'app s'ouvre déjà connectée avec des analyses en attente) */
@@ -19671,7 +19720,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v38</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v39</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">

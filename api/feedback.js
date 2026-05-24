@@ -26,7 +26,24 @@ import { applyCors, getClientIp, rateLimit, send429 } from './_lib/security.js';
 import { computeFeedbackQuality, computeTrustScore, effectiveLearningWeight, learningWeightFromQuality } from './_lib/feedback-scoring.js';
 import { recordVariantOutcome } from './_lib/ab-testing.js';
 import { recordUserContribution, getUserReputation, effectiveLearningWeightWithHistory } from './_lib/user-reputation.js';
+import { isoWeekKey } from './_lib/isoweek.js';
+/* V39 fix F-10 — import statique unique de @vercel/kv. Avant : 3 `await import()`
+   dynamiques séparés, chacun pouvant échouer indépendamment et créer des états
+   incohérents (burst lock bypassed mais stats échouées, ou inverse). */
+import { kv } from '@vercel/kv';
 import crypto from 'crypto';
+
+/* V39 fix F-08 — Clamp helper : ramène un nombre dans [0, 1]. Sert à
+   sanitiser les métriques pixel envoyées par le client AVANT incrément KV.
+   Sans ce filtre, un client malveillant pouvait envoyer `falsePositiveRatio:
+   999999` pour corrompre les agrégats `fpr_sum_x10000` et aveugler le
+   système d'alertes drift. */
+function clamp01(v) {
+  if (typeof v !== 'number' || !Number.isFinite(v)) return 0;
+  if (v < 0) return 0;
+  if (v > 1) return 1;
+  return v;
+}
 
 /* Vague 1 RGPD (ChatGPT P0) : deleteToken cryptographique généré côté
    serveur, retourné une seule fois à l'utilisateur. Seul son hash SHA-256
@@ -59,7 +76,6 @@ export default async function handler(req, res) {
   /* Anti-spam burst : 30s entre 2 submits du même IP. Bloque le clic répété
      qui pollue les stats avec des "all_seen" vides. */
   try {
-    const { kv } = await import('@vercel/kv');
     const burstKey = `lucens:fb:burst:${ip}`;
     const exists = await kv.get(burstKey);
     if (exists) {
@@ -160,7 +176,6 @@ export default async function handler(req, res) {
     let learningWeight;
     if (body.userSessionId) {
       try {
-        const { kv } = await import('@vercel/kv');
         userReputation = await getUserReputation(kv, body.userSessionId);
       } catch { /* fail-open : pas de réputation = neutre */ }
     }
@@ -208,13 +223,14 @@ export default async function handler(req, res) {
 
     let stored = false;
     try {
-      const { kv } = await import('@vercel/kv');
-
       await kv.lpush('lucens:feedback:recent', JSON.stringify(entry));
       await kv.ltrim('lucens:feedback:recent', 0, 999);
 
-      const week = new Date(entry.timestamp);
-      const wk = week.getUTCFullYear() + '-W' + Math.ceil(((week - new Date(week.getUTCFullYear(),0,1)) / 86400000 + 1) / 7);
+      /* V39 fix F-07 — clé ISO week via module partagé (algo ISO 8601 correct).
+         Avant : formule "approximative" + mélange UTC/local → drift entre cette
+         clé d'écriture et celle de lecture dans lucens-stats.js sur les semaines
+         de transition (52/53/1). Maintenant identique des 2 côtés. */
+      const wk = isoWeekKey(entry.timestamp);
       if (entry.detection)      await kv.hincrby(`lucens:stats:${wk}:detection`, entry.detection, 1);
       if (entry.identification) await kv.hincrby(`lucens:stats:${wk}:identification`, entry.identification, 1);
       if (entry.scoreFeedback)  await kv.hincrby(`lucens:stats:${wk}:score`, entry.scoreFeedback, 1);
@@ -237,13 +253,19 @@ export default async function handler(req, res) {
       /* Consentement & cases */
       if (consentTraining === true) await kv.hincrby(`lucens:stats:${wk}:consent`, 'training_true', 1);
       else await kv.hincrby(`lucens:stats:${wk}:consent`, 'training_false', 1);
-      /* Métriques IoU agrégées si maskMetrics présent */
+      /* V39 fix F-08 — Métriques IoU agrégées : on CLAMP à [0,1] avant
+         d'incrémenter les sommes. Sinon un attaquant peut envoyer des valeurs
+         hors bornes pour aveugler les alertes drift et fausser les KPIs. */
       if (body.maskMetrics && typeof body.maskMetrics.iou === 'number') {
-        await kv.hincrby(`lucens:stats:${wk}:iou`, 'sum_x10000', Math.round(body.maskMetrics.iou * 10000));
+        const iouC = clamp01(body.maskMetrics.iou);
+        const fprC = clamp01(body.maskMetrics.falsePositiveRatio || 0);
+        const fnrC = clamp01(body.maskMetrics.falseNegativeRatio || 0);
+        const f1C  = clamp01(body.maskMetrics.f1 || 0);
+        await kv.hincrby(`lucens:stats:${wk}:iou`, 'sum_x10000', Math.round(iouC * 10000));
         await kv.hincrby(`lucens:stats:${wk}:iou`, 'count', 1);
-        await kv.hincrby(`lucens:stats:${wk}:iou`, 'fpr_sum_x10000', Math.round((body.maskMetrics.falsePositiveRatio || 0) * 10000));
-        await kv.hincrby(`lucens:stats:${wk}:iou`, 'fnr_sum_x10000', Math.round((body.maskMetrics.falseNegativeRatio || 0) * 10000));
-        await kv.hincrby(`lucens:stats:${wk}:iou`, 'f1_sum_x10000', Math.round((body.maskMetrics.f1 || 0) * 10000));
+        await kv.hincrby(`lucens:stats:${wk}:iou`, 'fpr_sum_x10000', Math.round(fprC * 10000));
+        await kv.hincrby(`lucens:stats:${wk}:iou`, 'fnr_sum_x10000', Math.round(fnrC * 10000));
+        await kv.hincrby(`lucens:stats:${wk}:iou`, 'f1_sum_x10000', Math.round(f1C * 10000));
       }
 
       if (entry.comment && (entry.detection !== 'all_seen' || entry.identification !== 'correct' || entry.scoreFeedback !== 'correct')) {
@@ -392,6 +414,9 @@ export default async function handler(req, res) {
     });
   } catch (err) {
     console.error('[FEEDBACK_ERROR]', err);
-    res.status(500).json({ error: 'Internal error', detail: String(err?.message || err) });
+    /* V39 fix F-04 — On ne renvoie PLUS err.message au client (endpoint public) :
+       cela exposait des stack traces, chemins serveur, et détails internes Node/KV
+       qui peuvent guider une exploitation. Le détail reste en console serveur. */
+    res.status(500).json({ error: 'Internal error', type: 'InternalError' });
   }
 }
