@@ -5811,45 +5811,42 @@ input[type="file"] { display: none; }
    des modals d'analyse mais sous les overlays critiques (codepad, etc.).
    Dismiss persistant par version via localStorage.
    ─────────────────────────────────────────────────────────────────────────── */
-/* V40.1 — Positionnement bulletproof : on remplace `left:50% + translateX(-50%)`
-   par `inset-inline + margin-inline: auto`. Bénéfices :
-   1. Plus de translateX qui se "détache" si un ancestor a un `transform`
-      (position:fixed devient effectivement position:absolute dans ce cas,
-      d'où l'impression de "scroller avec la page").
-   2. Plus de débordement à droite quand `100vw` inclut la scrollbar
-      (left+right = 14px chacun bornent strictement les marges, peu importe
-      la largeur exacte du viewport).
-   3. L'animation slide-up reste fluide via translateY pur sur l'axe Y.
-   Le containing block fixed reste le viewport — la bannière est
-   ABSOLUMENT figée pendant le scroll. */
+/* V40.2 — Bannière "Mise à jour" en mode LIGHT (fond blanc).
+   ────────────────────────────────────────────────────────────────────
+   Refonte premium contraste max :
+   - Fond blanc pur pour lisibilité totale en plein jour HACCP terrain
+   - Texte en gris très foncé (presque noir) — accessibilité AAA
+   - Bordure teal fine pour signature couleur Lucens
+   - Bouton primary teal pleine + texte BLANC (contraste évident)
+   - Bouton fermer (×) icône explicite isolée en haut-droite
+   - Bouton "Plus tard" supprimé (la croix suffit, moins ambigu)
+   - Positionnement bulletproof : inset-inline + margin auto (V40.1)
+   ──────────────────────────────────────────────────────────────────── */
 .lucens-sw-update {
   position: fixed;
   left: 14px;
   right: 14px;
   bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
   margin-inline: auto;
-  width: auto;                /* bornage par left/right */
-  max-width: 420px;
-  z-index: 99998;            /* sous codepad (99999) et overlays modaux critiques */
-  background: var(--surface-overlay, #15181F);
-  border: 1px solid var(--accent, #2DD4BF);
-  border-radius: 18px;
-  padding: 16px 18px 14px;
+  width: auto;
+  max-width: 440px;
+  z-index: 99998;
+  background: #FFFFFF;
+  border: 1px solid rgba(45, 212, 191, 0.55);  /* accent teal subtle */
+  border-radius: 16px;
+  padding: 16px 44px 14px 18px;                /* +30px right pour le × */
   box-shadow:
-    0 24px 64px rgba(0, 0, 0, 0.55),
-    0 4px 12px rgba(45, 212, 191, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
+    0 24px 64px rgba(8, 12, 22, 0.28),
+    0 6px 18px rgba(45, 212, 191, 0.18),
+    0 1px 0 rgba(0, 0, 0, 0.04) inset;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   opacity: 0;
-  transform: translateY(20px);    /* slide-up axe Y uniquement */
+  transform: translateY(20px);
   pointer-events: none;
   transition: opacity 0.28s var(--ease-out, cubic-bezier(.16, 1, .3, 1)),
               transform 0.34s cubic-bezier(.16, 1, .3, 1);
-  /* iOS Safari fix : will-change + isolation pour stabiliser le rendu fixed */
   will-change: transform, opacity;
   contain: layout style;
 }
@@ -5858,6 +5855,35 @@ input[type="file"] { display: none; }
   transform: translateY(0);
   pointer-events: auto;
 }
+
+/* Bouton fermer (×) — top right, isolé, parfaitement visible sur blanc */
+.lucens-sw-update-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  color: #6B7280;                /* gris medium, contraste OK sur blanc */
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.16s ease, color 0.16s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.lucens-sw-update-close:hover {
+  color: #06070A;
+  background: rgba(8, 10, 14, 0.05);
+}
+.lucens-sw-update-close:active {
+  background: rgba(8, 10, 14, 0.10);
+}
+
 .lucens-sw-update-head {
   display: flex;
   align-items: flex-start;
@@ -5871,9 +5897,9 @@ input[type="file"] { display: none; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(45, 212, 191, 0.14);
-  border: 1px solid rgba(45, 212, 191, 0.32);
-  color: var(--accent, #2DD4BF);
+  background: rgba(45, 212, 191, 0.16);
+  border: 1px solid rgba(45, 212, 191, 0.45);
+  color: #0E8C84;                /* teal foncé pour contraste sur fond clair */
 }
 .lucens-sw-update-icon svg {
   width: 18px;
@@ -5893,74 +5919,76 @@ input[type="file"] { display: none; }
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--accent, #2DD4BF);
+  color: #0E8C84;                /* teal foncé */
   line-height: 1;
 }
 .lucens-sw-update-title {
   margin: 0;
   font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: -0.005em;
   line-height: 1.3;
-  color: #F5F7FA;
+  color: #0A0C11;                /* presque noir, AAA sur blanc */
 }
 .lucens-sw-update-desc {
   margin: 2px 0 0;
   font-family: 'IBM Plex Sans', sans-serif;
   font-size: 12.5px;
   font-weight: 400;
-  line-height: 1.4;
-  color: rgba(245, 247, 250, 0.66);
+  line-height: 1.45;
+  color: #4B5563;                /* gris foncé lisible */
 }
 .lucens-sw-update-actions {
   display: flex;
   gap: 8px;
   align-items: center;
-  justify-content: flex-end;
 }
 .lucens-sw-update-btn {
-  height: 38px;
-  padding: 0 16px;
+  height: 44px;
+  padding: 0 18px;
   border-radius: 10px;
   border: 0;
   font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 600;
+  letter-spacing: 0.005em;
   cursor: pointer;
-  transition: background 0.16s var(--ease-out, ease-out), transform 0.1s ease;
+  transition: background 0.16s ease, transform 0.1s ease, box-shadow 0.16s ease;
   -webkit-tap-highlight-color: transparent;
 }
+/* Bouton primary RECHARGER : pill teal pleine + TEXTE BLANC + icône blanche.
+   Contraste WCAG AA largement respecté (teal #0E8C84 + blanc = 4.7:1). */
 .lucens-sw-update-btn.is-primary {
-  background: var(--accent, #2DD4BF);
-  color: #06070A;
   flex: 1 1 auto;
-  max-width: 200px;
+  background: #0E8C84;
+  color: #FFFFFF;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
+  box-shadow: 0 2px 6px rgba(14, 140, 132, 0.32);
 }
-.lucens-sw-update-btn.is-primary:hover { background: #1FB8A4; }
-.lucens-sw-update-btn.is-primary:active { transform: scale(0.97); }
-.lucens-sw-update-btn.is-ghost {
-  background: transparent;
-  color: rgba(245, 247, 250, 0.62);
-  padding: 0 12px;
+.lucens-sw-update-btn.is-primary:hover {
+  background: #0B7670;
+  box-shadow: 0 4px 10px rgba(14, 140, 132, 0.4);
 }
-.lucens-sw-update-btn.is-ghost:hover {
-  color: #F5F7FA;
-  background: rgba(255, 255, 255, 0.06);
+.lucens-sw-update-btn.is-primary:active {
+  transform: scale(0.98);
+  background: #095F5A;
 }
+.lucens-sw-update-btn.is-primary svg { width: 15px; height: 15px; }
+
 @media (max-width: 380px) {
   .lucens-sw-update {
     bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
-    padding: 14px 14px 12px;
-    border-radius: 16px;
+    padding: 14px 42px 12px 16px;
+    border-radius: 14px;
+    gap: 12px;
   }
-  .lucens-sw-update-title { font-size: 13.5px; }
+  .lucens-sw-update-title { font-size: 14px; }
   .lucens-sw-update-desc { font-size: 12px; }
-  .lucens-sw-update-btn { height: 36px; font-size: 12.5px; padding: 0 14px; }
+  .lucens-sw-update-btn { height: 42px; font-size: 13px; padding: 0 14px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .lucens-sw-update { transition: opacity 0.2s ease; transform: translateY(0); }
@@ -19891,7 +19919,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v40.1</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v40.2</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
@@ -23552,11 +23580,19 @@ const Annotator = (() => {
 })();
 </script>
 
-<!-- V40 — Template de la bannière "Mise à jour disponible" (SW update).
+<!-- V40.2 — Template de la bannière "Mise à jour disponible" (SW update).
      Cloné par le listener navigator.serviceWorker.message dans le <head>.
-     Le template HTML reste invisible jusqu'à utilisation effective. -->
+     Le template HTML reste invisible jusqu'à utilisation effective.
+     Variante LIGHT : fond blanc, texte foncé, croix fermer claire,
+     un seul CTA primary "Recharger" (la croix gère le dismiss). -->
 <template id="lucensSwUpdateTpl">
   <aside class="lucens-sw-update" id="lucensSwUpdate" role="status" aria-live="polite" aria-label="Nouvelle version de Lucens IA disponible">
+    <button type="button" class="lucens-sw-update-close" data-sw-action="dismiss" aria-label="Fermer la notification de mise à jour">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:16px;height:16px">
+        <line x1="5" y1="5" x2="15" y2="15"/>
+        <line x1="15" y1="5" x2="5" y2="15"/>
+      </svg>
+    </button>
     <div class="lucens-sw-update-head">
       <span class="lucens-sw-update-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -23571,13 +23607,12 @@ const Annotator = (() => {
       </div>
     </div>
     <div class="lucens-sw-update-actions">
-      <button type="button" class="lucens-sw-update-btn is-ghost" data-sw-action="dismiss">Plus tard</button>
       <button type="button" class="lucens-sw-update-btn is-primary" data-sw-action="reload">
-        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:14px;height:14px">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M15.5 9a6.5 6.5 0 1 1-2.4-5.1"/>
           <polyline points="15.5 2.5 15.5 6.5 11.5 6.5"/>
         </svg>
-        Recharger
+        Recharger maintenant
       </button>
     </div>
   </aside>
