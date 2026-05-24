@@ -13378,6 +13378,29 @@ const Annotator = (() => {
         const chains = chainSegments(outerSegs);
         drawSmoothedChains(chains, 'rgba(255, 255, 255, 0.45)', 4.0);
         drawSmoothedChains(chains, `rgba(${SIG_R}, ${SIG_G}, ${SIG_B}, 1)`, 2.0);
+      } else if (activeCellsByType.size > 0) {
+        /* V42 — Fallback robuste quand `pixelMask` est absent (Uint8Array
+           perdu lors de sérialisation JSON : historique IDB, re-render au
+           changement de langue, message cross-frame). Sans ce fallback, on
+           ne dessinait RIEN sur l'image annotée — seule le halo radial rouge
+           V21.1 (cartoFailed) apparaissait au centre des bbox IA, d'où le
+           bug user "uniquement la cible qui s'éclaire".
+           Ici on rend directement les cellules validées en rectangles terra
+           cotta (couleur signature Lucens) — moins précis que pixel-mask
+           mais visuellement explicite. */
+        for (const [, cells] of activeCellsByType) {
+          for (const c of cells) {
+            ctx.fillStyle = `rgba(${SIG_R}, ${SIG_G}, ${SIG_B}, 0.38)`;
+            ctx.fillRect(c.x, c.y, c.w, c.h);
+          }
+        }
+        ctx.strokeStyle = `rgba(${SIG_R}, ${SIG_G}, ${SIG_B}, 0.80)`;
+        ctx.lineWidth = 0.8;
+        for (const [, cells] of activeCellsByType) {
+          for (const c of cells) {
+            ctx.strokeRect(c.x + 0.5, c.y + 0.5, c.w - 1, c.h - 1);
+          }
+        }
       }
     }
 
@@ -19201,6 +19224,26 @@ const Annotator = (() => {
        Source heuristique = grid (cellules pixel) */
     const zones = res.zones || [];
     const grid  = res.grid  || [];
+    /* V42 — Reconstruction préventive du `pixelMask` si perdu.
+       Les Uint8Array attachés en propriétés custom d'un Array
+       (grid.pixelMask, grid.gridN) sont silencieusement supprimés par
+       JSON.stringify (historique IDB, message cross-frame, re-render après
+       changement de langue). Sans pixelMask, drawZones() ne pouvait rien
+       dessiner → l'utilisateur ne voyait que le fallback halo radial V21.1
+       au centre des bboxes IA ("uniquement la cible qui s'éclaire").
+       Solution : si grid est rempli mais pixelMask absent, on relance
+       Engine.analyze sur l'imgData pour récupérer le mask pixel-précis. */
+    if (grid.length && !grid.pixelMask && imgData && typeof Engine !== 'undefined' && Engine.analyze) {
+      try {
+        const rebuilt = Engine.analyze(imgData, W, H);
+        if (rebuilt && rebuilt.pixelMask) {
+          grid.pixelMask = rebuilt.pixelMask;
+          grid.gridN     = rebuilt.gridN || grid.gridN;
+        }
+      } catch (e) {
+        console.warn('[V42] pixelMask rebuild failed (fallback rectangles activé) :', e?.message || e);
+      }
+    }
     const zoneCount = (typeof res.zoneCount === 'number') ? res.zoneCount : zones.length;
     const theme = riskTheme(score);
     lastResult = res;
@@ -19964,7 +20007,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v41</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v42</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
