@@ -6785,6 +6785,51 @@ input[type="file"] { display: none; }
 .home:has(.home-accordions.has-open) .home-history-scroll { display: none; }
 .home:has(.home-accordions.has-open) .home-footer { display: none; }
 .home:has(.home-accordions.has-open) { gap: clamp(6px, 1.2vh, 10px); }
+
+/* V41 — Quand un volet est ouvert : on ÉLARGIT la zone de lecture pour
+   donner plus de confort sur mobile (le 440px + padding 16px était étroit).
+   On déborde de la coque .home (max-width 440px par défaut) et on réduit
+   les paddings latéraux. Le bouton header retour reste accessible car .home
+   est en position relative dans son flex column.
+   ─ Mobile (<600px) : max-width 100% + padding latéral réduit à 6px → gain
+     ~20px de largeur de texte par rapport à V37.
+   ─ Desktop (≥600px) : max-width 720px + padding 12px → confort lecture pro.
+   Le scroll interne (acc-panel-inner) garde son padding-right 8px (au lieu
+   de 16px) pour la jauge teal sans rogner trop le texte. */
+.home:has(.home-accordions.has-open) {
+  max-width: min(720px, 100%);
+  padding-left: 6px;
+  padding-right: 6px;
+}
+.home:has(.home-accordions.has-open) .home-history,
+.home:has(.home-accordions.has-open) .home-actions {
+  /* Compensation : ces zones gardent leur respiration latérale propre */
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.home:has(.home-accordions.has-open) .acc-head {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+.home:has(.home-accordions.has-open) .acc-panel-inner {
+  padding-left: 8px;
+  padding-right: 14px;          /* laisse 6px à la jauge teal */
+}
+@media (min-width: 600px) {
+  .home:has(.home-accordions.has-open) {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .home:has(.home-accordions.has-open) .home-history,
+  .home:has(.home-accordions.has-open) .home-actions {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .home:has(.home-accordions.has-open) .acc-panel-inner {
+    padding-left: 12px;
+    padding-right: 18px;
+  }
+}
 .home-history-scroll {
   position: relative;
   flex: 1 1 auto;
@@ -19919,7 +19964,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v40.2</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v41</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
