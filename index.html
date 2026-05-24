@@ -5811,13 +5811,26 @@ input[type="file"] { display: none; }
    des modals d'analyse mais sous les overlays critiques (codepad, etc.).
    Dismiss persistant par version via localStorage.
    ─────────────────────────────────────────────────────────────────────────── */
+/* V40.1 — Positionnement bulletproof : on remplace `left:50% + translateX(-50%)`
+   par `inset-inline + margin-inline: auto`. Bénéfices :
+   1. Plus de translateX qui se "détache" si un ancestor a un `transform`
+      (position:fixed devient effectivement position:absolute dans ce cas,
+      d'où l'impression de "scroller avec la page").
+   2. Plus de débordement à droite quand `100vw` inclut la scrollbar
+      (left+right = 14px chacun bornent strictement les marges, peu importe
+      la largeur exacte du viewport).
+   3. L'animation slide-up reste fluide via translateY pur sur l'axe Y.
+   Le containing block fixed reste le viewport — la bannière est
+   ABSOLUMENT figée pendant le scroll. */
 .lucens-sw-update {
   position: fixed;
-  left: 50%;
+  left: 14px;
+  right: 14px;
   bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
-  transform: translateX(-50%) translateY(20px);
+  margin-inline: auto;
+  width: auto;                /* bornage par left/right */
+  max-width: 420px;
   z-index: 99998;            /* sous codepad (99999) et overlays modaux critiques */
-  width: min(420px, calc(100vw - 28px));
   background: var(--surface-overlay, #15181F);
   border: 1px solid var(--accent, #2DD4BF);
   border-radius: 18px;
@@ -5832,13 +5845,17 @@ input[type="file"] { display: none; }
   flex-direction: column;
   gap: 12px;
   opacity: 0;
+  transform: translateY(20px);    /* slide-up axe Y uniquement */
   pointer-events: none;
   transition: opacity 0.28s var(--ease-out, cubic-bezier(.16, 1, .3, 1)),
               transform 0.34s cubic-bezier(.16, 1, .3, 1);
+  /* iOS Safari fix : will-change + isolation pour stabiliser le rendu fixed */
+  will-change: transform, opacity;
+  contain: layout style;
 }
 .lucens-sw-update.is-visible {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
+  transform: translateY(0);
   pointer-events: auto;
 }
 .lucens-sw-update-head {
@@ -5946,7 +5963,7 @@ input[type="file"] { display: none; }
   .lucens-sw-update-btn { height: 36px; font-size: 12.5px; padding: 0 14px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .lucens-sw-update { transition: opacity 0.2s ease; transform: translateX(-50%) translateY(0); }
+  .lucens-sw-update { transition: opacity 0.2s ease; transform: translateY(0); }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -19874,7 +19891,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v40</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v40.1</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
