@@ -767,7 +767,7 @@ export default async function handler(req, res) {
   if (!rl.ok) return send429(res, rl.retryAfter);
 
   try {
-    const { image, mediaType, detectedZones, zoneCrops, lang, userContext, liveHints } = req.body || {};
+    const { image, mediaType, detectedZones, zoneCrops, lang, userContext, liveHints, spectroHints } = req.body || {};
     if (!image) return res.status(400).json({ error: "Missing 'image' (base64 string)" });
     if (!mediaType) return res.status(400).json({ error: "Missing 'mediaType' (e.g. image/jpeg)" });
     /* Validation taille image : refuse les payloads anormalement gros qui
@@ -800,9 +800,25 @@ export default async function handler(req, res) {
 
     /* USER PROMPT — Phase 3 audit : concis, hiérarchisé, avec few-shot */
     const hasHints = Array.isArray(detectedZones) && detectedZones.length > 0;
-    const hintsLine = hasHints
+    let hintsLine = hasHints
       ? `\nHints heuristiques (à valider, pas une contrainte) : ${detectedZones.length} zones-candidates fournies${hasZoneCrops ? ' avec crops 384×384 dans l\'ordre' : ''}. L'heuristique HSL rate souvent les grandes zones denses et invente des zones sur le voile UV ; utilise ton jugement visuel global.\n`
       : '';
+
+    /* V53 P2 — Hints chromatiques calculés client-side via mini-lib spectro
+       (Mahalanobis sur RGB moyen pondéré sat×val par zone). Liste pour chaque
+       zone candidate les 2 fluorophores les plus probables avec leur
+       confidence. À utiliser comme INDICE d'identification, pas comme contrainte :
+       Claude reste juge final via son analyse visuelle. Réduit la confusion
+       sur les zones spectralement ambiguës (biofilm_pseudomonas vs
+       antibiotic_residue en vert-jaune, mineral_oil vs detergent_residue
+       en bleu-cyan, etc.). */
+    if (Array.isArray(spectroHints) && spectroHints.length > 0) {
+      const lines = spectroHints.map(h => {
+        const topStr = (h.top || []).map(t => `${t.name} (${(t.conf * 100).toFixed(0)}%)`).join(' | ');
+        return `  · zone #${h.zoneIdx + 1} couleur RGB(${h.rgb[0]},${h.rgb[1]},${h.rgb[2]}) → ${topStr}`;
+      }).join('\n');
+      hintsLine += `\nIndices chromatiques par zone candidate (matching Mahalanobis sur 15 fluorophores de référence, à utiliser comme PISTE d'identification, pas comme contrainte) :\n${lines}\n`;
+    }
 
     /* ─── Live View hints (V7) ─────────────────────────────────────────
        Si la capture vient du mode Live View UV-A, on informe Claude :

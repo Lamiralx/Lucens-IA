@@ -17101,7 +17101,7 @@ const Annotator = (() => {
           console.log('[V50 L5] Cache HIT — analyse précédente réutilisée (gain ~25s)');
           rawApi = cached;
         } else {
-          rawApi = await analyzeWithAPI(base64, mediaType, detectedZones, zoneCrops);
+          rawApi = await analyzeWithAPI(base64, mediaType, detectedZones, zoneCrops, imgData, W, H);
           lucensWriteAnalyzeCache(cacheLookupKey, rawApi);
         }
         stopProgressCreep(creepTimer); creepTimer = null;
@@ -18177,7 +18177,7 @@ const Annotator = (() => {
     });
   }
 
-  async function analyzeWithAPI(base64, mediaType, detectedZones, zoneCrops) {
+  async function analyzeWithAPI(base64, mediaType, detectedZones, zoneCrops, imgData, W, H) {
     /* Récupère le contexte utilisateur stocké en localStorage (Sprint 1)
        pour le transmettre à l'IA et calibrer la criticité. */
     const userCtx = (typeof LucensContext !== 'undefined') ? LucensContext.get() : null;
@@ -18210,6 +18210,23 @@ const Annotator = (() => {
        Si pas de connexion OU échec réseau → mise en queue automatique.
        L'app retombe sur le verdict provisoire local (basé sur localRes
        heuristique) pour donner un retour immédiat à l'inspecteur HACCP. */
+    /* V53 P2 — Hints chromatiques calculés côté CLIENT à partir de la mini-lib
+       LUCENS_FLUOROPHORES. Pour chaque zone candidate, on liste les 2 fluorophores
+       les plus probables (matching Mahalanobis sur RGB moyen pondéré sat×val).
+       Le serveur les injecte dans le prompt user pour orienter la classification
+       Opus sur les zones ambiguës chromatiquement (biofilm vs antibiotic, etc.). */
+    let spectroHints = null;
+    try {
+      if (imgData && detectedZones && detectedZones.length && W && H) {
+        spectroHints = buildSpectroHints(imgData, detectedZones, W, H);
+        if (spectroHints && spectroHints.length) {
+          console.log('[V53 P2] Spectro hints calculés pour ' + spectroHints.length + ' zones');
+        }
+      }
+    } catch (e) {
+      console.warn('[V53 P2] spectro hints failed (fallback gracieux) :', e?.message || e);
+    }
+
     const _analyzePayload = {
       image: base64,
       mediaType,
@@ -18218,6 +18235,7 @@ const Annotator = (() => {
       lang: currentLang,
       userContext: userCtx,
       liveHints,
+      spectroHints,
     };
     let _offlineResult = null;
     if (typeof submitAnalysisWithOfflineFallback === 'function') {
@@ -18334,6 +18352,107 @@ const Annotator = (() => {
      centré sur la zone (avec padding) à envoyer à Claude
      en plus de l'image globale.
      ───────────────────────────────────────────── */
+  /* ═══════════════════════════════════════════════════════════════════
+     V53 P2 — Mini-bibliothèque spectroscopie côté CLIENT
+     ────────────────────────────────────────────────────────────────────
+     Duplique l'essentiel de api/_lib/spectro.js pour pouvoir calculer
+     un matching chromatique (RGB → fluorophore probable) AVANT l'appel
+     Claude. Les hints sont ensuite injectés dans le payload pour
+     orienter la classification IA sur les zones ambiguës (ex: biofilm
+     vs antibiotic_residue spectralement proches en vert-jaune).
+
+     Bibliothèque condensée : 15 signatures fluorophores, 4 champs par
+     entrée (id, rgbRef, rgbStd, name) — minimaliste mais suffisant pour
+     un top-3 par zone.
+     ─────────────────────────────────────────────────────────────────────── */
+  const LUCENS_FLUOROPHORES = [
+    { id: 'protein_fresh',       rgb: [110, 140, 230], std: [22, 28, 30], name: 'Protéine fraîche (NADH/NADPH)' },
+    { id: 'riboflavin_dairy',    rgb: [200, 215,  90], std: [25, 25, 25], name: 'Riboflavine (laitages)' },
+    { id: 'blood_porphyrins',    rgb: [220,  60,  70], std: [28, 22, 25], name: 'Sang / porphyrines' },
+    { id: 'rodent_urine',        rgb: [230, 200, 100], std: [25, 28, 30], name: 'Urine de rongeur' },
+    { id: 'detergent_residue',   rgb: [130, 180, 250], std: [25, 28, 18], name: 'Résidu détergent (azurants)' },
+    { id: 'mineral_oil',         rgb: [130, 175, 195], std: [30, 28, 32], name: 'Huile minérale / lubrifiant' },
+    { id: 'cosmetic_uv',         rgb: [200, 220, 250], std: [22, 22, 18], name: 'Cosmétique / filtres UV' },
+    { id: 'biofilm_pseudomonas', rgb: [150, 200, 130], std: [28, 28, 28], name: 'Biofilm Pseudomonas' },
+    { id: 'insect_frass',        rgb: [140, 180, 180], std: [28, 28, 28], name: 'Frass d\'insectes' },
+    { id: 'chlorophyll_plant',   rgb: [180,  50,  50], std: [30, 20, 20], name: 'Chlorophylle végétale' },
+    { id: 'mycotoxin_aflatoxin', rgb: [140, 150, 230], std: [22, 22, 25], name: 'Aflatoxines (Aspergillus)' },
+    { id: 'antibiotic_residue',  rgb: [180, 200, 130], std: [25, 25, 28], name: 'Résidu antibiotique' },
+    { id: 'stagnant_water',      rgb: [170, 200, 210], std: [30, 30, 30], name: 'Eau stagnante / séchage' },
+    { id: 'dust_fluorescent',    rgb: [180, 195, 220], std: [28, 28, 28], name: 'Poussière fluorescente' },
+    { id: 'textile_fibers',      rgb: [180, 190, 215], std: [25, 25, 25], name: 'Fibres textiles / cellulose' },
+  ];
+
+  function lucensMatchFluorophore(r, g, b) {
+    /* Mahalanobis simplifié pondéré par l'écart-type chromatique de chaque sig. */
+    const results = LUCENS_FLUOROPHORES.map(fp => {
+      const dr = (r - fp.rgb[0]) / fp.std[0];
+      const dg = (g - fp.rgb[1]) / fp.std[1];
+      const db = (b - fp.rgb[2]) / fp.std[2];
+      const dist = Math.sqrt(dr * dr + dg * dg + db * db);
+      const confidence = 1 / (1 + Math.exp((dist - 2) * 1.5));
+      return { id: fp.id, name: fp.name, distance: dist, confidence };
+    });
+    results.sort((a, b) => a.distance - b.distance);
+    return results;
+  }
+
+  /* Calcule la couleur moyenne d'une zone (depuis imgData full-res) pondérée
+     par la saturation (filtre les pixels de fond sombres non-fluorescents). */
+  function lucensAverageColorInZone(imgData, zone, W, H) {
+    const data = imgData.data;
+    const x0 = Math.max(0, Math.floor(zone.x * W));
+    const y0 = Math.max(0, Math.floor(zone.y * H));
+    const x1 = Math.min(W, Math.ceil((zone.x + zone.w) * W));
+    const y1 = Math.min(H, Math.ceil((zone.y + zone.h) * H));
+    let rSum = 0, gSum = 0, bSum = 0, wSum = 0;
+    /* Step adaptatif : on échantillonne ~1000 pixels max pour rester rapide. */
+    const totalPx = (x1 - x0) * (y1 - y0);
+    const step = Math.max(1, Math.floor(Math.sqrt(totalPx / 1000)));
+    for (let y = y0; y < y1; y += step) {
+      for (let x = x0; x < x1; x += step) {
+        const i = (y * W + x) * 4;
+        const R = data[i], G = data[i + 1], B = data[i + 2];
+        const mx = Math.max(R, G, B);
+        const mn = Math.min(R, G, B);
+        const sat = mx === 0 ? 0 : (mx - mn) / mx;
+        const val = mx / 255;
+        /* Filtre les pixels sombres et peu saturés (substrat noir UV) */
+        if (val < 0.20 || sat < 0.18) continue;
+        const w = sat * val;        /* poids = saturation × valeur */
+        rSum += R * w; gSum += G * w; bSum += B * w; wSum += w;
+      }
+    }
+    if (wSum < 0.5) return null;
+    return [
+      Math.round(rSum / wSum),
+      Math.round(gSum / wSum),
+      Math.round(bSum / wSum),
+    ];
+  }
+
+  /* Construit le payload des hints chromatiques : top-2 fluorophores par zone
+     candidate (heuristique). Limité à 5 zones pour ne pas inflater le prompt. */
+  function buildSpectroHints(imgData, zones, W, H) {
+    if (!zones || !zones.length) return null;
+    const out = [];
+    const MAX_ZONES = 5;
+    for (let i = 0; i < Math.min(MAX_ZONES, zones.length); i++) {
+      const z = zones[i];
+      const rgb = lucensAverageColorInZone(imgData, z, W, H);
+      if (!rgb) continue;
+      const matches = lucensMatchFluorophore(rgb[0], rgb[1], rgb[2]);
+      const top2 = matches.slice(0, 2).filter(m => m.confidence > 0.35);
+      if (!top2.length) continue;
+      out.push({
+        zoneIdx: i,
+        rgb,
+        top: top2.map(m => ({ id: m.id, name: m.name, conf: +m.confidence.toFixed(2) })),
+      });
+    }
+    return out.length ? out : null;
+  }
+
   function buildZoneCrops(imgData, zones, W, H) {
     /* Crops 640×640 à JPEG 92 % — résolution rehaussée pour détails fins
        (textures de biofilm, bordures de coulures, micro-zones). */
@@ -20439,7 +20558,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v52</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v53</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
