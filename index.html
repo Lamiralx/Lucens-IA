@@ -4142,6 +4142,10 @@ input[type="file"] { display: none; }
 .toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
 .toast.error { color: var(--risk-hi); border-left-color: var(--risk-hi); }
 .toast.success { color: var(--risk-low); border-left-color: var(--risk-low); }
+/* V51 — variantes info/warning pour les notifications non-bloquantes (ex. fallback
+   analyse locale, sync en cours). info = accent teal Lucens, warning = ambre. */
+.toast.info { color: var(--accent, #2DD4BF); border-left-color: var(--accent, #2DD4BF); }
+.toast.warning { color: #E8C16A; border-left-color: #E8C16A; }
 .toast.warning { color: var(--risk-mid); border-left-color: var(--risk-mid); }
 .toast svg { flex-shrink: 0; }
 
@@ -17246,25 +17250,62 @@ const Annotator = (() => {
           currentAnalyzeAbort = null;
           return;
         }
-        if (false) {  // ancien fallback désactivé
-          /* Code retiré : verdict provisoire local sans données pédagogiques V21
-             créait l'écran vide dont l'utilisateur se plaignait. */
-        } else {
-          console.error('[DIAG] API ERROR:', apiErr);
-          /* V18 : message unique sobre, pas de détails techniques affichés
-             à l'utilisateur. Le message technique reste en console. */
-          toast(t('err_api_fallback'), 'error');
-          setLoaderProgress(60);
-          res = localRes;
-          res._source = 'local';
-          res.zones = detectedZones.map((z, i) => ({
-            _clusterIdx: i,
-            x: z.x, y: z.y, w: z.w, h: z.h,
-            type: z.heuristicType, intensity: z.intensity,
-          }));
-          res.grid = localRes.grid;
-          await delay(220);
+        /* V51 — Fallback heuristique GRACIEUX (vs erreur "Lucens IA indisponible").
+           Après les 4 tentatives V51 du retry (8s+ de patience cumulée), si
+           Claude reste injoignable, on bascule SILENCIEUSEMENT sur l'analyse
+           heuristique HSV locale (Engine.analyze) — qui détecte correctement
+           les zones fluorescentes pixel-précisément. L'utilisateur reçoit un
+           résultat utilisable + un toast INFO discret (pas une erreur rouge)
+           expliquant que l'analyse approfondie est temporairement indisponible
+           mais que les zones ont été repérées localement. */
+        console.error('[V51 fallback] API indisponible après 4 tentatives, bascule en analyse locale:', apiErr);
+        setLoaderProgress(60);
+        res = localRes || {};
+        res._source = 'local_fallback';
+        res._fallback_reason = (apiErr && apiErr.message) || 'API_TIMEOUT';
+        res.zones = (detectedZones || []).map((z, i) => ({
+          _id: 'L' + (i + 1),
+          id: 'L' + (i + 1),
+          x: z.x, y: z.y, w: z.w, h: z.h,
+          type: z.heuristicType || 'unknown',
+          intensity: z.intensity || 'inconnue',
+          confidence: 0.55,  /* confidence modérée pour signaler la limite */
+          evidence: 'Détection heuristique locale (analyse IA approfondie temporairement indisponible).',
+          area_pct: +((z.w || 0) * (z.h || 0) * 100).toFixed(2),
+        }));
+        res.grid = (localRes && localRes.grid) ? localRes.grid : [];
+        res.zoneCount = res.zones.length;
+        /* Score heuristique simple : pondéré sur intensité moyenne */
+        if (res.zones.length && typeof res.score !== 'number') {
+          const totalArea = res.zones.reduce((s, z) => s + (z.area_pct || 0), 0);
+          res.score = Math.min(85, Math.round(40 + totalArea * 1.5));
+        } else if (!res.zones.length && typeof res.score !== 'number') {
+          res.score = 15; /* surface paraît propre côté heuristique */
         }
+        /* Verdict pédagogique minimal pour ne pas afficher une carte vide */
+        res.result = res.result || {
+          title: res.zones.length ? 'Zones fluorescentes repérées (analyse locale)' : 'Aucune zone fluorescente franche détectée localement',
+          confidence_label: 'Analyse locale',
+          interpretation: res.zones.length
+            ? 'L\'analyse approfondie IA est momentanément indisponible. Lucens IA a tout de même repéré ' + res.zones.length + ' zone(s) compatible(s) avec une fluorescence sur l\'image. Une nouvelle analyse complète sera disponible dès le rétablissement du service.'
+            : 'L\'analyse approfondie IA est momentanément indisponible. Aucune zone fluorescente franche n\'a été détectée par le pré-scan local — vous pourrez relancer l\'analyse complète une fois le service rétabli.',
+        };
+        res.recommendation = res.recommendation || {
+          title: 'Recommandation provisoire',
+          primary_action: res.zones.length
+            ? 'Vérifiez visuellement les zones identifiées et relancez une analyse complète dans quelques instants pour confirmation.'
+            : 'Relancez l\'analyse complète dans quelques instants pour confirmation.',
+        };
+        res.contextual_reasoning = res.contextual_reasoning || {
+          surface_logic: 'Analyse locale heuristique (HSV) sans contextualisation IA.',
+          risk_logic: 'Score provisoire basé uniquement sur la couverture des zones détectées.',
+          what_fluorescence_suggests: res.zones.length
+            ? 'La présence de zones fluorescentes mérite contrôle, mais l\'identification précise nécessite l\'analyse IA complète.'
+            : 'Aucun signal clair en pré-scan ne signifie pas absence totale de contamination — l\'analyse IA complète reste recommandée.',
+        };
+        /* Toast INFO (pas error) discret — la situation est récupérable */
+        toast('Analyse locale provisoire · réessayez plus tard pour analyse approfondie', 'info');
+        await delay(220);
       }
       setLoaderProgress(100);
       await delay(200);
@@ -18178,50 +18219,69 @@ const Annotator = (() => {
         throw queuedErr;
       }
     }
-    /* V18 + V26 + V27 — Auto-retry + AbortController + détection offline mid-flight */
+    /* V51 — Auto-retry RENFORCÉ : 3 tentatives avec backoff exponentiel + jitter.
+       Objectif : éliminer les erreurs "Lucens IA indisponible" causées par des
+       saturations temporaires Anthropic (529 overloaded), des timeouts Vercel,
+       ou des microcoupures réseau mobile. La plupart de ces erreurs se résolvent
+       en attendant 3-7 secondes. Avant V51 : 1 seul retry → erreurs fréquentes.
+
+       Stratégie : tenter jusqu'à 4 fois au total (1 initial + 3 retries) avec
+       backoff exponentiel + jitter aléatoire pour étaler les retries en cas
+       de panne large (évite que tous les clients hit Anthropic en même temps). */
     async function fetchAnalyzeWithRetry() {
-      /* V27 — Si on devient offline en cours d'analyse, on bascule en queue
-         au lieu de laisser le loader figé sur "100% étape 5/7". */
+      /* V27 — Si on devient offline en cours d'analyse, on bascule en queue. */
       if (typeof navigator !== 'undefined' && navigator.onLine === false) {
         const queuedErr = new Error('OFFLINE_DURING_ANALYSIS');
         queuedErr.code = 'OFFLINE_QUEUED';
         throw queuedErr;
       }
-      const RETRY_STATUSES = new Set([500, 502, 503, 504, 529]);
+      const RETRY_STATUSES = new Set([408, 429, 500, 502, 503, 504, 529]);
+      const MAX_ATTEMPTS = 4;
+      const BACKOFFS_MS = [0, 1500, 3500, 7000]; /* 0=initial, puis 1.5s, 3.5s, 7s */
       const signal = (typeof currentAnalyzeAbort !== 'undefined' && currentAnalyzeAbort)
         ? currentAnalyzeAbort.signal : undefined;
+
+      function jitter(ms) { return ms + Math.floor(Math.random() * 800); }
+      function checkAborted() {
+        if (signal && signal.aborted) {
+          const ae = new Error('Aborted'); ae.name = 'AbortError'; throw ae;
+        }
+      }
       const doFetch = () => fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(_analyzePayload),
         signal,
       });
-      let resp;
-      try {
-        resp = await doFetch();
-      } catch (netErr) {
-        /* V39 fix F-12 — Si l'utilisateur a explicitement annulé via
-           AbortController (bouton ANNULER du loader), on NE retry PAS et on
-           propage l'AbortError tel quel. Avant : le retry partait avec un
-           signal déjà annulé, échouait immédiatement, et le message d'erreur
-           "Analyse interrompue. Réessayez." s'affichait alors que l'utilisateur
-           voulait juste annuler. */
-        if (netErr && netErr.name === 'AbortError') throw netErr;
-        /* Erreur réseau réelle → 1 retry après 1.5s */
-        console.warn('[DIAG] network error, retry once:', netErr);
-        await new Promise(r => setTimeout(r, 1500));
-        /* Re-check signal avant le retry : l'utilisateur a peut-être annulé
-           pendant le délai d'attente. */
-        if (signal && signal.aborted) {
-          const ae = new Error('Aborted'); ae.name = 'AbortError'; throw ae;
+
+      let lastErr = null;
+      let lastResp = null;
+      for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        checkAborted();
+        if (attempt > 0) {
+          const wait = jitter(BACKOFFS_MS[attempt]);
+          console.warn('[V51] Retry ' + attempt + '/' + (MAX_ATTEMPTS - 1) + ' dans ' + wait + 'ms');
+          await new Promise(r => setTimeout(r, wait));
+          checkAborted();
         }
-        resp = await doFetch();
+        try {
+          const resp = await doFetch();
+          if (resp.ok) return resp;
+          if (!RETRY_STATUSES.has(resp.status)) return resp; /* 4xx non-retryable */
+          lastResp = resp;
+          console.warn('[V51] HTTP ' + resp.status + ' tentative ' + (attempt + 1) + '/' + MAX_ATTEMPTS);
+        } catch (netErr) {
+          if (netErr && netErr.name === 'AbortError') throw netErr;
+          lastErr = netErr;
+          console.warn('[V51] Erreur réseau tentative ' + (attempt + 1) + '/' + MAX_ATTEMPTS + ' :', netErr?.message || netErr);
+        }
       }
-      if (resp.ok || !RETRY_STATUSES.has(resp.status)) return resp;
-      /* 5xx retryable → 1 retry après 2s */
-      console.warn('[DIAG] HTTP ' + resp.status + ', retry once');
-      await new Promise(r => setTimeout(r, 2000));
-      return doFetch();
+      /* Toutes les tentatives ont échoué. Renvoie la dernière réponse HTTP si
+         disponible (le caller pourra produire un message basé sur le status),
+         sinon throw l'erreur réseau. Le caller V51 enchaîne avec un fallback
+         heuristique LOCAL au lieu d'afficher "indisponible". */
+      if (lastResp) return lastResp;
+      throw lastErr || new Error('NETWORK_FAILED');
     }
     /* Sinon : flow normal, on construit une réponse compatible avec l'ancien code */
     const resp = _offlineResult && _offlineResult.response
@@ -20367,7 +20427,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v50</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v51</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
