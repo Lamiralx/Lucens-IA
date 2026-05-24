@@ -6764,57 +6764,69 @@ body.has-sw-update .home {
   .acc-chev { transition: color .15s var(--ease-out); }
 }
 
-/* Contexte d'inspection — invitation claire à configurer, ouvre le popup */
+/* V52 — Contexte d'inspection : refonte ULTRA-DISCRÈTE.
+   User feedback : "Je ne veux plus que ce bouton s'allume, rends-le plus discret".
+   Avant V52 : carte 13×14px padding, icône teal accent vif, hover qui changeait
+   border + background, hint visible, chevron animé.
+   Après V52 : ligne textuelle minimale, gris tertiaire, AUCUNE transition de
+   couleur, AUCUN hover qui "allume", AUCUN active scale. Juste un libellé
+   souligné discret + un point d'état si configuré. */
 .home-sector { display: block; }
 .home-sector-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 13px 14px;
+  gap: 6px;
+  padding: 4px 0;
   background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border: 0;
   cursor: pointer;
   text-align: left;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--ink-tertiary);
   -webkit-tap-highlight-color: transparent;
-  transition: border-color .15s var(--ease-out), background .15s var(--ease-out), transform .12s var(--ease-out);
+  /* Aucune transition : pas d'animation à l'apparition ni au hover. */
 }
-.home-sector-btn:hover { border-color: var(--border-hi); background: var(--hairline); }
-.home-sector-btn:active { transform: scale(0.99); }
+.home-sector-btn:hover { color: var(--ink-secondary); }
+/* Icône réduite, même couleur que le texte (pas d'accent teal qui "allume") */
 .home-sector-ico {
   flex-shrink: 0;
-  color: var(--accent);
+  width: 13px; height: 13px;
+  color: currentColor;
+  opacity: 0.7;
 }
+.home-sector-ico svg { width: 13px; height: 13px; }
 .home-sector-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
   min-width: 0;
-  flex: 1;
 }
 .home-sector-label {
-  font-family: var(--font-display);
-  font-size: 13.5px;
-  font-weight: 600;
-  letter-spacing: -0.005em;
-  line-height: 1.3;
-  color: var(--ink-primary);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: 1;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--hairline);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
 }
-.home-sector-hint {
-  font-family: var(--font-body);
-  font-size: 11.5px;
-  line-height: 1.3;
-  color: var(--ink-tertiary);
-}
-.home-sector-chev {
-  flex-shrink: 0;
-  color: var(--ink-tertiary);
-  transition: transform .15s var(--ease-out), color .15s var(--ease-out);
-}
-.home-sector-btn:hover .home-sector-chev {
-  color: var(--accent);
-  transform: translateX(2px);
+/* Hint masqué — le libellé suffit, la fiche détail est dans le popup */
+.home-sector-hint { display: none; }
+/* Chevron masqué : visuellement bruyant pour un lien texte */
+.home-sector-chev { display: none; }
+/* État "is-set" — petit point teal discret comme indication subtile */
+.home-sector-btn.is-set::after {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--accent, #2DD4BF);
+  margin-left: 2px;
 }
 
 /* Bas de l'accueil — bande de traçabilité + ligne technique (comble le vide) */
@@ -20427,7 +20439,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v51</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v52</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
