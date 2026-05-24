@@ -5994,6 +5994,33 @@ input[type="file"] { display: none; }
   .lucens-sw-update { transition: opacity 0.2s ease; transform: translateY(0); }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   V44 — Rapport analyse CONDENSÉ ×2
+   ───────────────────────────────────────────────────────────────────────────
+   User feedback : trop de répétitions dans les rapports d'analyse.
+   On masque 4 sections qui faisaient doublon avec d'autres parties :
+
+   - decisionCard (4 sous-sections "Conclusion possible/impossible/...") →
+     redondant avec la recommandation principale + le repli "raisonnement"
+   - missingContextCard ("Pour affiner cette analyse, précisez X") →
+     déjà couvert par le contexte saisi + la reco
+   - differentialCard (diagnostic différentiel — hypothèses alternatives) →
+     verbeux, peu actionnable terrain HACCP
+   - zonesVerdictCard (verdict détaillé par zone — déjà hidden par défaut,
+     on verrouille pour qu'il ne réapparaisse pas)
+
+   Conservé : hero score, lucensVerdictCard (titre + interprétation + reco
+   + repli condensé 3 sections), image annotée + tableau signatures.
+   Architecture inchangée — les setters render() continuent d'écrire dans
+   les éléments, juste invisibles. Économie de tokens API à faire dans V45.
+   ─────────────────────────────────────────────────────────────────────────── */
+#decisionCard,
+#missingContextCard,
+#differentialCard,
+#zonesVerdictCard {
+  display: none !important;
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    INSTRUMENT CARD — refonte intake (2026-05-15)
    Cf. docs/plans/2026-05-15-intake-instrument-refonte-design.md
@@ -9128,24 +9155,29 @@ body.lv-open { overflow: hidden; touch-action: none; }
             <div class="lv-verdict-action-text" id="lvVerdictActionText">—</div>
           </div>
         </div>
-        <div class="lv-verdict-vigilance" id="lvVerdictVigilance" hidden>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
-          <span id="lvVerdictVigilanceText">—</span>
-        </div>
+        <!-- V44 — Vigilance retirée : redondant avec la reco + créait répétitions
+             (3 exemples sur objets déjà écartés). Si une zone est écartée, elle
+             n'a pas besoin d'être ressassée. -->
         <details class="lv-verdict-details">
           <summary>Voir le raisonnement complet</summary>
           <dl class="lv-verdict-dl">
+            <!-- V44 — Repli condensé ×2 : on garde uniquement contexte (surface),
+                 chaîne de risque, et OUVERTURE (ce que la fluo suggère).
+                 Retirés : NotProve, FollowUp, Confirmation, Frameworks (tous
+                 redondants avec la recommandation principale ou la reco affichée
+                 plus haut). -->
             <dt>Logique de la surface</dt><dd id="lvVerdictSurfaceLogic">—</dd>
             <dt>Chaîne de risque</dt><dd id="lvVerdictRiskLogic">—</dd>
             <dt>Ce que la fluorescence suggère</dt><dd id="lvVerdictSuggests">—</dd>
-            <dt>Ce qu'elle ne prouve pas</dt><dd id="lvVerdictNotProve">—</dd>
-            <dt>Étape suivante</dt><dd id="lvVerdictFollowUp">—</dd>
-            <dt>Confirmation si besoin</dt><dd id="lvVerdictConfirmation">—</dd>
-            <dt>Référentiels applicables</dt><dd id="lvVerdictFrameworks">—</dd>
           </dl>
         </details>
+        <!-- Champs JS-touched mais cachés visuellement, conservés pour ne pas
+             casser les setters render(). Économie de chirurgie côté JS. -->
+        <span id="lvVerdictVigilance" hidden><span id="lvVerdictVigilanceText"></span></span>
+        <span id="lvVerdictNotProve" hidden></span>
+        <span id="lvVerdictFollowUp" hidden></span>
+        <span id="lvVerdictConfirmation" hidden></span>
+        <span id="lvVerdictFrameworks" hidden></span>
       </div>
 
       <!-- IMAGE + PROBABILITIES -->
@@ -20027,7 +20059,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v43</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v44</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
