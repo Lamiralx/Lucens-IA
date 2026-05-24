@@ -17071,7 +17071,23 @@ const Annotator = (() => {
         /* halfLifeMs = 18000 : on atteint 50% du chemin (50→67,5%) en 18s,
            75% en 36s, 87% en 54s. Toujours en mouvement. */
         creepTimer = startProgressCreep(50, 85, 18000);
-        const rawApi = await analyzeWithAPI(base64, mediaType, detectedZones, zoneCrops);
+        /* V50 L5 — Cache sessionStorage : si l'utilisateur re-soumet la même
+           image avec le même contexte d'inspection dans les 15 minutes, on
+           court-circuite l'appel Claude (gain 20-35s). Cas fréquent en session
+           HACCP : inspecteur photographie 2× la même surface, change l'angle,
+           reprend, etc. La clé inclut un hash de l'image (8 bytes du base64)
+           et un hash du contexte (sector + role + moment). Le résultat est
+           strictement le même → résultat identique légitime. */
+        let rawApi = null;
+        const cacheLookupKey = lucensAnalyzeCacheKey(base64);
+        const cached = lucensReadAnalyzeCache(cacheLookupKey);
+        if (cached) {
+          console.log('[V50 L5] Cache HIT — analyse précédente réutilisée (gain ~25s)');
+          rawApi = cached;
+        } else {
+          rawApi = await analyzeWithAPI(base64, mediaType, detectedZones, zoneCrops);
+          lucensWriteAnalyzeCache(cacheLookupKey, rawApi);
+        }
         stopProgressCreep(creepTimer); creepTimer = null;
         /* DIAGNOSTIC : on log la réponse brute pour debug */
         console.log('[DIAG] API rawApi:', rawApi);
@@ -17099,10 +17115,42 @@ const Annotator = (() => {
            label, mais l'analyse n'attend plus inutilement. Gain net ~7.3s. */
         await delay(100);
 
-        /* 6.1 — Refinement spatial pixel-précis (snap bbox aux cellules fluorescentes) */
+        /* 6.1 — Refinement spatial pixel-précis (snap bbox aux cellules fluorescentes)
+           + V50 P3+L4 — Validation Haiku post-Opus parallélisée.
+           Les 2 opérations sont indépendantes : refineBboxesFromGrid (synchrone)
+           est instantané, validateLowConfidenceZonesWithHaiku (4 appels parallèles
+           ~700ms) s'exécute en background. Promise.all garantit qu'on attend
+           juste le maximum des deux (pas la somme). */
         setLoaderProgress(86);
         if (res.zones && res.zones.length && localRes.grid) {
-          res.zones = refineBboxesFromGrid(res.zones, localRes.grid, W, H);
+          const [refinedZones, haikuFilteredZones] = await Promise.all([
+            Promise.resolve(refineBboxesFromGrid(res.zones, localRes.grid, W, H)),
+            validateLowConfidenceZonesWithHaiku(res.zones, imgData, W, H),
+          ]);
+          /* Merge : on prend les bbox raffinées (spatial) + les filtres Haiku (sémantique).
+             Pour chaque zone refinée, on cherche son équivalent dans haikuFilteredZones
+             via _id || id : si présent, on garde les méta Haiku, sinon la zone a été
+             rejetée par Haiku → on l'écarte. */
+          const haikuMap = new Map();
+          haikuFilteredZones.forEach(z => {
+            const k = z._id || z.id;
+            if (k) haikuMap.set(k, z);
+          });
+          res.zones = refinedZones
+            .filter(z => {
+              const k = z._id || z.id;
+              if (!k) return true; /* pas d'id → on garde (Haiku pas appliqué) */
+              return haikuMap.has(k);
+            })
+            .map(z => {
+              const k = z._id || z.id;
+              const haiku = k ? haikuMap.get(k) : null;
+              if (!haiku) return z;
+              /* Garde la bbox raffinée + applique les flags + confidence Haiku */
+              return { ...z, confidence: haiku.confidence ?? z.confidence,
+                       _haiku_uncertain: haiku._haiku_uncertain,
+                       _haiku_confirmed: haiku._haiku_confirmed };
+            });
           const refinedCount = res.zones.filter(z => z._refined).length;
           console.log('[VERIF 6.1] Spatial refinement: ' + refinedCount + '/' + res.zones.length + ' zones');
         }
@@ -17635,6 +17683,87 @@ const Annotator = (() => {
     return { ok: issues.length === 0, sanitized: raw, issues };
   }
 
+  /* ═══════════════════════════════════════════════════════════════════
+     V50 L5 — Cache sessionStorage par hash image + contexte
+     ────────────────────────────────────────────────────────────────────
+     Permet d'éviter de relancer Claude Opus (20-35s) quand l'utilisateur
+     re-soumet la même image avec le même contexte. Cas fréquent en
+     session HACCP : un inspecteur re-photographie après nettoyage, l'image
+     est identique, le contexte aussi → l'API renvoie le même résultat.
+
+     Clé de cache : `lucens:cache:{imgHash}:{ctxHash}`.
+       - imgHash : 16 chars hex SHA-1 simple sur 4096 bytes du base64
+       - ctxHash : 8 chars hex SHA-1 simple sur sector+role+moment
+
+     TTL : 15 minutes. Au-delà, on considère que la surface a pu être
+     nettoyée entre les 2 soumissions → on relance l'analyse.
+     Stockage sessionStorage : nettoyé à la fermeture de l'onglet
+     (pas de risque d'inflation à long terme).
+     ─────────────────────────────────────────────────────────────────────── */
+  const LUCENS_CACHE_TTL_MS = 15 * 60 * 1000;
+
+  function lucensSimpleHash(str) {
+    /* FNV-1a 32-bit + chained pass pour 64 bits — suffisant pour clé locale. */
+    let h1 = 0x811c9dc5 >>> 0;
+    let h2 = 0x9c1b6b8d >>> 0;
+    for (let i = 0; i < str.length; i++) {
+      const c = str.charCodeAt(i);
+      h1 ^= c; h1 = Math.imul(h1, 0x01000193) >>> 0;
+      h2 ^= (c + (i & 0xff)); h2 = Math.imul(h2, 0x85ebca6b) >>> 0;
+    }
+    return (h1.toString(16).padStart(8, '0') + h2.toString(16).padStart(8, '0'));
+  }
+
+  function lucensAnalyzeCacheKey(base64) {
+    /* On hash les 4096 premiers chars du base64 (≈ 3 Ko binaires) : suffisant
+       pour différencier 2 images même si elles partagent l'en-tête JPEG. */
+    const imgSample = (base64 || '').slice(0, 4096);
+    const imgHash = lucensSimpleHash(imgSample);
+    let ctxHash = '00000000';
+    try {
+      const ctx = (typeof LucensContext !== 'undefined') ? LucensContext.get() : null;
+      if (ctx) {
+        const ctxStr = (ctx.establishmentType || '') + '|' + (ctx.role || '') + '|' + (ctx.moment || '');
+        ctxHash = lucensSimpleHash(ctxStr).slice(0, 8);
+      }
+    } catch {}
+    return 'lucens:cache:' + imgHash + ':' + ctxHash;
+  }
+
+  function lucensReadAnalyzeCache(key) {
+    try {
+      const raw = sessionStorage.getItem(key);
+      if (!raw) return null;
+      const obj = JSON.parse(raw);
+      if (!obj || !obj.ts || (Date.now() - obj.ts) > LUCENS_CACHE_TTL_MS) {
+        try { sessionStorage.removeItem(key); } catch {}
+        return null;
+      }
+      return obj.payload;
+    } catch { return null; }
+  }
+
+  function lucensWriteAnalyzeCache(key, payload) {
+    try {
+      sessionStorage.setItem(key, JSON.stringify({ ts: Date.now(), payload }));
+    } catch (e) {
+      /* QuotaExceeded : on purge la moitié des plus vieilles entrées cache et
+         on réessaie une fois. */
+      try {
+        const cacheKeys = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const k = sessionStorage.key(i);
+          if (k && k.startsWith('lucens:cache:')) cacheKeys.push(k);
+        }
+        cacheKeys.sort();
+        for (let i = 0; i < Math.ceil(cacheKeys.length / 2); i++) {
+          sessionStorage.removeItem(cacheKeys[i]);
+        }
+        sessionStorage.setItem(key, JSON.stringify({ ts: Date.now(), payload }));
+      } catch { /* abandonne silencieusement */ }
+    }
+  }
+
   function adaptApiResponse(raw) {
     if (!raw || typeof raw !== 'object') return raw;
     /* Validation runtime : sanitise les réponses malformées avec valeurs safe */
@@ -17876,6 +18005,101 @@ const Annotator = (() => {
       console.warn('[LAYER 4] multi-pass failed for zone:', err);
       return zone;
     }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     V50 P3 — Validation Haiku post-Opus
+     ────────────────────────────────────────────────────────────────────
+     Pour chaque zone retournée par Opus avec confidence < 0.75, on demande
+     à Claude Haiku 4.5 (latence 600-900ms, coût ~$0.0002/appel) un verdict
+     binaire YES_FLUO | NO_OBJECT | UNCERTAIN sur un crop 256×256 de la
+     zone. Indépendant de la classification Opus → filtre additionnel des
+     faux positifs (reflets LED, plastique blanc, surfaces inox brillantes
+     que le system_prompt Opus échoue parfois à rejeter).
+
+     Stratégie de retour :
+       - NO_OBJECT + confidence < 0.65 → zone _haiku_rejected = true (UI filtre)
+       - UNCERTAIN → confidence abaissée à min(actuelle, 0.5)
+       - YES_FLUO → confidence boostée à max(actuelle, 0.75) si actuelle < 0.75
+
+     Parallélisé via Promise.all (4 max simultanés pour respecter rate limit).
+     ─────────────────────────────────────────────────────────────────────── */
+  function cropZoneToBase64(imgData, zone, W, H, side = 256, padPct = 0.4) {
+    const cx = (zone.x + zone.w / 2) * W;
+    const cy = (zone.y + zone.h / 2) * H;
+    const sw = Math.max(zone.w * W, zone.h * H) * (1 + padPct * 2);
+    const sourceSize = Math.min(Math.max(sw, 96), Math.min(W, H));
+    let x0 = Math.round(cx - sourceSize / 2);
+    let y0 = Math.round(cy - sourceSize / 2);
+    x0 = Math.max(0, Math.min(W - sourceSize, x0));
+    y0 = Math.max(0, Math.min(H - sourceSize, y0));
+    /* Source canvas (full image) */
+    const src = document.createElement('canvas');
+    src.width = W; src.height = H;
+    src.getContext('2d').putImageData(imgData, 0, 0);
+    /* Output canvas (side × side) */
+    const out = document.createElement('canvas');
+    out.width = side; out.height = side;
+    const ctx = out.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(src, x0, y0, sourceSize, sourceSize, 0, 0, side, side);
+    return out.toDataURL('image/jpeg', 0.78).split(',')[1];
+  }
+
+  async function validateZoneWithHaiku(zone, imgData, W, H) {
+    try {
+      const b64 = cropZoneToBase64(imgData, zone, W, H, 256, 0.4);
+      const resp = await fetch('/api/validate-cluster', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: b64, mediaType: 'image/jpeg' }),
+      });
+      if (!resp.ok) return null;
+      return await resp.json();
+    } catch (err) {
+      console.warn('[V50 P3] validateZoneWithHaiku failed:', err?.message || err);
+      return null;
+    }
+  }
+
+  async function validateLowConfidenceZonesWithHaiku(zones, imgData, W, H) {
+    const THRESHOLD = 0.75;
+    const MAX_PARALLEL = 4;
+    const targets = (zones || []).filter(z => (z.confidence ?? 1) < THRESHOLD && z.artifact_rejection !== true);
+    if (!targets.length) return zones;
+    const todo = targets.slice(0, MAX_PARALLEL);
+    console.log('[V50 P3] Haiku validation sur ' + todo.length + ' zones (confidence < ' + THRESHOLD + ')');
+    const results = await Promise.all(todo.map(z => validateZoneWithHaiku(z, imgData, W, H)));
+    const verdictMap = new Map();
+    todo.forEach((z, i) => {
+      const key = z._id || z.id;
+      if (key && results[i]) verdictMap.set(key, results[i]);
+    });
+    let rejectedCount = 0, uncertainCount = 0, boostedCount = 0;
+    const updated = zones.map(z => {
+      const key = z._id || z.id;
+      const v = key ? verdictMap.get(key) : null;
+      if (!v) return z;
+      const verdict = (v.verdict || '').toUpperCase();
+      const currentConf = z.confidence ?? 0;
+      if (verdict === 'NO_OBJECT' && currentConf < 0.65) {
+        rejectedCount++;
+        return { ...z, _haiku_rejected: true, _haiku_reason: v.reason || '' };
+      }
+      if (verdict === 'UNCERTAIN') {
+        uncertainCount++;
+        return { ...z, confidence: Math.min(currentConf, 0.5), _haiku_uncertain: true };
+      }
+      if (verdict === 'YES_FLUO' && currentConf < 0.75) {
+        boostedCount++;
+        return { ...z, confidence: Math.max(currentConf, 0.75), _haiku_confirmed: true };
+      }
+      return z;
+    });
+    console.log('[V50 P3] Haiku results : ' + rejectedCount + ' rejected, ' + uncertainCount + ' uncertain, ' + boostedCount + ' boosted');
+    /* Filter out les zones rejetées par Haiku (≥ 0.65 confidence boosté = on garde quand même) */
+    return updated.filter(z => !z._haiku_rejected);
   }
 
   async function multiPassLowConfidenceZones(zones, imgData, W, H, lang) {
@@ -20143,7 +20367,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v49</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v50</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
