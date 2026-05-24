@@ -20078,7 +20078,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v45</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v46</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
@@ -21023,11 +21023,51 @@ const Annotator = (() => {
 
   /* V19.2 — Sampling robuste pour scène UV (fond sombre + spot fluo brillant).
      Au lieu de la moyenne (trop polluée par les pixels sombres voisins), on
-     compte les pixels "brillants" : sat ≥ 0.30 ET val ≥ 0.35. Si ≥ 5% de
-     pixels brillants dans la zone visée → signal présent. */
-  const CH_BRIGHT_SAT_MIN = 0.28;
-  const CH_BRIGHT_VAL_MIN = 0.32;
-  const CH_BRIGHT_RATIO_MIN = 0.04;  /* 4% des pixels suffit pour déclencher */
+     compte les pixels "brillants" : sat ≥ seuil ET val ≥ seuil. Si ≥ ratio %
+     de pixels brillants dans la zone visée → signal présent.
+
+     V46 — Les 3 seuils sont DYNAMIQUES, pilotés par le slider sensibilité
+     (lvSens 10-100 dans le drawer Réglages). Avant V46 : constantes ignorant
+     le slider — l'utilisateur pouvait tourner à fond la sensibilité sans
+     aucun effet sur la détection. Maintenant : interpolation linéaire des 3
+     seuils selon la sensibilité affichée (display = lvSens). */
+  const CH_BRIGHT_SAT_MIN_DEFAULT = 0.28;
+  const CH_BRIGHT_VAL_MIN_DEFAULT = 0.32;
+  const CH_BRIGHT_RATIO_MIN_DEFAULT = 0.04;
+
+  /**
+   * V46 — getDetectionThresholds(display) : interpole les 3 seuils
+   * crosshair selon la sensibilité affichée (10-100).
+   *
+   *   display=10  (STRICT)       → sat 0.40 / val 0.45 / ratio 0.10
+   *                                Seules les fluos très intenses passent.
+   *                                Élimine maximum de faux positifs (LED, plastique).
+   *   display=65  (ÉQUILIBRÉE)   → sat 0.28 / val 0.32 / ratio 0.04 (= défaut historique)
+   *                                Bon compromis terrain HACCP standard.
+   *   display=100 (TRÈS SENSIBLE)→ sat 0.16 / val 0.22 / ratio 0.018
+   *                                Capte les fluos faibles, voiles diffus,
+   *                                résidus pâles. Plus de faux positifs possibles.
+   *
+   * Interpolation linéaire par morceaux entre les 3 points d'ancrage.
+   */
+  function getDetectionThresholds(display) {
+    const d = Math.max(10, Math.min(100, display | 0));
+    let satMin, valMin, ratioMin;
+    if (d <= 65) {
+      /* Interpolation entre (10, strict) et (65, équilibrée) */
+      const t = (d - 10) / 55;  /* 0 à 1 */
+      satMin   = 0.40 + (0.28 - 0.40) * t;
+      valMin   = 0.45 + (0.32 - 0.45) * t;
+      ratioMin = 0.10 + (0.04 - 0.10) * t;
+    } else {
+      /* Interpolation entre (65, équilibrée) et (100, très sensible) */
+      const t = (d - 65) / 35;
+      satMin   = 0.28 + (0.16 - 0.28) * t;
+      valMin   = 0.32 + (0.22 - 0.32) * t;
+      ratioMin = 0.04 + (0.018 - 0.04) * t;
+    }
+    return { satMin, valMin, ratioMin };
+  }
 
   function sampleAtCrosshair(data, w, h) {
     const cx = (w / 2) | 0;
@@ -21039,6 +21079,9 @@ const Annotator = (() => {
     let rSumB = 0, gSumB = 0, bSumB = 0, nB = 0;
     let satSum = 0, valSum = 0;
     let rSum = 0, gSum = 0, bSum = 0;
+    /* V46 — Lecture en direct de la valeur du slider (lv.sensDisplay 10-100).
+       Le changement prend effet IMMÉDIATEMENT à la frame suivante. */
+    const T = getDetectionThresholds(lv.sensDisplay != null ? lv.sensDisplay : 65);
     for (let y = y0; y < y1; y++) {
       for (let x = x0; x < x1; x++) {
         const i = (y * w + x) * 4;
@@ -21051,7 +21094,7 @@ const Annotator = (() => {
         satSum += sat;
         valSum += val;
         n++;
-        if (sat >= CH_BRIGHT_SAT_MIN && val >= CH_BRIGHT_VAL_MIN) {
+        if (sat >= T.satMin && val >= T.valMin) {
           bright++;
           rSumB += R; gSumB += G; bSumB += B;
           nB++;
@@ -21159,10 +21202,13 @@ const Annotator = (() => {
          de juger ce point précis. */
       if (!lv.cardMode && !lv.calibSurfaceMode) {
         const sample = sampleAtCrosshair(data, WORK_W, WORK_H);
-        /* V19.2 — détection par pixels brillants. Si ≥ 4% des pixels du
-           sample sont sat≥0.28 + val≥0.32, on considère qu'il y a un signal
-           coloré à valider. Beaucoup plus robuste qu'une moyenne globale. */
-        const hasSignal = sample.brightRatio >= CH_BRIGHT_RATIO_MIN;
+        /* V46 — Le seuil brightRatio est désormais piloté par le slider
+           sensibilité (avant V46 : constante 0.04 ignorant le slider).
+           - sensibilité 10 (strict)        → ratio ≥ 10 % requis
+           - sensibilité 65 (équilibrée)    → ratio ≥ 4 % (= défaut historique)
+           - sensibilité 100 (très sensible)→ ratio ≥ 1.8 % seulement */
+        const { ratioMin } = getDetectionThresholds(lv.sensDisplay != null ? lv.sensDisplay : 65);
+        const hasSignal = sample.brightRatio >= ratioMin;
         const now = performance.now();
         const cacheKey = crosshairCacheKey(sample);
         const cachedVerdict = lv.validateCache.get(cacheKey);
