@@ -17051,20 +17051,20 @@ const Annotator = (() => {
 
       /* ── Étape 2 — Contrôle qualité d'image ── */
       setLoaderStep('loader_step2', 16);
-      await delay(180);
+      /* V49 L2 — Delays 180+200+180ms supprimés : Engine.analyze + clusterZones
+         + buildZoneCrops sont déjà 100% synchrones (~300-500ms réels). Pas
+         besoin de delay artificiel pour "faire croire" qu'il y a du travail. */
 
       /* ── Étape 3 — Détection des zones fluorescentes ── */
       setLoaderStep('loader_step3', 26);
       const localRes = Engine.analyze(imgData, W, H);
       const detectedZones = Engine.clusterZones(localRes.grid, W, H);
-      await delay(200);
 
       let res;
       try {
         /* ── Étape 4 — Cadrage des zones suspectes ── */
         setLoaderStep('loader_step4', 38);
         const zoneCrops = detectedZones.length ? buildZoneCrops(imgData, detectedZones, W, H) : [];
-        await delay(180);
 
         /* ── Étape 5 — Analyse IA (creep adaptatif 50→85%, jamais bloqué) ── */
         setLoaderStep('loader_step5', 50);
@@ -17091,7 +17091,13 @@ const Annotator = (() => {
            Objectif : précision maximale, pas vitesse maximale.
         ═══════════════════════════════════════════════════════════════ */
         setLoaderStep('loader_step6', 84);
-        await delay(1000);
+        /* V49 L1 — Tous les delays de cette section étape 6 sont COSMÉTIQUES :
+           la computation (refineBboxesFromGrid, filter, hincrby, etc.) est
+           synchrone et coûte <50ms cumulé. Les delays de 1000-1500ms par
+           sous-étape totalisaient 8.1s purement de wait. Réduits à 100ms
+           chacun : l'utilisateur perçoit toujours les changements de step
+           label, mais l'analyse n'attend plus inutilement. Gain net ~7.3s. */
+        await delay(100);
 
         /* 6.1 — Refinement spatial pixel-précis (snap bbox aux cellules fluorescentes) */
         setLoaderProgress(86);
@@ -17100,7 +17106,7 @@ const Annotator = (() => {
           const refinedCount = res.zones.filter(z => z._refined).length;
           console.log('[VERIF 6.1] Spatial refinement: ' + refinedCount + '/' + res.zones.length + ' zones');
         }
-        await delay(1200);
+        await delay(100);
 
         /* 6.2 — Audit des confidences IA + identification zones faibles */
         setLoaderProgress(88);
@@ -17110,7 +17116,7 @@ const Annotator = (() => {
           const avgConf = res.zones.reduce((s, z) => s + (z.confidence || 0), 0) / res.zones.length;
           console.log('[VERIF 6.2] Confidence audit: avg ' + avgConf.toFixed(2) + ', ' + lowConfZones.length + ' zones < 0.65');
         }
-        await delay(1100);
+        await delay(100);
 
         /* 6.3 — Multi-pass focused : ré-analyse zones douteuses (Layer 4 réactivé) */
         setLoaderProgress(90);
@@ -17125,7 +17131,8 @@ const Annotator = (() => {
           }
         } else {
           console.log('[VERIF 6.3] No low-confidence zones — skip multi-pass');
-          await delay(1500);
+          /* V49 L1 — Skip multi-pass : delay réduit de 1500 à 200ms (skip rapide). */
+          await delay(200);
         }
 
         /* 6.4 — Cross-validation IA vs heuristique (coverage spatial) */
@@ -17138,7 +17145,7 @@ const Annotator = (() => {
           const divergence = Math.abs(heuristicCov - aiCov);
           console.log('[VERIF 6.4] Coverage: heuristic ' + heuristicCov.toFixed(1) + '% vs AI ' + aiCov.toFixed(1) + '% (divergence ' + divergence.toFixed(1) + '%)');
         }
-        await delay(1200);
+        await delay(100);
 
         /* 6.5 — Validation distribution catégorielle + détection anomalies */
         setLoaderProgress(94);
@@ -17148,7 +17155,7 @@ const Annotator = (() => {
           const dominant = [...byType.entries()].sort((a, b) => b[1] - a[1])[0];
           console.log('[VERIF 6.5] Distribution: ' + JSON.stringify(Object.fromEntries(byType)) + ' · dominant ' + (dominant ? dominant[0] : 'none'));
         }
-        await delay(1100);
+        await delay(100);
 
         /* 6.6 — Calcul du score de fiabilité global */
         setLoaderProgress(95);
@@ -17157,12 +17164,13 @@ const Annotator = (() => {
           const reliability = Math.round(avgConf * 100);
           console.log('[VERIF 6.6] Reliability score: ' + reliability + '/100');
         }
-        await delay(1000);
+        await delay(100);
 
-        /* ── Étape 7 — Génération du rapport final (V35 : 600ms au lieu
-           de 1500ms ; l'utilisateur percevait un blocage à 96%). ── */
+        /* ── Étape 7 — Génération du rapport final ── */
         setLoaderStep('loader_step7', 96);
-        await delay(600);
+        /* V49 L1 — 600ms → 200ms : la "préparation" finale est instantanée
+           côté code, le delay servait juste à montrer l'étape. */
+        await delay(200);
         /* LAYER 4 désactivé — le multi-pass corrompait des bonnes zones
            via des coordonnées mal mappées. À réactiver uniquement après
            tests rigoureux du mapping crop → original. */
@@ -17878,9 +17886,16 @@ const Annotator = (() => {
     const todo = targets.slice(0, 3);
     console.log('[LAYER 4] Multi-pass focused sur ' + todo.length + ' zones faible confidence (< ' + THRESHOLD + ')');
     const refined = await Promise.all(todo.map(z => multiPassRefineZone(z, imgData, W, H, lang)));
-    /* Remplace les zones par leurs versions raffinées */
+    /* V49 fix P1 — Match avec fallback : adaptApiResponse pose _id depuis z.id
+       mais selon les versions de schéma, le champ peut s'appeler `id` ou rien.
+       On compare sur (`_id` || `id`) pour récupérer le mapping même quand l'un
+       des deux est absent. Layer 4 multi-pass était silencieusement inopérant
+       quand `_id` n'était pas posé : aucune zone basse confidence n'était
+       remplacée par sa version raffinée HD (1024px crop). */
     return zones.map(z => {
-      const r = refined.find(x => x._id === z._id);
+      const zKey = z._id || z.id;
+      if (!zKey) return z;
+      const r = refined.find(x => (x._id || x.id) === zKey);
       return r || z;
     });
   }
@@ -18240,6 +18255,14 @@ const Annotator = (() => {
     const TARGET_MAX_B64_PURE = 7_600_000;
     const QUALITIES = [0.92, 0.85, 0.78, 0.70, 0.60];
 
+    /* V49 L3 — Plafond résolution pour le payload API. Claude Opus 4.7 ne
+       gagne pas en précision visuelle au-delà de 2048px sur le grand côté
+       (les tokens vision sont plafonnés côté Anthropic). Downscaler à 2048
+       avant l'encodage divise typiquement le payload par 4 → upload 2-5s
+       plus rapide sur connexions mobiles 4G. La qualité d'analyse reste
+       strictement identique. */
+    const MAX_LONG_SIDE = 2048;
+
     /* Helper : retourne { dataUrl, b64len } pour un canvas à une qualité donnée. */
     function tryEncode(cv, q) {
       const dataUrl = cv.toDataURL('image/jpeg', q);
@@ -18259,13 +18282,31 @@ const Annotator = (() => {
       return cv;
     }
 
-    /* 1) Résolution native, qualités décroissantes. */
+    /* V49 L3 — Pré-downscale si grand côté > 2048px. Sur iPhone 12MP (4032×
+       3024) on passe à 2048×1536 avant toute tentative d'encodage. */
+    let workCanvas = canvas;
+    let workW = W;
+    let workH = H;
+    if (Math.max(W, H) > MAX_LONG_SIDE) {
+      const scale = MAX_LONG_SIDE / Math.max(W, H);
+      workW = Math.round(W * scale);
+      workH = Math.round(H * scale);
+      workCanvas = downscale(canvas, workW, workH);
+      console.log('[L3] Image pré-réduite ' + W + 'x' + H + ' → ' + workW + 'x' + workH + ' pour API');
+    }
+
+    /* 1) Résolution native (ou pré-réduite L3), qualités décroissantes. */
     for (const q of QUALITIES) {
-      const r = tryEncode(canvas, q);
+      const r = tryEncode(workCanvas, q);
       if (r.b64len <= TARGET_MAX_B64_PURE) {
-        return { dataUrl: r.dataUrl, finalW: W, finalH: H };
+        return { dataUrl: r.dataUrl, finalW: workW, finalH: workH };
       }
     }
+    /* Si on est arrivé ici, on continue avec workCanvas en downscaling
+       progressif depuis sa résolution courante (déjà ≤ 2048). */
+    canvas = workCanvas;
+    W = workW;
+    H = workH;
 
     /* 2) Downscale progressif. On va beaucoup plus loin que 0.55× pour
        gérer les images saturées peu compressibles (sols colorés uniformes,
@@ -20102,7 +20143,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v47</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v49</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">

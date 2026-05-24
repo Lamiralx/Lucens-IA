@@ -905,7 +905,13 @@ export default async function handler(req, res) {
         sensorWarning = `\nALERTE CAPTEUR : Dérive colorimétrique CMOS détectée côté client (purple blowout likelihood ${sm.purpleLikelihood.toFixed(2)}, dominance G/(R+B) ${sm.purpleDominance?.toFixed?.(2) || '?'}). La balance des blancs auto du smartphone compense le violet en poussant les verts. Ne classe PAS chemical/biofilm sur la base d'une teinte verte ambiguë. Marque sensor_color_drift et color_unreliable dans les uncertainty_sources des zones concernées. Plafonne la confidence couleur à 0.60 sur ces zones.`;
       }
       if (typeFr) {
-        userContextLine = `\nCONTEXTE UTILISATEUR (à intégrer dans la criticité) : établissement de type ${typeFr}.${momentFr}${roleFr} Adapte le niveau de risque, la lecture procédurale et la position normative HACCP à ce cadre. RÈGLE IMPÉRATIVE : ne JAMAIS dicter à l'utilisateur comment faire son métier ; le rôle indique seulement le ton et la priorité de présentation. Reste impartial, synthétique, factuel. Ne demande pas le type d'établissement ni le moment dans missing_context puisqu'ils sont fournis.${sensorWarning}\n`;
+        /* V49 P5 — Seuil de confidence adaptatif par contexte HACCP :
+           en surface critique (food_contact, wet_area, critical_clean_area)
+           on accepte les zones dès 0.55 pour ne PAS rater une contamination
+           dans une zone à haut risque sanitaire. En contexte moins critique
+           (erp, residential, low_risk) on monte à 0.65 pour éviter de
+           sur-détecter sur des matériaux inertes. */
+        userContextLine = `\nCONTEXTE UTILISATEUR (à intégrer dans la criticité) : établissement de type ${typeFr}.${momentFr}${roleFr} Adapte le niveau de risque, la lecture procédurale et la position normative HACCP à ce cadre. RÈGLE IMPÉRATIVE : ne JAMAIS dicter à l'utilisateur comment faire son métier ; le rôle indique seulement le ton et la priorité de présentation. Reste impartial, synthétique, factuel. Ne demande pas le type d'établissement ni le moment dans missing_context puisqu'ils sont fournis.\n\nSEUIL DE CONFIDENCE ADAPTATIF : surfaces critiques (food_contact, wet_area, critical_clean_area) → liste les zones dès confidence ≥ 0.55 pour priorité sanitaire. Surfaces moins critiques (erp, residential, low_risk) → ne liste que les zones avec confidence ≥ 0.65 pour éviter la sur-détection.${sensorWarning}\n`;
       }
     }
 
