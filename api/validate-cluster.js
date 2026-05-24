@@ -53,17 +53,28 @@ RÈGLES STRICTES :
 Tu DOIS répondre en <800ms. Sois décisif.`;
 
 export default async function handler(req, res) {
-  if (applyCors(req, res)) return;
+  /* V38 fix F-13 : applyCors() ne retourne rien — le pattern `if (...) return;`
+     ne capturait jamais les pre-flight OPTIONS, qui tombaient sur le 405 et
+     bloquaient Safari iOS. On gère OPTIONS explicitement. */
+  applyCors(req, res);
+  if (req.method === 'OPTIONS') {
+    res.status(204).end();
+    return;
+  }
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
   }
 
-  /* Rate limit par IP */
+  /* V38 fix F-02 : la signature de rateLimit() est `{ scope, ip, limit,
+     windowSec }` (objet destructuré, voir _lib/security.js). L'appel
+     positionnel précédent passait un string comme 1er arg → destructuré
+     en undefined → rate limit totalement inopérant → drain Anthropic
+     Haiku possible. send429 attend `retryAfter` (nombre), pas l'objet rl. */
   const ip = getClientIp(req);
-  const rl = await rateLimit(`validate-cluster:${ip}`, RATE_LIMIT_PER_MIN, 60);
+  const rl = await rateLimit({ scope: 'validate-cluster', ip, limit: RATE_LIMIT_PER_MIN, windowSec: 60 });
   if (!rl.ok) {
-    send429(res, rl);
+    send429(res, rl.retryAfter);
     return;
   }
 

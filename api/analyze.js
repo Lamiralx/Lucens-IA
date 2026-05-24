@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { kv } from "@vercel/kv";
+import { createHash } from "node:crypto";
 import { applyCors, getClientIp, rateLimit, send429 } from "./_lib/security.js";
 import { assignPromptVariant } from "./_lib/ab-testing.js";
 
@@ -152,8 +153,11 @@ function computeContextRelevance(doc, userContext) {
 function computeImageHash(b64) {
   if (!b64 || typeof b64 !== 'string') return null;
   try {
-    const crypto = require('crypto');
-    return crypto.createHash('sha256').update(b64.slice(0, 4096)).digest('hex').slice(0, 16);
+    /* V38 fix F-01 : utilisation de createHash importé en haut (node:crypto).
+       Le require('crypto') précédent lançait ReferenceError dans un module
+       ES — imageHash retournait toujours null, cassant le bucketing A/B
+       déterministe et la dédup feedback. */
+    return createHash('sha256').update(b64.slice(0, 4096)).digest('hex').slice(0, 16);
   } catch { return null; }
 }
 

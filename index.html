@@ -36,6 +36,35 @@ if ('serviceWorker' in navigator) {
       .then((reg) => console.log('[Lucens] SW enregistré scope:', reg.scope))
       .catch((err) => console.warn('[Lucens] SW échec enregistrement:', err?.message));
   });
+  /* V38 fix F-06 — Écoute des notifications du SW (mise à jour disponible).
+     Affiche une bannière discrète au lieu d'un force-reload brutal qui faisait
+     perdre la saisie en cours sur le terrain HACCP. */
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event && event.data && event.data.type === 'SW_UPDATE_AVAILABLE') {
+      const existing = document.getElementById('lucensSwUpdate');
+      if (existing) return; /* déjà affichée */
+      const bar = document.createElement('div');
+      bar.id = 'lucensSwUpdate';
+      bar.setAttribute('role', 'status');
+      bar.setAttribute('aria-live', 'polite');
+      bar.style.cssText = 'position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);z-index:99999;display:flex;align-items:center;gap:12px;padding:10px 14px 10px 16px;background:#0E8C84;color:#fff;border-radius:999px;font:600 13px/1.2 \'IBM Plex Sans\',sans-serif;box-shadow:0 8px 24px rgba(14,140,132,0.35),0 2px 6px rgba(0,0,0,0.25);max-width:calc(100vw - 24px);';
+      bar.innerHTML = '<span>Mise à jour disponible</span>';
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = 'Recharger';
+      btn.style.cssText = 'background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.32);color:#fff;padding:6px 12px;border-radius:999px;font:600 12px/1 \'IBM Plex Sans\',sans-serif;cursor:pointer;';
+      btn.addEventListener('click', () => { location.reload(); });
+      const close = document.createElement('button');
+      close.type = 'button';
+      close.setAttribute('aria-label', 'Ignorer la mise à jour');
+      close.textContent = '×';
+      close.style.cssText = 'background:transparent;border:0;color:#fff;font-size:18px;line-height:1;cursor:pointer;padding:2px 4px;';
+      close.addEventListener('click', () => { bar.remove(); });
+      bar.appendChild(btn);
+      bar.appendChild(close);
+      document.body.appendChild(bar);
+    }
+  });
 }
 </script>
 <meta name="application-name" content="Lucens IA">
@@ -13485,6 +13514,12 @@ const Annotator = (() => {
     results.classList.remove('visible');
     uploadHub.style.display = '';
     cameraInput.value = ''; galleryInput.value = '';
+    /* V38 fix F-05 : libère la dernière Object URL (l'origImg n'en a plus
+       besoin une fois qu'on est revenu à l'accueil). */
+    if (lastObjectUrl) {
+      try { URL.revokeObjectURL(lastObjectUrl); } catch {}
+      lastObjectUrl = null;
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
@@ -16487,6 +16522,11 @@ const Annotator = (() => {
   /* V26 — AbortController global pour permettre l'annulation de l'analyse
      en cours via le bouton "Annuler l'analyse" du loader. */
   let currentAnalyzeAbort = null;
+  /* V38 fix F-05 : tracking de la dernière Object URL créée pour la révoquer
+     lors de la prochaine analyse (ou au reset). Sans révocation, les blobs
+     image s'accumulent en mémoire — sur iOS PWA en session longue (15-30
+     photos), l'OS finit par tuer l'app. */
+  let lastObjectUrl = null;
   function cancelCurrentAnalysis() {
     if (currentAnalyzeAbort) {
       try { currentAnalyzeAbort.abort(); } catch {}
@@ -16558,7 +16598,14 @@ const Annotator = (() => {
     currentAnalyzeAbort = new AbortController();
     loader.classList.add('active');
     uploadHub.style.display = 'none';
+    /* V38 fix F-05 : révoquer l'Object URL de l'analyse PRÉCÉDENTE avant
+       d'en créer une nouvelle. origImg de la session précédente n'en a
+       plus besoin à ce stade — la nouvelle photo va l'écraser. */
+    if (lastObjectUrl) {
+      try { URL.revokeObjectURL(lastObjectUrl); } catch {}
+    }
     const url = URL.createObjectURL(file);
+    lastObjectUrl = url;
     const backdrop = $('loaderBackdrop');
     if (backdrop) backdrop.style.backgroundImage = `url(${url})`;
     startTipRotation();
@@ -19624,7 +19671,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v37</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v38</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">

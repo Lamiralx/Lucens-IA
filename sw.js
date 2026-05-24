@@ -13,7 +13,7 @@
  * Versionning : bump CACHE_VERSION à chaque déploiement majeur pour purge propre.
  */
 
-const CACHE_VERSION = 'lucens-v37-2026-05-24';
+const CACHE_VERSION = 'lucens-v38-2026-05-24';
 const APP_SHELL_CACHE = `app-shell-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 
@@ -69,12 +69,15 @@ self.addEventListener('activate', (event) => {
           })
       )
     ).then(() => self.clients.claim())
-     /* V30 — Force reload de tous les clients ouverts pour qu'ils
-        chargent la nouvelle version IMMÉDIATEMENT (au lieu d'attendre
-        une fermeture/réouverture manuelle de l'onglet PWA). */
+     /* V38 fix F-06 — Le force-reload brutal de V30 (c.navigate(c.url)) faisait
+        perdre la saisie en cours sur le terrain HACCP. On notifie maintenant
+        les clients via postMessage et c'est le code app qui décide d'afficher
+        une bannière "Mise à jour disponible · Recharger" non-bloquante. */
      .then(() => self.clients.matchAll({ type: 'window' }))
      .then((clients) => clients.forEach((c) => {
-       try { c.navigate(c.url); } catch (e) {}
+       try {
+         c.postMessage({ type: 'SW_UPDATE_AVAILABLE', version: CACHE_VERSION });
+       } catch (e) {}
      }))
   );
 });
