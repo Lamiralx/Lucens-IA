@@ -9265,7 +9265,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v94</span>
+              <span class="home-spec-version" aria-hidden="true">v95</span>
             </div>
           </div>
 
@@ -13641,6 +13641,24 @@ const Annotator = (() => {
         const meanHue = maxBucket * 10 + 5;
         const meanSat = satByBucket[maxBucket] / Math.max(1, buckets[maxBucket]);
         const meanLum = lumByBucket[maxBucket] / Math.max(1, buckets[maxBucket]);
+        /* V95 — GARDE-FOU CRITIQUE (analogue V88 dans suppressSubstrate, qui
+           n'avait corrigé qu'UNE des deux pipelines substrat) : si la teinte
+           dominante est TRÈS saturée OU TRÈS brillante, c'est de la vraie
+           fluorescence UV-A zoomée, PAS un substrat coloré industriel.
+           On bail → pas de filtre substrat → fluo rendue normalement.
+
+           Substrat coloré industriel typique : sat 0.20-0.45, lum 60-130
+           Vraie fluo UV-A 365 nm : sat 0.55+, lum 140+ (signal brillant)
+
+           Bug corrigé : quand l'utilisateur zoomait sur une grosse tache fluo
+           (jaune-orange ou bleu vif) qui couvrait > 25% des pixels saturés,
+           computeSubstrateFilter la reconnaissait comme "substrat dominant"
+           puis isPixelSubstrate rejetait TOUS ses pixels → aucune cartographie
+           rendue. V88 avait fixé ce bug dans suppressSubstrate (Engine.analyze)
+           mais drawZones avait sa propre pipeline substrat restée buggée. */
+        if (meanSat >= 0.55 || meanLum >= 140) {
+          return null;
+        }
         return {
           hue: meanHue,
           tolerance: 22,        /* ± 22° de la teinte dominante = substrat */
