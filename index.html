@@ -7769,11 +7769,15 @@ body.has-sw-update .home {
    V19.1 (2026-05-24) : responsive — max-width relative au viewport,
    wrap autorisé sur mobile pour éviter le débordement, ellipsis fallback. */
 .lv-status-banner {
+  /* V80 — Largeur FIXE pour que la bannière ne change jamais de taille
+     selon le contenu. Texte tronqué via ellipsis si overflow.
+     Calcul : viewport - 2 icônes (40px chacune) - gaps - paddings. */
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 7px 12px;
-  max-width: calc(100vw - 130px); /* laisse de la place aux 2 icônes 56px + gap */
+  width: 180px;
+  max-width: calc(100vw - 130px);
   background: rgba(8, 10, 14, 0.78);
   color: rgba(245, 247, 250, 0.96);
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -7811,6 +7815,7 @@ body.has-sw-update .home {
   .lv-status-banner {
     font-size: 9.5px;
     padding: 6px 10px;
+    width: 150px;
     max-width: calc(100vw - 120px);
     gap: 6px;
   }
@@ -9161,7 +9166,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v79</span>
+              <span class="home-spec-version" aria-hidden="true">v80</span>
             </div>
           </div>
 
@@ -9839,16 +9844,16 @@ body.lv-open { overflow: hidden; touch-action: none; }
         </button>
         <!-- V26 — Dots cliquables : indicateur visuel des étapes + accès direct.
              Dot vert = répondu, dot ambre = en cours, dot gris = non répondu. -->
-        <div class="ctx-dots" id="ctxDots" role="tablist" aria-label="Étapes">
-          <button type="button" class="ctx-dot" data-step="0" role="tab" aria-label="Question 1">
+        <div class="ctx-dots" id="ctxDots" role="tablist" data-i18n-aria-label="ctx_steps_aria" aria-label="Étapes">
+          <button type="button" class="ctx-dot" data-step="0" role="tab" data-i18n-aria-label="ctx_step1_aria" aria-label="Question 1">
             <span class="ctx-dot-num">1</span>
           </button>
-          <button type="button" class="ctx-dot" data-step="1" role="tab" aria-label="Question 2">
+          <button type="button" class="ctx-dot" data-step="1" role="tab" data-i18n-aria-label="ctx_step2_aria" aria-label="Question 2">
             <span class="ctx-dot-num">2</span>
           </button>
         </div>
         <button type="button" class="ctx-next" id="ctxNextBtn" hidden>
-          <span>Suivant</span>
+          <span data-i18n="ctx_next">Suivant</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M9 6l6 6-6 6"/>
           </svg>
@@ -10004,11 +10009,11 @@ const I18N = {
     lv_btn_code:              "Code",
     lv_btn_validate:          "Valider la calibration",
     lv_btn_auth:              "Authentifier",
-    lv_status_idle:           "Visez une zone",
-    lv_status_pending:        "Analyse en cours…",
-    lv_status_fluo:           "Fluorescence détectée",
-    lv_status_object:         "Pas une fluorescence",
-    lv_status_object_prefix:  "Pas une fluo",
+    lv_status_idle:           "Visez",
+    lv_status_pending:        "Analyse…",
+    lv_status_fluo:           "Fluo détectée",
+    lv_status_object:         "Non fluo",
+    lv_status_object_prefix:  "Non fluo",
     lv_cal_banner:            "Calibration · Zone propre",
     lv_cal_instruction:       "Touchez une zone propre pour calibrer",
     lv_cal_confirmed:         "Calibré sur cette zone",
@@ -10240,6 +10245,11 @@ const I18N = {
     ctx_title:                 "Précisons votre cadre d'usage",
     ctx_sub:                   "2 questions pour mieux calibrer l'analyse. Réponse facultative, modifiable à tout moment.",
     ctx_q_type:                "Secteur d'activité",
+    /* V80 — Contexte modal — boutons + aria */
+    ctx_next:                  "Suivant",
+    ctx_steps_aria:            "Étapes",
+    ctx_step1_aria:            "Question 1",
+    ctx_step2_aria:            "Question 2",
     ctx_back:                  "Précédent",
     ctx_opt_resto:             "Restauration et hôtellerie",
     ctx_opt_resto_hint:        "Restaurant, cantine, hôtel, snack",
@@ -10482,10 +10492,10 @@ const I18N = {
     lv_btn_code:              "Code",
     lv_btn_validate:          "Validate calibration",
     lv_btn_auth:              "Authenticate",
-    lv_status_idle:           "Aim at a surface",
+    lv_status_idle:           "Aim",
     lv_status_pending:        "Analysing…",
-    lv_status_fluo:           "Fluorescence detected",
-    lv_status_object:         "Not fluorescent",
+    lv_status_fluo:           "Fluo detected",
+    lv_status_object:         "Not fluo",
     lv_status_object_prefix:  "Not fluo",
     lv_cal_banner:            "Calibration · Clean area",
     lv_cal_instruction:       "Tap a clean area to calibrate",
@@ -10718,6 +10728,11 @@ const I18N = {
     ctx_title:                 "Let's calibrate your usage",
     ctx_sub:                   "2 questions to better calibrate the analysis. Answers are optional, editable at any time.",
     ctx_q_type:                "Activity sector",
+    /* V80 — Context modal — buttons + aria */
+    ctx_next:                  "Next",
+    ctx_steps_aria:            "Steps",
+    ctx_step1_aria:            "Question 1",
+    ctx_step2_aria:            "Question 2",
     ctx_back:                  "Back",
     ctx_opt_resto:             "Foodservice and hospitality",
     ctx_opt_resto_hint:        "Restaurant, canteen, hotel, snack",
@@ -10867,6 +10882,11 @@ const I18N = {
     ctx_title: "Precisemos su marco de uso",
     ctx_sub: "2 preguntas para calibrar mejor el análisis. Respuesta opcional, modificable en cualquier momento.",
     ctx_q_type: "Sector de actividad",
+    /* V80 — Context modal (ES) */
+    ctx_next: "Siguiente",
+    ctx_steps_aria: "Pasos",
+    ctx_step1_aria: "Pregunta 1",
+    ctx_step2_aria: "Pregunta 2",
     ctx_back: "Anterior",
     ctx_opt_resto: "Restauración y hostelería",
     ctx_opt_resto_hint: "Restaurante, cantina, hotel, snack",
@@ -11026,10 +11046,10 @@ const I18N = {
     lv_btn_code:              "Código",
     lv_btn_validate:          "Validar la calibración",
     lv_btn_auth:              "Autenticar",
-    lv_status_idle:           "Apunte a una zona",
+    lv_status_idle:           "Apunte",
     lv_status_pending:        "Analizando…",
-    lv_status_fluo:           "Fluorescencia detectada",
-    lv_status_object:         "No es una fluorescencia",
+    lv_status_fluo:           "Fluo detectada",
+    lv_status_object:         "No fluo",
     lv_status_object_prefix:  "No fluo",
     lv_cal_banner:            "Calibración · Zona limpia",
     lv_cal_instruction:       "Toque una zona limpia para calibrar",
@@ -11345,6 +11365,11 @@ const I18N = {
     ctx_title: "Passen wir Ihren Einsatzrahmen an",
     ctx_sub: "2 Fragen zur besseren Kalibrierung der Analyse. Antworten optional, jederzeit änderbar.",
     ctx_q_type: "Tätigkeitsbereich",
+    /* V80 — Context modal (DE) */
+    ctx_next: "Weiter",
+    ctx_steps_aria: "Schritte",
+    ctx_step1_aria: "Frage 1",
+    ctx_step2_aria: "Frage 2",
     ctx_back: "Zurück",
     ctx_opt_resto: "Gastronomie und Hotellerie",
     ctx_opt_resto_hint: "Restaurant, Kantine, Hotel, Imbiss",
@@ -11504,10 +11529,10 @@ const I18N = {
     lv_btn_code:              "Code",
     lv_btn_validate:          "Kalibrierung bestätigen",
     lv_btn_auth:              "Authentifizieren",
-    lv_status_idle:           "Zielen Sie auf einen Bereich",
-    lv_status_pending:        "Analyse läuft…",
-    lv_status_fluo:           "Fluoreszenz erkannt",
-    lv_status_object:         "Keine Fluoreszenz",
+    lv_status_idle:           "Zielen",
+    lv_status_pending:        "Analyse…",
+    lv_status_fluo:           "Fluo erkannt",
+    lv_status_object:         "Keine Fluo",
     lv_status_object_prefix:  "Keine Fluo",
     lv_cal_banner:            "Kalibrierung · Saubere Zone",
     lv_cal_instruction:       "Berühren Sie eine saubere Zone zum Kalibrieren",
@@ -22101,7 +22126,8 @@ const Annotator = (() => {
     const label  = document.getElementById('lvStatusLabel');
     if (banner) banner.setAttribute('data-state', state);
     if (label) {
-      const shortReason = (reason || '').trim().slice(0, 22);
+      /* V80 — reason raccourcie 22 → 10 chars pour tenir dans le banner fixe */
+      const shortReason = (reason || '').trim().slice(0, 10);
       const tr = (k, fb) => (typeof t === 'function' ? t(k) : fb) || fb;
       const map = {
         idle:    tr('lv_status_idle',    'Visez une zone'),
