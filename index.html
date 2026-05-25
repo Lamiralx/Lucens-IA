@@ -7319,6 +7319,55 @@ body.has-sw-update .home {
 }
 .results-zone-input::placeholder { color: var(--ink-tertiary); font-weight: 400; font-style: italic; }
 
+/* V65 — Layout input + bouton Enregistrer intégré. */
+.results-zone-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+.results-zone-row .results-zone-input {
+  flex: 1;
+  min-width: 0;
+}
+.results-zone-save {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px;
+  height: auto;
+  background: var(--accent);
+  color: #fff;
+  border: 1.5px solid var(--accent);
+  border-radius: var(--radius-md);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.003em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .15s, transform .1s, border-color .15s;
+  white-space: nowrap;
+}
+.results-zone-save:hover { background: var(--accent-hi, var(--accent)); border-color: var(--accent-hi, var(--accent)); }
+.results-zone-save:active { transform: scale(0.97); }
+.results-zone-save svg { flex-shrink: 0; }
+.results-zone-save.is-saved {
+  background: #2DAA85;
+  border-color: #2DAA85;
+}
+.results-zone-save.is-saved svg { display: none; }
+.results-zone-save.is-saved::before {
+  content: '✓';
+  font-size: 15px;
+  font-weight: 700;
+  margin-right: 2px;
+}
+@media (max-width: 480px) {
+  .results-zone-save { padding: 0 12px; font-size: 12.5px; }
+  .results-zone-save svg { width: 13px; height: 13px; }
+}
+
 /* ── Fiche détail historique — rapport complet ── */
 .hist-report { display: flex; flex-direction: column; gap: 13px; }
 .hist-print-head { display: none; }
@@ -9244,11 +9293,22 @@ body.lv-open { overflow: hidden; touch-action: none; }
         </div>
       </div>
 
-      <!-- ZONE INSPECTÉE : nom libre, enregistré avec l'inspection -->
+      <!-- ZONE INSPECTÉE V65 : nom libre + bouton Enregistrer intégré.
+           Placeholder supprimé (retour utilisateur). Bouton premium teal
+           à droite du champ, click → sauvegarde + feedback "✓ Enregistré". -->
       <div class="results-zone">
         <label class="results-zone-label" for="resultZone" data-i18n="result_zone_label">Zone inspectée (optionnel)</label>
-        <input type="text" id="resultZone" class="results-zone-input" maxlength="80"
-               autocomplete="off" data-i18n-placeholder="h_zone_ph" placeholder="ex. Plan de travail cuisine">
+        <div class="results-zone-row">
+          <input type="text" id="resultZone" class="results-zone-input" maxlength="80" autocomplete="off">
+          <button type="button" class="results-zone-save" id="resultZoneSave">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+              <polyline points="17 21 17 13 7 13 7 21"/>
+              <polyline points="7 3 7 8 15 8"/>
+            </svg>
+            <span data-i18n="btn_save_zone">Enregistrer</span>
+          </button>
+        </div>
       </div>
 
       <!-- V21 — Carte verdict principal (analyse pédagogique contextualisée).
@@ -9840,6 +9900,8 @@ const I18N = {
     loader_tip_eyebrow: "Le saviez-vous",
     toast_export_ok: "Rapport PDF téléchargé",
     btn_reset: "Nouvelle analyse",
+    btn_save_zone: "Enregistrer",
+    btn_zone_saved: "Enregistré",
     btn_export: "Exporter le rapport",
     score_label: "Score de risque",
     risk_low: "Risque faible",
@@ -10248,6 +10310,8 @@ const I18N = {
     loader_tip_eyebrow: "Did you know?",
     toast_export_ok: "PDF report downloaded",
     btn_reset: "New analysis",
+    btn_save_zone: "Save",
+    btn_zone_saved: "Saved",
     btn_export: "Export report",
     score_label: "Risk score",
     risk_low: "Low risk",
@@ -10722,6 +10786,8 @@ const I18N = {
     loader_step7: "Preparación del informe",
     toast_export_ok: "Informe PDF descargado",
     btn_reset: "Nuevo análisis",
+    btn_save_zone: "Guardar",
+    btn_zone_saved: "Guardado",
     btn_export: "Exportar informe",
     score_label: "Puntuación de riesgo",
     risk_low: "Riesgo bajo",
@@ -11130,6 +11196,8 @@ const I18N = {
     loader_step7: "Bericht wird vorbereitet",
     toast_export_ok: "PDF-Bericht heruntergeladen",
     btn_reset: "Neue Analyse",
+    btn_save_zone: "Speichern",
+    btn_zone_saved: "Gespeichert",
     btn_export: "Bericht exportieren",
     score_label: "Risikobewertung",
     risk_low: "Geringes Risiko",
@@ -19119,15 +19187,49 @@ const Annotator = (() => {
     const aiNotUsable = ai && ai.usable === false;
     const aiLimitations = (ai && Array.isArray(ai.limitations)) ? ai.limitations.filter(s => s && s.trim()) : [];
 
-    /* ⚡ LOGIQUE ADAPTATIVE — 4 états distincts :
-       1. Image NON UTILISABLE par l'IA → "quality_poor" (rouge)
-       2. Warning IA substantiel (≥ 8 chars) → "quality_warning" (orange)
-       3. Limitations IA seules (conseils non-bloquants) → "quality_tips" (info)
-       4. Aucun problème → BANNER MASQUÉ (pas d'alerte intempestive)
-       L'heuristique locale n'apparaît plus dans le titre — uniquement dans la liste. */
+    /* V65 — On pré-calcule les recos valides AVANT le verdict d'affichage.
+       Si aucune reco ne passe le filtre verbe-impératif, on n'a RIEN à
+       montrer à l'utilisateur → banner totalement masqué (plus de
+       "Aspects mineurs à améliorer" + "Photo de bonne qualité. Aucune
+       recommandation spécifique" qui ne sert à rien). */
+    const ACCEPTED_VERBS = new Set([
+      'approchez', 'reculez', 'éloignez', 'rapprochez',
+      'éteignez', 'allumez', 'fermez', 'ouvrez',
+      'tenez', 'prenez', 'gardez', 'maintenez',
+      'visez', 'dirigez', 'orientez', 'inclinez', 'pointez',
+      'cadrez', 'recadrez', 'ajustez', 'centrez', 'positionnez', 'placez',
+      'vérifiez', 'contrôlez', 'validez',
+      'évitez', 'supprimez', 'retirez', 'excluez',
+      'privilégiez', 'choisissez', 'utilisez', 'préférez',
+      'nettoyez', 'essuyez', 'séchez',
+      'move', 'step', 'turn', 'switch', 'close', 'open',
+      'hold', 'keep', 'aim', 'point', 'frame', 'reframe', 'adjust', 'center', 'centre',
+      'check', 'verify', 'validate',
+      'avoid', 'remove', 'exclude',
+      'prefer', 'choose', 'use', 'tap',
+      'acerque', 'aleje', 'apague', 'encienda', 'cierre', 'abra',
+      'sostenga', 'apunte', 'oriente', 'incline', 'enmarque',
+      'verifique', 'evite', 'utilice',
+      'halten', 'richten', 'meiden', 'pruefen', 'verwenden', 'schalten', 'schließen', 'öffnen',
+    ]);
+    const _validRecs = [];
+    for (const rec of aiLimitations) {
+      const m = rec.match(/^(\S+?)(\s.+)$/);
+      if (!m) continue;
+      const firstWord = m[1].toLowerCase().replace(/[.,;:!?]+$/, '').replace(/[«»"']/g, '');
+      if (ACCEPTED_VERBS.has(firstWord)) {
+        _validRecs.push({ verb: m[1], rest: m[2] });
+      }
+    }
+
+    /* ⚡ LOGIQUE ADAPTATIVE V65 — 4 états distincts :
+       1. Image NON UTILISABLE → "quality_poor" (rouge)
+       2. Warning IA substantiel → "quality_warning" (orange)
+       3. validRecs.length > 0 → "quality_tips" (info, recs uniquement)
+       4. Tout le reste → BANNER MASQUÉ (aucune alerte intempestive) */
     const isPoor = aiNotUsable;
     const hasRealIssue = isPoor || (aiWarning && aiWarning.length >= 8);
-    const tipsOnly = !hasRealIssue && aiLimitations.length > 0;
+    const tipsOnly = !hasRealIssue && _validRecs.length > 0;
 
     /* Si aucun des 3 états n'est actif → banner MASQUÉ (image OK) */
     if (!isPoor && !hasRealIssue && !tipsOnly) {
@@ -19165,9 +19267,13 @@ const Annotator = (() => {
       }
     }
 
-    /* Section 1 — Défauts détectés */
+    /* Section 1 — Défauts détectés. V65 : MASQUÉE en mode tipsOnly
+       (sinon affiche "Aspects mineurs à améliorer" alors qu'il n'y a
+       pas de vrai défaut → contradiction visuelle avec la section recs). */
     const issuesList = $('qualityIssuesList');
-    if (issuesList) {
+    const issuesSection = issuesList ? issuesList.closest('.quality-section') : null;
+    if (issuesSection) issuesSection.hidden = tipsOnly;
+    if (issuesList && !tipsOnly) {
       while (issuesList.firstChild) issuesList.removeChild(issuesList.firstChild);
       const seen = new Set();
       const items = [];
@@ -19182,9 +19288,6 @@ const Annotator = (() => {
       if (aiWarning && !seen.has(aiWarning)) {
         items.push(aiWarning);
       }
-      if (!items.length && aiLimitations.length) {
-        items.push(t('quality_no_specific_issue'));
-      }
       for (const txt of items) {
         const li = document.createElement('li');
         li.textContent = txt;
@@ -19198,52 +19301,13 @@ const Annotator = (() => {
       }
     }
 
-    /* Section 2 — Recommandations photo (limitations IA, FILTRÉES) */
-    /* Liste blanche stricte des verbes acceptés en début de recommandation
-       — toute phrase qui ne commence pas par un de ces verbes est rejetée
-       (filtre les disclaimers génériques type "Cette analyse..."). */
-    const ACCEPTED_VERBS = new Set([
-      'approchez', 'reculez', 'éloignez', 'rapprochez',
-      'éteignez', 'allumez', 'fermez', 'ouvrez',
-      'tenez', 'prenez', 'gardez', 'maintenez',
-      'visez', 'dirigez', 'orientez', 'inclinez', 'pointez',
-      'cadrez', 'recadrez', 'ajustez', 'centrez', 'positionnez', 'placez',
-      'vérifiez', 'contrôlez', 'validez',
-      'évitez', 'supprimez', 'retirez', 'excluez',
-      'privilégiez', 'choisissez', 'utilisez', 'préférez',
-      'nettoyez', 'essuyez', 'séchez',
-      // EN
-      'move', 'step', 'turn', 'switch', 'close', 'open',
-      'hold', 'keep', 'aim', 'point', 'frame', 'reframe', 'adjust', 'center', 'centre',
-      'check', 'verify', 'validate',
-      'avoid', 'remove', 'exclude',
-      'prefer', 'choose', 'use', 'tap',
-      // ES
-      'acerque', 'aleje', 'apague', 'encienda', 'cierre', 'abra',
-      'sostenga', 'apunte', 'oriente', 'incline', 'enmarque',
-      'verifique', 'evite', 'utilice',
-      // DE
-      'halten', 'richten', 'meiden', 'pruefen', 'verwenden', 'schalten', 'schließen', 'öffnen',
-    ]);
-
+    /* Section 2 — Recommandations photo (reuse _validRecs pré-calculé). */
     const recsList = $('qualityRecsList');
     if (recsList) {
       while (recsList.firstChild) recsList.removeChild(recsList.firstChild);
 
-      /* Filtre strict : on ne garde que les recos qui commencent par un verbe accepté */
-      const validRecs = [];
-      for (const rec of aiLimitations) {
-        const m = rec.match(/^(\S+?)(\s.+)$/);
-        if (!m) continue;
-        const firstWord = m[1].toLowerCase().replace(/[.,;:!?]+$/, '').replace(/[«»"']/g, '');
-        if (ACCEPTED_VERBS.has(firstWord)) {
-          validRecs.push({ verb: m[1], rest: m[2] });
-        }
-        /* Sinon on rejette silencieusement (pas de disclaimer en gras) */
-      }
-
-      if (validRecs.length) {
-        for (const { verb, rest } of validRecs) {
+      if (_validRecs.length) {
+        for (const { verb, rest } of _validRecs) {
           const li = document.createElement('li');
           const strong = document.createElement('strong');
           strong.textContent = verb;
@@ -20761,7 +20825,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v64</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v65</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
@@ -24434,8 +24498,11 @@ const Annotator = (() => {
   refreshHomeHistory();
 
   /* Champ « Zone inspectée » de l'écran de résultats — rattache un nom
-     libre à la dernière inspection enregistrée (window.__lucensLastInspId). */
+     libre à la dernière inspection enregistrée (window.__lucensLastInspId).
+     V65 : auto-save silencieux conservé (sécurité) + bouton Enregistrer
+     visible avec feedback "✓ Enregistré" 1.5s. */
   var resultZone = document.getElementById('resultZone');
+  var resultZoneSave = document.getElementById('resultZoneSave');
   if (resultZone){
     var rzTimer = null;
     resultZone.addEventListener('input', function(){
@@ -24448,6 +24515,33 @@ const Annotator = (() => {
           window.LucensHistory.update(inspId, { zone: val });
         }
       }, 400);
+    });
+  }
+  if (resultZoneSave && resultZone){
+    var rzSavedTimer = null;
+    resultZoneSave.addEventListener('click', function(){
+      var inspId = window.__lucensLastInspId;
+      var val = resultZone.value.trim();
+      if (!inspId || !val) {
+        /* Feedback minimal si rien à enregistrer : focus l'input */
+        resultZone.focus();
+        return;
+      }
+      if (window.LucensHistory && window.LucensHistory.update){
+        window.LucensHistory.update(inspId, { zone: val });
+      }
+      /* Feedback visuel : bouton passe en vert "✓ Enregistré" 1.5s */
+      var lbl = resultZoneSave.querySelector('[data-i18n="btn_save_zone"]');
+      var origText = lbl ? lbl.textContent : '';
+      var savedTxt = (typeof tr === 'function' ? tr('btn_zone_saved', 'Enregistré') :
+                      (typeof t === 'function' ? t('btn_zone_saved') : 'Enregistré')) || 'Enregistré';
+      if (lbl) lbl.textContent = savedTxt;
+      resultZoneSave.classList.add('is-saved');
+      clearTimeout(rzSavedTimer);
+      rzSavedTimer = setTimeout(function(){
+        resultZoneSave.classList.remove('is-saved');
+        if (lbl) lbl.textContent = origText;
+      }, 1500);
     });
   }
 
