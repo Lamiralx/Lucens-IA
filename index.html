@@ -7143,6 +7143,16 @@ body.has-sw-update .home {
   text-transform: uppercase;
   color: var(--ink-dim);
 }
+/* V75 — Version badge discret dans le home footer (au lieu du Live View). */
+.home-spec-version {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--ink-tertiary);
+  opacity: 0.45;
+  margin-top: 2px;
+}
 
 /* ═══════════════════════════════════════════════════════════════════
    HISTORIQUE DES INSPECTIONS — écran local plein écran
@@ -9149,6 +9159,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
             <div class="home-spec">
               <span class="home-spec-name">Lucens IA</span>
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
+              <!-- V75 — Badge version discret en footer home (sortie du Live View).
+                   Accessible pour debug cache si besoin, sans perturber l'inspection. -->
+              <span class="home-spec-version" aria-hidden="true">v75</span>
             </div>
           </div>
 
@@ -9943,6 +9956,24 @@ const I18N = {
     inst_alt_gallery:  "Importer une image",
     lv_back:           "Retour",
     /* V74 — Live View i18n complet */
+    /* V75 — Toasts Live View (calibration + erreurs) */
+    lv_toast_camera_error:    "Impossible d'accéder à la caméra",
+    lv_toast_capture_failed:  "Échec capture",
+    lv_toast_cal_card_cancel: "Calibration carte annulée",
+    lv_toast_cal_zone_cancel: "Calibration zone annulée",
+    lv_toast_camera_not_ready:"Caméra non prête",
+    lv_toast_card_too_far:    "Carte trop loin · rapprochez",
+    lv_toast_card_misframed:  "Carte mal cadrée · réessayez",
+    lv_toast_card_not_recog:  "Carte non reconnue · réessayez",
+    lv_toast_card_authok:     "Carte authentifiée · présentez-la dans le cadre",
+    lv_toast_white_overexp:   "Patch blanc surexposé · éloignez la lampe",
+    lv_toast_light_too_low:   "Éclairage insuffisant · rapprochez la lampe UV",
+    lv_toast_black_too_bright:"Patch noir trop clair · coupez la lumière ambiante",
+    lv_toast_patches_dull:    "Patchs trop ternes · vérifiez la lampe et le cadrage",
+    lv_toast_cal_success:     "Calibration réussie · {n} signatures · profil reproductible",
+    lv_toast_cal_cleared:     "Calibration effacée",
+    lv_toast_zone_too_small:  "Zone trop petite · réessayez",
+    lv_toast_zone_irregular:  "Zone irrégulière · visez une surface plus uniforme",
     lv_aria_back:             "Retour",
     lv_aria_settings:         "Réglages",
     lv_aria_cancel_cal:       "Annuler la calibration",
@@ -10386,6 +10417,24 @@ const I18N = {
     inst_alt_gallery:  "Import an image",
     lv_back:           "Back",
     /* V74 — Live View i18n complet (EN) */
+    /* V75 — Live View toasts (UK English) */
+    lv_toast_camera_error:    "Unable to access the camera",
+    lv_toast_capture_failed:  "Capture failed",
+    lv_toast_cal_card_cancel: "Card calibration cancelled",
+    lv_toast_cal_zone_cancel: "Zone calibration cancelled",
+    lv_toast_camera_not_ready:"Camera not ready",
+    lv_toast_card_too_far:    "Card too far · move closer",
+    lv_toast_card_misframed:  "Card misframed · try again",
+    lv_toast_card_not_recog:  "Card not recognised · try again",
+    lv_toast_card_authok:     "Card authenticated · place it within the frame",
+    lv_toast_white_overexp:   "White patch overexposed · move the lamp away",
+    lv_toast_light_too_low:   "Insufficient lighting · move the UV lamp closer",
+    lv_toast_black_too_bright:"Black patch too bright · reduce ambient light",
+    lv_toast_patches_dull:    "Patches too dull · check the lamp and framing",
+    lv_toast_cal_success:     "Calibration successful · {n} signatures · reproducible profile",
+    lv_toast_cal_cleared:     "Calibration cleared",
+    lv_toast_zone_too_small:  "Zone too small · try again",
+    lv_toast_zone_irregular:  "Zone irregular · aim at a more uniform surface",
     lv_aria_back:             "Back",
     lv_aria_settings:         "Settings",
     lv_aria_cancel_cal:       "Cancel calibration",
@@ -10399,25 +10448,25 @@ const I18N = {
     lv_btn_code:              "Code",
     lv_btn_validate:          "Validate calibration",
     lv_btn_auth:              "Authenticate",
-    lv_status_idle:           "Aim at a zone",
-    lv_status_pending:        "Analyzing…",
+    lv_status_idle:           "Aim at a surface",
+    lv_status_pending:        "Analysing…",
     lv_status_fluo:           "Fluorescence detected",
-    lv_status_object:         "Not a fluorescence",
+    lv_status_object:         "Not fluorescent",
     lv_status_object_prefix:  "Not fluo",
-    lv_cal_banner:            "Calibration · Clean zone",
-    lv_cal_instruction:       "Touch a clean zone to calibrate",
-    lv_cal_confirmed:         "Calibrated on this zone",
+    lv_cal_banner:            "Calibration · Clean area",
+    lv_cal_instruction:       "Tap a clean area to calibrate",
+    lv_cal_confirmed:         "Calibrated on this area",
     lv_cal_status_idle:       "Choose a calibration method",
     lv_cal_status_card:       "Calibrated · Lucens card ({n} signatures) ✓",
-    lv_cal_status_surface:    "Calibrated · clean zone ✓",
-    lv_card_hint:             "Place the Lucens card in the frame",
+    lv_cal_status_surface:    "Calibrated · clean area ✓",
+    lv_card_hint:             "Place the Lucens card within the frame",
     lv_codepad_title:         "Your Lucens card code",
-    lv_codepad_help:          "If automatic QR reading does not work, enter the code printed under the <strong>LUCENS IA</strong> logo (8 characters, letters and numbers).",
+    lv_codepad_help:          "If the QR code can't be read automatically, enter the code printed under the <strong>LUCENS IA</strong> logo (8 characters, letters and numbers).",
     lv_sens_balanced:         "Balanced — standard detection",
-    lv_sens_max:              "Maximum — catches very faint fluo",
-    lv_sens_high:             "High — wide capture",
+    lv_sens_max:              "Maximum — detects very faint fluorescence",
+    lv_sens_high:             "High — wide coverage",
     lv_sens_low:              "Low — strong signals only",
-    lv_sens_min:              "Minimal — very marked fluorescences",
+    lv_sens_min:              "Minimal — only pronounced fluorescence",
     lv_map_label:      "Mapping",
     lv_map_help:       "Visual highlight of fluorescent areas",
     lv_sens_label:     "Sensitivity",
@@ -10895,6 +10944,24 @@ const I18N = {
     inst_alt_gallery:  "Importar una imagen",
     lv_back:           "Atrás",
     /* V74 — Live View i18n complet (ES) */
+    /* V75 — Live View toasts (ES) */
+    lv_toast_camera_error:    "No se puede acceder a la cámara",
+    lv_toast_capture_failed:  "Captura fallida",
+    lv_toast_cal_card_cancel: "Calibración de tarjeta cancelada",
+    lv_toast_cal_zone_cancel: "Calibración de zona cancelada",
+    lv_toast_camera_not_ready:"Cámara no lista",
+    lv_toast_card_too_far:    "Tarjeta demasiado lejos · acerque",
+    lv_toast_card_misframed:  "Tarjeta mal encuadrada · vuelva a intentar",
+    lv_toast_card_not_recog:  "Tarjeta no reconocida · vuelva a intentar",
+    lv_toast_card_authok:     "Tarjeta autenticada · colóquela en el marco",
+    lv_toast_white_overexp:   "Parche blanco sobreexpuesto · aleje la lámpara",
+    lv_toast_light_too_low:   "Iluminación insuficiente · acerque la lámpara UV",
+    lv_toast_black_too_bright:"Parche negro demasiado claro · reduzca la luz ambiente",
+    lv_toast_patches_dull:    "Parches demasiado apagados · verifique la lámpara y el encuadre",
+    lv_toast_cal_success:     "Calibración correcta · {n} firmas · perfil reproducible",
+    lv_toast_cal_cleared:     "Calibración borrada",
+    lv_toast_zone_too_small:  "Zona demasiado pequeña · vuelva a intentar",
+    lv_toast_zone_irregular:  "Zona irregular · apunte a una superficie más uniforme",
     lv_aria_back:             "Volver",
     lv_aria_settings:         "Ajustes",
     lv_aria_cancel_cal:       "Cancelar la calibración",
@@ -11338,6 +11405,24 @@ const I18N = {
     inst_alt_gallery:  "Bild importieren",
     lv_back:           "Zurück",
     /* V74 — Live View i18n complet (DE) */
+    /* V75 — Live View toasts (DE) */
+    lv_toast_camera_error:    "Zugriff auf die Kamera nicht möglich",
+    lv_toast_capture_failed:  "Aufnahme fehlgeschlagen",
+    lv_toast_cal_card_cancel: "Kartenkalibrierung abgebrochen",
+    lv_toast_cal_zone_cancel: "Zonenkalibrierung abgebrochen",
+    lv_toast_camera_not_ready:"Kamera nicht bereit",
+    lv_toast_card_too_far:    "Karte zu weit weg · näher heranführen",
+    lv_toast_card_misframed:  "Karte falsch im Bild · erneut versuchen",
+    lv_toast_card_not_recog:  "Karte nicht erkannt · erneut versuchen",
+    lv_toast_card_authok:     "Karte authentifiziert · in den Rahmen legen",
+    lv_toast_white_overexp:   "Weißer Patch überbelichtet · Lampe entfernen",
+    lv_toast_light_too_low:   "Beleuchtung unzureichend · UV-Lampe näher heranführen",
+    lv_toast_black_too_bright:"Schwarzer Patch zu hell · Umgebungslicht reduzieren",
+    lv_toast_patches_dull:    "Patches zu blass · Lampe und Bildausschnitt prüfen",
+    lv_toast_cal_success:     "Kalibrierung erfolgreich · {n} Signaturen · reproduzierbares Profil",
+    lv_toast_cal_cleared:     "Kalibrierung gelöscht",
+    lv_toast_zone_too_small:  "Zone zu klein · erneut versuchen",
+    lv_toast_zone_irregular:  "Zone unregelmäßig · zielen Sie auf eine gleichmäßigere Fläche",
     lv_aria_back:             "Zurück",
     lv_aria_settings:         "Einstellungen",
     lv_aria_cancel_cal:       "Kalibrierung abbrechen",
@@ -21004,9 +21089,8 @@ const Annotator = (() => {
     <canvas class="lv-overlay" id="lvOverlay"></canvas>
     <div class="lv-toast" id="lvToast"></div>
 
-    <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
-         ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v74</div>
+    <!-- V75 — Badge version retiré du Live View (perturbait l'inspection terrain).
+         Le badge reste accessible via le footer du home pour debug cache. -->
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
@@ -22677,7 +22761,7 @@ const Annotator = (() => {
       lv.rafId = requestAnimationFrame(loop);
     } catch (err) {
       console.error('Live view camera error:', err);
-      lvToast('Impossible d\'accéder à la caméra');
+      lvToast((typeof t === 'function' ? t('lv_toast_camera_error') : 'Impossible d\'accéder à la caméra'));
       /* Fallback : ferme le live view, ouvre caméra native */
       closeLiveView();
       const input = document.getElementById('cameraInput');
@@ -22820,7 +22904,7 @@ const Annotator = (() => {
     };
 
     snap.toBlob((blob) => {
-      if (!blob) { lvToast('Échec capture'); return; }
+      if (!blob) { lvToast((typeof t === 'function' ? t('lv_toast_capture_failed') : 'Échec capture')); return; }
       const file = new File([blob], 'lucens-livecap-' + Date.now() + '.jpg', {
         type: 'image/jpeg', lastModified: Date.now()
       });
@@ -23103,12 +23187,12 @@ const Annotator = (() => {
   $$('lvClose').addEventListener('click', () => {
     if (lv.cardMode) {
       exitCardMode();
-      lvToast('Calibration carte annulée');
+      lvToast((typeof t === 'function' ? t('lv_toast_cal_card_cancel') : 'Calibration carte annulée'));
       return;
     }
     if (lv.calibSurfaceMode) {
       if (typeof exitCalSurfaceMode === 'function') exitCalSurfaceMode();
-      lvToast('Calibration zone annulée');
+      lvToast((typeof t === 'function' ? t('lv_toast_cal_zone_cancel') : 'Calibration zone annulée'));
       return;
     }
     closeLiveView();
@@ -23392,7 +23476,7 @@ const Annotator = (() => {
      Gère le crop object-fit:cover pour échantillonner exactement
      ce que l'utilisateur voit aligné dans le cadre. */
   function captureCalibration() {
-    if (!cam.videoWidth) { lvToast('Caméra non prête'); return; }
+    if (!cam.videoWidth) { lvToast((typeof t === 'function' ? t('lv_toast_camera_not_ready') : 'Caméra non prête')); return; }
 
     const vw = cam.videoWidth, vh = cam.videoHeight;
     const stageRect = overlay.getBoundingClientRect();
@@ -23470,7 +23554,7 @@ const Annotator = (() => {
         const pos = qrToImagePos(lastQrDetection.location,
                                  { dx: patch.dx, dy: patch.dy },
                                  QR_SIZE_MM_V2);
-        if (!pos) { lvToast('Carte trop loin — rapprochez'); return; }
+        if (!pos) { lvToast((typeof t === 'function' ? t('lv_toast_card_too_far') : 'Carte trop loin · rapprochez')); return; }
         px = Math.round(pos.x);
         py = Math.round(pos.y);
       } else {
@@ -23493,7 +23577,7 @@ const Annotator = (() => {
           if (b > maxCh) maxCh = b;
         }
       }
-      if (sn === 0) { lvToast('Carte mal cadrée — réessayez'); return; }
+      if (sn === 0) { lvToast((typeof t === 'function' ? t('lv_toast_card_misframed') : 'Carte mal cadrée · réessayez')); return; }
       const lMean = sl / sn;
       reads.push({
         ...patch,
@@ -23509,22 +23593,22 @@ const Annotator = (() => {
     const blackP = reads.find(p => p.role === 'black');
     const fluoP  = reads.filter(p => p.role === 'fluo');
     if (!whiteP || !blackP || fluoP.length === 0) {
-      lvToast('Carte non reconnue — réessayez');
+      lvToast((typeof t === 'function' ? t('lv_toast_card_not_recog') : 'Carte non reconnue · réessayez'));
       return;
     }
 
     /* ── VALIDATION — une mauvaise calibration est pire que pas de calibration ── */
     const wMean = (whiteP.r + whiteP.g + whiteP.b) / 3;
     if (whiteP.maxCh >= 250) {
-      lvToast('Patch blanc surexposé — éloignez la lampe ou baissez la luminosité');
+      lvToast((typeof t === 'function' ? t('lv_toast_white_overexp') : 'Patch blanc surexposé · éloignez la lampe'));
       return;
     }
     if (wMean < 55) {
-      lvToast('Éclairage insuffisant — rapprochez la lampe UV de la carte');
+      lvToast((typeof t === 'function' ? t('lv_toast_light_too_low') : 'Éclairage insuffisant · rapprochez la lampe UV'));
       return;
     }
     if (blackP.lMean > 95) {
-      lvToast('Patch noir trop clair — coupez la lumière ambiante');
+      lvToast((typeof t === 'function' ? t('lv_toast_black_too_bright') : 'Patch noir trop clair · coupez la lumière ambiante'));
       return;
     }
 
@@ -23564,7 +23648,7 @@ const Annotator = (() => {
        Si tous désaturés → carte mal alignée ou pas sous UV. */
     const avgSig = signatures.reduce((a, s) => a + s.s, 0) / signatures.length;
     if (avgSig < 0.22) {
-      lvToast('Patchs trop ternes — vérifiez la lampe UV et le cadrage');
+      lvToast((typeof t === 'function' ? t('lv_toast_patches_dull') : 'Patchs trop ternes · vérifiez la lampe et le cadrage'));
       return;
     }
 
@@ -23573,7 +23657,7 @@ const Annotator = (() => {
     saveProfile();
     updateCalUI();
     exitCardMode();
-    lvToast(`Calibration réussie — ${signatures.length} signatures · profil reproductible`);
+    lvToast((typeof t === 'function' ? t('lv_toast_cal_success').replace('{n}', String(signatures.length)) : `Calibration réussie · ${signatures.length} signatures · profil reproductible`));
   }
 
   /* Persistance localStorage */
@@ -23680,7 +23764,7 @@ const Annotator = (() => {
     /* V36 — Effacer aussi le serial carte mémorisé pour repartir de zéro */
     LucensCardAuth.clear();
     updateCalUI();
-    lvToast('Calibration effacée');
+    lvToast((typeof t === 'function' ? t('lv_toast_cal_cleared') : 'Calibration effacée'));
   });
 
   /* ═══════════════════════════════════════════════════════════════
@@ -23735,7 +23819,7 @@ const Annotator = (() => {
       setFeedback('Carte authentifiée ✓  ·  serial ' + code, 'success');
       setTimeout(() => {
         close();
-        lvToast('Carte authentifiée  ·  présentez-la dans le cadre');
+        lvToast((typeof t === 'function' ? t('lv_toast_card_authok') : 'Carte authentifiée · présentez-la dans le cadre'));
         /* V36 — Si on est déjà en mode carte, le prochain tick auto verra
            cardPreauth=true et passera directement à la stabilisation. */
         if (!lv.cardMode) enterCardMode();
@@ -23790,7 +23874,7 @@ const Annotator = (() => {
       hx += Math.cos(rad); hy += Math.sin(rad);
       n++;
     }
-    if (n < 50) { lvToast('Zone trop petite — réessayez'); return; }
+    if (n < 50) { lvToast((typeof t === 'function' ? t('lv_toast_zone_too_small') : 'Zone trop petite · réessayez')); return; }
 
     /* Concentration de teinte : proche de 1 = teintes groupées (uniforme) */
     const hueConc = Math.sqrt(hx*hx + hy*hy) / n;
@@ -23808,7 +23892,7 @@ const Annotator = (() => {
 
     /* CONTRÔLE D'UNIFORMITÉ — refuse une zone irrégulière */
     if (hueConc < 0.80 || sStd > 0.15) {
-      lvToast('Zone irrégulière — visez une surface plus uniforme');
+      lvToast((typeof t === 'function' ? t('lv_toast_zone_irregular') : 'Zone irrégulière · visez une surface plus uniforme'));
       return;   /* reste en mode calibration → l'utilisateur retape */
     }
 
