@@ -9166,7 +9166,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v80</span>
+              <span class="home-spec-version" aria-hidden="true">v81</span>
             </div>
           </div>
 
@@ -23253,12 +23253,28 @@ const Annotator = (() => {
     modal.classList.remove('lv-hidden');
     modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('lv-open');
-    /* V79 — Filet de sécurité i18n : ré-applique applyLang() globalement
-       à chaque ouverture du Live View. Garantit que tout est dans la
-       langue courante avant que l'utilisateur voie le modal, peu importe
-       le timing/cache. Coût : ~1-2ms, négligeable. */
+    /* V81 — Filet i18n ULTRA-DÉFENSIF : on ne fait plus confiance au
+       data-i18n, on force EXPLICITEMENT le texte de chaque élément du
+       Live View qui doit être traduit. Si t() échoue ou si applyLang
+       n'a pas couru pour une raison X, ce code garantit la traduction. */
     try {
       if (typeof applyLang === 'function') applyLang();
+      /* Force explicite des éléments critiques */
+      if (typeof t === 'function') {
+        const setIfExists = (id, key, attr) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          if (attr) el.setAttribute(attr, t(key));
+          else el.textContent = t(key);
+        };
+        setIfExists('lvStatusLabel', 'lv_status_idle');
+        setIfExists('lvCardHint', 'lv_card_hint_default');
+        setIfExists('lvCalStatus', 'lv_cal_status_idle');
+        /* Diag : log pour console DevTools */
+        console.log('[LiveView] i18n forcé · currentLang =',
+          (typeof currentLang === 'string') ? currentLang : 'undefined',
+          '· lv_status_idle =', t('lv_status_idle'));
+      }
     } catch (e) { console.warn('[LiveView] i18n refresh on open failed:', e?.message || e); }
     /* Charge le profil de calibration sauvegardé (s'il existe) */
     loadProfile();
