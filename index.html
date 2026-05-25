@@ -16811,7 +16811,7 @@ const Annotator = (() => {
        - Photo mid (60-100) : seuil 40%
        - Photo sombre (< 60) : seuil 55% */
     if (clipRatio > 0.60 && meanLum > 60 && meanLum < 200) {
-      issues.push("Photo majoritairement sur-exposée (>60% pixels cramés). Reprenez sans flash et sans HDR.");
+      issues.push("Trop de lumière sur la photo. Éloignez un peu la lampe UV de la surface ou cadrez sur une zone moins réfléchissante.");
       canProceed = false;
       return { canProceed, issues };
     }
@@ -16819,7 +16819,7 @@ const Annotator = (() => {
     if (meanLum < 60) clipThreshold = 0.55;
     else if (meanLum < 100) clipThreshold = 0.40;
     if (clipRatio > clipThreshold && meanLum > 60 && meanLum < 200) {
-      issues.push("Zones sur-exposées détectées (HDR ou flash probable). L'analyse peut être moins précise — essayez de reprendre sans flash si possible.");
+      issues.push("Reflets importants détectés sur la surface inox/brillante. L'analyse peut être moins précise.");
       /* Non bloquant — Claude voit l'image et fait au mieux */
     }
 
@@ -20703,7 +20703,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v60</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v61</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">

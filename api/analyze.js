@@ -481,10 +481,34 @@ EXEMPLES CONCRETS :
 • Tache jaune-orange sur sol en zone de stockage → score 70-85 (Élevé urine rongeur potentielle).
 
 ═══════════════════════════════════════════════════════════════
-🚫 INTERDICTION ABSOLUE — ZONES FLUO TUÉES
+🎯 PRÉCISION CARTOGRAPHIE — RIGUEUR STRICTE (V61 — restauration)
 ═══════════════════════════════════════════════════════════════
 
-Si une fluorescence est VISIBLEMENT présente sur l'image (couleur saturée, halo, glow), tu DOIS la lister dans zones[] même si tu ne peux pas l'identifier précisément. Utilise alors label "unknown" avec confidence "low" + evidence décrivant ce que tu vois. JAMAIS de zone fluo visible ignorée.
+OBJECTIF : cartographier UNIQUEMENT les fluorescences INDISCUTABLES, avec un bbox qui couvre TOUT le halo (pas juste le centre). Mieux vaut zero zone qu'un faux positif.
+
+CRITÈRES STRICTS pour qu'un signal soit listé (les 3 doivent être remplis) :
+1. SATURATION : couleur clairement plus saturée que le fond local (pas un voile diffus uniforme).
+2. CONTRASTE : signal visiblement plus brillant que les pixels adjacents (gradient net entre tache et fond).
+3. TEINTE CARACTÉRISTIQUE : bleu-cyan, vert-jaune, jaune-orange, rouge vif, vert vif, ou blanc-bleuté brillant — pas une couleur d'objet ambiant.
+
+EN CAS DE DOUTE → NE PAS LISTER. Renvoie zones: [] et explique dans observations qu'aucun signal franc n'a été détecté. C'est PRÉCIS et HONNÊTE, mieux qu'inventer.
+
+LA RÈGLE V49 (lister même si non identifiable) NE S'APPLIQUE PAS aux signaux ambigus, faibles, ou potentiellement issus de l'environnement. Elle s'applique UNIQUEMENT aux fluorescences franches dont seule l'identité chimique est incertaine.
+
+COUVERTURE DU HALO (regression V50→V61) :
+Le bbox DOIT englober tout le halo de fluorescence, du centre brillant jusqu'aux bords flous. Ne pas se contenter du pic d'intensité — la tache COMPLÈTE compte (les bords diffus font partie du dépôt). Si halo flou autour d'un centre brillant : bbox = enveloppe externe du halo, pas le centre seul.
+
+ENVIRONNEMENT À ÉCARTER (ne JAMAIS lister comme zone fluo) :
+- Sol/mur/plafond coloré (même si saturé)
+- Surface inox brillante (reflet ≠ fluorescence)
+- LED/écran allumé (lumière émise ≠ fluorescence excitée)
+- Objet plastique/peinture/étiquette colorée
+- Substrat coloré couvrant >30% du cadre
+- Voile UV diffus uniforme
+- Ombre, trou noir, zone sombre
+- Texture matière (grain bois, fibres carton, kraft)
+
+Si la photo montre PRINCIPALEMENT un de ces artefacts et PAS de vraie fluo : zones: [] + point_of_vigilance.text expliquant pourquoi (ex : "Reflets spéculaires sur inox dominants, aucun dépôt fluorescent franc détecté.").
 
 CHAMPS LEGACY OBLIGATOIRES (alimentent l'UI hero + observations + distribution)
 
