@@ -9161,7 +9161,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v77</span>
+              <span class="home-spec-version" aria-hidden="true">v78</span>
             </div>
           </div>
 
@@ -11867,6 +11867,19 @@ function applyLang() {
   });
   /* Re-render results in the new language if visible */
   if (typeof window._reRenderResults === 'function') window._reRenderResults();
+  /* V77 — Re-render Live View dynamic strings (lvStatusLabel, lvSensHint,
+     lvCalStatus, lvCardHint) si modal ouvert. Les data-i18n statiques sont
+     déjà mis à jour ci-dessus, mais les dynamic strings construits par JS
+     gardent l'ancienne langue jusqu'au prochain changement d'état. */
+  try {
+    const lvModal = document.getElementById('lvModal');
+    if (lvModal && !lvModal.classList.contains('lv-hidden')) {
+      /* Re-trigger toutes les fonctions dynamiques connues */
+      if (typeof window._lvReRenderDynamic === 'function') {
+        window._lvReRenderDynamic();
+      }
+    }
+  } catch (e) {}
   /* Notification générique pour les modules autonomes (ex. zone Historique) */
   try { window.dispatchEvent(new Event('lucens-lang-changed')); } catch (e) {}
 }
@@ -23248,6 +23261,35 @@ const Annotator = (() => {
 
   /* Expose globally pour réutilisation éventuelle */
   window.LucensLiveView = { open: openLiveView, close: closeLiveView };
+
+  /* V77 — Re-render dynamic strings sur changement de langue.
+     applyLang() met déjà à jour les data-i18n statiques, mais les strings
+     dynamiques construits par JS (statusLabel idle/fluo/object, sensHint,
+     calStatus, cardHint) gardent l'ancienne langue jusqu'au prochain état.
+     On force ici un refresh complet. */
+  function _lvReRenderDynamic() {
+    try {
+      /* Status label : re-run avec le dernier verdict connu */
+      if (typeof setCrosshairState === 'function' && typeof chCurrentVerdict !== 'undefined' && chCurrentVerdict) {
+        setCrosshairState(chCurrentVerdict.state || 'idle', chCurrentVerdict.reason || '');
+      }
+      /* Sensibilité hint : re-run avec valeur actuelle */
+      if (typeof applySensitivity === 'function' && lv && typeof lv.sensDisplay === 'number') {
+        applySensitivity(lv.sensDisplay);
+      }
+      /* Calibration status (drawer) */
+      if (typeof updateCalUI === 'function') updateCalUI();
+      /* Card hint (mode carte si actif) */
+      if (lv && lv.cardMode && typeof setCardHint === 'function') {
+        setCardHint((typeof t === 'function' ? t('lv_card_hint_default') : 'Placez la carte Lucens dans le cadre'));
+      }
+    } catch (e) {
+      console.warn('[LiveView] re-render dynamic strings failed:', e?.message || e);
+    }
+  }
+  window._lvReRenderDynamic = _lvReRenderDynamic;
+  /* Écoute aussi directement l'événement (defense-in-depth) */
+  window.addEventListener('lucens-lang-changed', _lvReRenderDynamic);
 
   /* ─── Events UI modal (V4 — drawer settings, CTA Analyser, halo) ─── */
   /* V26 — Flèche retour contextuelle : pendant calibration carte ou zone
