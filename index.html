@@ -2365,30 +2365,57 @@ input[type="file"] { display: none; }
    - Risk word : 2e niveau, taille réduite, aligné baseline avec le bas du score
    - Stats : poussées à droite, taille tertiaire, mono tabular */
 .hero-row {
-  /* V89 — Hero score CENTRÉ dans un cadre premium.
-     Tout est aligné center horizontalement, séparateur visuel propre. */
+  /* V91 — Hero score COMPACT (padding réduit, gap réduit).
+     Toujours centré dans cadre premium mais plus petit verticalement. */
   position: relative; z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-5);
-  padding: var(--space-6) var(--space-5);
+  gap: 4px;                     /* var(--space-2) → 4px serré */
+  margin-bottom: var(--space-4);
+  padding: 14px 16px;           /* var(--space-6) → 14px (40% moins haut) */
   background: linear-gradient(180deg, var(--surface-low) 0%, var(--surface-mid) 100%);
   border: 1px solid var(--hairline);
-  border-radius: var(--radius-lg, 18px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04), 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04), 0 1px 0 rgba(255, 255, 255, 0.5) inset;
 }
 .hero-row .score-block,
 .hero-row .risk-pill,
 .hero-row .hero-stats {
-  margin: 0 auto;        /* override flex defaults */
+  margin: 0 auto;
 }
 .hero-row .hero-stats {
   justify-content: center;
-  gap: var(--space-5);
-  margin-top: var(--space-2);
-  margin-left: 0;        /* override "margin-left: auto" V73 */
+  gap: var(--space-4);
+  margin-top: 2px;
+  margin-left: 0;
+}
+/* V91 — Score values réduites dans le cadre compact */
+.hero-row .score-value { font-size: clamp(28px, 5vw, 38px); }
+.hero-row .risk-pill { font-size: clamp(13px, 1.8vw, 16px); }
+.hero-row .hero-stat-num { font-size: 16px; }
+.hero-row .hero-stat-key { font-size: 10px; }
+
+/* V91 — Animation dynamique : fade-in + slide-up des cartes du rapport
+   au moment où elles deviennent visibles. Cascade légère pour rythme. */
+@keyframes lucens-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.results.visible .hero-row,
+.results.visible .results-zone-top,
+.results.visible .lucens-verdict-card,
+.results.visible .card,
+.results.visible .observations-card {
+  animation: lucens-fade-up 0.4s var(--ease-out, ease-out) both;
+}
+.results.visible .results-zone-top { animation-delay: 0.02s; }
+.results.visible .hero-row { animation-delay: 0.08s; }
+.results.visible .lucens-verdict-card { animation-delay: 0.14s; }
+.results.visible .card { animation-delay: 0.20s; }
+.results.visible .observations-card { animation-delay: 0.26s; }
+@media (prefers-reduced-motion: reduce) {
+  .results.visible * { animation: none !important; }
 }
 .score-block {
   display: flex; align-items: baseline;
@@ -5842,9 +5869,8 @@ input[type="file"] { display: none; }
     gap: var(--space-4) !important;
   }
 
-  /* V73 — Synthèse zones REFONDUE : grille 4-colonnes stat-strip par
-     carte contaminant. Scale infiniment avec N contaminants, chaque card
-     parsable en 0,5 seconde. Valeur en haut + label mini-caps en bas. */
+  /* V73+V91 — Synthèse zones COMPACTE.
+     Padding et gap réduits, font-sizes resserrées. */
   .results-table-wrap { overflow-x: visible; }
   .results-table-wrap .results-table { width: 100%; border-collapse: separate; border-spacing: 0; }
   .results-table thead { display: none; }
@@ -5852,19 +5878,19 @@ input[type="file"] { display: none; }
   .results-table tbody tr {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 14px 8px;
-    padding: 14px 16px;
-    margin-bottom: 10px;
+    gap: 8px 6px;                 /* gap réduit */
+    padding: 10px 12px;           /* padding réduit */
+    margin-bottom: 6px;
     background: var(--surface);
     border: 1px solid var(--hairline);
-    border-radius: 10px;
+    border-radius: 8px;
   }
   .results-table tbody tr:last-child { margin-bottom: 0; }
   .results-table tbody td {
     padding: 0;
     border: none;
     text-align: center !important;
-    font-size: 15px;
+    font-size: 13px;               /* 15 → 13 */
     color: var(--ink-primary);
     font-weight: 600;
   }
@@ -9221,7 +9247,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v90</span>
+              <span class="home-spec-version" aria-hidden="true">v91</span>
             </div>
           </div>
 
@@ -9350,6 +9376,24 @@ body.lv-open { overflow: hidden; touch-action: none; }
         </div>
       </div>
 
+      <!-- V91 — ZONE INSPECTÉE remontée EN HAUT (remplace position ex-qualityBanner).
+           IDs originaux conservés (resultZone, resultZoneSave) pour la
+           compatibilité JS. L'ancienne instance plus bas est supprimée. -->
+      <div class="results-zone results-zone-top">
+        <label class="results-zone-label" for="resultZone" data-i18n="result_zone_label">Zone inspectée (optionnel)</label>
+        <div class="results-zone-row">
+          <input type="text" id="resultZone" class="results-zone-input" maxlength="80" autocomplete="off">
+          <button type="button" class="results-zone-save" id="resultZoneSave">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+              <polyline points="17 21 17 13 7 13 7 21"/>
+              <polyline points="7 3 7 8 15 8"/>
+            </svg>
+            <span data-i18n="btn_save_zone">Enregistrer</span>
+          </button>
+        </div>
+      </div>
+
       <!-- HERO SCORE — version épurée -->
       <div class="hero" id="hero">
         <div class="hero-row">
@@ -9390,23 +9434,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         </div>
       </div>
 
-      <!-- ZONE INSPECTÉE V65 : nom libre + bouton Enregistrer intégré.
-           Placeholder supprimé (retour utilisateur). Bouton premium teal
-           à droite du champ, click → sauvegarde + feedback "✓ Enregistré". -->
-      <div class="results-zone">
-        <label class="results-zone-label" for="resultZone" data-i18n="result_zone_label">Zone inspectée (optionnel)</label>
-        <div class="results-zone-row">
-          <input type="text" id="resultZone" class="results-zone-input" maxlength="80" autocomplete="off">
-          <button type="button" class="results-zone-save" id="resultZoneSave">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-              <polyline points="17 21 17 13 7 13 7 21"/>
-              <polyline points="7 3 7 8 15 8"/>
-            </svg>
-            <span data-i18n="btn_save_zone">Enregistrer</span>
-          </button>
-        </div>
-      </div>
+      <!-- V91 — Ancienne ZONE INSPECTÉE supprimée (remontée plus haut). -->
 
       <!-- V21 — Carte verdict principal (analyse pédagogique contextualisée).
            Affichée AVANT tout le reste. C'est ce que l'utilisateur lit en
