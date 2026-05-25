@@ -8393,25 +8393,28 @@ body.has-sw-update .home {
 /* Bouton ANALYSER — vrai bouton d'action labellisé (pilule + icône scan).
    Largeur généreuse, hauteur 62px = cible tactile confortable terrain. */
 .lv-analyze-btn {
+  /* V87 — Bouton ANALYZE refondu : plus compact, teal accent (matche
+     identité Lucens) au lieu du bloc blanc qui faisait "bande blanche".
+     Hauteur 52px (vs 62), min-width réduit, padding latéral réduit. */
   display: inline-flex; align-items: center; justify-content: center;
-  gap: 11px;
-  height: 62px;
-  min-width: 210px;
-  padding: 0 34px;
-  background: #FFFFFF;
-  color: #06070A;
+  gap: 10px;
+  height: 52px;
+  min-width: 170px;
+  padding: 0 28px;
+  background: var(--accent, #0E8C84);
+  color: #FFFFFF;
   border: 0;
-  border-radius: 16px;
-  font: 600 16px/1 'IBM Plex Sans', sans-serif;
+  border-radius: 26px;          /* pill plein */
+  font: 600 15px/1 'IBM Plex Sans', sans-serif;
   letter-spacing: 0.04em;
   cursor: pointer;
   flex-shrink: 0;
   transition: transform 0.1s ease, background 0.15s ease;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+  box-shadow: 0 4px 16px rgba(14, 140, 132, 0.45);
 }
-.lv-analyze-btn svg { width: 22px; height: 22px; flex-shrink: 0; }
-.lv-analyze-btn:active { transform: scale(0.97); background: #E8EAF0; }
-.lv-analyze-btn.lv-flash { background: #E85A4A; color: #FFFFFF; }
+.lv-analyze-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+.lv-analyze-btn:active { transform: scale(0.97); background: var(--accent-hi, #0B7872); }
+.lv-analyze-btn.lv-flash { background: #E85A4A; box-shadow: 0 4px 16px rgba(232, 90, 74, 0.45); }
 
 /* Halo d'état (validation amont) — anneau pulsant autour du bouton.
    Rouge = scène pas prête (flou, instable, trop sombre) → bouton désactivé.
@@ -9180,7 +9183,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v86</span>
+              <span class="home-spec-version" aria-hidden="true">v87</span>
             </div>
           </div>
 
@@ -23324,9 +23327,8 @@ const Annotator = (() => {
     modal.classList.remove('lv-hidden');
     modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('lv-open');
-    /* V81 — Filet i18n ULTRA-DÉFENSIF.
-       V84 — Ajoute affichage visuel de la langue détectée dans le viseur
-       pour diagnostic instantané sur PWA mobile (pas de DevTools). */
+    /* V87 — Diag pill V84/V85 retirée (i18n confirmé OK par capture user).
+       On garde le filet i18n ultra-défensif sans bruit visuel. */
     try {
       if (typeof applyLang === 'function') applyLang();
       if (typeof t === 'function') {
@@ -23337,29 +23339,10 @@ const Annotator = (() => {
         setIfExists('lvStatusLabel', 'lv_status_idle');
         setIfExists('lvCardHint', 'lv_card_hint_default');
         setIfExists('lvCalStatus', 'lv_cal_status_idle');
-        /* V84 — Diag VISUEL : crée/met à jour une pastille discrète en
-           haut à gauche montrant currentLang ET la valeur attendue.
-           Si user voit [ES → "Apunte"] mais texte FR au-dessus, alors
-           le bug est ailleurs (setCrosshairState override).
-           Si user voit [FR → "Visez"], alors lang pas changée côté UI. */
-        let diag = document.getElementById('lvLangDiag');
-        if (!diag) {
-          diag = document.createElement('div');
-          diag.id = 'lvLangDiag';
-          diag.style.cssText = 'position:absolute;top:60px;left:8px;z-index:9999;background:rgba(0,0,0,0.7);color:#0F0;padding:3px 6px;font:9px monospace;border-radius:3px;pointer-events:none;';
-          modal.appendChild(diag);
-        }
-        const lang = (typeof currentLang === 'string') ? currentLang : '?';
-        const expected = t('lv_status_idle');
-        const actual = document.getElementById('lvStatusLabel')?.textContent || '?';
-        const cancelExpected = t('loader_cancel');
-        const cancelActual = document.querySelector('#loaderCancelBtn span')?.textContent || '?';
-        diag.textContent = `lang=${lang} | status=${actual} (att="${expected}") | cancel=${cancelActual} (att="${cancelExpected}")`;
-        console.log('[LiveView V85 DIAG]', {
-          lang, expected, actual, cancelExpected, cancelActual,
-          localStorage: localStorage.getItem('uvLang')
-        });
       }
+      /* Cleanup diag pill si présent (héritage V84/V85) */
+      const oldDiag = document.getElementById('lvLangDiag');
+      if (oldDiag) oldDiag.remove();
     } catch (e) { console.warn('[LiveView] i18n refresh on open failed:', e?.message || e); }
     /* Charge le profil de calibration sauvegardé (s'il existe) */
     loadProfile();
