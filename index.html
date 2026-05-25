@@ -474,12 +474,23 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; bo
    utilisent cette variable pour ne JAMAIS chevaucher. */
 body.has-offline-banner {
   padding-top: var(--offline-banner-height, 36px);
-  /* V82 — Transition smooth pour éviter sensation "écran ne répond plus"
-     quand le banner apparaît/disparaît et que la layout shift. */
+  /* V82 — Transition smooth pour éviter sensation "écran ne répond plus" */
   transition: padding-top 0.18s ease-out;
 }
 body.has-offline-banner .hdr {
   top: var(--offline-banner-height, 36px) !important;
+}
+/* V86 — Décale aussi .upload-hub (position:fixed) pour qu'il ne overlap
+   plus avec le header quand le banner offline est visible. Sans ce fix,
+   le contenu home (sectorChip + LIVE button) apparaissait par-dessus
+   le header LUCENS, créant un bug visuel signalé par l'utilisateur. */
+body.has-offline-banner .upload-hub {
+  top: calc(78px + var(--offline-banner-height, 36px) + env(safe-area-inset-top, 0px)) !important;
+}
+@media (max-width: 640px) {
+  body.has-offline-banner .upload-hub {
+    top: calc(66px + var(--offline-banner-height, 36px) + env(safe-area-inset-top, 0px)) !important;
+  }
 }
 .offline-banner.lv-hidden { display: none; }
 .offline-banner-dot {
@@ -9169,7 +9180,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v85</span>
+              <span class="home-spec-version" aria-hidden="true">v86</span>
             </div>
           </div>
 
