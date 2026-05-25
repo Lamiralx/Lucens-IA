@@ -1292,6 +1292,31 @@ Fin : respecte strictement la langue ${langName} et retourne uniquement le JSON.
     }
     }
 
+    /* V67 — Normalisation serveur des champs critiques avant envoi client.
+       Claude omet parfois `analyzable` malgré le schéma JSON → warning client
+       "[validate] API response had issues: ['analyzable missing/invalid']".
+       On garantit ici que `analyzable` est toujours un boolean valide. Si
+       le modèle a renvoyé une analyse complète (zones[], observations…),
+       on assume analyzable=true par défaut. Si une fluorescence est listée
+       dans zones[], c'est forcément analyzable. */
+    if (typeof result.analyzable !== 'boolean') {
+      const hasZones = Array.isArray(result.zones) && result.zones.length > 0;
+      const hasObs = Array.isArray(result.observations) && result.observations.length > 0;
+      result.analyzable = hasZones || hasObs;
+    }
+    /* Mêmes garanties pour les autres booléens et arrays critiques :
+       évite tout warning console côté client. */
+    if (typeof result.analyzability_score !== 'number') {
+      result.analyzability_score = result.analyzable === false ? 0 : 50;
+    }
+    if (!Array.isArray(result.zones)) result.zones = [];
+    if (!Array.isArray(result.observations)) result.observations = [];
+    if (!Array.isArray(result.missing_context)) result.missing_context = [];
+    if (typeof result.overall_score !== 'number') result.overall_score = 0;
+    if (!result.image_quality || typeof result.image_quality !== 'object') {
+      result.image_quality = { usable: true, warning: '', limitations: [] };
+    }
+
     return res.status(200).json({
       ...result,
       _meta: {
