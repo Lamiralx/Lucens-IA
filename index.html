@@ -119,8 +119,11 @@ if ('serviceWorker' in navigator) {
 <!-- jsQR — détection QR code pour authentification carte de calibration Lucens.
      Pur JS, ~50 KB, MIT, utilisé pour valider que c'est bien la carte officielle
      avant déclenchement de la calibration. Marche UV allumé ou éteint. -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"
-        integrity="sha384-5MXQT3yrGpx6/FO6Z5JlMsn1xsN/OggV+b88W2CfpNqmvPfmv7JW/O8x78GzptfE"
+<!-- V57 fix : cdnjs a supprimé jsQR (404 sur leur API "Library not found").
+     Migration vers jsdelivr qui sert le même paquet npm jsqr@1.4.0. Hash SRI
+     recalculé sur le fichier jsdelivr (peut différer du build cdnjs). -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"
+        integrity="sha384-9Q0jWoineiIq95JeIyBsNV90KKLfDsbkj29k/YFxf76a2JwkHDYkMuSbNGN6XJfV"
         crossorigin="anonymous"
         referrerpolicy="no-referrer"></script>
 <style>
@@ -20614,7 +20617,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v56</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v57</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
