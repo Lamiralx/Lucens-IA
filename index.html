@@ -474,6 +474,9 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; bo
    utilisent cette variable pour ne JAMAIS chevaucher. */
 body.has-offline-banner {
   padding-top: var(--offline-banner-height, 36px);
+  /* V82 — Transition smooth pour éviter sensation "écran ne répond plus"
+     quand le banner apparaît/disparaît et que la layout shift. */
+  transition: padding-top 0.18s ease-out;
 }
 body.has-offline-banner .hdr {
   top: var(--offline-banner-height, 36px) !important;
@@ -9166,7 +9169,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v81</span>
+              <span class="home-spec-version" aria-hidden="true">v82</span>
             </div>
           </div>
 
@@ -9213,8 +9216,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
            erreur de photo / contexte / s'est trompé. AbortController arrête
            la requête fetch en cours et revient à l'écran d'accueil. -->
       <button type="button" class="loader-cancel-btn" id="loaderCancelBtn"
+              data-i18n-aria-label="loader_cancel_aria"
               aria-label="Annuler l'analyse">
-        Annuler l'analyse
+        <span data-i18n="loader_cancel">Annuler l'analyse</span>
       </button>
 
       <!-- Référentiel méthodologique — ultra-discret en bas -->
@@ -9934,6 +9938,12 @@ const I18N = {
     tip_dark: "Ambiance sombre",
     loader: "Lucens IA analyse votre image",
     loader_status: "Analyse en cours",
+    /* V82 — Annuler l'analyse + bandeau offline */
+    loader_cancel:        "Annuler l'analyse",
+    loader_cancel_aria:   "Annuler l'analyse en cours",
+    offline_only:         "Hors-ligne · vos analyses partiront au retour du réseau",
+    offline_with_queue:   "Hors-ligne · {n} analyse(s) en attente",
+    syncing_queue:        "Synchronisation · {n} analyse(s) en cours",
     loader_step1: "Réception de votre photo",
     loader_step2: "Contrôle qualité d'image",
     loader_step3: "Détection des zones fluorescentes",
@@ -10417,6 +10427,12 @@ const I18N = {
     tip_dark: "Dark environment",
     loader: "Lucens IA analysing your image",
     loader_status: "Analysis in progress",
+    /* V82 — Cancel analysis + offline banner (UK) */
+    loader_cancel:        "Cancel analysis",
+    loader_cancel_aria:   "Cancel current analysis",
+    offline_only:         "Offline · your analyses will send when network returns",
+    offline_with_queue:   "Offline · {n} analysis(s) waiting",
+    syncing_queue:        "Syncing · {n} analysis(s) sending",
     loader_step1: "Receiving your photo",
     loader_step2: "Image quality check",
     loader_step3: "Detecting fluorescent zones",
@@ -10972,6 +10988,12 @@ const I18N = {
     tip_dark: "Ambiente oscuro",
     loader: "Lucens IA está analizando su imagen",
     loader_status: "Análisis en curso",
+    /* V82 — Cancelar análisis + banner sin conexión (ES) */
+    loader_cancel:        "Cancelar análisis",
+    loader_cancel_aria:   "Cancelar el análisis en curso",
+    offline_only:         "Sin conexión · sus análisis se enviarán al volver la red",
+    offline_with_queue:   "Sin conexión · {n} análisis en espera",
+    syncing_queue:        "Sincronizando · {n} análisis en envío",
     loader_step1: "Recibiendo su foto",
     loader_step2: "Control de calidad de imagen",
     loader_step3: "Detección de zonas fluorescentes",
@@ -11455,6 +11477,12 @@ const I18N = {
     tip_dark: "Dunkle Umgebung",
     loader: "Lucens IA analysiert Ihr Bild",
     loader_status: "Analyse läuft",
+    /* V82 — Analyse abbrechen + Offline-Banner (DE) */
+    loader_cancel:        "Analyse abbrechen",
+    loader_cancel_aria:   "Laufende Analyse abbrechen",
+    offline_only:         "Offline · Analysen werden bei Netzrückkehr gesendet",
+    offline_with_queue:   "Offline · {n} Analyse(n) in Warteschlange",
+    syncing_queue:        "Synchronisierung · {n} Analyse(n) werden gesendet",
     loader_step1: "Foto wird empfangen",
     loader_step2: "Bildqualitätskontrolle",
     loader_step3: "Fluoreszierende Zonen werden erkannt",
@@ -20155,14 +20183,19 @@ const Annotator = (() => {
 
       banner.classList.remove('is-offline', 'is-syncing');
       const shouldShow = isOffline || pendingCount > 0;
+      /* V82 — i18n des messages offline banner */
+      const tr = (k, fb) => (typeof t === 'function' ? t(k) : fb) || fb;
+      const plur = (n, sKey, pKey) => (n > 1 ? tr(pKey, '') : tr(sKey, ''));
       if (isOffline) {
         banner.classList.add('is-offline');
-        text.textContent = pendingCount > 0
-          ? `Hors-ligne · ${pendingCount} analyse${pendingCount > 1 ? 's' : ''} en attente`
-          : 'Hors-ligne · vos analyses partiront automatiquement au retour du réseau';
+        if (pendingCount > 0) {
+          text.textContent = tr('offline_with_queue', 'Hors-ligne · {n} analyse(s) en attente').replace('{n}', String(pendingCount));
+        } else {
+          text.textContent = tr('offline_only', 'Hors-ligne · vos analyses partiront au retour du réseau');
+        }
       } else if (pendingCount > 0) {
         banner.classList.add('is-syncing');
-        text.textContent = `Synchronisation · ${pendingCount} analyse${pendingCount > 1 ? 's' : ''} en cours d'envoi`;
+        text.textContent = tr('syncing_queue', 'Synchronisation · {n} analyse(s) en cours').replace('{n}', String(pendingCount));
       }
       banner.classList.toggle('lv-hidden', !shouldShow);
       /* V34 — Mesure SYNCHRONE de la hauteur du banner AVANT de toggler la
