@@ -13608,27 +13608,36 @@ const Annotator = (() => {
         drawSmoothedChains(chains, 'rgba(255, 255, 255, 0.45)', 4.0);
         drawSmoothedChains(chains, `rgba(${SIG_R}, ${SIG_G}, ${SIG_B}, 1)`, 2.0);
       } else if (activeCellsByType.size > 0) {
-        /* V42 — Fallback robuste quand `pixelMask` est absent (Uint8Array
-           perdu lors de sérialisation JSON : historique IDB, re-render au
-           changement de langue, message cross-frame). Sans ce fallback, on
-           ne dessinait RIEN sur l'image annotée — seule le halo radial rouge
-           V21.1 (cartoFailed) apparaissait au centre des bbox IA, d'où le
-           bug user "uniquement la cible qui s'éclaire".
-           Ici on rend directement les cellules validées en rectangles terra
-           cotta (couleur signature Lucens) — moins précis que pixel-mask
-           mais visuellement explicite. */
-        for (const [, cells] of activeCellsByType) {
-          for (const c of cells) {
-            ctx.fillStyle = `rgba(${SIG_R}, ${SIG_G}, ${SIG_B}, 0.38)`;
-            ctx.fillRect(c.x, c.y, c.w, c.h);
+        /* V70 — Fallback REFONDU : ne dessine plus 1 rectangle par cellule
+           (cause des centaines de mini-rectangles signalés par l'utilisateur).
+           Maintenant : on reprend les `clusters` calculés en amont (flood-fill
+           4-voisins, déjà filtrés ≥4 cellules), on calcule le bbox englobant
+           de chaque cluster, on dessine UN seul rectangle propre par cluster.
+           Garantie : N clusters visuels → N rectangles, pas N×cellCount. */
+        const clusterBoxes = [];
+        for (const cluster of clusters) {
+          let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+          for (const c of cluster) {
+            if (c.x < minX) minX = c.x;
+            if (c.y < minY) minY = c.y;
+            if (c.x + c.w > maxX) maxX = c.x + c.w;
+            if (c.y + c.h > maxY) maxY = c.y + c.h;
           }
+          /* Skip clusters trop petits (<0.5% surface image) — bruit */
+          const area = (maxX - minX) * (maxY - minY);
+          if (area < W * H * 0.005) continue;
+          clusterBoxes.push({ x: minX, y: minY, w: maxX - minX, h: maxY - minY });
         }
-        ctx.strokeStyle = `rgba(${SIG_R}, ${SIG_G}, ${SIG_B}, 0.80)`;
-        ctx.lineWidth = 0.8;
-        for (const [, cells] of activeCellsByType) {
-          for (const c of cells) {
-            ctx.strokeRect(c.x + 0.5, c.y + 0.5, c.w - 1, c.h - 1);
-          }
+        /* Halo blanc anti-fond pour lisibilité universelle */
+        for (const b of clusterBoxes) {
+          ctx.fillStyle = `rgba(${SIG_R}, ${SIG_G}, ${SIG_B}, 0.22)`;
+          ctx.fillRect(b.x, b.y, b.w, b.h);
+        }
+        /* Contour franc */
+        ctx.strokeStyle = `rgba(${SIG_R}, ${SIG_G}, ${SIG_B}, 0.95)`;
+        ctx.lineWidth = 2;
+        for (const b of clusterBoxes) {
+          ctx.strokeRect(b.x + 1, b.y + 1, b.w - 2, b.h - 2);
         }
       }
     }
@@ -20837,7 +20846,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v69</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v70</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
