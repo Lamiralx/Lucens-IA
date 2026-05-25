@@ -713,9 +713,21 @@ body.has-offline-banner .upload-hub {
 .lang-dropdown.is-open .lang-trigger svg {
   transform: rotate(180deg);
 }
-/* Menu hidden par défaut, visible quand .is-open */
-.lang-dropdown:not(.is-open) .lang-menu {
-  display: none;
+/* V89 — Lang menu : transitions fluides au lieu de display:none brutal.
+   Avant : `display:none` ↔ `display:flex` créait un saut visuel.
+   Maintenant : fade + slide rapide, ouvert/fermé immédiat mais doux.
+   Touch-action manipulation pour éviter le délai 300ms iOS Safari. */
+.lang-trigger { touch-action: manipulation; }
+.lang-menu {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition: opacity 0.14s ease-out, transform 0.14s ease-out;
+}
+.lang-dropdown.is-open .lang-menu {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
 }
 .lang-trigger {
   display: inline-flex; align-items: center;
@@ -2017,11 +2029,14 @@ input[type="file"] { display: none; }
    fond ni dégradé sous les boutons : c'est l'arrière-plan de la page qui
    passe directement. */
 .results-toolbar {
+  /* V89 — Sticky bottom préservé (le système de descente au scroll
+     marche déjà). Plus d'espace au-dessus pour ne pas gêner la lecture
+     du dernier card avant les boutons. */
   position: sticky;
   bottom: 0;
   z-index: 50;
-  margin: var(--space-6) auto 0;
-  padding: var(--space-3) 0 calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
+  margin: var(--space-10, 80px) auto 0;
+  padding: var(--space-4) 0 calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
   background: transparent;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
@@ -2346,11 +2361,30 @@ input[type="file"] { display: none; }
    - Risk word : 2e niveau, taille réduite, aligné baseline avec le bas du score
    - Stats : poussées à droite, taille tertiaire, mono tabular */
 .hero-row {
+  /* V89 — Hero score CENTRÉ dans un cadre premium.
+     Tout est aligné center horizontalement, séparateur visuel propre. */
   position: relative; z-index: 1;
-  display: flex; align-items: flex-end;
-  gap: clamp(var(--space-4), 4vw, var(--space-7));
-  flex-wrap: wrap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
   margin-bottom: var(--space-5);
+  padding: var(--space-6) var(--space-5);
+  background: linear-gradient(180deg, var(--surface-low) 0%, var(--surface-mid) 100%);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg, 18px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04), 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+}
+.hero-row .score-block,
+.hero-row .risk-pill,
+.hero-row .hero-stats {
+  margin: 0 auto;        /* override flex defaults */
+}
+.hero-row .hero-stats {
+  justify-content: center;
+  gap: var(--space-5);
+  margin-top: var(--space-2);
+  margin-left: 0;        /* override "margin-left: auto" V73 */
 }
 .score-block {
   display: flex; align-items: baseline;
@@ -9183,7 +9217,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v88</span>
+              <span class="home-spec-version" aria-hidden="true">v89</span>
             </div>
           </div>
 
@@ -9442,15 +9476,12 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <div class="refusal-reason" id="refusalReason"></div>
             </div>
 
-            <!-- Bandeau fiabilité limitée (Sprint 1) -->
-            <div class="analyzability-warning" id="analyzabilityWarning">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-              </svg>
-              <div class="analyzability-warning-text">
-                <strong data-i18n="warn_low_title">Fiabilité d'analyse limitée</strong>
-                <span id="analyzabilityWarningText"></span>
-              </div>
+            <!-- V89 — analyzabilityWarning RETIRÉE (apparaissait même sur
+                 photos de bonne qualité, contradiction avec qualityBanner
+                 supprimé en V72). Élément conservé en hidden pour rétrocompat
+                 setters render(). -->
+            <div class="analyzability-warning" id="analyzabilityWarning" hidden style="display:none !important">
+              <span id="analyzabilityWarningText" hidden></span>
             </div>
 
             <div class="observations-card" id="observationsCard">
@@ -9505,8 +9536,10 @@ body.lv-open { overflow: hidden; touch-action: none; }
           </div>
         </div>
 
-        <!-- Tableau unifié des signatures détectées -->
-        <div class="card">
+        <!-- V89 — Synthèse zones placée en PREMIER dans le result-grid
+             via CSS order:-1 (avant l'image card qui contient observations).
+             Conforme directive utilisateur "Synthèse zones avant observations". -->
+        <div class="card" style="order: -1;">
           <div class="card-hdr">
             <span class="t" data-i18n="card_table">Synthèse des zones détectées</span>
             <span class="badge" id="resultsTableCount">—</span>
