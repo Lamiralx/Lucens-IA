@@ -19857,8 +19857,38 @@ const Annotator = (() => {
       const recommendation = res.recommendation;
       if (card && result && reasoning && recommendation) {
         card.hidden = false;
-        const $set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || '—'; };
-        $set('lvVerdictTitle', result.title);
+        /* V58 — Le placeholder "—" était utilisé pour TOUT champ vide, ce qui
+           produisait une page criblée de tirets cadratin (retour utilisateur
+           "trop de tirets, trop discours IA"). Nouveau comportement :
+           - si valeur non vide → affiche valeur, montre la ligne
+           - si valeur vide/manquante → cache complètement la ligne (et son
+             label <dt> si pair dt/dd).
+           Le titre principal reste toujours visible avec fallback "Analyse"
+           pour ne pas casser la structure de la carte. */
+        const $set = (id, val, fallback) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          const trimmed = (val || '').toString().trim();
+          if (trimmed) {
+            el.textContent = trimmed;
+            el.hidden = false;
+            if (el.tagName === 'DD') {
+              const dt = el.previousElementSibling;
+              if (dt && dt.tagName === 'DT') dt.hidden = false;
+            }
+          } else if (fallback) {
+            el.textContent = fallback;
+            el.hidden = false;
+          } else {
+            el.textContent = '';
+            el.hidden = true;
+            if (el.tagName === 'DD') {
+              const dt = el.previousElementSibling;
+              if (dt && dt.tagName === 'DT') dt.hidden = true;
+            }
+          }
+        };
+        $set('lvVerdictTitle', result.title, 'Analyse');
         $set('lvVerdictConfidence', result.confidence_label);
         $set('lvVerdictInterpretation', result.interpretation);
         $set('lvVerdictActionText', recommendation.primary_action);
@@ -19883,12 +19913,19 @@ const Annotator = (() => {
         const refsEl = document.getElementById('lvVerdictFrameworks');
         if (refsEl) {
           if (refs.length) {
-            refsEl.textContent = refs.join(' · ');
+            let txt = refs.join(' · ');
             if (res.reference_logic.explanation) {
-              refsEl.textContent += '. ' + res.reference_logic.explanation;
+              txt += '. ' + res.reference_logic.explanation;
             }
+            refsEl.textContent = txt;
+            refsEl.hidden = false;
+            const dt = refsEl.previousElementSibling;
+            if (dt && dt.tagName === 'DT') dt.hidden = false;
           } else {
-            refsEl.textContent = '—';
+            refsEl.textContent = '';
+            refsEl.hidden = true;
+            const dt = refsEl.previousElementSibling;
+            if (dt && dt.tagName === 'DT') dt.hidden = true;
           }
         }
       } else if (card) {
@@ -20617,7 +20654,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v57</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v58</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
