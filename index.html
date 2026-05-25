@@ -5770,10 +5770,72 @@ input[type="file"] { display: none; }
     gap: var(--space-4) !important;
   }
 
-  /* TABLE RÉSULTATS — scroll horizontal si nécessaire, lisibilité respectée */
-  .results-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .results-table thead th { padding: 8px 6px; font-size: 10px; }   /* 9 → 10px (seuil lisibilité iOS) */
-  .results-table tbody td { padding: 9px 6px; font-size: 12px; }
+  /* V64 — TABLE RÉSULTATS sur mobile : stack en cartes lisibles d'un coup
+     d'œil, plus de scroll horizontal. Chaque ligne devient une mini-carte
+     avec catégorie en gros (titre) puis méta (zones · surface · intensité ·
+     probabilité) en ligne séparée plus discrète. */
+  .results-table-wrap { overflow-x: visible; }
+  .results-table,
+  .results-table thead,
+  .results-table tbody,
+  .results-table tr,
+  .results-table th,
+  .results-table td {
+    display: block;
+    width: 100%;
+  }
+  .results-table thead { display: none; }
+  .results-table tbody tr {
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    border-bottom: 1px solid var(--hairline);   /* override pour la dernière */
+  }
+  .results-table tbody tr:last-child { margin-bottom: 0; }
+  .results-table tbody td {
+    padding: 0;
+    border: none;
+    text-align: left !important;
+    font-size: 13px;
+  }
+  .results-table tbody td.col-cat {
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  /* Méta cells (zones / surface / intensité / probabilité) en ligne avec
+     séparateurs · entre elles. Surface garde sa pct-bar visuelle. */
+  .results-table tbody td.col-num,
+  .results-table tbody td.col-int {
+    display: inline-flex;
+    align-items: center;
+    width: auto;
+    margin-right: 12px;
+    color: var(--ink-tertiary);
+    font-size: 12px;
+  }
+  .results-table tbody td.col-num::before,
+  .results-table tbody td.col-int::before {
+    content: attr(data-label);
+    font-weight: 500;
+    color: var(--ink-tertiary);
+    margin-right: 4px;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+  }
+  /* pct-bar passe en ligne avec son texte */
+  .results-table tbody td.col-num .pct-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  /* int-pill garde son look */
+  .results-table tbody td.col-int .int-pill {
+    margin-left: 4px;
+  }
 
   /* MODAL FEEDBACK — bottom-sheet plein écran */
   .fb-modal { max-height: 90dvh; }
@@ -20207,7 +20269,7 @@ const Annotator = (() => {
         for (const r of rows) {
           const tr = el('tr');
           /* Cellule catégorie : pastille + nom + hint */
-          const tdCat = el('td');
+          const tdCat = el('td', 'col-cat');
           const catCell = el('div', 'cat-cell');
           const sw = el('div', 'cat-swatch');
           sw.style.background = r.cat.color;
@@ -20218,10 +20280,13 @@ const Annotator = (() => {
           catCell.appendChild(sw); catCell.appendChild(nameWrap);
           tdCat.appendChild(catCell);
           tr.appendChild(tdCat);
-          /* Zones */
-          tr.appendChild(el('td', 'col-num', String(r.count)));
+          /* V64 — Zones (avec data-label pour rendu carte mobile) */
+          const tdZ = el('td', 'col-num', String(r.count));
+          tdZ.setAttribute('data-label', t('tbl_zones') || 'Zones');
+          tr.appendChild(tdZ);
           /* Surface % avec barre integrée */
           const tdArea = el('td', 'col-num');
+          tdArea.setAttribute('data-label', t('tbl_area') || 'Surface');
           const pctBar = el('div', 'pct-bar');
           pctBar.style.setProperty('--pct-fill', r.cat.color);
           pctBar.style.setProperty('--pct-w', Math.min(100, r.area * 4) + '%');
@@ -20231,6 +20296,7 @@ const Annotator = (() => {
           tr.appendChild(tdArea);
           /* Intensité */
           const tdInt = el('td', 'col-int');
+          tdInt.setAttribute('data-label', t('tbl_intensity') || 'Intensité');
           if (r.intensityKey) {
             const pill = el('div', 'int-pill ' + r.intensityKey, t('int_' + r.intensityKey) || r.intensityKey);
             tdInt.appendChild(pill);
@@ -20239,7 +20305,9 @@ const Annotator = (() => {
           }
           tr.appendChild(tdInt);
           /* Probabilité */
-          tr.appendChild(el('td', 'col-num', r.probability > 0 ? r.probability + '%' : '—'));
+          const tdProb = el('td', 'col-num', r.probability > 0 ? r.probability + '%' : '—');
+          tdProb.setAttribute('data-label', t('tbl_probability') || 'Probabilité');
+          tr.appendChild(tdProb);
           tableBody.appendChild(tr);
         }
         if (tableCount) tableCount.textContent = String(rows.length);
@@ -20693,7 +20761,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v63</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v64</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
