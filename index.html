@@ -17246,6 +17246,28 @@ const Annotator = (() => {
         */
       } catch (apiErr) {
         stopProgressCreep(creepTimer); creepTimer = null;
+        /* V54 fix Bug A (root cause — "proposition fantôme") — AbortError NE
+           doit PAS déclencher le fallback V51. C'est soit l'utilisateur qui a
+           cliqué ANNULER (cancelCurrentAnalysis L16904), soit le watchdog V35
+           qui a tiré à 90s (L16996). Dans les deux cas, le cleanup loader +
+           toast a DÉJÀ été fait par l'appelant. Si V51 swallow l'AbortError
+           ici, le fallback construit un rapport et appelle render() PAR-DESSUS
+           uploadHub déjà visible → rapport fantôme après l'erreur. Re-throw
+           pour laisser le catch externe V43 (L17369) gérer (juste réafficher
+           uploadHub, pas de second toast). */
+        if (apiErr && apiErr.name === 'AbortError') {
+          throw apiErr;
+        }
+        /* V54 fix Bug B (defense-in-depth) — Si le loader est déjà fermé
+           (race où watchdog/cancel ont fini leur cleanup MAIS l'AbortError n'a
+           pas encore propagé, ex: cancel mid-await dans le retry loop), on
+           bloque le fallback pour éviter qu'un rapport surgisse plus tard
+           par-dessus uploadHub. Filet de sécurité pour futures sources d'abort
+           non-AbortError. */
+        if (!loader.classList.contains('active')) {
+          currentAnalyzeAbort = null;
+          return;
+        }
         /* V27 — Cas OFFLINE : on N'AFFICHE PLUS de faux écran d'analyse vide.
            On ferme le loader, on revient à l'accueil, et on prévient avec un
            toast clair. La file d'attente fera l'analyse au retour de réseau. */
@@ -17262,16 +17284,17 @@ const Annotator = (() => {
           currentAnalyzeAbort = null;
           return;
         }
-        /* V51 — Fallback heuristique GRACIEUX (vs erreur "Lucens IA indisponible").
-           Après les 4 tentatives V51 du retry (8s+ de patience cumulée), si
-           Claude reste injoignable, on bascule SILENCIEUSEMENT sur l'analyse
-           heuristique HSV locale (Engine.analyze) — qui détecte correctement
-           les zones fluorescentes pixel-précisément. L'utilisateur reçoit un
-           résultat utilisable + un toast INFO discret (pas une erreur rouge)
-           expliquant que l'analyse approfondie est temporairement indisponible
-           mais que les zones ont été repérées localement. */
+        /* V51 + V54 — Fallback heuristique GRACIEUX (vs erreur "indisponible").
+           Après les 4 tentatives du retry (8s+ de patience cumulée), si Claude
+           reste injoignable, on bascule SILENCIEUSEMENT sur l'analyse heuristique
+           HSV locale. L'utilisateur reçoit un résultat utilisable + un toast
+           WARNING DÉCALÉ (après que le rapport soit visible) expliquant que
+           l'analyse approfondie est temporairement indisponible. */
         console.error('[V51 fallback] API indisponible après 4 tentatives, bascule en analyse locale:', apiErr);
         setLoaderProgress(60);
+        /* V54 fix Bug E — Label du loader explicite pendant le fallback,
+           sinon barre figée sur "loader_step7" 96% précédent puis saute à 100%. */
+        setLoaderStep('loader_step7', 60);
         res = localRes || {};
         res._source = 'local_fallback';
         res._fallback_reason = (apiErr && apiErr.message) || 'API_TIMEOUT';
@@ -17281,20 +17304,27 @@ const Annotator = (() => {
           x: z.x, y: z.y, w: z.w, h: z.h,
           type: z.heuristicType || 'unknown',
           intensity: z.intensity || 'inconnue',
-          confidence: 0.55,  /* confidence modérée pour signaler la limite */
+          confidence: 0.55,
           evidence: 'Détection heuristique locale (analyse IA approfondie temporairement indisponible).',
           area_pct: +((z.w || 0) * (z.h || 0) * 100).toFixed(2),
         }));
         res.grid = (localRes && localRes.grid) ? localRes.grid : [];
         res.zoneCount = res.zones.length;
-        /* Score heuristique simple : pondéré sur intensité moyenne */
+        /* Score heuristique simple : pondéré sur surface totale */
         if (res.zones.length && typeof res.score !== 'number') {
           const totalArea = res.zones.reduce((s, z) => s + (z.area_pct || 0), 0);
           res.score = Math.min(85, Math.round(40 + totalArea * 1.5));
         } else if (!res.zones.length && typeof res.score !== 'number') {
-          res.score = 15; /* surface paraît propre côté heuristique */
+          res.score = 15;
         }
-        /* Verdict pédagogique minimal pour ne pas afficher une carte vide */
+        /* V54 fix Bug D — champs CRITIQUES pour render() : sans eux,
+           coveragePercent affiche "undefined %" et l'animation du score
+           tourne en boucle infinie (intervalle jamais résolu car step=NaN). */
+        res.riskLevel = res.score >= 63 ? 'high' : res.score >= 28 ? 'moderate' : 'low';
+        res.coveragePercent = +res.zones.reduce((s, z) => s + (z.area_pct || 0), 0).toFixed(1);
+        res.probabilities = res.probabilities || [];
+        /* V54 fix Bug I — Verdict pédagogique enrichi (tous les champs lus
+           par render() pour la carte lucensVerdictCard, sinon "—" visible). */
         res.result = res.result || {
           title: res.zones.length ? 'Zones fluorescentes repérées (analyse locale)' : 'Aucune zone fluorescente franche détectée localement',
           confidence_label: 'Analyse locale',
@@ -17307,6 +17337,8 @@ const Annotator = (() => {
           primary_action: res.zones.length
             ? 'Vérifiez visuellement les zones identifiées et relancez une analyse complète dans quelques instants pour confirmation.'
             : 'Relancez l\'analyse complète dans quelques instants pour confirmation.',
+          follow_up: 'Relancez l\'analyse complète dès que le service est rétabli.',
+          confirmation_if_needed: null,
         };
         res.contextual_reasoning = res.contextual_reasoning || {
           surface_logic: 'Analyse locale heuristique (HSV) sans contextualisation IA.',
@@ -17314,9 +17346,14 @@ const Annotator = (() => {
           what_fluorescence_suggests: res.zones.length
             ? 'La présence de zones fluorescentes mérite contrôle, mais l\'identification précise nécessite l\'analyse IA complète.'
             : 'Aucun signal clair en pré-scan ne signifie pas absence totale de contamination — l\'analyse IA complète reste recommandée.',
+          what_fluorescence_does_not_prove: 'L\'analyse locale ne confirme pas la nature exacte des zones détectées — l\'analyse approfondie IA est nécessaire pour identifier le fluorophore.',
         };
-        /* Toast INFO (pas error) discret — la situation est récupérable */
-        toast('Analyse locale provisoire · réessayez plus tard pour analyse approfondie', 'info');
+        /* V54 fix Bug F — Toast DÉCALÉ : on flag res._showFallbackToast au lieu
+           d'afficher le toast immédiatement. Le toast sera émis ~600ms après
+           que le rapport soit visible → plus de conflit visuel (rapport + toast
+           simultanés pendant 4s). Variante 'warning' (ambre) au lieu de 'info'
+           pour distinguer clairement du flow normal. */
+        res._showFallbackToast = true;
         await delay(220);
       }
       setLoaderProgress(100);
@@ -20538,6 +20575,18 @@ const Annotator = (() => {
     /* Reveal */
     results.classList.add('visible');
     requestAnimationFrame(() => results.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    /* V54 fix Bug F — Toast fallback décalé : si le rapport vient du fallback
+       local V51, on attend que la page soit complètement visible + un délai
+       confort (600ms) avant d'afficher le toast WARNING. Évite le conflit
+       visuel où le rapport et le toast apparaissent simultanément pendant 4s. */
+    if (res && res._showFallbackToast) {
+      setTimeout(() => {
+        try {
+          toast('Analyse locale provisoire · réessayez plus tard pour l\'analyse approfondie', 'warning');
+        } catch {}
+      }, 600);
+      res._showFallbackToast = false; /* évite double affichage si re-render */
+    }
     /* Historique : enregistre l'inspection terminée (base locale IndexedDB) */
     try { const __rz = document.getElementById('resultZone'); if (__rz) __rz.value = ''; } catch (e) {}
     try { LucensHistory.record(res, W, H); } catch (e) {}
@@ -20558,7 +20607,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v53</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v54</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">

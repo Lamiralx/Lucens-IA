@@ -106,14 +106,18 @@ export default async function handler(req, res) {
         score: score || {},
         kpis: computeWeeklyKpis({
           total: totalN,
-          detection,
-          identification,
-          score,
-          quality,
-          trust,
-          learning,
-          consent,
-          iou,
+          /* Fix null guard — kv.hgetall() retourne null (pas {}) quand la clé
+             Redis n'existe pas. Le destructure avec default `detection = {}`
+             ne s'applique QUE si undefined, pas null. Sans cette coercion,
+             computeWeeklyKpis crash sur `detection.missed_zones`. */
+          detection: detection || {},
+          identification: identification || {},
+          score: score || {},
+          quality: quality || {},
+          trust: trust || {},
+          learning: learning || {},
+          consent: consent || {},
+          iou: iou || {},
         }),
       });
     }
