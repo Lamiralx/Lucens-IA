@@ -8529,10 +8529,13 @@ body.has-sw-update .home {
 .lv-analyze-btn.lv-press-success {
   animation: lvPressSuccess 0.32s cubic-bezier(.4, 0, .2, 1);
 }
+/* V94 — Fin de keyframe corrigée : ne plus terminer sur blanc pur
+   (créait un flash blanc parasite après le long-press confirmé qui
+    lisait comme une "bande blanche" résiduelle en bas du Live View). */
 @keyframes lvPressSuccess {
   0%   { transform: scale(1); background: var(--accent); }
   40%  { transform: scale(1.04); background: var(--accent); }
-  100% { transform: scale(1); background: #FFFFFF; }
+  100% { transform: scale(1); background: var(--accent); }
 }
 .lv-analyze-btn.lv-ready-green::before {
   border-color: rgba(45, 212, 191, 0.85);
@@ -8549,12 +8552,20 @@ body.has-sw-update .home {
   box-shadow: 0 0 0 3px rgba(232, 90, 74, 0.14);
   opacity: 1;
 }
+/* V94 — État "pas prêt" : fond TEAL ASSOMBRI au lieu de blanc translucide.
+   Cause racine de la "bande blanche en bas" rapportée pendant des semaines :
+   V87 a corrigé le bouton actif mais a laissé .lv-not-ready en
+   rgba(255,255,255,0.45). Sur le fond caméra sombre, ce blanc-translucide
+   pill de 170px de large à 52px de haut lisait littéralement comme une
+   bande blanche horizontale. On reste sur la palette teal/sombre cohérente
+   avec le reste du Live View. */
 .lv-analyze-btn.lv-not-ready {
-  background: rgba(255,255,255,0.45);
-  color: rgba(6,7,10,0.55);
+  background: rgba(20, 30, 36, 0.72);
+  color: rgba(245, 247, 250, 0.45);
   cursor: not-allowed;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
 }
-.lv-analyze-btn.lv-not-ready:active { transform: none; background: rgba(255,255,255,0.45); }
+.lv-analyze-btn.lv-not-ready:active { transform: none; background: rgba(20, 30, 36, 0.72); }
 
 /* Readout discret DANS le drawer (jamais sur la caméra) */
 .lv-drawer-readout {
@@ -9254,7 +9265,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v93</span>
+              <span class="home-spec-version" aria-hidden="true">v94</span>
             </div>
           </div>
 
