@@ -2349,18 +2349,20 @@ input[type="file"] { display: none; }
   animation-delay: 0.05s;
 }
 .score-value {
+  /* V73 — Score block compact : 96px → 48px max. Pro intégré, plus de
+     domination visuelle disproportionnée. */
   font-family: var(--font-display);
-  font-size: clamp(52px, 9.5vw, 96px);
+  font-size: clamp(32px, 6vw, 48px);
   font-weight: 700;
-  letter-spacing: -0.038em;
-  line-height: 0.88;
+  letter-spacing: -0.028em;
+  line-height: 0.95;
   color: var(--score-color, var(--ink-primary));
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1, "ss01" 1;
 }
 .score-suffix {
   font-family: var(--font-mono);
-  font-size: clamp(13px, 1.3vw, 15px);
+  font-size: 12px;
   color: var(--ink-tertiary);
   letter-spacing: 0.04em;
   font-weight: 500;
@@ -2369,16 +2371,18 @@ input[type="file"] { display: none; }
    Taille réduite vs score pour ne plus lutter pour l'attention.
    Reste typographiquement fort (display, uppercase, color du score). */
 .risk-pill {
+  /* V73 — Risk pill compact : 30px → 18px max. Hiérarchie intégrée
+     avec le score (qui est désormais 32-48px). */
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: 0 0 4px;
+  gap: 6px;
+  padding: 0 0 2px;
   border: none;
   background: transparent;
   font-family: var(--font-display);
-  font-size: clamp(20px, 3.2vw, 30px);
+  font-size: clamp(14px, 2vw, 18px);
   font-weight: 600;
-  letter-spacing: -0.012em;
+  letter-spacing: -0.005em;
   text-transform: uppercase;
   line-height: 1;
   color: var(--score-color, var(--ink-primary));
@@ -5761,8 +5765,9 @@ input[type="file"] { display: none; }
     justify-content: space-between;
     gap: var(--space-3);
   }
-  .score-value { font-size: clamp(48px, 14vw, 72px); }
-  .score-suffix { font-size: 13px; }
+  /* V73 — Mobile score : 72px → 40px max */
+  .score-value { font-size: clamp(28px, 9vw, 40px); }
+  .score-suffix { font-size: 12px; }
 
   /* V17 — Sticky toolbar mobile : ne pas écraser bottom:0 ni margin-bottom */
   .results-toolbar {
@@ -5785,71 +5790,76 @@ input[type="file"] { display: none; }
     gap: var(--space-4) !important;
   }
 
-  /* V64 — TABLE RÉSULTATS sur mobile : stack en cartes lisibles d'un coup
-     d'œil, plus de scroll horizontal. Chaque ligne devient une mini-carte
-     avec catégorie en gros (titre) puis méta (zones · surface · intensité ·
-     probabilité) en ligne séparée plus discrète. */
+  /* V73 — Synthèse zones REFONDUE : grille 4-colonnes stat-strip par
+     carte contaminant. Scale infiniment avec N contaminants, chaque card
+     parsable en 0,5 seconde. Valeur en haut + label mini-caps en bas. */
   .results-table-wrap { overflow-x: visible; }
-  .results-table,
-  .results-table thead,
-  .results-table tbody,
-  .results-table tr,
-  .results-table th,
-  .results-table td {
-    display: block;
-    width: 100%;
-  }
+  .results-table-wrap .results-table { width: 100%; border-collapse: separate; border-spacing: 0; }
   .results-table thead { display: none; }
+  .results-table tbody, .results-table tbody tr, .results-table tbody td { display: revert; }
   .results-table tbody tr {
-    padding: 12px 14px;
-    margin-bottom: 8px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px 8px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
     background: var(--surface);
     border: 1px solid var(--hairline);
-    border-radius: 8px;
-    border-bottom: 1px solid var(--hairline);   /* override pour la dernière */
+    border-radius: 10px;
   }
   .results-table tbody tr:last-child { margin-bottom: 0; }
   .results-table tbody td {
     padding: 0;
     border: none;
-    text-align: left !important;
-    font-size: 13px;
-  }
-  .results-table tbody td.col-cat {
-    margin-bottom: 8px;
-    font-size: 14px;
+    text-align: center !important;
+    font-size: 15px;
+    color: var(--ink-primary);
     font-weight: 600;
   }
-  /* Méta cells (zones / surface / intensité / probabilité) en ligne avec
-     séparateurs · entre elles. Surface garde sa pct-bar visuelle. */
+  /* Catégorie : span sur les 4 colonnes, en titre, séparateur dessous */
+  .results-table tbody td.col-cat {
+    grid-column: 1 / -1;
+    text-align: left !important;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--hairline);
+    margin-bottom: 2px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  /* Cellules métriques : flex column avec valeur en haut + label en bas */
   .results-table tbody td.col-num,
   .results-table tbody td.col-int {
-    display: inline-flex;
+    display: flex;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
+    gap: 4px;
     width: auto;
-    margin-right: 12px;
-    color: var(--ink-tertiary);
-    font-size: 12px;
+    margin: 0;
   }
   .results-table tbody td.col-num::before,
   .results-table tbody td.col-int::before {
     content: attr(data-label);
+    order: 2;                     /* push label below value */
+    font-family: var(--font-mono);
     font-weight: 500;
     color: var(--ink-tertiary);
-    margin-right: 4px;
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    font-size: 10px;
-    letter-spacing: 0.06em;
   }
-  /* pct-bar passe en ligne avec son texte */
+  /* pct-bar : version compacte verticale dans la cellule */
   .results-table tbody td.col-num .pct-bar {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
+    font-size: 14px;
+    font-weight: 600;
   }
-  /* int-pill garde son look */
+  /* int-pill : pill compacte intégrée */
   .results-table tbody td.col-int .int-pill {
-    margin-left: 4px;
+    font-size: 11.5px;
+    padding: 2px 8px;
   }
 
   /* MODAL FEEDBACK — bottom-sheet plein écran */
@@ -20853,7 +20863,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v72</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v73</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
