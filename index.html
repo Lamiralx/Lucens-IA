@@ -16988,14 +16988,21 @@ const Annotator = (() => {
     startLoaderTimer();
     let creepTimer = null;
 
-    /* V35 — Watchdog : si l'analyse dépasse 90s SANS jamais avoir bougé
-       passé l'étape 5, on force le close avec un toast clair. Évite
-       l'utilisateur bloqué indéfiniment sur "Préparation du rapport"
-       en cas de plantage silencieux d'un await en aval. */
-    const ANALYSIS_WATCHDOG_MS = 90000;
+    /* V35 + V56 — Watchdog : si l'analyse dépasse 180s, on force le close.
+       V56 — Passé de 90s à 180s suite à observation prod (cf. log 15:40-15:41) :
+       l'API /api/analyze retournait HTTP 200 mais après 90-150s côté serveur
+       (Opus 4.7 saturé + 4 retries SDK + fallback Sonnet 4.6). Le watchdog
+       tirait AVANT la réponse → "Analyse interrompue" alors que tout aurait
+       marché en attendant 30s de plus. Budget réaliste :
+         - Opus 4.7 standard : 15-30s
+         - Opus 4.7 saturé + 1-2 retries : 30-80s
+         - Fallback Sonnet 4.6 après échec Opus : +20-40s
+         - maxDuration Vercel function : 300s (cap absolu)
+       180s = marge confortable pour 95% des cas, ferme avant maxDuration. */
+    const ANALYSIS_WATCHDOG_MS = 180000;
     const watchdogTimer = setTimeout(() => {
       if (loader.classList.contains('active')) {
-        console.error('[WATCHDOG] Analyse > 90s, force close');
+        console.error('[WATCHDOG] Analyse > 180s, force close');
         try { currentAnalyzeAbort && currentAnalyzeAbort.abort(); } catch {}
         stopProgressCreep(creepTimer); creepTimer = null;
         loader.classList.remove('active');
@@ -20607,7 +20614,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v55</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v56</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
