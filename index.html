@@ -3272,23 +3272,19 @@ input[type="file"] { display: none; }
   display: none;
 }
 .observations-card.visible { display: block; }
+/* V62 — Titre observations refondu : retire le trait décoratif que les
+   utilisateurs lisaient comme un em-dash parasite. Titre passe en
+   font-display 16px gras, vraie hiérarchie visuelle séparée du body. */
 .observations-hdr {
-  font-family: var(--font-mono);
-  font-size: var(--t-eyebrow-size);
-  font-weight: var(--t-eyebrow-weight);
-  letter-spacing: var(--t-eyebrow-tracking);
-  text-transform: uppercase;
-  color: #D84315;
-  margin-bottom: 22px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.observations-hdr::before {
-  content: '';
-  width: 18px;
-  height: 1px;
-  background: #D84315;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  text-transform: none;
+  color: var(--ink-primary);
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--hairline);
 }
 .observations-list {
   display: flex;
@@ -20397,13 +20393,14 @@ const Annotator = (() => {
          user_to_confirm, scoring_rationale) au cas où Claude les renvoie encore.
          L'ordre canonique met le risk_summary EN PREMIER. */
       const OBS_ALLOWED = {
-        risk_summary:        { label: 'Risque',  order: 1 },
-        surface_summary:     { label: 'Surface', order: 2 },
-        fluorescence_summary:{ label: 'Signal',  order: 3 },
-        hygiene_note:        { label: 'Hygiène', order: 4 },
-        /* Backward compat : si Claude renvoie l'ancien nom, on remappe */
-        surface_inspected:   { label: 'Surface', order: 2 },
-        fluorescence_detected:{ label: 'Signal', order: 3 },
+        risk_summary:        { label: 'Risque',         order: 1 },
+        surface_summary:     { label: 'Surface',        order: 2 },
+        fluorescence_summary:{ label: 'Signal observé', order: 3 },
+        recommendation:      { label: 'Recommandation', order: 4 },
+        /* Backward compat : remappe les anciens noms vers les nouveaux */
+        hygiene_note:        { label: 'Recommandation', order: 4 },
+        surface_inspected:   { label: 'Surface',        order: 2 },
+        fluorescence_detected:{ label: 'Signal observé', order: 3 },
       };
       const OBS_BLOCKED = new Set([
         'ambient_uv', 'artifacts_excluded', 'context_clue',
@@ -20703,7 +20700,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v61</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v62</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">

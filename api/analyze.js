@@ -531,30 +531,58 @@ En PLUS du raisonnement contextuel V21, tu DOIS remplir ces champs UI legacy :
 
   STRUCTURE OBLIGATOIRE — exactement 4 entrées dans cet ordre :
 
-  1. tag "risk_summary" — Score + niveau + identité probable du résidu + probabilité.
-     Format strict : "Score N/100 (Niveau). Compatible [identité] (~P%)."
-     Ex: "Score 75/100 (Élevé). Compatible détergent azurants (~70%)."
-     Ex: "Score 25/100 (Faible). Compatible poussière organique (~50%)."
+  1. tag "risk_summary" — Score + niveau + identité probable du résidu en LANGAGE COMMUN.
+     Format strict : "Score N/100 (Niveau). [Identité probable du résidu]."
+     PAS DE POURCENTAGE entre parenthèses (~75% etc.) — c'est incompréhensible pour le pro.
+     Si tu hésites entre 2 identités, utilise "probable" ou "très probable" en mot, pas en %.
+     Ex: "Score 75/100 (Élevé). Résidu de détergent non rincé probable."
+     Ex: "Score 25/100 (Faible). Poussière organique probable."
+     Ex: "Score 90/100 (Critique). Trace de sang très probable."
 
   2. tag "surface_summary" — Description visuelle 1 LIGNE max, factuelle.
      Ex: "Plan lisse, finition mate, sec. Joints non visibles."
      Ex: "Inox brossé, raccord tri-clamp visible, démontage en cours."
 
-  3. tag "fluorescence_summary" — Signal observé : couleur + position + étendue + identité COMPATIBLE.
-     Ex: "Halo cyan 8 cm² coin haut-droit, azurants probables (détergent)."
+  3. tag "fluorescence_summary" — Signal observé : couleur + position + étendue + identité en LANGAGE COMMUN.
+     INTERDIT : termes scientifiques bruts (azurants optiques, NADH, riboflavine, porphyrines, FAD, stilbenes…).
+     OBLIGATOIRE : équivalent compréhensible (voir TABLE TRADUCTION ci-dessous).
+     Ex: "Halo cyan saturé sur toute la paroi interne, résidu de détergent probable."
+     Ex: "Tache rouge vif 4 cm² coin haut-droit, trace de sang probable."
      Ex: "Aucune fluorescence franche détectée."
 
-  4. tag "hygiene_note" — Implication conditionnée à l'usage. 1 ligne format SI/SINON.
-     Ex: "Si food_contact : re-rincer avant remontage. Sinon : corriger défaut rinçage."
+  4. tag "recommendation" — RECOMMANDATION concrète référencée au standard pertinent.
+     Format obligatoire : "[Standard] : [action concrète à l'impératif]. [Conséquence si non fait, courte]."
+     PAS de "Si X : Y. Sinon : Z." schématique — prose naturelle.
+     Standards usuels :
+     - HACCP / Codex CXC 1-1969 (alimentaire, restauration)
+     - CIP / cycle de rinçage final (ligne process inox)
+     - ISO 22000 (système management qualité agro)
+     - EU GMP / PIC/S (pharma, cleanroom)
+     - OMS / CDC (santé, surfaces fréquemment touchées)
+     - Procédure interne nettoyage (générique sinon)
+     Ex: "HACCP : re-rincer la tubulure à l'eau claire avant remontage, sinon risque de contamination chimique du prochain lot."
+     Ex: "Cycle CIP : revoir le rinçage final, la présence de détergent indique un cycle incomplet."
+     Ex: "OMS hygiène mains : nettoyer et désinfecter les boutons et leurs contours, intégrer ce point à la routine des surfaces fréquemment touchées."
+
+  TABLE DE TRADUCTION TECHNIQUE → LANGAGE COMMUN (obligatoire) :
+  - azurants optiques / stilbenes → "résidu de détergent"
+  - NADH / NADPH / tryptophane → "résidu organique (protéines fraîches)" ou "trace organique"
+  - riboflavine / FAD / vit B2 → "résidu laitier" ou "résidu alimentaire (lait, œufs)"
+  - porphyrines / hème → "trace de sang"
+  - acide urique / urochrome → "urine (probablement de rongeur)"
+  - pyoverdines / Pseudomonas → "biofilm bactérien" ou "biofilm suspect"
+  - aflatoxines / ochratoxine → "moisissure / mycotoxine"
+  - chlorophylle / lycopène → "résidu végétal" ou "résidu fruit/légume"
+  - huiles minérales / HAP → "huile / lubrifiant"
+  - filtres UV cosmétiques → "trace de crème / cosmétique"
+  - tétracyclines / sulfamides → "résidu d'antibiotique"
+  - frass d'insectes → "trace d'insecte"
 
   TAGS INTERDITS — NE PAS PRODUIRE ces tags obsolètes (l'UI les ignorera) :
-  - ambient_uv (l'éclairage UV n'intéresse pas le pro terrain)
-  - artifacts_excluded (si exclu d'office, n'apparait pas, point)
-  - context_clue (devinettes sur l'environnement)
-  - user_to_confirm (déjà géré par missing_context global)
-  - scoring_rationale (remplacé par risk_summary en position 1)
+  - ambient_uv, artifacts_excluded, context_clue, user_to_confirm, scoring_rationale
   - surface_inspected (renommé surface_summary)
   - fluorescence_detected (renommé fluorescence_summary)
+  - hygiene_note (renommé recommendation)
 
 - **image_quality** : { usable (boolean), warning (string vide ou alerte courte), limitations (array de strings) }
 
