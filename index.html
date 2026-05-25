@@ -9254,7 +9254,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v92</span>
+              <span class="home-spec-version" aria-hidden="true">v93</span>
             </div>
           </div>
 
@@ -17249,21 +17249,33 @@ const Annotator = (() => {
 
     function askThen(file, callback) {
       const { overlay, submit } = elements();
-      /* V28.1 — Si l'utilisateur a précédemment choisi "Ne plus me demander",
-         on saute le popup et on lance l'analyse direct, sans aucun contexte
-         moment. */
       if (shouldAlwaysSkip()) {
         lastSelectedMoment = '';
         if (typeof callback === 'function') callback(file);
         return;
       }
-      if (!overlay) { /* fallback : lance direct sans contexte */ callback(file); return; }
+      if (!overlay) { callback(file); return; }
       pendingFile = file;
       pendingCallback = callback;
-      /* Reset radios */
       document.querySelectorAll('input[name="mo_moment"]').forEach(r => { r.checked = false; });
       if (submit) submit.disabled = true;
       overlay.hidden = false;
+      /* V93 — Filet i18n : force la traduction de tous les data-i18n du
+         popup moment à chaque ouverture. Garantit que "Ne plus me demander"
+         et les autres labels sont dans la langue courante même si applyLang
+         a raté quelque chose ou si on est sur cache PWA. */
+      try {
+        if (typeof t === 'function') {
+          overlay.querySelectorAll('[data-i18n]').forEach(el => {
+            const k = el.getAttribute('data-i18n');
+            if (el.hasAttribute('data-i18n-html')) el.innerHTML = t(k);
+            else el.textContent = t(k);
+          });
+          overlay.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
+            el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria-label')));
+          });
+        }
+      } catch (e) { console.warn('[Moment] i18n force-apply failed:', e?.message || e); }
       requestAnimationFrame(() => overlay.classList.add('visible'));
     }
 
