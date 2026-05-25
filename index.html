@@ -33,7 +33,21 @@
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
-      .then((reg) => console.log('[Lucens] SW enregistré scope:', reg.scope))
+      .then((reg) => {
+        console.log('[Lucens] SW enregistré scope:', reg.scope);
+        /* V97 — Force un check SW update au load et à chaque retour de
+           visibilité. iOS PWA Safari ne checke pas auto les SW updates
+           quand l'app est relancée depuis l'icône home — il faut un
+           registration.update() explicite pour récupérer le nouveau sw.js.
+           Sans ça l'utilisateur reste figé sur la version installée
+           initialement (cas reporté : badge v85 alors que prod = v96+). */
+        try { reg.update(); } catch {}
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') {
+            try { reg.update(); } catch {}
+          }
+        });
+      })
       .catch((err) => console.warn('[Lucens] SW échec enregistrement:', err?.message));
   });
   /* V40 — Notification SW "Mise à jour disponible" en composant premium.
@@ -446,16 +460,20 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; bo
    V22 — position fixed + padding-top env(safe-area-inset-top) pour ne PLUS
    passer sous la Dynamic Island / l'encoche iPhone. Décale aussi le contenu
    sous lui pour éviter de masquer le header. */
+/* V97 — Banner positionné SOUS la safe-area iOS (top: env(safe-area-inset-top))
+   au lieu de l'extension du fond derrière la status bar (visuel laid : status
+   bar iOS prenait la couleur du banner — jaune sous "23:02"). Maintenant la
+   status bar garde la couleur de page, le banner commence juste en dessous. */
 .offline-banner {
   position: fixed;
-  top: 0;
+  top: env(safe-area-inset-top, 0px);
   left: 0;
   right: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: calc(6px + env(safe-area-inset-top, 0px)) 14px 8px;
+  padding: 6px 14px 8px;
   background: var(--accent, #0E8C84);
   color: #FFFFFF;
   font-family: 'IBM Plex Sans', sans-serif;
@@ -9265,7 +9283,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v96</span>
+              <span class="home-spec-version" aria-hidden="true">v97</span>
             </div>
           </div>
 
@@ -19948,17 +19966,23 @@ const Annotator = (() => {
          padding-top utilisait le fallback 36px avant que la vraie mesure
          (souvent ~75px sur iPhone Dynamic Island) ne soit appliquée. */
       if (shouldShow) {
-        /* Le banner est rendu visible juste au-dessus (lv-hidden retiré).
-           offsetHeight force le reflow et renvoie la hauteur réelle incluant
-           safe-area-inset-top (Dynamic Island, encoche, etc.). */
-        const h = banner.offsetHeight || 36;
+        /* V97 — Mesure = bottom du banner (inclut top:env(safe-area-inset-top) +
+           hauteur). Avant V97 le banner avait safe-area dans son padding-top
+           donc offsetHeight suffisait. Maintenant safe-area est dans top:
+           donc on prend la position ABSOLUE du bas du banner par rapport au
+           viewport via getBoundingClientRect().bottom. Évite le chevauchement
+           contenu/banner. */
+        const rect = banner.getBoundingClientRect();
+        const h = Math.max(36, Math.round(rect.bottom));
         document.documentElement.style.setProperty('--offline-banner-height', h + 'px');
         document.body.classList.add('has-offline-banner');
         /* Filet de sécurité : re-mesure au prochain frame si la 1ère mesure
-           a renvoyé 0 (cas rare où le banner n'a pas encore son layout). */
+           a renvoyé une valeur sous-estimée (cas rare où le banner n'a pas
+           encore son layout final, surtout en PWA iOS au premier render). */
         if (h <= 36) {
           requestAnimationFrame(() => {
-            const h2 = banner.offsetHeight;
+            const r2 = banner.getBoundingClientRect();
+            const h2 = Math.round(r2.bottom);
             if (h2 > h) {
               document.documentElement.style.setProperty('--offline-banner-height', h2 + 'px');
             }
