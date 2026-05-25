@@ -20383,18 +20383,42 @@ const Annotator = (() => {
         warningCard.classList.add('visible');
       }
 
-      /* Observations Concept 2 Tagged Editorial avec confidence */
+      /* V59 — Observations refondues : 4 tags max, labels FR propres, ordre strict.
+         Filtre les tags obsolètes (ambient_uv, artifacts_excluded, context_clue,
+         user_to_confirm, scoring_rationale) au cas où Claude les renvoie encore.
+         L'ordre canonique met le risk_summary EN PREMIER. */
+      const OBS_ALLOWED = {
+        risk_summary:        { label: 'Risque',  order: 1 },
+        surface_summary:     { label: 'Surface', order: 2 },
+        fluorescence_summary:{ label: 'Signal',  order: 3 },
+        hygiene_note:        { label: 'Hygiène', order: 4 },
+        /* Backward compat : si Claude renvoie l'ancien nom, on remappe */
+        surface_inspected:   { label: 'Surface', order: 2 },
+        fluorescence_detected:{ label: 'Signal', order: 3 },
+      };
+      const OBS_BLOCKED = new Set([
+        'ambient_uv', 'artifacts_excluded', 'context_clue',
+        'user_to_confirm', 'scoring_rationale',
+      ]);
       if (obsCard && obsContainer) {
         const raw = res.observations;
         let items = [];
         if (Array.isArray(raw)) {
           items = raw.map(o => {
             if (o && typeof o === 'object' && o.body) {
-              return { tag: o.tag || '', body: String(o.body), confidence: o.confidence || null };
+              const tag = String(o.tag || '').toLowerCase().trim();
+              if (OBS_BLOCKED.has(tag)) return null;  /* skip obsolète */
+              return { tag, body: String(o.body), confidence: o.confidence || null };
             }
             if (typeof o === 'string' && o.trim()) return { tag: '', body: o.trim(), confidence: null };
             return null;
           }).filter(Boolean);
+          /* Tri canonique : risk_summary → surface → signal → hygiène */
+          items.sort((a, b) => {
+            const oa = (OBS_ALLOWED[a.tag] && OBS_ALLOWED[a.tag].order) || 99;
+            const ob = (OBS_ALLOWED[b.tag] && OBS_ALLOWED[b.tag].order) || 99;
+            return oa - ob;
+          });
         } else if (typeof raw === 'string' && raw.trim()) {
           items = [{ tag: '', body: raw.trim(), confidence: null }];
         }
@@ -20413,12 +20437,22 @@ const Annotator = (() => {
               tagRow.className = 'observations-tag-row';
               const tag = document.createElement('span');
               tag.className = 'observations-tag';
-              /* V29.1 — Nettoie tiret/dash/espace parasite en début de tag.
-                 Claude renvoie parfois "— Observation du..." avec un dash. */
-              const cleanTag = String(it.tag)
-                .replace(/^[\s\-–—•·:]+/, '')
-                .replace(/_/g, ' ')
-                .trim();
+              /* V59 — Mapping tag → label FR humain (au lieu de "RISK_SUMMARY"
+                 en CAPS_UNDERSCORE). Fallback : nettoyage générique si tag
+                 inconnu (capitalise + remplace _ par espace). */
+              const tagKey = String(it.tag).toLowerCase().trim();
+              const mapped = OBS_ALLOWED[tagKey];
+              let cleanTag;
+              if (mapped) {
+                cleanTag = mapped.label;
+              } else {
+                cleanTag = String(it.tag)
+                  .replace(/^[\s\-–—•·:]+/, '')
+                  .replace(/_/g, ' ')
+                  .trim()
+                  .toLowerCase()
+                  .replace(/\b\w/g, c => c.toUpperCase());
+              }
               tag.textContent = cleanTag;
               tagRow.appendChild(tag);
               if (it.confidence && ['high','medium','low'].includes(it.confidence)) {
@@ -20434,8 +20468,14 @@ const Annotator = (() => {
             }
             const body = document.createElement('div');
             body.className = 'observations-body';
-            /* V29.1 — Nettoie tiret/dash parasite en début de body */
-            const cleanBody = String(it.body || '').replace(/^[\s\-–—•·]+/, '').trim();
+            /* V59 — Nettoie em-dash et en-dash dans le body (Claude en colle
+               malgré l'interdiction prompt). Remplace " — " et " – " par ". ".
+               Garde le simple tiret "-" (utile pour mots composés type re-rincer). */
+            const cleanBody = String(it.body || '')
+              .replace(/^[\s\-–—•·]+/, '')
+              .replace(/\s*[—–]\s*/g, '. ')
+              .replace(/\.\s*\./g, '.')  /* double point résiduel après remplacement */
+              .trim();
             body.textContent = cleanBody;
             item.appendChild(body);
             list.appendChild(item);
@@ -20654,7 +20694,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v58</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v59</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">

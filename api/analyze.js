@@ -498,26 +498,39 @@ En PLUS du raisonnement contextuel V21, tu DOIS remplir ces champs UI legacy :
 
 - **probabilities** : array de { id, probability 0-100 } — distribution par CATÉGORIE. id ∈ {organic, fatty, chemical, mineral, biofilm, dust, pigmented, cosmetic, adhesive, pest, mixed, unknown}. Somme = 100. Min 2 catégories, max 6.
 
-- **observations** : array de { tag, body, confidence: "high"|"medium"|"low" }. Rédige 3-5 observations FACTUELLES (1-2 phrases courtes chacune, vocabulaire précis MAIS strictement basé sur ce qui est VISIBLE). Reste DIRECT, pas de phrases d'introduction creuses, pas de "Il convient de noter que...", pas de "Dans ce contexte...". Va droit au fait.
+- **observations** : array de EXACTEMENT 4 entrées { tag, body, confidence }. Format ULTRA-CONDENSÉ data-dense, pas de paragraphes, pas d'introduction. Chaque body = 1 ligne ou 2 phrases courtes MAX. Le pro lit en 5 secondes.
 
   RÈGLE ABSOLUE ANTI-SPÉCULATION (V29) :
-  Tu ne dois JAMAIS affirmer un fait que tu ne peux pas vérifier visuellement dans l'image.
-  - INTERDIT : "Plan de travail en céramique" / "stratifié haute pression" / "HDPE alimentaire" — tu ne peux PAS connaître le matériau précis depuis une photo UV.
-  - INTERDIT : "au-dessus se trouve un sécheur" / "poste de préparation" / "zone de découpe" — tu ne vois pas l'environnement complet.
-  - INTERDIT : "surface en contact alimentaire" — même si le secteur est restauration, tu ne sais PAS si cette surface particulière touche les aliments. C'est l'UTILISATEUR qui le sait.
-  - AUTORISÉ : "Plan de travail à surface lisse, effet marbre" (description visuelle factuelle).
-  - AUTORISÉ : "Surface présentant un signal fluorescent cyan dans le coin supérieur gauche" (factuel).
-  - AUTORISÉ : "Le secteur restauration suggère qu'il s'agit possiblement d'une surface alimentaire — à confirmer par l'utilisateur selon l'usage réel" (qualifié, laisse à l'utilisateur).
+  Jamais d'affirmation non vérifiable visuellement dans l'image.
+  INTERDIT : "Plan en céramique" / "stratifié HDPE" / "au-dessus se trouve un sécheur" / "surface en contact alimentaire" (sans confirmation utilisateur).
+  AUTORISÉ : "Plan lisse effet marbre" / "Halo cyan coin haut-droit" / "Possiblement food_contact à confirmer".
 
-  Inclure :
-  - tag "surface_inspected" : description VISUELLE factuelle de la surface (couleur, texture apparente, présence de joints/relief) + état apparent (humide/sec si visible). Ex: "Surface plane à finition lisse et veinage clair (effet marbre), apparence sèche, joints non visibles dans le cadre."
-  - tag "fluorescence_detected" : pour CHAQUE zone fluo, signature observée (couleur + localisation + étendue approximative) + fluorophore COMPATIBLE de la bibliothèque (jamais affirmé). Ex: "Halo cyan-bleu d'environ 8 cm² au centre-droit, signature compatible avec des azurants optiques (résidu de détergent)."
-  - tag "ambient_uv" : niveau voile UV ambiant + cohérence éclairage 365 nm. Factuel.
-  - tag "artifacts_excluded" : si LEDs/écrans/reflets détectés → décrire et écarter. Factuel.
-  - tag "context_clue" : indices visuels SECONDAIRES OBSERVÉS uniquement (forme de la surface, présence d'objet visible). Si rien de pertinent visible → omettre ce tag.
-  - tag "hygiene_note" : note conditionnée à l'usage. Format : "SI cette surface est en contact direct avec un aliment, alors [implication]. SINON, [implication moindre]. À ajuster selon le rôle réel de la surface."
-  - tag "scoring_rationale" : explication du score en mentionnant l'incertitude sur le rôle de surface. Ex: "Score 45 (Moyen) — plancher minimal pour résidu de détergent. Si confirmation que la surface est food_contact, le score remonte à 55-65 ; si surface non alimentaire, il descend à 25-35. L'utilisateur ajuste selon l'usage réel."
-  - tag "user_to_confirm" : OBLIGATOIRE — liste 1-2 points que l'utilisateur DOIT confirmer pour préciser l'analyse (ex: "Cette surface est-elle en contact direct avec un aliment ? Cette zone a-t-elle été nettoyée récemment ?"). Crucial pour rester factuel.
+  STRUCTURE OBLIGATOIRE — exactement 4 entrées dans cet ordre :
+
+  1. tag "risk_summary" — Score + niveau + identité probable du résidu + probabilité.
+     Format strict : "Score N/100 (Niveau). Compatible [identité] (~P%)."
+     Ex: "Score 75/100 (Élevé). Compatible détergent azurants (~70%)."
+     Ex: "Score 25/100 (Faible). Compatible poussière organique (~50%)."
+
+  2. tag "surface_summary" — Description visuelle 1 LIGNE max, factuelle.
+     Ex: "Plan lisse, finition mate, sec. Joints non visibles."
+     Ex: "Inox brossé, raccord tri-clamp visible, démontage en cours."
+
+  3. tag "fluorescence_summary" — Signal observé : couleur + position + étendue + identité COMPATIBLE.
+     Ex: "Halo cyan 8 cm² coin haut-droit, azurants probables (détergent)."
+     Ex: "Aucune fluorescence franche détectée."
+
+  4. tag "hygiene_note" — Implication conditionnée à l'usage. 1 ligne format SI/SINON.
+     Ex: "Si food_contact : re-rincer avant remontage. Sinon : corriger défaut rinçage."
+
+  TAGS INTERDITS — NE PAS PRODUIRE ces tags obsolètes (l'UI les ignorera) :
+  - ambient_uv (l'éclairage UV n'intéresse pas le pro terrain)
+  - artifacts_excluded (si exclu d'office, n'apparait pas, point)
+  - context_clue (devinettes sur l'environnement)
+  - user_to_confirm (déjà géré par missing_context global)
+  - scoring_rationale (remplacé par risk_summary en position 1)
+  - surface_inspected (renommé surface_summary)
+  - fluorescence_detected (renommé fluorescence_summary)
 
 - **image_quality** : { usable (boolean), warning (string vide ou alerte courte), limitations (array de strings) }
 
