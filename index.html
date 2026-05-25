@@ -19198,7 +19198,16 @@ const Annotator = (() => {
   }
 
   function renderQualityBanner(res) {
+    /* V72 — RETIRÉ DÉFINITIVEMENT à la demande utilisateur. Le panneau
+       "Améliorations possibles / Conseils photos" générait trop de bruit
+       UX (sections vides, contradictions, taille). L'utilisateur préfère
+       que ces informations remontent uniquement dans les observations
+       Lucens IA quand c'est pertinent. Le HTML reste en place au cas où
+       on veuille réactiver, mais la fonction est un no-op qui force-hide. */
     const banner = $('qualityBanner');
+    if (banner) banner.hidden = true;
+    return;
+    /* eslint-disable */
     if (!banner) return;
     bindQualityToggle();
     const q = res && res.quality;             /* heuristique locale */
@@ -20844,7 +20853,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v71</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v72</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
