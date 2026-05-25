@@ -2573,27 +2573,20 @@ input[type="file"] { display: none; }
   overflow: hidden; box-shadow: var(--shadow-card);
 }
 .card-hdr {
-  padding: 14px 18px; border-bottom: 1px solid var(--hairline);
+  padding: 16px 20px; border-bottom: 1px solid var(--hairline);
   display: flex; align-items: center; justify-content: space-between;
   background: transparent;
 }
+/* V63 — Titres de carte refondus : suppression du trait orange ::before
+   (lu comme em-dash parasite) + passage en font-display 16px gras.
+   Vraie hiérarchie visuelle premium au lieu de mono-caps minuscule. */
 .card-hdr .t {
-  font-family: var(--font-mono);
-  font-size: var(--t-eyebrow-size);
-  font-weight: var(--t-eyebrow-weight);
-  letter-spacing: var(--t-eyebrow-tracking);
-  text-transform: uppercase;
-  color: var(--lucens-signature);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.card-hdr .t::before {
-  content: '';
-  width: 18px;
-  height: 1px;
-  background: var(--lucens-signature);
-  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  text-transform: none;
+  color: var(--ink-primary);
 }
 .card-hdr .badge {
   font-family: var(--font-mono);
@@ -20700,7 +20693,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v62</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v63</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
