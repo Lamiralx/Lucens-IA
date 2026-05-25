@@ -9169,7 +9169,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v82</span>
+              <span class="home-spec-version" aria-hidden="true">v83</span>
             </div>
           </div>
 
@@ -17817,16 +17817,14 @@ const Annotator = (() => {
           currentAnalyzeAbort = null;
           return;
         }
-        /* V51 + V54 — Fallback heuristique GRACIEUX (vs erreur "indisponible").
-           Après les 4 tentatives du retry (8s+ de patience cumulée), si Claude
-           reste injoignable, on bascule SILENCIEUSEMENT sur l'analyse heuristique
-           HSV locale. L'utilisateur reçoit un résultat utilisable + un toast
-           WARNING DÉCALÉ (après que le rapport soit visible) expliquant que
-           l'analyse approfondie est temporairement indisponible. */
+        /* V83 — Fallback heuristique REFONDU pour matcher la structure canonique
+           définie en V58/V62/V69 : exactement 4 observations (risk_summary,
+           surface_summary, fluorescence_summary, recommendation) en mots-clés.
+           Plus de paragraphes verbeux dans result/recommendation/contextual_reasoning.
+           Le verdict card reçoit le minimum nécessaire pour ne pas casser
+           l'UI, mais le contenu utile est dans observations[]. */
         console.error('[V51 fallback] API indisponible après 4 tentatives, bascule en analyse locale:', apiErr);
         setLoaderProgress(60);
-        /* V54 fix Bug E — Label du loader explicite pendant le fallback,
-           sinon barre figée sur "loader_step7" 96% précédent puis saute à 100%. */
         setLoaderStep('loader_step7', 60);
         res = localRes || {};
         res._source = 'local_fallback';
@@ -17838,7 +17836,7 @@ const Annotator = (() => {
           type: z.heuristicType || 'unknown',
           intensity: z.intensity || 'inconnue',
           confidence: 0.55,
-          evidence: 'Détection heuristique locale (analyse IA approfondie temporairement indisponible).',
+          evidence: 'Détection locale provisoire',
           area_pct: +((z.w || 0) * (z.h || 0) * 100).toFixed(2),
         }));
         res.grid = (localRes && localRes.grid) ? localRes.grid : [];
@@ -17850,36 +17848,57 @@ const Annotator = (() => {
         } else if (!res.zones.length && typeof res.score !== 'number') {
           res.score = 15;
         }
-        /* V54 fix Bug D — champs CRITIQUES pour render() : sans eux,
-           coveragePercent affiche "undefined %" et l'animation du score
-           tourne en boucle infinie (intervalle jamais résolu car step=NaN). */
+        const _niveau = res.score >= 63 ? 'Élevé' : res.score >= 28 ? 'Moyen' : 'Faible';
         res.riskLevel = res.score >= 63 ? 'high' : res.score >= 28 ? 'moderate' : 'low';
         res.coveragePercent = +res.zones.reduce((s, z) => s + (z.area_pct || 0), 0).toFixed(1);
         res.probabilities = res.probabilities || [];
-        /* V54 fix Bug I — Verdict pédagogique enrichi (tous les champs lus
-           par render() pour la carte lucensVerdictCard, sinon "—" visible). */
+        /* OBSERVATIONS V83 — 4 entrées canoniques style mot-clé.
+           Identique en structure à la sortie Claude (V58/V62/V69). */
+        res.observations = [
+          {
+            tag: 'risk_summary',
+            body: res.zones.length
+              ? `Score ${res.score}/100 (${_niveau}). Analyse locale provisoire — identification précise indisponible.`
+              : `Score ${res.score}/100 (${_niveau}). Aucune fluorescence franche détectée localement.`,
+            confidence: 'low',
+          },
+          {
+            tag: 'surface_summary',
+            body: 'Surface non décrite (analyse provisoire).',
+            confidence: 'low',
+          },
+          {
+            tag: 'fluorescence_summary',
+            body: res.zones.length
+              ? `${res.zones.length} zone(s) détectée(s) par pré-scan local · identification chimique non disponible.`
+              : 'Aucun signal fluorescent franc détecté par le pré-scan.',
+            confidence: 'low',
+          },
+          {
+            tag: 'recommendation',
+            body: res.zones.length
+              ? 'Analyse provisoire : vérifiez visuellement les zones et relancez l\'analyse complète dès rétablissement du service.'
+              : 'Analyse provisoire : relancez l\'analyse complète dès rétablissement du service pour confirmation.',
+            confidence: 'low',
+          },
+        ];
+        /* Minimum requis pour la verdict card (sans le verbiage de l'ancienne version) */
         res.result = res.result || {
-          title: res.zones.length ? 'Zones fluorescentes repérées (analyse locale)' : 'Aucune zone fluorescente franche détectée localement',
-          confidence_label: 'Analyse locale',
-          interpretation: res.zones.length
-            ? 'L\'analyse approfondie IA est momentanément indisponible. Lucens IA a tout de même repéré ' + res.zones.length + ' zone(s) compatible(s) avec une fluorescence sur l\'image. Une nouvelle analyse complète sera disponible dès le rétablissement du service.'
-            : 'L\'analyse approfondie IA est momentanément indisponible. Aucune zone fluorescente franche n\'a été détectée par le pré-scan local — vous pourrez relancer l\'analyse complète une fois le service rétabli.',
+          title: res.zones.length ? 'Analyse provisoire' : 'Aucun signal détecté',
+          confidence_label: 'Provisoire',
+          interpretation: '',
         };
         res.recommendation = res.recommendation || {
           title: 'Recommandation provisoire',
-          primary_action: res.zones.length
-            ? 'Vérifiez visuellement les zones identifiées et relancez une analyse complète dans quelques instants pour confirmation.'
-            : 'Relancez l\'analyse complète dans quelques instants pour confirmation.',
-          follow_up: 'Relancez l\'analyse complète dès que le service est rétabli.',
+          primary_action: 'Relancez l\'analyse complète dès rétablissement du service.',
+          follow_up: '',
           confirmation_if_needed: null,
         };
         res.contextual_reasoning = res.contextual_reasoning || {
-          surface_logic: 'Analyse locale heuristique (HSV) sans contextualisation IA.',
-          risk_logic: 'Score provisoire basé uniquement sur la couverture des zones détectées.',
-          what_fluorescence_suggests: res.zones.length
-            ? 'La présence de zones fluorescentes mérite contrôle, mais l\'identification précise nécessite l\'analyse IA complète.'
-            : 'Aucun signal clair en pré-scan ne signifie pas absence totale de contamination — l\'analyse IA complète reste recommandée.',
-          what_fluorescence_does_not_prove: 'L\'analyse locale ne confirme pas la nature exacte des zones détectées — l\'analyse approfondie IA est nécessaire pour identifier le fluorophore.',
+          surface_logic: '',
+          risk_logic: '',
+          what_fluorescence_suggests: '',
+          what_fluorescence_does_not_prove: '',
         };
         /* V54 fix Bug F — Toast DÉCALÉ : on flag res._showFallbackToast au lieu
            d'afficher le toast immédiatement. Le toast sera émis ~600ms après
