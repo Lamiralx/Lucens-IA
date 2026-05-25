@@ -9183,7 +9183,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v87</span>
+              <span class="home-spec-version" aria-hidden="true">v88</span>
             </div>
           </div>
 
@@ -13175,10 +13175,10 @@ const Engine = (() => {
   function suppressSubstrate(grid, gridN) {
     const active = grid.filter(c => c.active);
     const coverage = active.length / (gridN * gridN);
-    /* Seuil abaissé à 30% pour capter les sols industriels colorés
-       (jaune époxy, vert PVC, bleu sécurité) photographiés avec vignette
-       qui réduit la coverage globale. */
-    if (coverage < 0.30 || active.length < 50) return { suppressed: 0, detected: false };
+    /* V88 — Seuil RELEVÉ à 50% (était 30%) : ne déclenche la suppression
+       substrat QUE quand vraiment la majorité du cadre est uniformément
+       coloré (sol industriel). Sous 50%, on respecte la détection. */
+    if (coverage < 0.50 || active.length < 50) return { suppressed: 0, detected: false };
 
     /* Statistiques du substrat : teinte, saturation, luminance moyennes */
     const hues = active.map(c => c._avgHue || 0);
@@ -13188,14 +13188,29 @@ const Engine = (() => {
       return Math.min(d, 360 - d);
     });
     const meanHueVar = variances.reduce((a, v) => a + v, 0) / variances.length;
-    /* Variance teinte assouplie à 35° pour tolérer les variations
-       d'éclairage UV sur un sol coloré (centre vs bords du faisceau). */
-    if (meanHueVar > 35) return { suppressed: 0, detected: false };
+    /* V88 — Variance teinte resserrée à 20° (était 35°) : un VRAI substrat
+       coloré industriel a une teinte très uniforme. La fluo zoomée peut
+       avoir une teinte un peu plus variable. */
+    if (meanHueVar > 20) return { suppressed: 0, detected: false };
 
     const sats = active.map(c => c.avgSat || 0);
     const meanSat = sats.reduce((a, v) => a + v, 0) / sats.length;
     const lums = active.map(c => c.avgLum || 0);
     const meanLum = lums.reduce((a, v) => a + v, 0) / lums.length;
+
+    /* V88 — GARDE-FOU CRITIQUE : si la dominante détectée est très saturée
+       OU très brillante, c'est probablement de la VRAIE FLUORESCENCE
+       zoomée, PAS un substrat coloré. On bail.
+
+       Substrat coloré industriel typique : sat 0.20-0.45, lum 60-130
+       Vraie fluo UV-A 365 nm : sat 0.55+, lum 140+ (signal brillant)
+
+       Bug corrigé : avant V88, zoomer sur une grosse fluo → traitée comme
+       substrat → tous les pixels fluo SUPPRIMÉS → cartographie partout
+       sauf sur la fluo. */
+    if (meanSat >= 0.55 || meanLum >= 140) {
+      return { suppressed: 0, detected: false };
+    }
 
     /* Suppression : on garde UNIQUEMENT les cellules qui DÉVIENT du substrat :
          • saturation ≥ moyenne_sub + 0.15  (résidu plus saturé)
