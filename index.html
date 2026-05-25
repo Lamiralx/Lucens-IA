@@ -9161,7 +9161,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v78</span>
+              <span class="home-spec-version" aria-hidden="true">v79</span>
             </div>
           </div>
 
@@ -23227,6 +23227,13 @@ const Annotator = (() => {
     modal.classList.remove('lv-hidden');
     modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('lv-open');
+    /* V79 — Filet de sécurité i18n : ré-applique applyLang() globalement
+       à chaque ouverture du Live View. Garantit que tout est dans la
+       langue courante avant que l'utilisateur voie le modal, peu importe
+       le timing/cache. Coût : ~1-2ms, négligeable. */
+    try {
+      if (typeof applyLang === 'function') applyLang();
+    } catch (e) { console.warn('[LiveView] i18n refresh on open failed:', e?.message || e); }
     /* Charge le profil de calibration sauvegardé (s'il existe) */
     loadProfile();
     updateCalUI();
