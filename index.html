@@ -13183,7 +13183,34 @@ const Annotator = (() => {
          4) Contour extérieur ferme : 2.0 px terra cotta + drop-shadow noir pour lisibilité
          Anti-confusion absolue avec fluorescences naturelles UV-A (curcuma,
          lycopène, sang, urine). Le pixel d'evidence reste visible sous le tint. */
-      const pixelMask = grid.pixelMask;
+      /* V71 — Reconstruction pixelMask si manquant (depuis history JSON,
+         changement de langue, message cross-frame). Avant : fallback dessinait
+         des rectangles par cellule (V70) ou par cluster (V70 amélioré).
+         Maintenant : on reconstruit un pixelMask synthétique en remplissant
+         tous les pixels de chaque cellule active, puis le pipeline lisse
+         normal s'applique (marching squares + curve smoothing + halo blanc
+         + tint terra cotta gradient). Style "halo parfait" préservé. */
+      let pixelMask = grid.pixelMask;
+      if (!pixelMask && activeCellsByType.size > 0) {
+        const reconstructed = new Uint8Array(W * H);
+        for (const [, cells] of activeCellsByType) {
+          for (const c of cells) {
+            const x0 = Math.max(0, Math.floor(c.x));
+            const y0 = Math.max(0, Math.floor(c.y));
+            const x1 = Math.min(W, Math.ceil(c.x + c.w));
+            const y1 = Math.min(H, Math.ceil(c.y + c.h));
+            for (let py = y0; py < y1; py++) {
+              const rowOff = py * W;
+              for (let px = x0; px < x1; px++) {
+                reconstructed[rowOff + px] = 1;
+              }
+            }
+          }
+        }
+        pixelMask = reconstructed;
+        grid.pixelMask = reconstructed;
+        if (!grid.gridN) grid.gridN = Math.round(Math.sqrt(grid.length)) || 96;
+      }
       if (pixelMask) {
         const validCellMap = new Map();
         for (const [, cells] of activeCellsByType) {
@@ -13607,39 +13634,10 @@ const Annotator = (() => {
         const chains = chainSegments(outerSegs);
         drawSmoothedChains(chains, 'rgba(255, 255, 255, 0.45)', 4.0);
         drawSmoothedChains(chains, `rgba(${SIG_R}, ${SIG_G}, ${SIG_B}, 1)`, 2.0);
-      } else if (activeCellsByType.size > 0) {
-        /* V70 — Fallback REFONDU : ne dessine plus 1 rectangle par cellule
-           (cause des centaines de mini-rectangles signalés par l'utilisateur).
-           Maintenant : on reprend les `clusters` calculés en amont (flood-fill
-           4-voisins, déjà filtrés ≥4 cellules), on calcule le bbox englobant
-           de chaque cluster, on dessine UN seul rectangle propre par cluster.
-           Garantie : N clusters visuels → N rectangles, pas N×cellCount. */
-        const clusterBoxes = [];
-        for (const cluster of clusters) {
-          let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-          for (const c of cluster) {
-            if (c.x < minX) minX = c.x;
-            if (c.y < minY) minY = c.y;
-            if (c.x + c.w > maxX) maxX = c.x + c.w;
-            if (c.y + c.h > maxY) maxY = c.y + c.h;
-          }
-          /* Skip clusters trop petits (<0.5% surface image) — bruit */
-          const area = (maxX - minX) * (maxY - minY);
-          if (area < W * H * 0.005) continue;
-          clusterBoxes.push({ x: minX, y: minY, w: maxX - minX, h: maxY - minY });
-        }
-        /* Halo blanc anti-fond pour lisibilité universelle */
-        for (const b of clusterBoxes) {
-          ctx.fillStyle = `rgba(${SIG_R}, ${SIG_G}, ${SIG_B}, 0.22)`;
-          ctx.fillRect(b.x, b.y, b.w, b.h);
-        }
-        /* Contour franc */
-        ctx.strokeStyle = `rgba(${SIG_R}, ${SIG_G}, ${SIG_B}, 0.95)`;
-        ctx.lineWidth = 2;
-        for (const b of clusterBoxes) {
-          ctx.strokeRect(b.x + 1, b.y + 1, b.w - 2, b.h - 2);
-        }
       }
+      /* V71 — Fallback rectangle V70 SUPPRIMÉ : le bloc reconstruct pixelMask
+         ci-dessus garantit que le pipeline lisse normal s'exécute toujours.
+         Style halo parfait Lucens préservé dans tous les cas. */
     }
 
     /* AUCUN marker sur l'image — uniquement l'overlay de cellules fluorescentes.
@@ -20846,7 +20844,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v70</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v71</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
