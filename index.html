@@ -2137,12 +2137,14 @@ input[type="file"] { display: none; }
 .quality-panel.poor {
   border-left-color: var(--risk-hi);
 }
+/* V66 — Banner slim : padding réduit, single-line title (ellipsis si overflow),
+   chevron forcé à droite via auto-fill grid. */
 .quality-panel-header {
   display: grid;
   grid-template-columns: auto 1fr auto auto;
   align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-4) var(--space-6);
+  gap: 12px;
+  padding: 10px 14px;
   background: transparent;
   border: 0;
   width: 100%;
@@ -2151,6 +2153,12 @@ input[type="file"] { display: none; }
   font: inherit; color: inherit;
   transition: background var(--motion-fast) var(--ease-out);
 }
+.quality-panel-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.quality-panel-cta { display: none !important; }   /* V66 : CTA enlevé, le chevron suffit */
 .quality-panel-header:hover { background: var(--hairline); }
 .quality-panel.collapsed .quality-panel-grid { display: none; }
 .quality-panel-chevron {
@@ -2864,16 +2872,18 @@ input[type="file"] { display: none; }
 /* uv-bleed-warning : bandeau d'avertissement quand des zones sont
    probablement des reflets optiques de la lampe UV plutôt que des résidus.
    Ton neutre (gris), pas alarmiste — c'est une information d'expertise. */
+/* V66 — Warning UV bleed maintenant placé EN BAS du card (après le tableau).
+   Style adouci (note discrète) pour ne pas distraire des données principales. */
 .uv-bleed-warning {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 10px 22px;
-  margin: 0 22px 14px;
+  gap: 8px;
+  padding: 10px 14px;
+  margin-top: 12px;
   background: var(--surface-mid);
-  border-left: 2px solid var(--border-hi);
-  border-radius: 2px;
-  color: var(--ink-secondary);
+  border-radius: 6px;
+  color: var(--ink-tertiary);
+  font-size: 11.5px;
 }
 .uv-bleed-warning svg {
   flex-shrink: 0;
@@ -9452,12 +9462,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
             <span class="t" data-i18n="card_table">Synthèse des zones détectées</span>
             <span class="badge" id="resultsTableCount">—</span>
           </div>
-          <div class="uv-bleed-warning" id="uvBleedWarning" hidden>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            <span class="uv-bleed-text" id="uvBleedText"></span>
-          </div>
           <div class="card-body">
             <div class="results-table-wrap">
               <table class="results-table" id="resultsTable">
@@ -9474,6 +9478,15 @@ body.lv-open { overflow: hidden; touch-action: none; }
                   <tr class="empty-row"><td colspan="5" data-i18n="empty_msg">Aucune zone fluorescente détectée.</td></tr>
                 </tbody>
               </table>
+            </div>
+            <!-- V66 — Warning UV bleed déplacé après le tableau (au lieu du
+                 milieu) pour ne plus couper visuellement le card. N'apparaît
+                 que si bleedyCount > 0. -->
+            <div class="uv-bleed-warning" id="uvBleedWarning" hidden>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <span class="uv-bleed-text" id="uvBleedText"></span>
             </div>
           </div>
         </div>
@@ -9868,9 +9881,9 @@ const I18N = {
     tele_ready: "SYSTÈME PRÊT",
     tele_engine: "MOTEUR",
     tele_calib: "CALIBRATION",
-    quality_warning: "Analyse réalisée. Quelques pistes d'amélioration pour une meilleure précision.",
-    quality_tips: "Conseils pour vos prochaines photos",
-    quality_poor:    "Analyse réalisée. Voici comment améliorer la prochaine prise de vue.",
+    quality_warning: "Améliorations possibles",
+    quality_tips: "Conseils photo",
+    quality_poor:    "Photo dégradée",
     quality_issues_title: "Défauts détectés",
     quality_recs_title: "Pour la prochaine prise de vue",
     quality_no_issues: "Aucun défaut critique détecté",
@@ -10278,9 +10291,9 @@ const I18N = {
     tele_ready: "SYSTEM READY",
     tele_engine: "ENGINE",
     tele_calib: "CALIBRATION",
-    quality_warning: "Analysis complete. A few improvements possible for better precision.",
-    quality_tips: "Tips for your next photos",
-    quality_poor:    "Analysis complete. Here is how to improve the next capture.",
+    quality_warning: "Improvements possible",
+    quality_tips: "Photo tips",
+    quality_poor:    "Photo degraded",
     quality_issues_title: "Detected issues",
     quality_recs_title: "For the next photo",
     quality_no_issues: "No critical issue detected",
@@ -10754,8 +10767,8 @@ const I18N = {
     tele_ready: "SISTEMA LISTO",
     tele_engine: "MOTOR",
     tele_calib: "CALIBRACIÓN",
-    quality_warning: "Análisis realizado. Algunas mejoras posibles para mayor precisión.",
-    quality_tips: "Consejos para sus próximas fotos",
+    quality_warning: "Mejoras posibles",
+    quality_tips: "Consejos foto",
     loader_tip_eyebrow: "¿Sabía que?",
     quality_poor:    "Análisis realizado. Así puede mejorar la próxima captura.",
     quality_issues_title: "Defectos detectados",
@@ -11164,8 +11177,8 @@ const I18N = {
     tele_ready: "SYSTEM BEREIT",
     tele_engine: "ENGINE",
     tele_calib: "KALIBRIERUNG",
-    quality_warning: "Analyse abgeschlossen. Einige Verbesserungen für mehr Präzision möglich.",
-    quality_tips: "Tipps für Ihre nächsten Fotos",
+    quality_warning: "Verbesserungen möglich",
+    quality_tips: "Foto-Tipps",
     loader_tip_eyebrow: "Wussten Sie?",
     quality_poor:    "Analyse abgeschlossen. So verbessern Sie die nächste Aufnahme.",
     quality_issues_title: "Erkannte Mängel",
@@ -19181,17 +19194,31 @@ const Annotator = (() => {
     const q = res && res.quality;             /* heuristique locale */
     const ai = res && res.image_quality;      /* IA Claude */
 
-    /* Défauts détectés : warning IA + AI usable=false uniquement
-       (l'heuristique locale est trop sensible sur photos UV — ignorée pour le verdict) */
+    /* V66 — REFONTE ROBUSTE :
+       1. On collecte d'abord ce qu'on AURAIT à afficher (Section 1 + 2).
+       2. Si les DEUX sections sont vides → banner masqué point.
+       3. Sinon → banner affiché, sections individuellement masquées si vides.
+       Plus de cas "banner visible avec sections vides" qui était signalé. */
+
     const aiWarning = (ai && ai.warning && ai.warning.trim()) ? ai.warning.trim() : '';
     const aiNotUsable = ai && ai.usable === false;
     const aiLimitations = (ai && Array.isArray(ai.limitations)) ? ai.limitations.filter(s => s && s.trim()) : [];
 
-    /* V65 — On pré-calcule les recos valides AVANT le verdict d'affichage.
-       Si aucune reco ne passe le filtre verbe-impératif, on n'a RIEN à
-       montrer à l'utilisateur → banner totalement masqué (plus de
-       "Aspects mineurs à améliorer" + "Photo de bonne qualité. Aucune
-       recommandation spécifique" qui ne sert à rien). */
+    /* Section 1 — Défauts (collectés) */
+    const issuesItems = [];
+    const seen = new Set();
+    for (const w of (q && q.warnings || [])) {
+      if (w.severity !== 'high') continue;
+      if (seen.has(w.key)) continue;
+      seen.add(w.key);
+      const txt = t(w.key);
+      if (txt && txt.trim()) issuesItems.push(txt.trim());
+    }
+    if (aiWarning && aiWarning.length >= 8 && !seen.has(aiWarning)) {
+      issuesItems.push(aiWarning);
+    }
+
+    /* Section 2 — Recommandations photo (filtre verbe impératif) */
     const ACCEPTED_VERBS = new Set([
       'approchez', 'reculez', 'éloignez', 'rapprochez',
       'éteignez', 'allumez', 'fermez', 'ouvrez',
@@ -19212,51 +19239,43 @@ const Annotator = (() => {
       'verifique', 'evite', 'utilice',
       'halten', 'richten', 'meiden', 'pruefen', 'verwenden', 'schalten', 'schließen', 'öffnen',
     ]);
-    const _validRecs = [];
+    const recsItems = [];
     for (const rec of aiLimitations) {
       const m = rec.match(/^(\S+?)(\s.+)$/);
       if (!m) continue;
       const firstWord = m[1].toLowerCase().replace(/[.,;:!?]+$/, '').replace(/[«»"']/g, '');
       if (ACCEPTED_VERBS.has(firstWord)) {
-        _validRecs.push({ verb: m[1], rest: m[2] });
+        recsItems.push({ verb: m[1], rest: m[2] });
       }
     }
 
-    /* ⚡ LOGIQUE ADAPTATIVE V65 — 4 états distincts :
-       1. Image NON UTILISABLE → "quality_poor" (rouge)
-       2. Warning IA substantiel → "quality_warning" (orange)
-       3. validRecs.length > 0 → "quality_tips" (info, recs uniquement)
-       4. Tout le reste → BANNER MASQUÉ (aucune alerte intempestive) */
+    /* GATE — banner totalement masqué si rien d'utile */
     const isPoor = aiNotUsable;
-    const hasRealIssue = isPoor || (aiWarning && aiWarning.length >= 8);
-    const tipsOnly = !hasRealIssue && _validRecs.length > 0;
-
-    /* Si aucun des 3 états n'est actif → banner MASQUÉ (image OK) */
-    if (!isPoor && !hasRealIssue && !tipsOnly) {
+    const hasIssues = issuesItems.length > 0;
+    const hasRecs = recsItems.length > 0;
+    if (!isPoor && !hasIssues && !hasRecs) {
       banner.hidden = true;
       return;
     }
 
     banner.hidden = false;
     banner.classList.toggle('poor', isPoor);
-    banner.classList.toggle('tips-only', tipsOnly);
+    banner.classList.toggle('tips-only', !hasIssues && hasRecs);
 
-    /* Titre conforme à l'état réel */
+    /* Titre minimal selon état (strings courts V66) */
     const titleEl = banner.querySelector('.quality-panel-title');
     if (titleEl) {
       if (isPoor) titleEl.textContent = t('quality_poor');
-      else if (hasRealIssue) titleEl.textContent = t('quality_warning');
-      else titleEl.textContent = t('quality_tips');  /* tipsOnly */
+      else if (hasIssues) titleEl.textContent = t('quality_warning');
+      else titleEl.textContent = t('quality_tips');
     }
 
-    /* Score qualité — masqué entièrement si aucun score numérique disponible
-       (évite l'affichage trompeur "—/100" qui ressemble à un nombre négatif) */
+    /* Score qualité — masqué si pas de score numérique */
     const scoreEl = $('qualityBannerScore');
     if (scoreEl) {
       const hasScore = q && typeof q.score === 'number';
       if (hasScore) {
         scoreEl.style.display = '';
-        /* Reconstruit proprement : nombre + /100 */
         while (scoreEl.firstChild) scoreEl.removeChild(scoreEl.firstChild);
         scoreEl.appendChild(document.createTextNode(String(q.score)));
         const unit = document.createElement('span');
@@ -19267,47 +19286,31 @@ const Annotator = (() => {
       }
     }
 
-    /* Section 1 — Défauts détectés. V65 : MASQUÉE en mode tipsOnly
-       (sinon affiche "Aspects mineurs à améliorer" alors qu'il n'y a
-       pas de vrai défaut → contradiction visuelle avec la section recs). */
+    /* Section 1 — Défauts détectés (rendu OU masquage selon contenu) */
     const issuesList = $('qualityIssuesList');
     const issuesSection = issuesList ? issuesList.closest('.quality-section') : null;
-    if (issuesSection) issuesSection.hidden = tipsOnly;
-    if (issuesList && !tipsOnly) {
-      while (issuesList.firstChild) issuesList.removeChild(issuesList.firstChild);
-      const seen = new Set();
-      const items = [];
-      /* Heuristique : warnings haute sévérité */
-      for (const w of (q && q.warnings || [])) {
-        if (w.severity !== 'high') continue;
-        if (seen.has(w.key)) continue;
-        seen.add(w.key);
-        items.push(t(w.key));
-      }
-      /* IA warning text */
-      if (aiWarning && !seen.has(aiWarning)) {
-        items.push(aiWarning);
-      }
-      for (const txt of items) {
-        const li = document.createElement('li');
-        li.textContent = txt;
-        issuesList.appendChild(li);
-      }
-      if (!items.length) {
-        const li = document.createElement('li');
-        li.className = 'quality-list-empty';
-        li.textContent = t('quality_no_issues');
-        issuesList.appendChild(li);
+    if (issuesSection) {
+      if (hasIssues) {
+        issuesSection.hidden = false;
+        while (issuesList.firstChild) issuesList.removeChild(issuesList.firstChild);
+        for (const txt of issuesItems) {
+          const li = document.createElement('li');
+          li.textContent = txt;
+          issuesList.appendChild(li);
+        }
+      } else {
+        issuesSection.hidden = true;
       }
     }
 
-    /* Section 2 — Recommandations photo (reuse _validRecs pré-calculé). */
+    /* Section 2 — Recommandations (rendu OU masquage selon contenu) */
     const recsList = $('qualityRecsList');
-    if (recsList) {
-      while (recsList.firstChild) recsList.removeChild(recsList.firstChild);
-
-      if (_validRecs.length) {
-        for (const { verb, rest } of _validRecs) {
+    const recsSection = recsList ? recsList.closest('.quality-section') : null;
+    if (recsSection) {
+      if (hasRecs) {
+        recsSection.hidden = false;
+        while (recsList.firstChild) recsList.removeChild(recsList.firstChild);
+        for (const { verb, rest } of recsItems) {
           const li = document.createElement('li');
           const strong = document.createElement('strong');
           strong.textContent = verb;
@@ -19316,10 +19319,7 @@ const Annotator = (() => {
           recsList.appendChild(li);
         }
       } else {
-        const li = document.createElement('li');
-        li.className = 'quality-list-empty';
-        li.textContent = t('quality_no_recommendations');
-        recsList.appendChild(li);
+        recsSection.hidden = true;
       }
     }
   }
@@ -20825,7 +20825,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v65</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v66</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
