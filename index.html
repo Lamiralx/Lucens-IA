@@ -16798,20 +16798,29 @@ const Annotator = (() => {
       /* Non bloquant */
     }
 
-    /* 3b. Clipping fort relativisé à la luminance moyenne.
-       Une photo UV-A typique est sombre (meanLum ~30-80) — quelques pixels
-       cramés peuvent venir d'une LED, écran ou réflexion locale, sans que
-       l'image soit HDR. On bloque seulement si :
-       - Photo bien éclairée (meanLum > 100) ET clipping > 20%
-       - Photo mid (meanLum 60-100) ET clipping > 35%
-       - Photo sombre (meanLum < 60) ET clipping > 50% */
-    let clipThreshold = 0.20;
-    if (meanLum < 60) clipThreshold = 0.50;
-    else if (meanLum < 100) clipThreshold = 0.35;
-    if (clipRatio > clipThreshold && meanLum > 60 && meanLum < 200) {
-      issues.push("Photo avec sur-exposition étendue (probablement HDR ou flash trop fort). Désactivez le mode HDR de votre appareil et reprenez la photo sans flash.");
+    /* 3b. V60 — Clipping en 2 niveaux pour ne plus bloquer abusivement.
+       Avant V60 : tout dépassement du seuil bloquait → l'utilisateur ne pouvait
+       PAS tester de cartographie sur certains environnements (inox brillant,
+       éclairage LED zones logistiques, scènes mixtes UV+ambiant).
+       Maintenant :
+       - clipRatio > 60% (catastrophique) : BLOQUE — image vraiment inexploitable.
+       - clipRatio > seuil contextuel (20-50%) : WARN non-bloquant, laisse passer
+         à Claude qui décidera. Le warning remonte dans image_quality.
+       Seuils contextuels par luminance :
+       - Photo bien éclairée (meanLum > 100) : seuil 30%
+       - Photo mid (60-100) : seuil 40%
+       - Photo sombre (< 60) : seuil 55% */
+    if (clipRatio > 0.60 && meanLum > 60 && meanLum < 200) {
+      issues.push("Photo majoritairement sur-exposée (>60% pixels cramés). Reprenez sans flash et sans HDR.");
       canProceed = false;
       return { canProceed, issues };
+    }
+    let clipThreshold = 0.30;
+    if (meanLum < 60) clipThreshold = 0.55;
+    else if (meanLum < 100) clipThreshold = 0.40;
+    if (clipRatio > clipThreshold && meanLum > 60 && meanLum < 200) {
+      issues.push("Zones sur-exposées détectées (HDR ou flash probable). L'analyse peut être moins précise — essayez de reprendre sans flash si possible.");
+      /* Non bloquant — Claude voit l'image et fait au mieux */
     }
 
     /* 3c. Détection de flou — NON BLOQUANT depuis 2026-05-23.
@@ -20694,7 +20703,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v59</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v60</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
