@@ -2153,7 +2153,11 @@ input[type="file"] { display: none; }
 /* ─── QUALITY BANNER (Phase 1.3) ─── */
 /* ─── PANNEAU QUALITÉ — registre uniformisé, pas de jaune agressif ─── */
 .quality-panel {
-  display: block;
+  /* V90 — Override final : V72 mettait hidden=true mais le CSS display:block
+     override l'attribut HTML [hidden] (qui vaut display:none par défaut).
+     Forçage avec !important pour disparaître définitivement quelle que
+     soit l'origine de la classe. */
+  display: none !important;
   margin-bottom: var(--space-6);
   background: var(--surface-low);
   border: 1px solid var(--border);
@@ -9217,7 +9221,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v89</span>
+              <span class="home-spec-version" aria-hidden="true">v90</span>
             </div>
           </div>
 
@@ -9776,7 +9780,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
     <div class="mo-header">
       <div class="mo-header-top">
         <span class="mo-eyebrow" data-i18n="mo_eyebrow">Contexte du cliché</span>
-        <button type="button" class="mo-close" id="moCloseBtn" aria-label="Fermer">
+        <button type="button" class="mo-close" id="moCloseBtn" data-i18n-aria-label="mo_close_aria" aria-label="Fermer">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
@@ -9825,7 +9829,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
     <div class="mo-noask-row">
       <label class="mo-noask-label">
         <input type="checkbox" id="moNoAskCheckbox">
-        <span>Ne plus me demander</span>
+        <span data-i18n="mo_no_ask">Ne plus me demander</span>
       </label>
     </div>
   </div>
@@ -10352,6 +10356,8 @@ const I18N = {
     mo_incident_hint:          "Investigation ciblée après un événement.",
     mo_skip:                   "Sans précision",
     mo_submit:                 "Lancer l'analyse",
+    mo_no_ask:                 "Ne plus me demander",
+    mo_close_aria:             "Fermer",
     ctx_skip:                  "Plus tard",
     ctx_submit:                "Enregistrer",
     refusal_title:             "Cette photo n'est pas analysable",
@@ -10838,6 +10844,8 @@ const I18N = {
     mo_incident_hint:          "Targeted investigation after an event.",
     mo_skip:                   "Skip",
     mo_submit:                 "Run analysis",
+    mo_no_ask:                 "Don't ask again",
+    mo_close_aria:             "Close",
     moment_after:              "After cleaning",
     moment_routine:            "Routine check",
     moment_incident:           "Following incident",
@@ -11005,6 +11013,8 @@ const I18N = {
     mo_incident_hint:          "Investigación dirigida después de un evento.",
     mo_skip:                   "Sin precisar",
     mo_submit:                 "Iniciar análisis",
+    mo_no_ask:                 "No volver a preguntar",
+    mo_close_aria:             "Cerrar",
     upload_h1: "Vea lo que el ojo no ve",
     upload_lead: "Riesgos de contaminación revelados por UV-A 365 nm + Lucens IA",
     intake_or: "o",
@@ -11494,6 +11504,8 @@ const I18N = {
     mo_incident_hint:          "Gezielte Untersuchung nach einem Ereignis.",
     mo_skip:                   "Keine Angabe",
     mo_submit:                 "Analyse starten",
+    mo_no_ask:                 "Nicht mehr fragen",
+    mo_close_aria:             "Schließen",
     upload_h1: "Sehen Sie, was das Auge nicht sieht",
     upload_lead: "Kontaminationsrisiken aufgedeckt durch UV-A 365 nm + Lucens IA",
     intake_or: "oder",
