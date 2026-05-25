@@ -9169,7 +9169,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v83</span>
+              <span class="home-spec-version" aria-hidden="true">v84</span>
             </div>
           </div>
 
@@ -23305,27 +23305,36 @@ const Annotator = (() => {
     modal.classList.remove('lv-hidden');
     modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('lv-open');
-    /* V81 — Filet i18n ULTRA-DÉFENSIF : on ne fait plus confiance au
-       data-i18n, on force EXPLICITEMENT le texte de chaque élément du
-       Live View qui doit être traduit. Si t() échoue ou si applyLang
-       n'a pas couru pour une raison X, ce code garantit la traduction. */
+    /* V81 — Filet i18n ULTRA-DÉFENSIF.
+       V84 — Ajoute affichage visuel de la langue détectée dans le viseur
+       pour diagnostic instantané sur PWA mobile (pas de DevTools). */
     try {
       if (typeof applyLang === 'function') applyLang();
-      /* Force explicite des éléments critiques */
       if (typeof t === 'function') {
-        const setIfExists = (id, key, attr) => {
+        const setIfExists = (id, key) => {
           const el = document.getElementById(id);
-          if (!el) return;
-          if (attr) el.setAttribute(attr, t(key));
-          else el.textContent = t(key);
+          if (el) el.textContent = t(key);
         };
         setIfExists('lvStatusLabel', 'lv_status_idle');
         setIfExists('lvCardHint', 'lv_card_hint_default');
         setIfExists('lvCalStatus', 'lv_cal_status_idle');
-        /* Diag : log pour console DevTools */
-        console.log('[LiveView] i18n forcé · currentLang =',
-          (typeof currentLang === 'string') ? currentLang : 'undefined',
-          '· lv_status_idle =', t('lv_status_idle'));
+        /* V84 — Diag VISUEL : crée/met à jour une pastille discrète en
+           haut à gauche montrant currentLang ET la valeur attendue.
+           Si user voit [ES → "Apunte"] mais texte FR au-dessus, alors
+           le bug est ailleurs (setCrosshairState override).
+           Si user voit [FR → "Visez"], alors lang pas changée côté UI. */
+        let diag = document.getElementById('lvLangDiag');
+        if (!diag) {
+          diag = document.createElement('div');
+          diag.id = 'lvLangDiag';
+          diag.style.cssText = 'position:absolute;top:60px;left:8px;z-index:9999;background:rgba(0,0,0,0.7);color:#0F0;padding:3px 6px;font:9px monospace;border-radius:3px;pointer-events:none;';
+          modal.appendChild(diag);
+        }
+        const lang = (typeof currentLang === 'string') ? currentLang : '?';
+        const expected = t('lv_status_idle');
+        diag.textContent = `[lang=${lang}] expected="${expected}"`;
+        console.log('[LiveView V84 DIAG] currentLang =', lang, '· t(lv_status_idle) =', expected,
+                    '· localStorage.uvLang =', localStorage.getItem('uvLang'));
       }
     } catch (e) { console.warn('[LiveView] i18n refresh on open failed:', e?.message || e); }
     /* Charge le profil de calibration sauvegardé (s'il existe) */
