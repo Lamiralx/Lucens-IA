@@ -2137,11 +2137,12 @@ input[type="file"] { display: none; }
 .quality-panel.poor {
   border-left-color: var(--risk-hi);
 }
-/* V66 — Banner slim : padding réduit, single-line title (ellipsis si overflow),
-   chevron forcé à droite via auto-fill grid. */
+/* V68 — Banner slim : passage de GRID → FLEX pour garantir le chevron
+   TOUJOURS sur la droite. Le grid 4-col bugait quand le score était hidden
+   (chevron repoussé en ligne 2). Flex + margin-left:auto = chevron right
+   inconditionnel. */
 .quality-panel-header {
-  display: grid;
-  grid-template-columns: auto 1fr auto auto;
+  display: flex;
   align-items: center;
   gap: 12px;
   padding: 10px 14px;
@@ -2153,12 +2154,16 @@ input[type="file"] { display: none; }
   font: inherit; color: inherit;
   transition: background var(--motion-fast) var(--ease-out);
 }
+.quality-panel-icon { flex-shrink: 0; }
+.quality-panel-titles { flex: 1; min-width: 0; }
 .quality-panel-title {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.quality-panel-cta { display: none !important; }   /* V66 : CTA enlevé, le chevron suffit */
+.quality-panel-cta { display: none !important; }
+.quality-panel-score { flex-shrink: 0; }
+.quality-panel-chevron { flex-shrink: 0; margin-left: auto; }
 .quality-panel-header:hover { background: var(--hairline); }
 .quality-panel.collapsed .quality-panel-grid { display: none; }
 .quality-panel-chevron {
@@ -7302,14 +7307,9 @@ body.has-sw-update .home {
    marqué, anti-zoom iOS via font-size ≥ 16px). */
 .results-zone { display: flex; flex-direction: column; gap: 8px; margin: 18px 0; }
 .results-zone-label {
+  /* V68 — Icône ✎ supprimée (retour utilisateur : pas reconnaissable, distrait). */
   font-family: var(--font-mono); font-size: 11.5px; font-weight: 700;
   letter-spacing: 0.10em; text-transform: uppercase; color: var(--ink-secondary);
-  display: inline-flex; align-items: center; gap: 6px;
-}
-.results-zone-label::before {
-  content: '✎';
-  font-size: 13px;
-  color: var(--accent);
 }
 .results-zone-input {
   width: 100%; padding: 14px 16px;
@@ -7340,18 +7340,21 @@ body.has-sw-update .home {
   min-width: 0;
 }
 .results-zone-save {
+  /* V68 — Bouton parfaitement intégré : même hauteur que l'input, mêmes
+     coins, alignement bord à bord visuel. */
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 0 14px;
-  height: auto;
+  padding: 0 16px;
+  align-self: stretch;          /* match input height automatique */
   background: var(--accent);
   color: #fff;
   border: 1.5px solid var(--accent);
   border-radius: var(--radius-md);
   font-family: var(--font-display);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: -0.003em;
   cursor: pointer;
@@ -10256,10 +10259,10 @@ const I18N = {
     decision_confirm: "Confirmation requise",
     decision_limit: "Limite juridico-scientifique",
     tbl_category:     "Catégorie",
-    tbl_zones:        "Zones",
-    tbl_area:         "Surface",
-    tbl_intensity:    "Intensité",
-    tbl_probability:  "Probabilité",
+    tbl_zones:        "Nombre",
+    tbl_area:         "% surface",
+    tbl_intensity:    "Signal",
+    tbl_probability:  "Identification",
     int_faible:       "Faible",
     int_moyenne:      "Moyenne",
     int_forte:        "Forte",
@@ -10666,10 +10669,10 @@ const I18N = {
     decision_confirm: "Required confirmation",
     decision_limit: "Legal & scientific limit",
     tbl_category:     "Category",
-    tbl_zones:        "Zones",
-    tbl_area:         "Area",
-    tbl_intensity:    "Intensity",
-    tbl_probability:  "Probability",
+    tbl_zones:        "Count",
+    tbl_area:         "% area",
+    tbl_intensity:    "Signal",
+    tbl_probability:  "Identification",
     int_faible:       "Low",
     int_moyenne:      "Medium",
     int_forte:        "High",
@@ -11076,10 +11079,10 @@ const I18N = {
     decision_confirm: "Confirmación requerida",
     decision_limit: "Límite jurídico-científico",
     tbl_category:     "Categoría",
-    tbl_zones:        "Zonas",
-    tbl_area:         "Superficie",
-    tbl_intensity:    "Intensidad",
-    tbl_probability:  "Probabilidad",
+    tbl_zones:        "Cantidad",
+    tbl_area:         "% área",
+    tbl_intensity:    "Señal",
+    tbl_probability:  "Identificación",
     int_faible:       "Baja",
     int_moyenne:      "Media",
     int_forte:        "Alta",
@@ -11486,10 +11489,10 @@ const I18N = {
     decision_confirm: "Erforderliche Bestätigung",
     decision_limit: "Rechtlich-wissenschaftliche Grenze",
     tbl_category:     "Kategorie",
-    tbl_zones:        "Zonen",
-    tbl_area:         "Fläche",
-    tbl_intensity:    "Intensität",
-    tbl_probability:  "Wahrscheinlichkeit",
+    tbl_zones:        "Anzahl",
+    tbl_area:         "% Fläche",
+    tbl_intensity:    "Signal",
+    tbl_probability:  "Identifikation",
     int_faible:       "Gering",
     int_moyenne:      "Mittel",
     int_forte:        "Hoch",
@@ -20507,9 +20510,18 @@ const Annotator = (() => {
       if (obsCard) obsCard.classList.remove('visible');
     } else {
       /* État 2 — Bandeau fiabilité limitée si score < 30 */
+      /* V68 — La "Fiabilité d'analyse limitée" ne doit apparaître que si
+         l'image est VRAIMENT problématique. Avant : montrait dès aScore < 30
+         → contradiction avec le qualityBanner qui dit "photo OK".
+         Maintenant : exige (aScore < 30) ET (image_quality.usable=false OU
+         warning IA substantiel). Sinon → masquée. */
       const aScore = typeof res.analyzability_score === 'number' ? res.analyzability_score : null;
-      if (aScore !== null && aScore < 30 && warningCard && warningText) {
-        warningText.textContent = ` (${aScore}/100). ${res.reason_not_analyzable || 'Photo de qualité limite, certaines couches de l\'analyse sont spéculatives.'}`;
+      const iq = res.image_quality;
+      const iqWarn = (iq && iq.warning && iq.warning.trim()) ? iq.warning.trim() : '';
+      const iqNotUsable = iq && iq.usable === false;
+      const realQualityIssue = iqNotUsable || (iqWarn && iqWarn.length >= 8);
+      if (aScore !== null && aScore < 30 && realQualityIssue && warningCard && warningText) {
+        warningText.textContent = ` (${aScore}/100). ${res.reason_not_analyzable || iqWarn || 'Photo de qualité limite, certaines couches de l\'analyse sont spéculatives.'}`;
         warningCard.classList.add('visible');
       }
 
@@ -20825,7 +20837,7 @@ const Annotator = (() => {
 
     <!-- V30 — Badge version visible : si tu ne vois pas "v30+" c'est que
          ton SW sert encore une vieille version → vide cache + recharge. -->
-    <div class="lv-version-badge" aria-hidden="true">Lucens v67</div>
+    <div class="lv-version-badge" aria-hidden="true">Lucens v68</div>
 
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
