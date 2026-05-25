@@ -9161,7 +9161,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v75</span>
+              <span class="home-spec-version" aria-hidden="true">v76</span>
             </div>
           </div>
 
@@ -9956,6 +9956,23 @@ const I18N = {
     inst_alt_gallery:  "Importer une image",
     lv_back:           "Retour",
     /* V74 — Live View i18n complet */
+    /* V76 — Codepad feedback (Live View) */
+    lv_codepad_fb_loaded:     "Code actuel chargé · modifiez ou validez.",
+    lv_codepad_fb_invalid:    "Code invalide. 6 à 12 caractères (lettres et chiffres).",
+    lv_codepad_fb_success:    "Carte authentifiée ✓ · serial {n}",
+    /* V76 — Card mode hints + Ready check reasons (Live View) */
+    lv_card_hint_default:     "Placez la carte Lucens dans le cadre",
+    lv_card_hint_present:     "Présentez la carte Lucens dans le cadre",
+    lv_card_hint_visible:     "Carte visible · scan QR ou bouton « Code » ↓",
+    lv_card_hint_authok:      "Carte authentifiée · présentez-la dans le cadre",
+    lv_card_hint_stable:      "maintenez immobile…",
+    lv_card_hint_stabilize:   "stabilisez le téléphone",
+    lv_tag_qr_ok:             "QR Lucens ✓",
+    lv_tag_card_ok:           "Carte Lucens ✓",
+    lv_ready_blurry:          "Image floue",
+    lv_ready_shaking:         "Téléphone qui bouge",
+    lv_ready_too_dark:        "Trop sombre",
+    lv_ready_overexposed:     "Sur-exposé",
     /* V75 — Toasts Live View (calibration + erreurs) */
     lv_toast_camera_error:    "Impossible d'accéder à la caméra",
     lv_toast_capture_failed:  "Échec capture",
@@ -10417,6 +10434,23 @@ const I18N = {
     inst_alt_gallery:  "Import an image",
     lv_back:           "Back",
     /* V74 — Live View i18n complet (EN) */
+    /* V76 — Codepad feedback (UK English) */
+    lv_codepad_fb_loaded:     "Current code loaded · edit or confirm.",
+    lv_codepad_fb_invalid:    "Invalid code. 6 to 12 characters (letters and numbers).",
+    lv_codepad_fb_success:    "Card authenticated ✓ · serial {n}",
+    /* V76 — Card mode hints + Ready check reasons (UK English) */
+    lv_card_hint_default:     "Place the Lucens card within the frame",
+    lv_card_hint_present:     "Show the Lucens card in the frame",
+    lv_card_hint_visible:     "Card visible · scan QR or tap “Code” ↓",
+    lv_card_hint_authok:      "Card authenticated · place it within the frame",
+    lv_card_hint_stable:      "hold steady…",
+    lv_card_hint_stabilize:   "steady the phone",
+    lv_tag_qr_ok:             "Lucens QR ✓",
+    lv_tag_card_ok:           "Lucens card ✓",
+    lv_ready_blurry:          "Image blurry",
+    lv_ready_shaking:         "Phone shaking",
+    lv_ready_too_dark:        "Too dark",
+    lv_ready_overexposed:     "Overexposed",
     /* V75 — Live View toasts (UK English) */
     lv_toast_camera_error:    "Unable to access the camera",
     lv_toast_capture_failed:  "Capture failed",
@@ -10944,6 +10978,23 @@ const I18N = {
     inst_alt_gallery:  "Importar una imagen",
     lv_back:           "Atrás",
     /* V74 — Live View i18n complet (ES) */
+    /* V76 — Codepad feedback (ES) */
+    lv_codepad_fb_loaded:     "Código actual cargado · modifique o confirme.",
+    lv_codepad_fb_invalid:    "Código no válido. 6 a 12 caracteres (letras y números).",
+    lv_codepad_fb_success:    "Tarjeta autenticada ✓ · serie {n}",
+    /* V76 — Card mode hints + Ready check reasons (ES) */
+    lv_card_hint_default:     "Coloque la tarjeta Lucens en el marco",
+    lv_card_hint_present:     "Presente la tarjeta Lucens en el marco",
+    lv_card_hint_visible:     "Tarjeta visible · escanee QR o pulse «Código» ↓",
+    lv_card_hint_authok:      "Tarjeta autenticada · colóquela en el marco",
+    lv_card_hint_stable:      "mantenga inmóvil…",
+    lv_card_hint_stabilize:   "estabilice el teléfono",
+    lv_tag_qr_ok:             "QR Lucens ✓",
+    lv_tag_card_ok:           "Tarjeta Lucens ✓",
+    lv_ready_blurry:          "Imagen borrosa",
+    lv_ready_shaking:         "Teléfono inestable",
+    lv_ready_too_dark:        "Demasiado oscuro",
+    lv_ready_overexposed:     "Sobreexpuesto",
     /* V75 — Live View toasts (ES) */
     lv_toast_camera_error:    "No se puede acceder a la cámara",
     lv_toast_capture_failed:  "Captura fallida",
@@ -11405,6 +11456,23 @@ const I18N = {
     inst_alt_gallery:  "Bild importieren",
     lv_back:           "Zurück",
     /* V74 — Live View i18n complet (DE) */
+    /* V76 — Codepad feedback (DE) */
+    lv_codepad_fb_loaded:     "Aktueller Code geladen · bearbeiten oder bestätigen.",
+    lv_codepad_fb_invalid:    "Ungültiger Code. 6 bis 12 Zeichen (Buchstaben und Zahlen).",
+    lv_codepad_fb_success:    "Karte authentifiziert ✓ · Seriennummer {n}",
+    /* V76 — Card mode hints + Ready check reasons (DE) */
+    lv_card_hint_default:     "Lucens-Karte in den Rahmen legen",
+    lv_card_hint_present:     "Lucens-Karte im Rahmen zeigen",
+    lv_card_hint_visible:     "Karte sichtbar · QR scannen oder „Code" tippen ↓",
+    lv_card_hint_authok:      "Karte authentifiziert · in den Rahmen legen",
+    lv_card_hint_stable:      "ruhig halten…",
+    lv_card_hint_stabilize:   "Telefon ruhig halten",
+    lv_tag_qr_ok:             "Lucens QR ✓",
+    lv_tag_card_ok:           "Lucens-Karte ✓",
+    lv_ready_blurry:          "Bild unscharf",
+    lv_ready_shaking:         "Telefon wackelt",
+    lv_ready_too_dark:        "Zu dunkel",
+    lv_ready_overexposed:     "Überbelichtet",
     /* V75 — Live View toasts (DE) */
     lv_toast_camera_error:    "Zugriff auf die Kamera nicht möglich",
     lv_toast_capture_failed:  "Aufnahme fehlgeschlagen",
@@ -23011,12 +23079,14 @@ const Annotator = (() => {
     /* Évaluation des 3 critères */
     const reasons = [];
     let level = 'green';
-    if (sharp < READY_THRESHOLDS.sharpMin) { reasons.push('Image floue'); level = 'red'; }
+    /* V76 — Reasons i18n */
+    const tr = (k, fb) => (typeof t === 'function' ? t(k) : fb) || fb;
+    if (sharp < READY_THRESHOLDS.sharpMin) { reasons.push(tr('lv_ready_blurry', 'Image floue')); level = 'red'; }
     else if (sharp < READY_THRESHOLDS.sharpAmber && level === 'green') level = 'amber';
-    if (stab > READY_THRESHOLDS.stabilityMax) { reasons.push('Téléphone qui bouge'); level = 'red'; }
+    if (stab > READY_THRESHOLDS.stabilityMax) { reasons.push(tr('lv_ready_shaking', 'Téléphone qui bouge')); level = 'red'; }
     else if (stab > READY_THRESHOLDS.stabilityAmber && level === 'green') level = 'amber';
-    if (lum < READY_THRESHOLDS.lumMin) { reasons.push('Trop sombre'); level = 'red'; }
-    if (lum > READY_THRESHOLDS.lumMax) { reasons.push('Sur-exposé'); level = 'red'; }
+    if (lum < READY_THRESHOLDS.lumMin) { reasons.push(tr('lv_ready_too_dark', 'Trop sombre')); level = 'red'; }
+    if (lum > READY_THRESHOLDS.lumMax) { reasons.push(tr('lv_ready_overexposed', 'Sur-exposé')); level = 'red'; }
 
     lvReadyState.status = level;
     lvReadyState.reasons = reasons;
@@ -23406,13 +23476,14 @@ const Annotator = (() => {
     if (!authMethod) {
       cardSteady = 0;
       if (guide) guide.classList.remove('is-locking');
-      /* Hint adaptatif selon ce que la caméra voit */
+      /* V76 — Hints i18n adaptatifs selon ce que la caméra voit */
+      const tr = (k, fb) => (typeof t === 'function' ? t(k) : fb) || fb;
       if (cardPreauth && !cardVisible) {
-        setCardHint('Carte authentifiée  ·  présentez-la dans le cadre');
+        setCardHint(tr('lv_card_hint_authok', 'Carte authentifiée · présentez-la dans le cadre'));
       } else if (cardVisible) {
-        setCardHint('Carte visible  ·  scan QR ou bouton « Code » ↓');
+        setCardHint(tr('lv_card_hint_visible', 'Carte visible · scan QR ou bouton « Code » ↓'));
       } else {
-        setCardHint('Présentez la carte Lucens dans le cadre');
+        setCardHint(tr('lv_card_hint_present', 'Présentez la carte Lucens dans le cadre'));
       }
       cardPrev = d;
       return;
@@ -23427,11 +23498,13 @@ const Annotator = (() => {
               + Math.abs(d[i+2] - cardPrev[i+2]);
       }
       const avgDiff = diff / (d.length / 4 * 3);
+      /* V76 — tagOK + hints i18n */
+      const tr2 = (k, fb) => (typeof t === 'function' ? t(k) : fb) || fb;
       if (avgDiff < 5) {
         cardSteady++;
         if (guide) guide.classList.add('is-locking');
-        const tagOK = authMethod === 'qr' ? 'QR Lucens ✓' : 'Carte Lucens ✓';
-        setCardHint(tagOK + '  ·  maintenez immobile…');
+        const tagOK = authMethod === 'qr' ? tr2('lv_tag_qr_ok', 'QR Lucens ✓') : tr2('lv_tag_card_ok', 'Carte Lucens ✓');
+        setCardHint(tagOK + ' · ' + tr2('lv_card_hint_stable', 'maintenez immobile…'));
         if (cardSteady >= 4) {
           cardFiring = true;
           if (guide) guide.classList.remove('is-locking');
@@ -23442,8 +23515,8 @@ const Annotator = (() => {
       } else {
         cardSteady = 0;
         if (guide) guide.classList.remove('is-locking');
-        const tagOK = authMethod === 'qr' ? 'QR Lucens ✓' : 'Carte Lucens ✓';
-        setCardHint(tagOK + '  ·  stabilisez le téléphone');
+        const tagOK = authMethod === 'qr' ? tr2('lv_tag_qr_ok', 'QR Lucens ✓') : tr2('lv_tag_card_ok', 'Carte Lucens ✓');
+        setCardHint(tagOK + ' · ' + tr2('lv_card_hint_stabilize', 'stabilisez le téléphone'));
       }
     }
     cardPrev = d;
@@ -23457,7 +23530,7 @@ const Annotator = (() => {
     $$('lvCardGuide').classList.remove('lv-hidden');
     $$('lvCardGuide').classList.remove('is-locking');
     $$('lvCardBar').classList.remove('lv-hidden');
-    setCardHint('Placez la carte Lucens dans le cadre');
+    setCardHint((typeof t === 'function' ? t('lv_card_hint_default') : 'Placez la carte Lucens dans le cadre'));
     setDrawer(false);
     cardPrev = null; cardSteady = 0; cardFiring = false;
     if (cardAutoTimer) clearInterval(cardAutoTimer);
@@ -23796,7 +23869,7 @@ const Annotator = (() => {
         const existing = LucensCardAuth.getSerial();
         input.value = existing || '';
         input.classList.remove('is-invalid');
-        setFeedback(existing ? 'Code actuel chargé · modifiez ou validez.' : '', '');
+        setFeedback(existing ? (typeof t === 'function' ? t('lv_codepad_fb_loaded') : 'Code actuel chargé · modifiez ou validez.') : '', '');
         /* Focus différé pour laisser le clavier mobile s'ouvrir proprement */
         setTimeout(() => { try { input.focus(); input.select(); } catch {} }, 80);
       }
@@ -23811,12 +23884,12 @@ const Annotator = (() => {
       const code = LucensCardAuth.normalizeCode(raw);
       if (!LucensCardAuth.isValid(code)) {
         if (input) input.classList.add('is-invalid');
-        setFeedback('Code invalide. 6 à 12 caractères (lettres et chiffres).', 'error');
+        setFeedback((typeof t === 'function' ? t('lv_codepad_fb_invalid') : 'Code invalide. 6 à 12 caractères (lettres et chiffres).'), 'error');
         return;
       }
       LucensCardAuth.write(code, 'manual');
       if (input) input.classList.remove('is-invalid');
-      setFeedback('Carte authentifiée ✓  ·  serial ' + code, 'success');
+      setFeedback((typeof t === 'function' ? t('lv_codepad_fb_success') : 'Carte authentifiée ✓ · serial {n}').replace('{n}', code), 'success');
       setTimeout(() => {
         close();
         lvToast((typeof t === 'function' ? t('lv_toast_card_authok') : 'Carte authentifiée · présentez-la dans le cadre'));
