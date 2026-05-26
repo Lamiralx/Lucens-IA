@@ -73,6 +73,21 @@ if ('serviceWorker' in navigator) {
     const tpl = document.getElementById('lucensSwUpdateTpl');
     if (!tpl || !tpl.content) return;
     const node = tpl.content.firstElementChild.cloneNode(true);
+    /* V100 — Force i18n sur tous les éléments data-i18n du node cloné.
+       Avant V100 : le template avait les strings hardcodés FR donc
+       apparaissait en français même en EN/ES/DE. Maintenant : les
+       data-i18n sont présents et on force la traduction au clone. */
+    try {
+      if (typeof t === 'function') {
+        node.querySelectorAll('[data-i18n]').forEach(el => {
+          const k = el.getAttribute('data-i18n');
+          el.textContent = t(k);
+        });
+        node.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
+          el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria-label')));
+        });
+      }
+    } catch (e) { /* silencieux : si t() échoue on garde le texte par défaut FR */ }
     /* Wire actions */
     node.querySelector('[data-sw-action="reload"]').addEventListener('click', () => {
       try { localStorage.removeItem('lucens_sw_update_dismissed'); } catch {}
@@ -9291,7 +9306,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v99</span>
+              <span class="home-spec-version" aria-hidden="true">v100</span>
             </div>
           </div>
 
@@ -10067,6 +10082,12 @@ const I18N = {
     offline_only:         "Hors-ligne · vos analyses partiront au retour du réseau",
     offline_with_queue:   "Hors-ligne · {n} analyse(s) en attente",
     syncing_queue:        "Synchronisation · {n} analyse(s) en cours",
+    sw_update_aria:       "Nouvelle version de Lucens IA disponible",
+    sw_update_close_aria: "Fermer la notification de mise à jour",
+    sw_update_eyebrow:    "Lucens IA",
+    sw_update_title:      "Nouvelle version disponible",
+    sw_update_desc:       "Rechargez pour profiter des dernières améliorations et correctifs.",
+    sw_update_reload:     "Recharger maintenant",
     loader_step1: "Réception de votre photo",
     loader_step2: "Contrôle qualité d'image",
     loader_step3: "Détection des zones fluorescentes",
@@ -10558,6 +10579,12 @@ const I18N = {
     offline_only:         "Offline · your analyses will send when network returns",
     offline_with_queue:   "Offline · {n} analysis(s) waiting",
     syncing_queue:        "Syncing · {n} analysis(s) sending",
+    sw_update_aria:       "New version of Lucens IA available",
+    sw_update_close_aria: "Dismiss update notification",
+    sw_update_eyebrow:    "Lucens IA",
+    sw_update_title:      "New version available",
+    sw_update_desc:       "Reload to get the latest improvements and fixes.",
+    sw_update_reload:     "Reload now",
     loader_step1: "Receiving your photo",
     loader_step2: "Image quality check",
     loader_step3: "Detecting fluorescent zones",
@@ -11123,6 +11150,12 @@ const I18N = {
     offline_only:         "Sin conexión · sus análisis se enviarán al volver la red",
     offline_with_queue:   "Sin conexión · {n} análisis en espera",
     syncing_queue:        "Sincronizando · {n} análisis en envío",
+    sw_update_aria:       "Nueva versión de Lucens IA disponible",
+    sw_update_close_aria: "Cerrar la notificación de actualización",
+    sw_update_eyebrow:    "Lucens IA",
+    sw_update_title:      "Nueva versión disponible",
+    sw_update_desc:       "Recargue para obtener las últimas mejoras y correcciones.",
+    sw_update_reload:     "Recargar ahora",
     loader_step1: "Recibiendo su foto",
     loader_step2: "Control de calidad de imagen",
     loader_step3: "Detección de zonas fluorescentes",
@@ -11614,6 +11647,12 @@ const I18N = {
     offline_only:         "Offline · Analysen werden bei Netzrückkehr gesendet",
     offline_with_queue:   "Offline · {n} Analyse(n) in Warteschlange",
     syncing_queue:        "Synchronisierung · {n} Analyse(n) werden gesendet",
+    sw_update_aria:       "Neue Version von Lucens IA verfügbar",
+    sw_update_close_aria: "Update-Benachrichtigung schließen",
+    sw_update_eyebrow:    "Lucens IA",
+    sw_update_title:      "Neue Version verfügbar",
+    sw_update_desc:       "Neu laden, um die neuesten Verbesserungen und Korrekturen zu erhalten.",
+    sw_update_reload:     "Jetzt neu laden",
     loader_step1: "Foto wird empfangen",
     loader_step2: "Bildqualitätskontrolle",
     loader_step3: "Fluoreszierende Zonen werden erkannt",
@@ -24805,9 +24844,13 @@ const Annotator = (() => {
      Le template HTML reste invisible jusqu'à utilisation effective.
      Variante LIGHT : fond blanc, texte foncé, croix fermer claire,
      un seul CTA primary "Recharger" (la croix gère le dismiss). -->
+<!-- V100 — Template SW update banner avec data-i18n sur tous les textes.
+     Avant V100 : tous les strings hardcodés en FR → bannière restait en
+     français même quand l'utilisateur était en EN/ES/DE. Repéré via
+     exploration Playwright WebKit iPhone 13 (.claude/tests/explore.mjs). -->
 <template id="lucensSwUpdateTpl">
-  <aside class="lucens-sw-update" id="lucensSwUpdate" role="status" aria-live="polite" aria-label="Nouvelle version de Lucens IA disponible">
-    <button type="button" class="lucens-sw-update-close" data-sw-action="dismiss" aria-label="Fermer la notification de mise à jour">
+  <aside class="lucens-sw-update" id="lucensSwUpdate" role="status" aria-live="polite" data-i18n-aria-label="sw_update_aria" aria-label="Nouvelle version de Lucens IA disponible">
+    <button type="button" class="lucens-sw-update-close" data-sw-action="dismiss" data-i18n-aria-label="sw_update_close_aria" aria-label="Fermer la notification de mise à jour">
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:16px;height:16px">
         <line x1="5" y1="5" x2="15" y2="15"/>
         <line x1="15" y1="5" x2="5" y2="15"/>
@@ -24821,9 +24864,9 @@ const Annotator = (() => {
         </svg>
       </span>
       <div class="lucens-sw-update-text">
-        <span class="lucens-sw-update-eyebrow">Lucens IA</span>
-        <h3 class="lucens-sw-update-title">Nouvelle version disponible</h3>
-        <p class="lucens-sw-update-desc">Rechargez pour profiter des dernières améliorations et correctifs.</p>
+        <span class="lucens-sw-update-eyebrow" data-i18n="sw_update_eyebrow">Lucens IA</span>
+        <h3 class="lucens-sw-update-title" data-i18n="sw_update_title">Nouvelle version disponible</h3>
+        <p class="lucens-sw-update-desc" data-i18n="sw_update_desc">Rechargez pour profiter des dernières améliorations et correctifs.</p>
       </div>
     </div>
     <div class="lucens-sw-update-actions">
@@ -24832,7 +24875,7 @@ const Annotator = (() => {
           <path d="M15.5 9a6.5 6.5 0 1 1-2.4-5.1"/>
           <polyline points="15.5 2.5 15.5 6.5 11.5 6.5"/>
         </svg>
-        Recharger maintenant
+        <span data-i18n="sw_update_reload">Recharger maintenant</span>
       </button>
     </div>
   </aside>
