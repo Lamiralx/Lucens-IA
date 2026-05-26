@@ -5270,6 +5270,12 @@ input[type="file"] { display: none; }
 }
 .ctx-next:hover { background: var(--accent-hi, var(--accent)); transform: translateY(-1px); }
 .ctx-next svg { width: 14px; height: 14px; }
+/* V99 — Pour que l'attribut HTML [hidden] (posé par JS sur la dernière
+   étape via nextBtn.hidden = (currentStep === steps.length - 1)) soit
+   respecté. Sans cette règle, .ctx-next { display: inline-flex } gagne
+   sur la règle UA par défaut [hidden] { display: none } à cause de la
+   spécificité de classe. Même pattern que .ctx-back[hidden] ligne 5200. */
+.ctx-next[hidden] { display: none; }
 
 .ctx-options {
   display: grid;
@@ -9285,7 +9291,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v98</span>
+              <span class="home-spec-version" aria-hidden="true">v99</span>
             </div>
           </div>
 
