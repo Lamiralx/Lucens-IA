@@ -9306,7 +9306,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v100</span>
+              <span class="home-spec-version" aria-hidden="true">v101</span>
             </div>
           </div>
 
@@ -10396,8 +10396,11 @@ const I18N = {
     fb_q1_a2:         "Il en manque",
     fb_q1_a3:         "Il y en a en trop",
     ctx_eyebrow:               "Contexte d'inspection",
-    ctx_title:                 "Précisons votre cadre d'usage",
-    ctx_sub:                   "2 questions pour mieux calibrer l'analyse. Réponse facultative, modifiable à tout moment.",
+    /* V101 — Titre et sous-titre raccourcis pour terrain HACCP mobile.
+       Avant : "Précisons votre cadre d'usage" + 22 mots d'explication.
+       Après : titre direct (verbe + complément) + sous-titre 3 mots. */
+    ctx_title:                 "Calibrer l'analyse",
+    ctx_sub:                   "Optionnel · 2 questions",
     ctx_q_type:                "Secteur d'activité",
     /* V80 — Contexte modal — boutons + aria */
     ctx_next:                  "Suivant",
@@ -10893,8 +10896,8 @@ const I18N = {
     fb_q1_a2:         "Some missing",
     fb_q1_a3:         "Too many",
     ctx_eyebrow:               "Inspection context",
-    ctx_title:                 "Let's calibrate your usage",
-    ctx_sub:                   "2 questions to better calibrate the analysis. Answers are optional, editable at any time.",
+    ctx_title:                 "Calibrate the analysis",
+    ctx_sub:                   "Optional · 2 questions",
     ctx_q_type:                "Activity sector",
     /* V80 — Context modal — buttons + aria */
     ctx_next:                  "Next",
@@ -11049,8 +11052,8 @@ const I18N = {
     err_network_timeout: "Tiempo de espera agotado. Verifique su conexión y vuelva a intentarlo.",
     toast_partial_response: "Análisis parcial. Algunos campos se completaron por defecto. Reinicie si es necesario.",
     ctx_eyebrow: "Contexto de inspección",
-    ctx_title: "Precisemos su marco de uso",
-    ctx_sub: "2 preguntas para calibrar mejor el análisis. Respuesta opcional, modificable en cualquier momento.",
+    ctx_title: "Calibrar el análisis",
+    ctx_sub: "Opcional · 2 preguntas",
     ctx_q_type: "Sector de actividad",
     /* V80 — Context modal (ES) */
     ctx_next: "Siguiente",
@@ -11546,8 +11549,8 @@ const I18N = {
     err_network_timeout: "Zeitüberschreitung. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
     toast_partial_response: "Teilanalyse. Einige Felder wurden mit Standardwerten gefüllt. Bei Bedarf erneut starten.",
     ctx_eyebrow: "Inspektionskontext",
-    ctx_title: "Passen wir Ihren Einsatzrahmen an",
-    ctx_sub: "2 Fragen zur besseren Kalibrierung der Analyse. Antworten optional, jederzeit änderbar.",
+    ctx_title: "Analyse kalibrieren",
+    ctx_sub: "Optional · 2 Fragen",
     ctx_q_type: "Tätigkeitsbereich",
     /* V80 — Context modal (DE) */
     ctx_next: "Weiter",
@@ -15368,16 +15371,19 @@ const Annotator = (() => {
   }
   bindFeedbackModal();
 
-  /* Premier accès à l'app : si l'utilisateur n'a jamais saisi son contexte
-     (type d'établissement + secteur), on lui propose maintenant, avant qu'il
-     ne voie l'upload screen. Ordre logique : on cadre l'usage d'abord, on
-     fait l'analyse ensuite. Petit délai pour laisser le DOM se peindre
-     entièrement avant de superposer le modal. */
-  setTimeout(() => {
-    if (typeof LucensContext !== 'undefined' && !LucensContext.asked()) {
-      LucensContext.open();
-    }
-  }, 600);
+  /* V101 — Auto-open du modal Contexte au cold start RETIRÉ.
+     Bug UX terrain : un inspecteur HACCP qui ouvre l'app veut PHOTOGRAPHIER
+     d'abord, pas remplir un questionnaire optionnel. Le commentaire d'avant
+     ("on cadre l'usage d'abord, on fait l'analyse ensuite") supposait un
+     usage desktop posé, mais le terrain mobile en mouvement exige rapidité.
+
+     Conséquences :
+     - Première impression = home propre, bouton IMPORTER/LIVE immédiat
+     - Le contexte reste accessible via le bouton CONTEXTE du header
+     - Le contexte étant OPTIONNEL pour l'analyse Claude, aucune perte
+       fonctionnelle (Claude analyse sans contexte = mode générique, déjà
+       robuste).
+     - Charge cognitive à l'ouverture réduite à zéro action parasite. */
 
   /* Vague 4B — affiche le bandeau ATP follow-up si un cas a un rappel dû.
      Délai 2s pour ne pas se superposer au modal contexte au cold start. */

@@ -13,7 +13,7 @@
  * Versionning : bump CACHE_VERSION à chaque déploiement majeur pour purge propre.
  */
 
-const CACHE_VERSION = 'lucens-v100-2026-05-26';
+const CACHE_VERSION = 'lucens-v101-2026-05-26';
 const APP_SHELL_CACHE = `app-shell-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 
