@@ -2054,11 +2054,9 @@ input[type="file"] { display: none; }
 .results.visible {
   display: block;
   animation: page-enter .26s var(--ease-out, ease-out);
-  /* V103 — Padding-bottom pour que le contenu du dernier card (notamment
-     "VOIR LE RAISONNEMENT COMPLET" expand trigger) ne reste pas masqué
-     par la toolbar sticky. Calcule la hauteur de la toolbar +
-     safe-area-inset-bottom + breathing room. */
-  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  /* V107 — padding-bottom V103 RETIRÉ : devenu inutile depuis que la
+     toolbar n'est plus sticky. Les boutons sont dans le flux normal
+     en bas du rapport, donc pas besoin d'espace tampon. */
 }
 
 /* V20 (2026-05-24) — Toolbar épurée : suppression de la bande noire pleine
@@ -2067,17 +2065,19 @@ input[type="file"] { display: none; }
    fond ni dégradé sous les boutons : c'est l'arrière-plan de la page qui
    passe directement. */
 .results-toolbar {
-  /* V89 — Sticky bottom préservé (le système de descente au scroll
-     marche déjà). Plus d'espace au-dessus pour ne pas gêner la lecture
-     du dernier card avant les boutons. */
-  position: sticky;
-  bottom: 0;
-  z-index: 50;
-  margin: var(--space-10, 80px) auto 0;
+  /* V107 — REVERT V89 sticky.
+     Bug visible audit Playwright : avec position:sticky, les boutons
+     opaques (btn-back blanc + btn-export teal) chevauchaient le texte
+     des cards lors du scroll mid-rapport. L'inspecteur HACCP lisait
+     une section et la moitié inférieure était cachée sous les boutons.
+     Bug rapporté + confirmé via screenshot.
+     V107 : flux normal (position: static implicite). Le user scrolle
+     jusqu'au bout du rapport, voit les boutons, agit. Pas d'overlap
+     possible. Espace au-dessus généreux (--space-10) pour séparation
+     visuelle nette du contenu précédent. */
+  margin: var(--space-10, 80px) auto var(--space-6, 40px);
   padding: var(--space-4) 0 calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
   background: transparent;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
   border: none;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2085,9 +2085,7 @@ input[type="file"] { display: none; }
   gap: var(--space-3);
   max-width: 560px;
   width: 100%;
-  pointer-events: none;
 }
-.results-toolbar > * { pointer-events: auto; }
 /* Boutons full-width en grid, taille équilibrée */
 .results-toolbar .btn-back,
 .results-toolbar .btn-export {
@@ -9323,7 +9321,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v106</span>
+              <span class="home-spec-version" aria-hidden="true">v107</span>
             </div>
           </div>
 
@@ -20555,7 +20553,17 @@ const Annotator = (() => {
     }
     if (tableBody) {
       while (tableBody.firstChild) tableBody.removeChild(tableBody.firstChild);
-      const intRank = { 'faible': 1, 'moyenne': 2, 'forte': 3 };
+      /* V107 — Rank intensité avec SYNONYMES. Avant V107, "modérée"
+         (synonyme courant de "moyenne") n'était pas dans le rank →
+         tombait sur le défaut `|| 1` → affichait "FAIBLE" alors que
+         l'intensité réelle Claude était modérée. Bug grave (sous-
+         évaluation visuelle du risque). Maintenant : on accepte FR
+         + variantes naturelles + EN. */
+      const intRank = {
+        'faible': 1, 'minor': 1, 'low': 1, 'légère': 1, 'légere': 1, 'mineure': 1,
+        'moyenne': 2, 'modérée': 2, 'moderee': 2, 'moderate': 2, 'medium': 2, 'moyen': 2, 'modéré': 2,
+        'forte': 3, 'élevée': 3, 'elevee': 3, 'high': 3, 'intense': 3, 'fort': 3, 'sévère': 3,
+      };
       const intRevRank = { 1: 'faible', 2: 'moyenne', 3: 'forte' };
       /* Agrégation par catégorie : compteur, surface totale, intensité max */
       const aggregated = new Map();
@@ -21017,7 +21025,17 @@ const Annotator = (() => {
       legend.appendChild(empty);
     } else {
       /* Agrégation : Map<type, {totalArea, count, maxIntensity}> */
-      const intRank = { 'faible': 1, 'moyenne': 2, 'forte': 3 };
+      /* V107 — Rank intensité avec SYNONYMES. Avant V107, "modérée"
+         (synonyme courant de "moyenne") n'était pas dans le rank →
+         tombait sur le défaut `|| 1` → affichait "FAIBLE" alors que
+         l'intensité réelle Claude était modérée. Bug grave (sous-
+         évaluation visuelle du risque). Maintenant : on accepte FR
+         + variantes naturelles + EN. */
+      const intRank = {
+        'faible': 1, 'minor': 1, 'low': 1, 'légère': 1, 'légere': 1, 'mineure': 1,
+        'moyenne': 2, 'modérée': 2, 'moderee': 2, 'moderate': 2, 'medium': 2, 'moyen': 2, 'modéré': 2,
+        'forte': 3, 'élevée': 3, 'elevee': 3, 'high': 3, 'intense': 3, 'fort': 3, 'sévère': 3,
+      };
       const intRevRank = { 1: 'faible', 2: 'moyenne', 3: 'forte' };
       const aggregated = new Map();
       for (const z of zones) {
