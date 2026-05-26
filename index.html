@@ -9323,7 +9323,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v104</span>
+              <span class="home-spec-version" aria-hidden="true">v105</span>
             </div>
           </div>
 
@@ -17706,14 +17706,22 @@ const Annotator = (() => {
             confidence: 'low',
           },
         ];
-        /* Minimum requis pour la verdict card (sans le verbiage de l'ancienne version) */
+        /* V105 — Triple "provisoire" dédupliqué.
+           Avant V105 : title="Analyse provisoire" + confidence_label="Provisoire"
+                        + recommendation.title="Recommandation provisoire"
+                        → 3 occurrences sur le même écran, redondance qui
+                        inquiète l'inspecteur HACCP au lieu d'informer.
+           Après : 1 seul callout clair ("Analyse partielle") + confidence
+                   label vide (pas d'eyebrow PROVISOIRE) + reco titre direct
+                   "Action recommandée". Le statut "partielle" est dit UNE
+                   fois, dans le titre, et c'est suffisant. */
         res.result = res.result || {
-          title: res.zones.length ? 'Analyse provisoire' : 'Aucun signal détecté',
-          confidence_label: 'Provisoire',
+          title: res.zones.length ? 'Analyse partielle' : 'Aucun signal détecté',
+          confidence_label: '',
           interpretation: '',
         };
         res.recommendation = res.recommendation || {
-          title: 'Recommandation provisoire',
+          title: 'Action recommandée',
           primary_action: 'Relancez l\'analyse complète dès rétablissement du service.',
           follow_up: '',
           confirmation_if_needed: null,
