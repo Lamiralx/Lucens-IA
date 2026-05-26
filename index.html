@@ -9323,7 +9323,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v103</span>
+              <span class="home-spec-version" aria-hidden="true">v104</span>
             </div>
           </div>
 
@@ -10181,7 +10181,9 @@ const I18N = {
     lv_btn_code:              "Code",
     lv_btn_validate:          "Valider la calibration",
     lv_btn_auth:              "Authentifier",
-    lv_status_idle:           "Visez",
+    /* V104 — Status banner labels plus directifs (V80 width fixée à 180px
+       permet "Visez une zone" sans débordement, vérifié Playwright). */
+    lv_status_idle:           "Visez une zone",
     lv_status_pending:        "Analyse…",
     lv_status_fluo:           "Fluo détectée",
     lv_status_object:         "Non fluo",
@@ -10685,7 +10687,7 @@ const I18N = {
     lv_btn_code:              "Code",
     lv_btn_validate:          "Validate calibration",
     lv_btn_auth:              "Authenticate",
-    lv_status_idle:           "Aim",
+    lv_status_idle:           "Aim at a spot",
     lv_status_pending:        "Analysing…",
     lv_status_fluo:           "Fluo detected",
     lv_status_object:         "Not fluo",
@@ -11256,7 +11258,7 @@ const I18N = {
     lv_btn_code:              "Código",
     lv_btn_validate:          "Validar la calibración",
     lv_btn_auth:              "Autenticar",
-    lv_status_idle:           "Apunte",
+    lv_status_idle:           "Apunte una zona",
     lv_status_pending:        "Analizando…",
     lv_status_fluo:           "Fluo detectada",
     lv_status_object:         "No fluo",
@@ -11754,7 +11756,7 @@ const I18N = {
     lv_btn_code:              "Code",
     lv_btn_validate:          "Kalibrierung bestätigen",
     lv_btn_auth:              "Authentifizieren",
-    lv_status_idle:           "Zielen",
+    lv_status_idle:           "Bereich anvisieren",
     lv_status_pending:        "Analyse…",
     lv_status_fluo:           "Fluo erkannt",
     lv_status_object:         "Keine Fluo",
