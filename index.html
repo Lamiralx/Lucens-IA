@@ -6049,7 +6049,13 @@ input[type="file"] { display: none; }
   margin-inline: auto;
   width: auto;
   max-width: 440px;
-  z-index: 99998;
+  /* V102 — z-index ABAISSÉ de 99998 à 9999 : avant V102 la bannière SW
+     update couvrait les bouton primaires des modals (mo-overlay z-index
+     10000, ctx-overlay, fb-overlay) → "Lancer l'analyse" caché sous la
+     bannière, bug bloquant pour l'analyse. Maintenant : tous les modals
+     (z-index ≥ 10000) couvrent proprement la bannière, qui reste visible
+     UNIQUEMENT quand aucun modal n'est ouvert. */
+  z-index: 9999;
   background: #FFFFFF;
   border: 1px solid rgba(45, 212, 191, 0.55);  /* accent teal subtle */
   border-radius: 16px;
@@ -9306,7 +9312,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v101</span>
+              <span class="home-spec-version" aria-hidden="true">v102</span>
             </div>
           </div>
 
@@ -9873,8 +9879,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
           </svg>
         </button>
       </div>
-      <h3 class="mo-title" id="moTitle" data-i18n="mo_title">Cette photo a été prise…</h3>
-      <p class="mo-sub" data-i18n="mo_sub">Ce choix calibre la sévérité de l'analyse. Une trace après nettoyage n'a pas la même criticité qu'avant.</p>
+      <h3 class="mo-title" id="moTitle" data-i18n="mo_title">Préciser le moment</h3>
+      <p class="mo-sub" data-i18n="mo_sub">Calibre la sévérité du score</p>
     </div>
     <div class="mo-body">
       <div class="mo-options" role="radiogroup">
@@ -9882,28 +9888,28 @@ body.lv-open { overflow: hidden; touch-action: none; }
           <input type="radio" name="mo_moment" value="before_cleaning">
           <span class="mo-opt-card">
             <span class="mo-opt-key" data-i18n="mo_before_key">Avant nettoyage</span>
-            <span class="mo-opt-hint" data-i18n="mo_before_hint">Contrôle initial. La contamination présente est attendue.</span>
+            <span class="mo-opt-hint" data-i18n="mo_before_hint">Contrôle initial · contamination attendue</span>
           </span>
         </label>
         <label class="mo-opt">
           <input type="radio" name="mo_moment" value="after_cleaning">
           <span class="mo-opt-card">
             <span class="mo-opt-key" data-i18n="mo_after_key">Après nettoyage</span>
-            <span class="mo-opt-hint" data-i18n="mo_after_hint">Validation. Toute trace résiduelle est un défaut de protocole.</span>
+            <span class="mo-opt-hint" data-i18n="mo_after_hint">Validation · toute trace = défaut protocole</span>
           </span>
         </label>
         <label class="mo-opt">
           <input type="radio" name="mo_moment" value="routine_check">
           <span class="mo-opt-card">
             <span class="mo-opt-key" data-i18n="mo_routine_key">Contrôle de routine</span>
-            <span class="mo-opt-hint" data-i18n="mo_routine_hint">Inspection périodique hors séquence de nettoyage.</span>
+            <span class="mo-opt-hint" data-i18n="mo_routine_hint">Inspection périodique · hors nettoyage</span>
           </span>
         </label>
         <label class="mo-opt">
           <input type="radio" name="mo_moment" value="incident">
           <span class="mo-opt-card">
             <span class="mo-opt-key" data-i18n="mo_incident_key">Suite à incident</span>
-            <span class="mo-opt-hint" data-i18n="mo_incident_hint">Investigation ciblée après un événement.</span>
+            <span class="mo-opt-hint" data-i18n="mo_incident_hint">Après alerte · investigation ciblée</span>
           </span>
         </label>
       </div>
@@ -10440,16 +10446,19 @@ const I18N = {
     moment_routine:            "Contrôle de routine",
     moment_incident:           "Suite à incident",
     mo_eyebrow:                "Contexte du cliché",
-    mo_title:                  "Cette photo a été prise…",
-    mo_sub:                    "Ce choix calibre la sévérité de l'analyse. Une trace après nettoyage n'a pas la même criticité qu'avant.",
+    /* V102 — Titre verbe direct (cohérent V101 "Calibrer l'analyse").
+       Sous-titre 17→5 mots. Hints reformulées avec séparateur · pour
+       lecture instantanée (terrain mobile en mouvement). */
+    mo_title:                  "Préciser le moment",
+    mo_sub:                    "Calibre la sévérité du score",
     mo_before_key:             "Avant nettoyage",
-    mo_before_hint:            "Contrôle initial. La contamination présente est attendue.",
+    mo_before_hint:            "Contrôle initial · contamination attendue",
     mo_after_key:              "Après nettoyage",
-    mo_after_hint:             "Validation. Toute trace résiduelle est un défaut de protocole.",
+    mo_after_hint:             "Validation · toute trace = défaut protocole",
     mo_routine_key:            "Contrôle de routine",
-    mo_routine_hint:           "Inspection périodique hors séquence de nettoyage.",
+    mo_routine_hint:           "Inspection périodique · hors nettoyage",
     mo_incident_key:           "Suite à incident",
-    mo_incident_hint:          "Investigation ciblée après un événement.",
+    mo_incident_hint:          "Après alerte · investigation ciblée",
     mo_skip:                   "Sans précision",
     mo_submit:                 "Lancer l'analyse",
     mo_no_ask:                 "Ne plus me demander",
@@ -10934,16 +10943,16 @@ const I18N = {
     moment_unspecified:        "Unspecified",
     moment_before:             "Before cleaning",
     mo_eyebrow:                "Photo context",
-    mo_title:                  "This photo was taken…",
-    mo_sub:                    "This choice calibrates analysis severity. A residue after cleaning is not the same as before.",
+    mo_title:                  "Set the moment",
+    mo_sub:                    "Calibrates score severity",
     mo_before_key:             "Before cleaning",
-    mo_before_hint:            "Initial control. Present contamination is expected.",
+    mo_before_hint:            "Initial check · contamination expected",
     mo_after_key:              "After cleaning",
-    mo_after_hint:             "Validation. Any residue is a protocol defect.",
+    mo_after_hint:             "Validation · any trace = protocol defect",
     mo_routine_key:            "Routine check",
-    mo_routine_hint:           "Periodic inspection outside cleaning sequence.",
+    mo_routine_hint:           "Periodic inspection · outside cleaning",
     mo_incident_key:           "After incident",
-    mo_incident_hint:          "Targeted investigation after an event.",
+    mo_incident_hint:          "After alert · targeted investigation",
     mo_skip:                   "Skip",
     mo_submit:                 "Run analysis",
     mo_no_ask:                 "Don't ask again",
@@ -11103,16 +11112,16 @@ const I18N = {
     hdr_title: "LUCENS",
     hub_eyebrow: "UV-A 365 nm · Lucens IA",
     mo_eyebrow:                "Contexto de la foto",
-    mo_title:                  "Esta foto fue tomada…",
-    mo_sub:                    "Esta elección calibra la severidad del análisis. Un residuo después del lavado no tiene la misma criticidad que antes.",
+    mo_title:                  "Precisar el momento",
+    mo_sub:                    "Calibra la severidad del análisis",
     mo_before_key:             "Antes del lavado",
-    mo_before_hint:            "Control inicial. La contaminación presente es esperada.",
+    mo_before_hint:            "Control inicial · contaminación esperada",
     mo_after_key:              "Después del lavado",
-    mo_after_hint:             "Validación. Cualquier residuo es un defecto de protocolo.",
+    mo_after_hint:             "Validación · cualquier traza = defecto de protocolo",
     mo_routine_key:            "Control de rutina",
-    mo_routine_hint:           "Inspección periódica fuera del ciclo de limpieza.",
+    mo_routine_hint:           "Inspección periódica · fuera del lavado",
     mo_incident_key:           "Tras incidente",
-    mo_incident_hint:          "Investigación dirigida después de un evento.",
+    mo_incident_hint:          "Tras alerta · investigación dirigida",
     mo_skip:                   "Sin precisar",
     mo_submit:                 "Iniciar análisis",
     mo_no_ask:                 "No volver a preguntar",
@@ -11600,16 +11609,16 @@ const I18N = {
     hdr_title: "LUCENS",
     hub_eyebrow: "UV-A 365 nm · Lucens IA",
     mo_eyebrow:                "Aufnahmekontext",
-    mo_title:                  "Dieses Foto wurde aufgenommen…",
-    mo_sub:                    "Diese Wahl kalibriert die Strenge der Analyse. Ein Rückstand nach der Reinigung hat nicht dieselbe Kritikalität wie davor.",
+    mo_title:                  "Zeitpunkt angeben",
+    mo_sub:                    "Kalibriert die Strenge der Bewertung",
     mo_before_key:             "Vor der Reinigung",
-    mo_before_hint:            "Erstkontrolle. Vorhandene Kontamination ist zu erwarten.",
+    mo_before_hint:            "Erstkontrolle · Kontamination erwartet",
     mo_after_key:              "Nach der Reinigung",
-    mo_after_hint:             "Validierung. Jeder Rückstand ist ein Protokollfehler.",
+    mo_after_hint:             "Validierung · jeder Rückstand = Protokollfehler",
     mo_routine_key:            "Routinekontrolle",
-    mo_routine_hint:           "Periodische Inspektion außerhalb des Reinigungszyklus.",
+    mo_routine_hint:           "Periodische Inspektion · außerhalb Reinigung",
     mo_incident_key:           "Nach Vorfall",
-    mo_incident_hint:          "Gezielte Untersuchung nach einem Ereignis.",
+    mo_incident_hint:          "Nach Alarm · gezielte Untersuchung",
     mo_skip:                   "Keine Angabe",
     mo_submit:                 "Analyse starten",
     mo_no_ask:                 "Nicht mehr fragen",
