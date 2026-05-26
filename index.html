@@ -2054,6 +2054,11 @@ input[type="file"] { display: none; }
 .results.visible {
   display: block;
   animation: page-enter .26s var(--ease-out, ease-out);
+  /* V103 — Padding-bottom pour que le contenu du dernier card (notamment
+     "VOIR LE RAISONNEMENT COMPLET" expand trigger) ne reste pas masqué
+     par la toolbar sticky. Calcule la hauteur de la toolbar +
+     safe-area-inset-bottom + breathing room. */
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }
 
 /* V20 (2026-05-24) — Toolbar épurée : suppression de la bande noire pleine
@@ -7458,6 +7463,12 @@ body.has-sw-update .home {
 /* V29 — Champ zone inspectée plus visible (label plus gros, input plus
    marqué, anti-zoom iOS via font-size ≥ 16px). */
 .results-zone { display: flex; flex-direction: column; gap: 8px; margin: 18px 0; }
+/* V103 — Version compacte : label caché (intégré au placeholder),
+   marges verticales réduites de 18px à 8px. Gain ~60px de hauteur
+   écran. Le placeholder fournit la guidance terrain ("ex. table
+   préparation") au lieu d'un label séparé. */
+.results-zone.results-zone-compact { margin: 8px 0; gap: 0; }
+.results-zone.results-zone-compact .results-zone-label.lv-hidden { display: none; }
 .results-zone-label {
   /* V68 — Icône ✎ supprimée (retour utilisateur : pas reconnaissable, distrait). */
   font-family: var(--font-mono); font-size: 11.5px; font-weight: 700;
@@ -9312,7 +9323,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v102</span>
+              <span class="home-spec-version" aria-hidden="true">v103</span>
             </div>
           </div>
 
@@ -9441,13 +9452,14 @@ body.lv-open { overflow: hidden; touch-action: none; }
         </div>
       </div>
 
-      <!-- V91 — ZONE INSPECTÉE remontée EN HAUT (remplace position ex-qualityBanner).
-           IDs originaux conservés (resultZone, resultZoneSave) pour la
-           compatibilité JS. L'ancienne instance plus bas est supprimée. -->
-      <div class="results-zone results-zone-top">
-        <label class="results-zone-label" for="resultZone" data-i18n="result_zone_label">Zone inspectée (optionnel)</label>
+      <!-- V103 — ZONE INSPECTÉE compactée : label intégré au placeholder
+           pour gagner 60-80px de hauteur écran à l'ouverture du rapport
+           (était 22% de l'écran pour un champ optionnel non rempli). -->
+      <div class="results-zone results-zone-top results-zone-compact">
+        <label class="results-zone-label lv-hidden" for="resultZone" data-i18n="result_zone_label">Zone inspectée (optionnel)</label>
         <div class="results-zone-row">
-          <input type="text" id="resultZone" class="results-zone-input" maxlength="80" autocomplete="off">
+          <input type="text" id="resultZone" class="results-zone-input" maxlength="80" autocomplete="off"
+                 data-i18n-placeholder="result_zone_placeholder" placeholder="Zone inspectée (optionnel)">
           <button type="button" class="results-zone-save" id="resultZoneSave">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
@@ -10328,6 +10340,7 @@ const I18N = {
     h_rel_d: "il y a {n} j",
     h_no_context: "Aucun contexte",
     result_zone_label: "Zone inspectée (optionnel)",
+    result_zone_placeholder: "Zone inspectée (optionnel)",
     home_spec: "Aide à la décision HACCP",
     hiw_b1_title: "Avant de commencer",
     hiw_lamp_t: "La lampe Lucens",
@@ -10831,6 +10844,7 @@ const I18N = {
     h_rel_d: "{n} d ago",
     h_no_context: "No context",
     result_zone_label: "Inspected zone (optional)",
+    result_zone_placeholder: "Inspected zone (optional)",
     home_spec: "HACCP decision support",
     hiw_b1_title: "Before you start",
     hiw_lamp_t: "The Lucens lamp",
@@ -11401,6 +11415,7 @@ const I18N = {
     h_rel_d: "hace {n} d",
     h_no_context: "Sin contexto",
     result_zone_label: "Zona inspeccionada (opcional)",
+    result_zone_placeholder: "Zona inspeccionada (opcional)",
     home_spec: "Apoyo a la decisión APPCC",
     hiw_b1_title: "Antes de empezar",
     hiw_lamp_t: "La lámpara Lucens",
@@ -11898,6 +11913,7 @@ const I18N = {
     h_rel_d: "vor {n} T.",
     h_no_context: "Kein Kontext",
     result_zone_label: "Inspizierter Bereich (optional)",
+    result_zone_placeholder: "Inspizierter Bereich (optional)",
     home_spec: "HACCP-Entscheidungshilfe",
     hiw_b1_title: "Bevor Sie beginnen",
     hiw_lamp_t: "Die Lucens-Lampe",
