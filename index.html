@@ -9323,7 +9323,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v105</span>
+              <span class="home-spec-version" aria-hidden="true">v106</span>
             </div>
           </div>
 
@@ -9891,7 +9891,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
           </svg>
         </button>
       </div>
-      <h3 class="mo-title" id="moTitle" data-i18n="mo_title">Préciser le moment</h3>
+      <h3 class="mo-title" id="moTitle" data-i18n="mo_title">Cette photo a été prise…</h3>
       <p class="mo-sub" data-i18n="mo_sub">Calibre la sévérité du score</p>
     </div>
     <div class="mo-body">
@@ -10461,10 +10461,12 @@ const I18N = {
     moment_routine:            "Contrôle de routine",
     moment_incident:           "Suite à incident",
     mo_eyebrow:                "Contexte du cliché",
-    /* V102 — Titre verbe direct (cohérent V101 "Calibrer l'analyse").
-       Sous-titre 17→5 mots. Hints reformulées avec séparateur · pour
-       lecture instantanée (terrain mobile en mouvement). */
-    mo_title:                  "Préciser le moment",
+    /* V106 — REVERT V102 sur le titre : "Préciser le moment" perdait
+       l'élégance du pattern "Cette photo a été prise…" où l'option choisie
+       complète naturellement la phrase ("Cette photo a été prise…
+       Avant nettoyage"). Pattern unique préservé. Les améliorations V102
+       sur sous-titre et hints sont CONSERVÉES. */
+    mo_title:                  "Cette photo a été prise…",
     mo_sub:                    "Calibre la sévérité du score",
     mo_before_key:             "Avant nettoyage",
     mo_before_hint:            "Contrôle initial · contamination attendue",
@@ -10959,7 +10961,7 @@ const I18N = {
     moment_unspecified:        "Unspecified",
     moment_before:             "Before cleaning",
     mo_eyebrow:                "Photo context",
-    mo_title:                  "Set the moment",
+    mo_title:                  "This photo was taken…",
     mo_sub:                    "Calibrates score severity",
     mo_before_key:             "Before cleaning",
     mo_before_hint:            "Initial check · contamination expected",
@@ -11128,7 +11130,7 @@ const I18N = {
     hdr_title: "LUCENS",
     hub_eyebrow: "UV-A 365 nm · Lucens IA",
     mo_eyebrow:                "Contexto de la foto",
-    mo_title:                  "Precisar el momento",
+    mo_title:                  "Esta foto fue tomada…",
     mo_sub:                    "Calibra la severidad del análisis",
     mo_before_key:             "Antes del lavado",
     mo_before_hint:            "Control inicial · contaminación esperada",
@@ -11626,7 +11628,7 @@ const I18N = {
     hdr_title: "LUCENS",
     hub_eyebrow: "UV-A 365 nm · Lucens IA",
     mo_eyebrow:                "Aufnahmekontext",
-    mo_title:                  "Zeitpunkt angeben",
+    mo_title:                  "Dieses Foto wurde aufgenommen…",
     mo_sub:                    "Kalibriert die Strenge der Bewertung",
     mo_before_key:             "Vor der Reinigung",
     mo_before_hint:            "Erstkontrolle · Kontamination erwartet",
@@ -20430,8 +20432,16 @@ const Annotator = (() => {
     $('riskLabel').textContent = theme.label;
 
     /* Meta */
-    $('covVal').textContent = coveragePercent + ' %';
-    $('zoneCount').textContent = zoneCount;
+    /* V106 — Guard "undefined %" : si coveragePercent ou zoneCount est
+       absent du payload Claude (cas exotique : malformed response,
+       fallback partiel, race condition), on affiche "—" plutôt que
+       le littéral "undefined %" qui apparaissait avant V106.
+       Bug repéré via audit Playwright avec mock incomplet. */
+    const covDisplay = (typeof coveragePercent === 'number' && isFinite(coveragePercent))
+      ? coveragePercent.toFixed(1) + ' %'
+      : '—';
+    $('covVal').textContent = covDisplay;
+    $('zoneCount').textContent = (typeof zoneCount === 'number') ? String(zoneCount) : '—';
 
     /* Probabilities — consolidation des doublons + filtre unknown */
     const consolidated = {};
