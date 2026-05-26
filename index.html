@@ -6732,16 +6732,18 @@ body.has-sw-update .home {
 /* Quand un volet est ouvert : flex 1 1 auto (déjà actif), le volet ouvert
    prend l'espace, les autres en-têtes restent compacts. */
 .home-accordions.has-open { flex: 1 1 auto; }
-/* V37 — Quand tous les volets sont FERMÉS, on répartit les en-têtes
-   verticalement pour combler l'espace au lieu de les empiler en haut. */
-.home-accordions:not(.has-open) { justify-content: space-between; }
+/* V98 — REVERT V37 : space-between distribuait les 3 en-têtes sur
+   toute la hauteur du conteneur (flex:1 1 auto), créant des vides
+   GÉANTS de 300-800px entre eux (visible à 390×844 / 390×2400).
+   Bug visuel reporté + confirmé via screenshot headless Chrome.
+   Maintenant : en-têtes packés en haut (flex-start = défaut), padding
+   normal 17px. L'espace résiduel en bas reste vide propre, c'est
+   visuellement neutre. */
+.home-accordions:not(.has-open) { justify-content: flex-start; }
 .acc-item {
   border-bottom: 1px solid var(--hairline);
   flex: 0 0 auto;
 }
-/* V37 — En-têtes des volets fermés ont plus de respiration verticale
-   pour utiliser l'espace dispo de manière éditoriale. */
-.home-accordions:not(.has-open) .acc-head { padding: 22px 2px; }
 .acc-item.is-open {
   flex: 1 1 auto;
   min-height: 0;
@@ -9283,7 +9285,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v97</span>
+              <span class="home-spec-version" aria-hidden="true">v98</span>
             </div>
           </div>
 
