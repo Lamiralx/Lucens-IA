@@ -695,16 +695,13 @@ body.has-offline-banner .upload-hub {
   flex-shrink: 0;
   width: 15px; height: 15px;
   color: var(--lucens-signature);
+  transition: color .15s ease;
 }
-/* Indication discrète : contexte d'inspection configuré */
-.hdr-ctx-btn.is-set::after {
-  content: '';
-  position: absolute;
-  top: 5px; right: 5px;
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 0 2px var(--surface-page);
+/* V110 — Indication contexte configuré : icône verte au lieu de la pastille
+   séparée. Lecture instantanée (1 élément au lieu de 2), cohérent avec le
+   sémantique vert = "OK validé" déjà utilisé dans .zone-verdict-conf.high. */
+.hdr-ctx-btn.is-set svg {
+  color: #2f7a4f;
 }
 @media (max-width: 480px) {
   .hdr-ctx-text { display: none; }
