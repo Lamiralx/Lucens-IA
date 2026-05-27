@@ -9321,7 +9321,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v107</span>
+              <span class="home-spec-version" aria-hidden="true">v108</span>
             </div>
           </div>
 
@@ -9532,24 +9532,39 @@ body.lv-open { overflow: hidden; touch-action: none; }
              (3 exemples sur objets déjà écartés). Si une zone est écartée, elle
              n'a pas besoin d'être ressassée. -->
         <details class="lv-verdict-details">
-          <summary>Voir le raisonnement complet</summary>
+          <summary data-i18n="verdict_show_reasoning">Voir le raisonnement complet</summary>
           <dl class="lv-verdict-dl">
-            <!-- V44 — Repli condensé ×2 : on garde uniquement contexte (surface),
-                 chaîne de risque, et OUVERTURE (ce que la fluo suggère).
-                 Retirés : NotProve, FollowUp, Confirmation, Frameworks (tous
-                 redondants avec la recommandation principale ou la reco affichée
-                 plus haut). -->
-            <dt>Logique de la surface</dt><dd id="lvVerdictSurfaceLogic">—</dd>
-            <dt>Chaîne de risque</dt><dd id="lvVerdictRiskLogic">—</dd>
-            <dt>Ce que la fluorescence suggère</dt><dd id="lvVerdictSuggests">—</dd>
+            <!-- V108 — Refonte raisonnement complet :
+                 Les champs NotProve / FollowUp / Confirmation étaient
+                 dans des spans cachés APRÈS le </details> (commentaire
+                 V44). Mais $set (ligne ~20250) faisait `el.hidden = false`
+                 dès qu'on lui passait une valeur → les spans devenaient
+                 visibles et s'affichaient EN BRUT comme texte inline
+                 après le bouton "Voir le raisonnement complet" expand.
+                 Bug visible audit Playwright.
+
+                 V108 : on les intègre PROPREMENT dans la dl en tant que
+                 dt/dd. Bénéfice métier : "Ce que ça NE prouve PAS" est
+                 INFORMATION ANTI-SURINTERPRÉTATION cruciale pour un
+                 inspecteur HACCP (un score 62 ≠ contamination confirmée).
+                 FollowUp et Confirmation sont aussi utiles dans le repli. -->
+            <dt data-i18n="verdict_surface_logic">Logique de la surface</dt>
+              <dd id="lvVerdictSurfaceLogic">—</dd>
+            <dt data-i18n="verdict_risk_logic">Chaîne de risque</dt>
+              <dd id="lvVerdictRiskLogic">—</dd>
+            <dt data-i18n="verdict_fluo_suggests">Ce que la fluorescence suggère</dt>
+              <dd id="lvVerdictSuggests">—</dd>
+            <dt data-i18n="verdict_fluo_not_prove">Ce que ça ne prouve pas</dt>
+              <dd id="lvVerdictNotProve">—</dd>
+            <dt data-i18n="verdict_follow_up">Suivi en cas de persistance</dt>
+              <dd id="lvVerdictFollowUp">—</dd>
+            <dt data-i18n="verdict_confirmation">Confirmation par instruments</dt>
+              <dd id="lvVerdictConfirmation">—</dd>
           </dl>
         </details>
-        <!-- Champs JS-touched mais cachés visuellement, conservés pour ne pas
-             casser les setters render(). Économie de chirurgie côté JS. -->
+        <!-- Vigilance + Frameworks toujours hidden : utilisés pour le PDF
+             export et le history seulement, pas dans le verdict card live. -->
         <span id="lvVerdictVigilance" hidden><span id="lvVerdictVigilanceText"></span></span>
-        <span id="lvVerdictNotProve" hidden></span>
-        <span id="lvVerdictFollowUp" hidden></span>
-        <span id="lvVerdictConfirmation" hidden></span>
         <span id="lvVerdictFrameworks" hidden></span>
       </div>
 
@@ -10278,6 +10293,13 @@ const I18N = {
     pdf_quality_warning: "Qualité d'image",
     pdf_page: "Page",
     disclaimer_eyebrow: "Avertissement légal",
+    verdict_show_reasoning:    "Voir le raisonnement complet",
+    verdict_surface_logic:     "Logique de la surface",
+    verdict_risk_logic:        "Chaîne de risque",
+    verdict_fluo_suggests:     "Ce que la fluorescence suggère",
+    verdict_fluo_not_prove:    "Ce que ça ne prouve pas",
+    verdict_follow_up:         "Suivi en cas de persistance",
+    verdict_confirmation:      "Confirmation par instruments",
     home_eyebrow: "Inspection UV-A · 365 nm",
     home_title: "Prêt à inspecter.",
     home_how: "Comment ça marche",
@@ -10784,6 +10806,13 @@ const I18N = {
     pdf_quality_warning: "Image quality",
     pdf_page: "Page",
     disclaimer_eyebrow: "Legal disclaimer",
+    verdict_show_reasoning:    "Show full reasoning",
+    verdict_surface_logic:     "Surface logic",
+    verdict_risk_logic:        "Risk chain",
+    verdict_fluo_suggests:     "What the fluorescence suggests",
+    verdict_fluo_not_prove:    "What it does NOT prove",
+    verdict_follow_up:         "Follow-up if it persists",
+    verdict_confirmation:      "Instrument confirmation",
     home_eyebrow: "UV-A inspection · 365 nm",
     home_title: "Ready to inspect.",
     home_how: "How it works",
@@ -11355,6 +11384,13 @@ const I18N = {
     pdf_quality_warning: "Calidad de imagen",
     pdf_page: "Página",
     disclaimer_eyebrow: "Aviso legal",
+    verdict_show_reasoning:    "Ver el razonamiento completo",
+    verdict_surface_logic:     "Lógica de la superficie",
+    verdict_risk_logic:        "Cadena de riesgo",
+    verdict_fluo_suggests:     "Lo que la fluorescencia sugiere",
+    verdict_fluo_not_prove:    "Lo que NO prueba",
+    verdict_follow_up:         "Seguimiento si persiste",
+    verdict_confirmation:      "Confirmación por instrumentos",
     home_eyebrow: "Inspección UV-A · 365 nm",
     home_title: "Listo para inspeccionar.",
     home_how: "Cómo funciona",
@@ -11853,6 +11889,13 @@ const I18N = {
     pdf_quality_warning: "Bildqualität",
     pdf_page: "Seite",
     disclaimer_eyebrow: "Rechtlicher Hinweis",
+    verdict_show_reasoning:    "Vollständige Begründung anzeigen",
+    verdict_surface_logic:     "Oberflächenlogik",
+    verdict_risk_logic:        "Risikokette",
+    verdict_fluo_suggests:     "Was die Fluoreszenz nahelegt",
+    verdict_fluo_not_prove:    "Was sie NICHT beweist",
+    verdict_follow_up:         "Folgemassnahme bei Persistenz",
+    verdict_confirmation:      "Bestätigung mit Instrumenten",
     home_eyebrow: "UV-A-Inspektion · 365 nm",
     home_title: "Bereit zur Inspektion.",
     home_how: "So funktioniert es",
@@ -18322,6 +18365,20 @@ const Annotator = (() => {
       /* Préserve la structure tagged array (Concept 2) si présente.
          Sinon préserve la string ou array de strings (fallback legacy). */
       observations: raw.observations || [],
+      /* V108 — BUG CRITIQUE FIXÉ : les 5 champs ci-dessous sont REQUIS par
+         le schema Claude (api/analyze.js ligne 889) et utilisés par le
+         verdict card (#lucensVerdictCard) qui vérifie
+         `if (card && result && reasoning && recommendation)` ligne 20235.
+         Avant V108, ils n'étaient PAS propagés ici → le card restait
+         hidden EN PROD MÊME AVEC réponse Claude valide. Bug silencieux,
+         jamais détecté car le fallback partiel les remplit (lignes
+         17718-17734) → en mode partiel le card s'affiche, en mode
+         normal il ne s'affiche pas. Inversion contre-intuitive. */
+      result: raw.result || null,
+      recommendation: raw.recommendation || null,
+      contextual_reasoning: raw.contextual_reasoning || null,
+      point_of_vigilance: raw.point_of_vigilance || null,
+      reference_logic: raw.reference_logic || null,
       /* Données enrichies préservées pour usage futur */
       image_quality: raw.image_quality,
       global_assessment: raw.global_assessment,
