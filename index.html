@@ -6260,10 +6260,17 @@ body.has-sw-update .home {
    Architecture inchangée — les setters render() continuent d'écrire dans
    les éléments, juste invisibles. Économie de tokens API à faire dans V45.
    ─────────────────────────────────────────────────────────────────────────── */
+/* V109 — #zonesVerdictCard REMIS EN SERVICE.
+   Avant V109 : forcé en display:none!important "économie tokens V45".
+   Mais c'est le card "Verdict détaillé par zone" — pour chaque zone :
+   hypothèse (sur 16 codes officiels) + axes color/texture/shape +
+   action_recommendation. Information HACCP haute valeur dense par zone.
+   Le hide CSS était combiné à mapZone qui strippait les champs : le
+   code calculait et le CSS cachait → travail entièrement perdu.
+   Maintenant : géré normalement par .hidden via JS render(). */
 #decisionCard,
 #missingContextCard,
-#differentialCard,
-#zonesVerdictCard {
+#differentialCard {
   display: none !important;
 }
 
@@ -18312,7 +18319,7 @@ const Annotator = (() => {
       evidence: z.evidence,
       risk_score: z.risk_score,
       artifact_rejection: z.artifact_rejection,
-      _uv_bleed: z._metadata?.uvBleed,
+      _uv_bleed: z._uv_bleed ?? z._metadata?.uvBleed,
       _morpho: z._metadata?.morpho,
       _uncertainties: z._metadata?.uncertainties || [],
       _uv_bleed_override: z._uv_bleed_override === true,
@@ -18320,6 +18327,18 @@ const Annotator = (() => {
       y: z.bbox_normalized && z.bbox_normalized.y,
       w: z.bbox_normalized && z.bbox_normalized.w,
       h: z.bbox_normalized && z.bbox_normalized.h,
+      /* V109 — Champs Lucens IA v3 (verdict structuré par zone).
+         Avant V109 : strip silencieux → zonesVerdictCard jamais affiché
+         malgré que Claude retourne ces champs. Le filtre ligne 20719
+         (`zonesV3 = zones.filter(z => z.hypothesis || z.color || ...)`)
+         tombait toujours à 0. Card hidden par défaut, jamais activée.
+         Même pattern que V108 (result/recommendation strip). */
+      hypothesis: z.hypothesis || null,
+      color: z.color || null,
+      texture: z.texture || null,
+      shape: z.shape || null,
+      action_recommendation: z.action_recommendation || null,
+      confidence_label: z.confidence_label || null,
     });
 
     /* CARTOGRAPHIE — toutes les zones IA non-artefact, pas de filtre area_pct
@@ -18379,6 +18398,12 @@ const Annotator = (() => {
       contextual_reasoning: raw.contextual_reasoning || null,
       point_of_vigilance: raw.point_of_vigilance || null,
       reference_logic: raw.reference_logic || null,
+      /* V109 — Même pattern V108 : analyzable + analyzability_score requis
+         pour le heroConfidence (fiabilité d'analyse) qui ne s'affichait
+         JAMAIS car analyzability_score = undefined après normalize.
+         Plus l'affichage du refusalCard (analyzable=false). */
+      analyzable: raw.analyzable !== false,
+      analyzability_score: typeof raw.analyzability_score === 'number' ? raw.analyzability_score : null,
       /* Données enrichies préservées pour usage futur */
       image_quality: raw.image_quality,
       global_assessment: raw.global_assessment,
@@ -20791,7 +20816,9 @@ const Annotator = (() => {
           if (z.action_recommendation) {
             item.appendChild(el('div', 'zone-verdict-action', z.action_recommendation));
           }
-          /* Meta : aire + intensité + code interne */
+          /* Meta : aire + intensité (code interne supprimé V109.1 — redondant
+             avec le titre humain + violait directive CAPS_UNDERSCORE via
+             text-transform:uppercase du .zone-verdict-meta). */
           const meta = el('div', 'zone-verdict-meta');
           if (typeof z.area_pct === 'number') {
             meta.appendChild(el('span', '', 'Aire ' + z.area_pct.toFixed(1) + '%'));
@@ -20799,8 +20826,7 @@ const Annotator = (() => {
           if (z.intensity) {
             meta.appendChild(el('span', '', 'Intensité ' + z.intensity));
           }
-          meta.appendChild(el('span', '', 'Code: ' + hyp));
-          item.appendChild(meta);
+          if (meta.firstChild) item.appendChild(meta);
           verdictList.appendChild(item);
         });
       }
