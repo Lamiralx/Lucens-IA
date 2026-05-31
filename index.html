@@ -2727,6 +2727,32 @@ input[type="file"] { display: none; }
 }
 .card-body { padding: var(--space-md); }
 
+/* V113 — Summary cliquable pour cards converties en <details>
+   (zonesVerdictCard). Retire le marker triangle natif, ajoute curseur
+   pointer + rotation du chevron, garde le layout space-between du
+   .card-hdr existant via un wrapper .card-hdr-end. */
+.zones-verdict-summary {
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.zones-verdict-summary::-webkit-details-marker { display: none; }
+.zones-verdict-summary::marker                  { display: none; }
+.zones-verdict-summary:hover .card-chev { color: var(--accent); }
+.card-hdr-end {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.card-chev {
+  color: var(--ink-tertiary);
+  transition: transform .18s ease, color .15s ease;
+  flex-shrink: 0;
+}
+details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
+  transform: rotate(180deg);
+}
+
 /* ─── IMAGE VIEWER — segmented control instrument-grade ─── */
 .viewer-tabs {
   display: flex; gap: 0; padding: 0; background: var(--surface-low);
@@ -9588,16 +9614,25 @@ body.lv-open { overflow: hidden; touch-action: none; }
           </div>
         </div>
 
-        <!-- Verdict structuré par zone (Lucens IA v3 — liste fermée 15 + matrice 3D) -->
-        <div class="card zones-verdict-card" id="zonesVerdictCard" hidden>
-          <div class="card-hdr">
+        <!-- Verdict structuré par zone (Lucens IA v3 — liste fermée 15 + matrice 3D)
+             V113 — Converti en <details> collapsed par défaut. Même logique que
+             V112 observationsCard : réduit la densité visible. Le `hidden`
+             attribute reste géré par le JS render (toggle quand zones IA v3
+             présentes). Pattern aligné avec .lv-verdict-details + obs card. -->
+        <details class="card zones-verdict-card" id="zonesVerdictCard" hidden>
+          <summary class="card-hdr zones-verdict-summary">
             <span class="t" data-i18n="card_verdict">Verdict détaillé par zone</span>
-            <span class="badge" id="zonesVerdictCount">—</span>
-          </div>
+            <span class="card-hdr-end">
+              <span class="badge" id="zonesVerdictCount">—</span>
+              <svg class="card-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </span>
+          </summary>
           <div class="card-body">
             <div id="zonesVerdictList" class="zones-verdict-list"></div>
           </div>
-        </div>
+        </details>
 
       </div>
 
