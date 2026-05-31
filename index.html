@@ -8871,7 +8871,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               </svg>
               <span class="home-sector-text">
                 <span class="home-sector-label" id="sectorChipLabel" data-i18n="sector_cta">Configurer le contexte d'inspection</span>
-                <span class="home-sector-hint" id="sectorChipHint" data-i18n="sector_cta_hint">Pour des analyses plus précises</span>
+                <span class="home-sector-hint" id="sectorChipHint" data-i18n="sector_cta_hint">Adapte l'IA à votre secteur</span>
               </span>
               <svg class="home-sector-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M9 6l6 6-6 6"/>
@@ -10006,8 +10006,8 @@ const I18N = {
   fr: {
     hdr_title: "LUCENS",
     hub_eyebrow: "UV-A 365 nm · Lucens IA",
-    upload_h1: "Voyez ce que l'Å“il ne voit pas",
-    upload_lead: "Indices de biofilm, résidus organiques et traces chimiques révélés par UV-A 365 nm + Lucens IA",
+    upload_h1: "Voyez ce que l'œil ne voit pas",
+    upload_lead: "Biofilm, résidus organiques, traces chimiques : révélés sous UV-A 365 nm.",
     intake_or: "ou",
     hero_sup: "Longueur d'onde UV-A · ISO 21348",
     tele_ready: "SYSTÈME PRÊT",
@@ -10019,8 +10019,8 @@ const I18N = {
     quality_issues_title: "Défauts détectés",
     quality_recs_title: "Pour la prochaine prise de vue",
     quality_no_issues: "Aucun défaut critique détecté",
-    quality_no_specific_issue: "Aspects mineurs à améliorer",
-    quality_no_recommendations: "Photo de bonne qualité. Aucune recommandation spécifique.",
+    quality_no_specific_issue: "",
+    quality_no_recommendations: "Photo exploitable.",
     quality_panel_cta_open: "Détails & conseils photo",
     quality_panel_cta_close: "Réduire",
     q_blur:          "Photo floue",
@@ -10045,7 +10045,7 @@ const I18N = {
     sw_update_close_aria: "Fermer la notification de mise à jour",
     sw_update_eyebrow:    "Lucens IA",
     sw_update_title:      "Nouvelle version disponible",
-    sw_update_desc:       "Rechargez pour profiter des dernières améliorations et correctifs.",
+    sw_update_desc:       "Recharge pour activer la mise à jour.",
     sw_update_reload:     "Recharger maintenant",
     loader_step1: "Réception de votre photo",
     loader_step2: "Contrôle qualité d'image",
@@ -10260,7 +10260,7 @@ const I18N = {
     h_title: "Historique",
     h_home_all: "Tout voir",
     h_empty_t: "Aucune inspection",
-    h_empty_s: "Vos analyses apparaîtront ici, enregistrées sur cet appareil.",
+    h_empty_s: "Stockage local sur cet appareil.",
     h_unnamed: "Inspection sans nom",
     h_zone_one: "{n} zone",
     h_zone_other: "{n} zones",
@@ -10310,7 +10310,7 @@ const I18N = {
     hiw_p1: "Lucens repère les indices fluorescents (résidus organiques, biofilms, traces chimiques) invisibles sous une lumière normale.",
     hiw_p2: "Vous obtenez les zones détectées sur votre image, un diagnostic en langage clair, un score de risque et un rapport PDF prêt à archiver.",
     sector_cta: "Configurer le contexte d'inspection",
-    sector_cta_hint: "Pour des analyses plus précises",
+    sector_cta_hint: "Adapte l'IA à votre secteur",
     sector_edit_label: "Contexte d'inspection · Modifier",
     disclaimer_kp1_label: "Nature",
     disclaimer_kp1: "Lucens IA est un outil d'aide à l'inspection visuelle par fluorescence UV-A 365 nm. Les conclusions proposées sont indicatives.",
@@ -10325,16 +10325,16 @@ const I18N = {
     disclaimer_kp6_label: "Détails",
     disclaimer_kp6: "Politique de confidentialité complète et droit à l'oubli",
     err_load: "Impossible d'analyser cette image.",
-    err_api: "Lucens IA indisponible. Réessayez dans quelques instants.",
-    err_api_fallback: "Lucens IA indisponible. Réessayez dans quelques instants.",
-    err_api_overloaded: "Lucens IA indisponible. Réessayez dans quelques instants.",
+    err_api: "Lucens IA indisponible. Réessayez dans 1 minute.",
+    err_api_fallback: "Lucens IA indisponible. Réessayez dans 1 minute.",
+    err_api_overloaded: "Lucens IA indisponible. Réessayez dans 1 minute.",
     err_api_rate: "Trop d'analyses lancées. Patientez avant de réessayer.",
     err_api_too_large: "Photo trop volumineuse. Réessayez avec une image plus légère.",
     err_api_format: "Format non supporté. Utilisez JPEG, PNG ou HEIC.",
-    err_api_server: "Lucens IA indisponible. Réessayez dans quelques instants.",
-    err_api_bad_request: "Lucens IA indisponible. Réessayez dans quelques instants.",
+    err_api_server: "Lucens IA indisponible. Réessayez dans 1 minute.",
+    err_api_bad_request: "Lucens IA indisponible. Réessayez dans 1 minute.",
     err_network_offline: "Connexion indisponible. Vérifiez votre réseau.",
-    err_network_timeout: "Lucens IA indisponible. Réessayez dans quelques instants.",
+    err_network_timeout: "Lucens IA indisponible. Réessayez dans 1 minute.",
     toast_partial_response: "Analyse partielle. Certains champs ont été complétés par défaut. Relancez si nécessaire.",
     toast_perspective_ok: "Perspective redressée automatiquement pour plus de précision.",
     intake_help_btn: "Comment ça marche · Prendre la photo",
@@ -16596,7 +16596,7 @@ const Annotator = (() => {
         label.textContent = tr('sector_cta', 'Configurer le contexte d\'inspection');
         if (hint) {
           hint.setAttribute('data-i18n', 'sector_cta_hint');
-          hint.textContent = tr('sector_cta_hint', 'Pour des analyses plus précises');
+          hint.textContent = tr('sector_cta_hint', 'Adapte l\'IA à votre secteur');
         }
         chip.classList.add('is-empty');
       }
@@ -24242,7 +24242,7 @@ const Annotator = (() => {
       if (!items.length){
         var empty = E('div','hist-empty');
         empty.appendChild(E('div','hist-empty-title', tr('h_empty_t', 'Aucune inspection')));
-        empty.appendChild(E('div','hist-empty-sub', tr('h_empty_s', 'Vos analyses apparaîtront ici, enregistrées sur cet appareil.')));
+        empty.appendChild(E('div','hist-empty-sub', tr('h_empty_s', 'Stockage local sur cet appareil.')));
         inner.appendChild(empty);
         return;
       }
@@ -24652,7 +24652,7 @@ const Annotator = (() => {
       if (!items.length){
         var empty = E('div','home-history-empty');
         empty.appendChild(E('div','home-history-empty-t', tr('h_empty_t', 'Aucune inspection')));
-        empty.appendChild(E('div','home-history-empty-s', tr('h_empty_s', 'Vos analyses apparaîtront ici, enregistrées sur cet appareil.')));
+        empty.appendChild(E('div','home-history-empty-s', tr('h_empty_s', 'Stockage local sur cet appareil.')));
         homeHistBody.appendChild(empty);
         requestAnimationFrame(updateHistGauge);
         return;
@@ -24785,7 +24785,7 @@ const Annotator = (() => {
       <div class="lucens-sw-update-text">
         <span class="lucens-sw-update-eyebrow" data-i18n="sw_update_eyebrow">Lucens IA</span>
         <h3 class="lucens-sw-update-title" data-i18n="sw_update_title">Nouvelle version disponible</h3>
-        <p class="lucens-sw-update-desc" data-i18n="sw_update_desc">Rechargez pour profiter des dernières améliorations et correctifs.</p>
+        <p class="lucens-sw-update-desc" data-i18n="sw_update_desc">Recharge pour activer la mise à jour.</p>
       </div>
     </div>
     <div class="lucens-sw-update-actions">
