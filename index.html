@@ -3398,7 +3398,10 @@ input[type="file"] { display: none; }
 .observations-card.visible { display: block; }
 /* V62 — Titre observations refondu : retire le trait décoratif que les
    utilisateurs lisaient comme un em-dash parasite. Titre passe en
-   font-display 16px gras, vraie hiérarchie visuelle séparée du body. */
+   font-display 16px gras, vraie hiérarchie visuelle séparée du body.
+   V112 — Le header est maintenant un <summary> cliquable (toggle natif
+   <details>). Cursor pointer + flex layout pour titre+chevron + retire
+   le marker triangle natif du navigateur. */
 .observations-hdr {
   font-family: var(--font-display);
   font-size: 16px;
@@ -3406,9 +3409,34 @@ input[type="file"] { display: none; }
   letter-spacing: -0.005em;
   text-transform: none;
   color: var(--ink-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  cursor: pointer;
+  list-style: none;          /* Firefox marker */
+  user-select: none;
+  /* Borders only when expanded — closed state stays minimal */
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-bottom: none;
+  transition: margin-bottom .15s ease, padding-bottom .15s ease;
+}
+.observations-hdr::-webkit-details-marker { display: none; }   /* Safari/Chrome marker */
+.observations-hdr::marker                  { display: none; }
+.observations-hdr:hover .observations-chev { color: var(--accent); }
+.observations-chev {
+  color: var(--ink-tertiary);
+  transition: transform .18s ease, color .15s ease;
+  flex-shrink: 0;
+}
+.observations-card[open] .observations-hdr {
   margin-bottom: 18px;
   padding-bottom: 10px;
   border-bottom: 1px solid var(--hairline);
+}
+.observations-card[open] .observations-chev {
+  transform: rotate(180deg);
 }
 .observations-list {
   display: flex;
@@ -9472,12 +9500,19 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span id="analyzabilityWarningText" hidden></span>
             </div>
 
-            <div class="observations-card" id="observationsCard">
-              <div class="observations-hdr">
+            <!-- V112 — observationsCard converti en <details> collapsed
+                 par défaut. Réduit la paroi de texte par défaut sur le rapport
+                 (multi-paragraphes IA verbeux). L'inspecteur ouvre s'il
+                 veut creuser. Pattern aligné avec le repli verdict. -->
+            <details class="observations-card" id="observationsCard">
+              <summary class="observations-hdr">
                 <span data-i18n="obs_title">Observations Lucens IA</span>
-              </div>
+                <svg class="observations-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </summary>
               <div class="observations-text" id="observationsText"></div>
-            </div>
+            </details>
 
             <!-- DECISION_BOUNDARY parsé en 4 sections (audit ChatGPT Commit 4 P2.3).
                  Affiché si l'IA produit un decision_summary structuré dans la
