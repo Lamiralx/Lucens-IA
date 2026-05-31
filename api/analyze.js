@@ -353,9 +353,7 @@ Tu DOIS retourner UNIQUEMENT un JSON valide conforme au schéma fourni. Pas de t
 - contextual_reasoning.what_fluorescence_suggests : ce que la fluo permet de dire.
 - contextual_reasoning.what_fluorescence_does_not_prove : ce qu'elle ne permet PAS de prouver.
 - recommendation.primary_action : 1 phrase impérative ACTIONNABLE.
-- recommendation.why_this_action : pourquoi cette action est proportionnée.
 - recommendation.follow_up : étape suivante (recontrôle UV, confirmation, etc.).
-- recommendation.sector_adaptation : adaptation au secteur si pertinent (vide si générique).
 - recommendation.confirmation_if_needed : méthode de confirmation suggérée (ATP, écouvillonnage ISO 18593, swab, microbiologie) UNIQUEMENT si pertinent.
 - point_of_vigilance.text : 1 phrase d'alerte si artefact lumineux possible ou hypothèse alternative à exclure.
 - reference_logic.applicable_frameworks : liste courte des référentiels pertinents pour CE cas (ex : ["Codex CXC 1-1969", "ISO 22000"]). Vide si pas pertinent.
@@ -630,10 +628,6 @@ En PLUS du raisonnement contextuel V21, tu DOIS remplir ces champs UI legacy :
 
 - **image_quality** : { usable (boolean), warning (string vide ou alerte courte), limitations (array de strings) }
 
-- **differential_diagnosis** : array de 2-4 hypothèses alternatives. Pour chaque : { hypothesis (code), label_human ("Résidu détergent" etc.), probability 0-1, urgency "low"|"medium"|"high"|"critical", reasoning (1 phrase), priority_test (boolean) }
-
-- **recommended_validation** : array de strings (ATP, écouvillonnage ISO 18593, swab, etc.) — méthodes de validation suggérées.
-
 - **missing_context** : array de strings — infos manquantes qui amélioreraient l'analyse si l'utilisateur les précisait.
 
 ═══════════════════════════════════════════════════════════════
@@ -677,7 +671,7 @@ Avant de produire le JSON, vérifie :
 4. La recommandation est PROPORTIONNÉE au risque
 5. Tu n'as PAS affirmé une contamination microbiologique sans confirmation
 6. zones[] est rempli pour la cartographie visuelle
-7. score + riskLevel + observations + probabilities + differential_diagnosis sont remplis pour l'UI
+7. score + riskLevel + observations + probabilities sont remplis pour l'UI
 8. AUCUN tiret cadratin "—" dans tes textes (ni "Lucens IA —", ni séparateur stylistique)
 9. Champs sans contenu utile : laisse vides plutôt que remplir avec du remplissage
 
@@ -709,17 +703,17 @@ const SCHEMA = {
       additionalProperties: false,
     },
 
-    /* V21 — Résultat principal : identité probable du signal */
+    /* V21 — Résultat principal : identité probable du signal.
+       V111 : retrait probable_identity + signal_nature (dead fields jamais
+       affichés dans aucune surface UI/PDF/history — confirmé par grep). */
     result: {
       type: "object",
       properties: {
         title:            { type: "string" },
-        probable_identity:{ type: "string" },
-        signal_nature:    { type: "string" },
         confidence_label: { type: "string" },
         interpretation:   { type: "string" },
       },
-      required: ["title", "probable_identity", "signal_nature", "confidence_label", "interpretation"],
+      required: ["title", "confidence_label", "interpretation"],
       additionalProperties: false,
     },
 
@@ -737,17 +731,18 @@ const SCHEMA = {
     },
 
     /* V21 — Recommandation actionnable */
+    /* V111 : retrait why_this_action + sector_adaptation. Justification action
+       = bruit si action bien écrite. Sector adaptation : la primary_action
+       doit déjà être sector-aware via input_context. */
     recommendation: {
       type: "object",
       properties: {
         title:              { type: "string" },
         primary_action:     { type: "string" },
-        why_this_action:    { type: "string" },
         follow_up:          { type: "string" },
-        sector_adaptation:  { type: "string" },
         confirmation_if_needed: { type: "string" },
       },
-      required: ["title", "primary_action", "why_this_action", "follow_up", "sector_adaptation", "confirmation_if_needed"],
+      required: ["title", "primary_action", "follow_up", "confirmation_if_needed"],
       additionalProperties: false,
     },
 
@@ -864,24 +859,9 @@ const SCHEMA = {
       },
     },
 
-    /* Différentiel diagnostique */
-    differential_diagnosis: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          hypothesis:    { type: "string" },
-          label_human:   { type: "string" },
-          probability:   { type: "number" },
-          urgency:       { type: "string" },
-          reasoning:     { type: "string" },
-          priority_test: { type: "boolean" },
-        },
-      },
-    },
-
-    /* Tests de validation recommandés */
-    recommended_validation: { type: "array", items: { type: "string" } },
+    /* V111 : différentiel diagnostique + recommended_validation retirés.
+       Inspecteur HACCP agit sur l'hypothèse la plus probable, pas sur le
+       différentiel. recommended_validation doublon avec confirmation_if_needed. */
 
     /* Contexte manquant */
     missing_context: { type: "array", items: { type: "string" } },
@@ -1148,25 +1128,7 @@ EXEMPLE DE SORTIE ATTENDUE (référence de format et de niveau technique — à 
     "Les zones vert-lime saturées sont retenues car elles sont localisées, texturées et nettement plus intenses que le fond.",
     "La signature est compatible avec un résidu organique ou mixte, à confirmer par ATP-métrie ou écouvillonnage ciblé."
   ],
-  "recommended_validation": [
-    "Effectuer un écouvillonnage ATP sur Z1 et Z2.",
-    "Comparer avec une photo après nettoyage pour vérifier la disparition du signal.",
-    "Prélever si le résultat ATP reste élevé ou si la zone est critique HACCP."
-  ],
-  "differential_diagnosis": [
-    { "hypothesis": "organic", "label_human": "Résidu alimentaire séché", "probability": 0.62, "urgency": "medium",
-      "reasoning": "Couleur vert-lime saturée et texture irrégulière typiques d'un résidu organique sur métal.",
-      "priority_test": true },
-    { "hypothesis": "mixed", "label_human": "Mixte organique + chimique (rinçage incomplet)", "probability": 0.25, "urgency": "high",
-      "reasoning": "Présence locale de cyan dans la traînée évoque un résidu de détergent mal rincé combiné au résidu alimentaire.",
-      "priority_test": true },
-    { "hypothesis": "biofilm", "label_human": "Biofilm bactérien précoce", "probability": 0.10, "urgency": "high",
-      "reasoning": "Hypothèse à exclure si la zone reste humide entre nettoyages, malgré probabilité faible.",
-      "priority_test": false },
-    { "hypothesis": "fatty", "label_human": "Film de matière grasse", "probability": 0.03, "urgency": "low",
-      "reasoning": "Improbable car la signature attendue serait orange-ambre ou irisée, non observée ici.",
-      "priority_test": false }
-  ]
+  "missing_context": []
 }
 
 Fin : respecte strictement la langue ${langName} et retourne uniquement le JSON.`;

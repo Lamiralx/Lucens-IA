@@ -3595,147 +3595,9 @@ input[type="file"] { display: none; }
   margin: 0 auto;
 }
 
-/* ─── DIAGNOSTIC DIFFÉRENTIEL — strict design system Lucens
-   Tokens utilisés : font-display / font-mono · t-body / t-mono / t-eyebrow ·
-   surface / border / risk-low / risk-mid / risk-hi / accent. */
-.differential-card {
-  margin-top: var(--space-md);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  /* Vague 5A.5 — padding resserré 22/26/24 → 16/20/18 pour densifier. */
-  padding: 16px 20px 18px;
-  display: none;
-}
-.differential-card.visible { display: block; }
-.differential-hdr {
-  font-family: var(--font-mono);
-  font-size: var(--t-eyebrow-size);
-  font-weight: var(--t-eyebrow-weight);
-  letter-spacing: var(--t-eyebrow-tracking);
-  text-transform: uppercase;
-  color: var(--lucens-signature);
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.differential-hdr::before {
-  content: '';
-  width: 18px;
-  height: 1px;
-  background: var(--lucens-signature);
-  flex-shrink: 0;
-}
-.differential-hint {
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  font-weight: 500;
-  color: var(--text-2);
-  letter-spacing: 0.06em;
-  text-transform: none;
-  margin-left: auto;
-}
-.differential-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-.diff-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: var(--space-2) var(--space-3);
-  padding: 16px 0;
-  border-top: 1px solid var(--hairline);
-  position: relative;
-}
-.diff-row:first-child { border-top: 0; padding-top: 0; }
-/* PRIORITÉ : marqueur retiré (point + badge) à la demande utilisateur.
-   La distinction entre hypothèses prioritaires reste portée par l'urgence
-   (badge coloré low/medium/high/critical) et l'ordre de tri (priority en tête). */
-.diff-priority-flag { display: none; }
-.diff-label {
-  font-family: var(--font-display);
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ink-primary);
-  line-height: 1.35;
-  letter-spacing: -0.008em;
-  grid-column: 1;
-}
-.diff-meta {
-  grid-column: 2;
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  flex-shrink: 0;
-}
-.diff-prob {
-  font-family: var(--font-mono);
-  font-size: var(--t-mono-size);
-  font-weight: 600;
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
-  min-width: 38px;
-  text-align: right;
-}
-.diff-urgency {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  font-weight: var(--t-eyebrow-weight);
-  letter-spacing: var(--t-eyebrow-tracking);
-  text-transform: uppercase;
-  padding: 2px 7px;
-  border-radius: 3px;
-  border: 1px solid currentColor;
-  white-space: nowrap;
-}
-.diff-urgency.low      { color: var(--risk-low); }
-.diff-urgency.medium   { color: var(--risk-mid); }
-.diff-urgency.high     { color: var(--risk-hi); }
-.diff-urgency.critical {
-  color: var(--bg);
-  background: var(--risk-hi);
-  border-color: var(--risk-hi);
-}
-.diff-bar-wrap {
-  grid-column: 1 / -1;
-  height: 3px;
-  background: var(--surface-low);
-  border-radius: 1px;
-  overflow: hidden;
-  margin-top: 6px;
-}
-.diff-bar {
-  height: 100%;
-  width: 0;
-  background: var(--accent);            /* fallback (devrait jamais s'afficher) */
-  border-radius: 1px;
-  transition: width 0.7s cubic-bezier(.4, 0, .2, 1);
-}
-/* Couleur de la jauge ALIGNÉE sur l'urgence : feedback visuel cohérent
-   entre le badge et la barre de probabilité (même palette --risk-*). */
-.diff-row[data-urgency="low"]      .diff-bar { background: var(--risk-low); }
-.diff-row[data-urgency="medium"]   .diff-bar { background: var(--risk-mid); }
-.diff-row[data-urgency="high"]     .diff-bar { background: var(--risk-hi); }
-.diff-row[data-urgency="critical"] .diff-bar { background: var(--risk-hi); box-shadow: 0 0 8px rgba(232, 90, 74, 0.55); }
-.diff-reasoning {
-  grid-column: 1 / -1;
-  font-family: var(--font-display);
-  font-size: 13px;
-  color: var(--ink-tertiary);
-  line-height: 1.55;
-  margin-top: 10px;
-}
-@media (max-width: 480px) {
-  .differential-card { padding: 12px 14px 14px; }
-  .diff-row { padding: var(--space-2) 0; }
-  .diff-label { font-size: 13px; }
-  .diff-prob { font-size: 11.5px; }
-  .diff-urgency { font-size: 8.5px; padding: 2px 6px; }
-  .diff-reasoning { font-size: 11.5px; }
-}
+/* V111 — Bloc CSS différentiel diagnostique (.differential-card + .diff-*)
+   supprimé. Le card HTML était caché en CSS depuis V45 + le champ Claude
+   differential_diagnosis a été retiré du schéma. Plus rien à styler. */
 
 /* ─── LÉGENDE — panneau riche par zone ─── */
 .legend {
@@ -6265,9 +6127,9 @@ body.has-sw-update .home {
    Le hide CSS était combiné à mapZone qui strippait les champs : le
    code calculait et le CSS cachait → travail entièrement perdu.
    Maintenant : géré normalement par .hidden via JS render(). */
+/* V111 — #differentialCard retiré (HTML supprimé, plus besoin de la règle). */
 #decisionCard,
-#missingContextCard,
-#differentialCard {
+#missingContextCard {
   display: none !important;
 }
 
@@ -9648,17 +9510,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <div class="missing-context-list" id="missingContextList"></div>
             </div>
 
-            <!-- DIAGNOSTIC DIFFÉRENTIEL — hypothèses alternatives + urgence (Phase 4) -->
-            <div class="differential-card" id="differentialCard">
-              <div class="differential-hdr">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/>
-                </svg>
-                <span data-i18n="diff_title">Diagnostic différentiel</span>
-                <span class="differential-hint" data-i18n="diff_hint">Hypothèses & priorité de test</span>
-              </div>
-              <div class="differential-list" id="differentialList"></div>
-            </div>
+            <!-- V111 — differentialCard supprimé (hypothèses alternatives).
+                 Inspecteur HACCP agit sur l'hypothèse la plus probable,
+                 pas sur le différentiel. Champ retiré du prompt + schéma. -->
           </div>
         </div>
 
@@ -15507,10 +15361,11 @@ const Annotator = (() => {
   }, 0);
 
   function exportReport(ctx) {
+    /* V111 — destructure simplifié : retrait recommended_validation +
+       differential_diagnosis (champs supprimés du prompt). */
     const {
       score, riskLevel, coveragePercent, probabilities, zoneCount, observations, _source,
-      zones = [], image_quality, reasoning_summary, recommended_validation = [],
-      differential_diagnosis = [],
+      zones = [], image_quality, reasoning_summary,
       /* V23 — nouveaux champs V21 pour rapport pédagogique complet */
       result, recommendation, contextual_reasoning, point_of_vigilance, reference_logic,
       input_context,
@@ -15710,9 +15565,8 @@ const Annotator = (() => {
         py += 5;
         writeWrappedText(recommendation.primary_action, 10, [11, 13, 18], contentW, 5);
         py += 1;
-        if (recommendation.why_this_action) {
-          writeWrappedText(recommendation.why_this_action, 8.5, [60, 70, 85], contentW, 4.2);
-        }
+        /* V111 — why_this_action retiré : si l'action est bien écrite,
+           elle se suffit. Justifier = bruit pour l'inspecteur HACCP. */
         py += 2;
       }
       if (point_of_vigilance && point_of_vigilance.text) {
@@ -15763,14 +15617,8 @@ const Annotator = (() => {
         writeWrappedText(recommendation.follow_up, 9, [11, 13, 18], contentW, 4.2);
         py += 1.5;
       }
-      if (recommendation.sector_adaptation) {
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(7.5);
-        pdf.setTextColor(106, 116, 145);
-        pdf.text('ADAPTATION SECTORIELLE', margin, py); py += 3.6;
-        writeWrappedText(recommendation.sector_adaptation, 9, [11, 13, 18], contentW, 4.2);
-        py += 1.5;
-      }
+      /* V111 — sector_adaptation retiré : la primary_action doit déjà
+         être sector-aware via input_context envoyé en amont au prompt. */
       if (recommendation.confirmation_if_needed) {
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(7.5);
@@ -15938,111 +15786,11 @@ const Annotator = (() => {
       }
     }
 
-    /* ─── DIAGNOSTIC DIFFÉRENTIEL (Phase 4) ──────────────────────────────
-       Hypothèses alternatives + urgence + priorité de test.
-       Affiché en TABLEAU compact pour audit lisible. */
-    if (Array.isArray(differential_diagnosis) && differential_diagnosis.length) {
-      const sortedDiff = [...differential_diagnosis].sort((a, b) => {
-        if (!!b.priority_test - !!a.priority_test !== 0) return !!b.priority_test - !!a.priority_test;
-        return (b.probability || 0) - (a.probability || 0);
-      });
-      py += 2;
-      ensurePageSpace(10 + sortedDiff.length * 9);
-      sectionTitle(t('diff_title'));
-      /* Couleurs urgence : alignées sur les tokens design --risk-low/mid/hi.
-         Critical réutilise --risk-hi en mode rempli (max alerte). */
-      const urgColor = (u) => ({
-        low:      [111, 207, 142],   /* --risk-low #6FCF8E */
-        medium:   [232, 193, 106],   /* --risk-mid #E8C16A */
-        high:     [232,  90,  74],   /* --risk-hi  #E85A4A */
-        critical: [232,  90,  74],   /* --risk-hi  fond rempli */
-      }[u] || [120, 130, 155]);
-      const urgLbl = (u) => ({
-        low: t('urg_low'), medium: t('urg_medium'), high: t('urg_high'), critical: t('urg_critical'),
-      }[u] || u);
-      const priorityLbl = t('diff_priority').toUpperCase();
-      for (const d of sortedDiff) {
-        const probPct = Math.round(((+d.probability) || 0) * 100);
-        const isPriority = !!d.priority_test;
-        const urgKey = (d.urgency || 'low').toLowerCase();
-        /* Hairline séparation entre hypothèses (registre instrument design system) */
-        pdf.setDrawColor(218, 224, 234);
-        pdf.setLineWidth(0.15);
-        pdf.line(margin, py - 3, pageW - margin, py - 3);
-        /* Label hypothèse — point noir avant si priority (au lieu de bandeau coloré) */
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(8);
-        pdf.setTextColor(11, 13, 18);
-        let labelX = margin;
-        if (isPriority) {
-          pdf.setFillColor(11, 13, 18);
-          pdf.circle(margin + 1.2, py - 1, 1, 'F');
-          labelX = margin + 4;
-        }
-        pdf.text(d.label_human || d.hypothesis || '—', labelX, py);
-        /* Flag PRIORITÉ en mono à côté du label si applicable */
-        if (isPriority) {
-          const labelW = pdf.getStringUnitWidth(d.label_human || d.hypothesis || '—') * 8 / pdf.internal.scaleFactor;
-          pdf.setFont('courier', 'bold');
-          pdf.setFontSize(6);
-          pdf.setTextColor(11, 13, 18);
-          pdf.text(priorityLbl, labelX + labelW + 3, py - 0.3);
-        }
-        /* Probabilité (à droite) — registre numéro tabular */
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(9);
-        pdf.setTextColor(11, 13, 18);
-        const probX = pageW - margin - 26;
-        pdf.text(probPct + ' %', probX, py, { align: 'right' });
-        /* Badge urgence — outline coloré sauf critical (fond rempli) */
-        const urg = urgColor(urgKey);
-        const badgeX = pageW - margin - 20;
-        const badgeW = 20;
-        const badgeH = 4.2;
-        const badgeY = py - 3;
-        if (urgKey === 'critical') {
-          pdf.setFillColor(urg[0], urg[1], urg[2]);
-          pdf.roundedRect(badgeX, badgeY, badgeW, badgeH, 0.8, 0.8, 'F');
-          pdf.setTextColor(255, 255, 255);
-        } else {
-          pdf.setDrawColor(urg[0], urg[1], urg[2]);
-          pdf.setLineWidth(0.3);
-          pdf.roundedRect(badgeX, badgeY, badgeW, badgeH, 0.8, 0.8, 'S');
-          pdf.setTextColor(urg[0], urg[1], urg[2]);
-        }
-        pdf.setFont('courier', 'bold');
-        pdf.setFontSize(6);
-        pdf.text(urgLbl(urgKey).toUpperCase(), badgeX + badgeW / 2, badgeY + 2.7, { align: 'center' });
-        py += 3.5;
-        /* Justification */
-        if (d.reasoning) {
-          pdf.setFont('helvetica', 'normal');
-          pdf.setFontSize(7);
-          pdf.setTextColor(106, 116, 145);
-          const rlines = pdf.splitTextToSize(d.reasoning, contentW - 6).slice(0, 2);
-          pdf.text(rlines, labelX, py);
-          py += rlines.length * 3 + 2;
-        } else {
-          py += 1;
-        }
-      }
-      py += 2;
-    }
-
-    /* ─── VALIDATION RECOMMANDÉE (actions ATP, écouvillonnage, etc.) ─── */
-    if (Array.isArray(recommended_validation) && recommended_validation.length) {
-      py += 2;
-      ensurePageSpace(8 + recommended_validation.length * 5);
-      sectionTitle(t('pdf_validation'));
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(8);
-      pdf.setTextColor(60, 70, 90);
-      for (const action of recommended_validation.slice(0, 6)) {
-        const lines = pdf.splitTextToSize('• ' + action, contentW - 4);
-        pdf.text(lines, margin, py);
-        py += lines.length * 3.4 + 1;
-      }
-    }
+    /* V111 — Sections PDF "Diagnostic différentiel" et "Validation
+       recommandée" supprimées (~110 lignes). Les champs Claude correspondants
+       (differential_diagnosis, recommended_validation) ont été retirés du
+       schéma. La recommendation.confirmation_if_needed couvre maintenant le
+       cas validation (ATP, swab, etc.). */
 
     /* ─── QUALITÉ IMAGE (si warning IA non vide) ─── */
     if (image_quality && image_quality.warning && image_quality.warning.trim()) {
@@ -18084,7 +17832,8 @@ const Annotator = (() => {
   /* ─── Adaptateur Phase 3 audit ───
      Nouveau schema API : language, image_quality, global_assessment, reasoning_summary,
      zones[id,label,risk_score,confidence,bbox_normalized{x,y,w,h},area_pct,intensity,evidence,artifact_rejection],
-     overall_score, risk_level, observations[], recommended_validation[]
+     overall_score, risk_level, observations[]
+     V111 — recommended_validation[] retiré du schéma (doublon avec confirmation_if_needed).
      Format UI existant : score, riskLevel, coveragePercent, probabilities[], zones[type,x,y,w,h,intensity], observations (string) */
   /* Sprint 1 — C12 : validateur runtime des réponses API.
      Si l'IA renvoie un payload malformé (manque de champs critiques, types
@@ -18405,9 +18154,8 @@ const Annotator = (() => {
       image_quality: raw.image_quality,
       global_assessment: raw.global_assessment,
       reasoning_summary: raw.reasoning_summary,
-      recommended_validation: raw.recommended_validation || [],
-      /* Différentiel diagnostique (Phase 4) — hypothèses alternatives + urgence */
-      differential_diagnosis: Array.isArray(raw.differential_diagnosis) ? raw.differential_diagnosis : [],
+      /* V111 — recommended_validation + differential_diagnosis retirés
+         (champs supprimés du prompt + schéma + UI + PDF + history). */
       _meta: raw._meta,
       _raw: raw,
     };
@@ -21049,52 +20797,9 @@ const Annotator = (() => {
       }
     }
 
-    /* ─── DIAGNOSTIC DIFFÉRENTIEL (Phase 4) ───
-       Affiche les hypothèses alternatives avec leur probabilité et urgence.
-       Tri : priority_test=true en premier, puis par probabilité décroissante. */
-    const diffCard = $('differentialCard');
-    const diffList = $('differentialList');
-    if (diffCard && diffList) {
-      const diffs = Array.isArray(res.differential_diagnosis) ? res.differential_diagnosis : [];
-      while (diffList.firstChild) diffList.removeChild(diffList.firstChild);
-      if (diffs.length) {
-        const sorted = [...diffs].sort((a, b) => {
-          if (!!b.priority_test - !!a.priority_test !== 0) return !!b.priority_test - !!a.priority_test;
-          return (b.probability || 0) - (a.probability || 0);
-        });
-        for (const d of sorted) {
-          const urgKey = (d.urgency || 'low').toLowerCase();
-          const row = el('div', 'diff-row' + (d.priority_test ? ' priority' : ''));
-          /* data-urgency pilote la couleur de la jauge via les sélecteurs CSS
-             [data-urgency="..."] .diff-bar — cohérence avec le badge d'urgence */
-          row.setAttribute('data-urgency', urgKey);
-          /* Label avec dot pulsant (via CSS ::before) si priority + flag textuel à droite */
-          const label = el('div', 'diff-label');
-          label.appendChild(document.createTextNode(d.label_human || d.hypothesis || '—'));
-          if (d.priority_test) {
-            label.appendChild(el('span', 'diff-priority-flag', t('diff_priority')));
-          }
-          const meta = el('div', 'diff-meta');
-          const probPct = Math.round(((+d.probability) || 0) * 100);
-          meta.appendChild(el('span', 'diff-prob', probPct + ' %'));
-          const urgLabel = ({ low: t('urg_low'), medium: t('urg_medium'), high: t('urg_high'), critical: t('urg_critical') }[urgKey]) || urgKey;
-          meta.appendChild(el('span', 'diff-urgency ' + urgKey, urgLabel));
-          const barWrap = el('div', 'diff-bar-wrap');
-          const bar = el('div', 'diff-bar');
-          barWrap.appendChild(bar);
-          const reasoning = el('div', 'diff-reasoning', d.reasoning || '');
-          row.appendChild(label);
-          row.appendChild(meta);
-          row.appendChild(barWrap);
-          if (d.reasoning) row.appendChild(reasoning);
-          diffList.appendChild(row);
-          requestAnimationFrame(() => setTimeout(() => { bar.style.width = probPct + '%'; }, 220));
-        }
-        diffCard.classList.add('visible');
-      } else {
-        diffCard.classList.remove('visible');
-      }
-    }
+    /* V111 — Render du diagnostic différentiel supprimé (~45 lignes).
+       Le HTML #differentialCard a été retiré et le champ Claude
+       differential_diagnosis n'existe plus dans le schéma. */
 
     /* Légende AGRÉGÉE par catégorie — élimine la redondance des zones répétées
        Pour chaque catégorie : somme des %, comptage des zones, intensité MAX */
@@ -24703,12 +24408,7 @@ const Annotator = (() => {
           fb.appendChild(E('div','hist-dec-text', res.recommendation.follow_up));
           rcBox.appendChild(fb);
         }
-        if (res.recommendation.sector_adaptation) {
-          var sb = E('div','hist-dec-block');
-          sb.appendChild(E('div','hist-dec-label','Adaptation sectorielle'));
-          sb.appendChild(E('div','hist-dec-text', res.recommendation.sector_adaptation));
-          rcBox.appendChild(sb);
-        }
+        /* V111 — sector_adaptation retiré (champ supprimé du prompt). */
         if (res.recommendation.confirmation_if_needed) {
           var cb = E('div','hist-dec-block');
           cb.appendChild(E('div','hist-dec-label','Confirmation si besoin'));
