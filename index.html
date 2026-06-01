@@ -9255,7 +9255,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v117</span>
+              <span class="home-spec-version" aria-hidden="true">v118</span>
             </div>
           </div>
 
@@ -10523,6 +10523,25 @@ const I18N = {
     verd_axis_shape:  "Forme",
     verd_area:        "Aire",
     verd_intensity:   "Intensité",
+    /* V118 — Labels humains des 16 codes hypothesis (anciens HYPOT_LABELS
+       figés en FR dans le render). Doivent rester compacts pour ne pas
+       casser le titre des cards verdict v3 (font-size 16-18px, mobile). */
+    hyp_protein_fresh:       "Résidu protéique frais",
+    hyp_riboflavin_dairy:    "Résidu laitier (riboflavine)",
+    hyp_blood_porphyrins:    "Trace de sang (porphyrines)",
+    hyp_rodent_urine:        "Urine de rongeur",
+    hyp_detergent_residue:   "Résidu de détergent",
+    hyp_mineral_oil:         "Huile minérale / lubrifiant",
+    hyp_cosmetic_uv:         "Trace cosmétique (filtres UV)",
+    hyp_biofilm_pseudomonas: "Biofilm Pseudomonas",
+    hyp_insect_frass:        "Déjection d'insecte",
+    hyp_chlorophyll_plant:   "Résidu végétal (chlorophylle)",
+    hyp_mycotoxin_aflatoxin: "Mycotoxine (aflatoxine)",
+    hyp_antibiotic_residue:  "Résidu antibiotique",
+    hyp_stagnant_water:      "Eau stagnante / séchage",
+    hyp_dust_fluorescent:    "Poussière fluorescente",
+    hyp_textile_fibers:      "Fibres textiles",
+    hyp_unknown_residue:     "Résidu non identifié",
     uv_bleed_warning_one: "<strong>1 zone</strong> est probablement un reflet optique de la lampe UV plutôt qu'un résidu réel. Vérifiez sa position dans la cartographie avant toute action.",
     uv_bleed_warning_n: "<strong>{n} zones</strong> sont probablement des reflets optiques de la lampe UV plutôt que des résidus réels. Vérifiez leur position dans la cartographie avant toute action.",
     decision_title: "Limites de l'analyse",
@@ -11039,6 +11058,23 @@ const I18N = {
     verd_axis_shape:  "Shape",
     verd_area:        "Area",
     verd_intensity:   "Intensity",
+    /* V118 — Hypothesis labels (see FR comment). */
+    hyp_protein_fresh:       "Fresh protein residue",
+    hyp_riboflavin_dairy:    "Dairy residue (riboflavin)",
+    hyp_blood_porphyrins:    "Blood trace (porphyrins)",
+    hyp_rodent_urine:        "Rodent urine",
+    hyp_detergent_residue:   "Detergent residue",
+    hyp_mineral_oil:         "Mineral oil / lubricant",
+    hyp_cosmetic_uv:         "Cosmetic trace (UV filters)",
+    hyp_biofilm_pseudomonas: "Pseudomonas biofilm",
+    hyp_insect_frass:        "Insect frass",
+    hyp_chlorophyll_plant:   "Plant residue (chlorophyll)",
+    hyp_mycotoxin_aflatoxin: "Mycotoxin (aflatoxin)",
+    hyp_antibiotic_residue:  "Antibiotic residue",
+    hyp_stagnant_water:      "Stagnant water / drying",
+    hyp_dust_fluorescent:    "Fluorescent dust",
+    hyp_textile_fibers:      "Textile fibers",
+    hyp_unknown_residue:     "Unidentified residue",
     uv_bleed_warning_one: "<strong>1 zone</strong> is likely an optical reflection of the UV lamp rather than an actual residue. Verify its position in the cartography before taking action.",
     uv_bleed_warning_n: "<strong>{n} zones</strong> are likely optical reflections of the UV lamp rather than actual residues. Verify their position in the cartography before taking action.",
     decision_title: "Analysis limits",
@@ -11555,6 +11591,23 @@ const I18N = {
     verd_axis_shape:  "Forma",
     verd_area:        "Área",
     verd_intensity:   "Intensidad",
+    /* V118 — Etiquetas de hipótesis (ver comentario FR). */
+    hyp_protein_fresh:       "Residuo proteico fresco",
+    hyp_riboflavin_dairy:    "Residuo lácteo (riboflavina)",
+    hyp_blood_porphyrins:    "Traza de sangre (porfirinas)",
+    hyp_rodent_urine:        "Orina de roedor",
+    hyp_detergent_residue:   "Residuo de detergente",
+    hyp_mineral_oil:         "Aceite mineral / lubricante",
+    hyp_cosmetic_uv:         "Traza cosmética (filtros UV)",
+    hyp_biofilm_pseudomonas: "Biofilm de Pseudomonas",
+    hyp_insect_frass:        "Excremento de insecto",
+    hyp_chlorophyll_plant:   "Residuo vegetal (clorofila)",
+    hyp_mycotoxin_aflatoxin: "Micotoxina (aflatoxina)",
+    hyp_antibiotic_residue:  "Residuo antibiótico",
+    hyp_stagnant_water:      "Agua estancada / secado",
+    hyp_dust_fluorescent:    "Polvo fluorescente",
+    hyp_textile_fibers:      "Fibras textiles",
+    hyp_unknown_residue:     "Residuo no identificado",
     uv_bleed_warning_one: "<strong>1 zona</strong> probablemente sea un reflejo óptico de la lámpara UV en lugar de un residuo real. Verifique su posición en la cartografía antes de actuar.",
     uv_bleed_warning_n: "<strong>{n} zonas</strong> probablemente sean reflejos ópticos de la lámpara UV en lugar de residuos reales. Verifique su posición en la cartografía antes de actuar.",
     decision_title: "Límites del análisis",
@@ -12071,6 +12124,23 @@ const I18N = {
     verd_axis_shape:  "Form",
     verd_area:        "Fläche",
     verd_intensity:   "Intensität",
+    /* V118 — Hypothesen-Labels (siehe FR-Kommentar). */
+    hyp_protein_fresh:       "Frischer Proteinrückstand",
+    hyp_riboflavin_dairy:    "Milchrückstand (Riboflavin)",
+    hyp_blood_porphyrins:    "Blutspur (Porphyrine)",
+    hyp_rodent_urine:        "Nagetierurin",
+    hyp_detergent_residue:   "Reinigungsrückstand",
+    hyp_mineral_oil:         "Mineralöl / Schmiermittel",
+    hyp_cosmetic_uv:         "Kosmetikspur (UV-Filter)",
+    hyp_biofilm_pseudomonas: "Pseudomonas-Biofilm",
+    hyp_insect_frass:        "Insektenkot",
+    hyp_chlorophyll_plant:   "Pflanzlicher Rückstand (Chlorophyll)",
+    hyp_mycotoxin_aflatoxin: "Mykotoxin (Aflatoxin)",
+    hyp_antibiotic_residue:  "Antibiotikarückstand",
+    hyp_stagnant_water:      "Stehendes Wasser / Trocknung",
+    hyp_dust_fluorescent:    "Fluoreszierender Staub",
+    hyp_textile_fibers:      "Textilfasern",
+    hyp_unknown_residue:     "Nicht identifizierter Rückstand",
     uv_bleed_warning_one: "<strong>1 Zone</strong> ist wahrscheinlich eine optische Reflexion der UV-Lampe und kein tatsächlicher Rückstand. Prüfen Sie die Position in der Kartografie vor jeder Maßnahme.",
     uv_bleed_warning_n: "<strong>{n} Zonen</strong> sind wahrscheinlich optische Reflexionen der UV-Lampe und keine tatsächlichen Rückstände. Prüfen Sie ihre Position in der Kartografie vor jeder Maßnahme.",
     decision_title: "Analysegrenzen",
@@ -20645,25 +20715,13 @@ const Annotator = (() => {
       } else {
         verdictCard.hidden = false;
         if (verdictCount) verdictCount.textContent = String(zonesV3.length);
-        /* Labels humains pour chaque hypothesis (les 16 codes officiels) */
-        const HYPOT_LABELS = {
-          protein_fresh: 'Résidu protéique frais',
-          riboflavin_dairy: 'Résidu laitier (riboflavine)',
-          blood_porphyrins: 'Trace de sang (porphyrines)',
-          rodent_urine: 'Urine de rongeur',
-          detergent_residue: 'Résidu de détergent',
-          mineral_oil: 'Huile minérale / lubrifiant',
-          cosmetic_uv: 'Trace cosmétique (filtres UV)',
-          biofilm_pseudomonas: 'Biofilm Pseudomonas',
-          insect_frass: 'Déjection d’insecte',
-          chlorophyll_plant: 'Résidu végétal (chlorophylle)',
-          mycotoxin_aflatoxin: 'Mycotoxine (aflatoxine)',
-          antibiotic_residue: 'Résidu antibiotique',
-          stagnant_water: 'Eau stagnante / séchage',
-          dust_fluorescent: 'Poussière fluorescente',
-          textile_fibers: 'Fibres textiles',
-          unknown_residue: 'Résidu non identifié',
-        };
+        /* V118 — Labels humains pour chaque hypothesis (les 16 codes officiels).
+           Avant V118 : map figée FR → utilisateurs EN/ES/DE voyaient les noms
+           en français malgré le shell traduit. Maintenant : passage par t()
+           pour récupérer le label dans la langue active (voir hyp_* dans I18N).
+           Fallback : code brut si la clé n'existe pas (cas où Claude renverrait
+           un hypothesis hors des 16 codes officiels). */
+        const hypLabel = (h) => t('hyp_' + h) || h;
         const RISK_BY_HYP = {
           blood_porphyrins: 'critical', rodent_urine: 'critical',
           mineral_oil: 'critical', mycotoxin_aflatoxin: 'critical',
@@ -20675,7 +20733,7 @@ const Annotator = (() => {
         };
         zonesV3.forEach((z, i) => {
           const hyp = z.hypothesis || 'unknown_residue';
-          const human = HYPOT_LABELS[hyp] || hyp;
+          const human = hypLabel(hyp);
           const risk = RISK_BY_HYP[hyp] || 'medium';
           /* V116 — Le confidence_label brut (low/medium/high) servait
              aussi de classe CSS ET de texte affiché → "CONFIANCE MEDIUM"
