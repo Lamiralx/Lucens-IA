@@ -2908,6 +2908,20 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   flex-shrink: 0;
   margin-top: 2px;
 }
+/* V117 — Frameworks de référence : ligne discrète sous la vigilance.
+   Pas un appel à l'action — juste de la métadonnée HACCP. Mono + dim. */
+.lv-verdict-frameworks {
+  display: block;
+  margin-top: 6px;
+  margin-bottom: var(--space-3);
+  padding: 0 14px;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--ink-tertiary);
+  line-height: 1.5;
+}
 .lv-verdict-details {
   margin-top: var(--space-3);
   padding-top: var(--space-3);
@@ -9241,7 +9255,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v116</span>
+              <span class="home-spec-version" aria-hidden="true">v117</span>
             </div>
           </div>
 
@@ -9482,10 +9496,21 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <dd id="lvVerdictConfirmation">—</dd>
           </dl>
         </details>
-        <!-- Vigilance + Frameworks toujours hidden : utilisés pour le PDF
-             export et le history seulement, pas dans le verdict card live. -->
-        <span id="lvVerdictVigilance" hidden><span id="lvVerdictVigilanceText"></span></span>
-        <span id="lvVerdictFrameworks" hidden></span>
+        <!-- V117 — Vigilance + Frameworks réactivés dans le verdict card live.
+             Avant : span nus sans classe → "Zone 2 halo périphérique. HACCP · ISO"
+             en un bloc texte indifférencié sans icône (commentaire historique
+             disait "toujours hidden" mais le JS render les forçait visible).
+             Maintenant : div + classes propres, icône warning sur vigilance,
+             rendu compact frameworks ne ressemble plus à du texte courant. -->
+        <div id="lvVerdictVigilance" class="lv-verdict-vigilance" hidden>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9"  x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <span id="lvVerdictVigilanceText"></span>
+        </div>
+        <div id="lvVerdictFrameworks" class="lv-verdict-frameworks" hidden></div>
       </div>
 
       <!-- IMAGE + PROBABILITIES -->
