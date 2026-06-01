@@ -9241,7 +9241,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v108</span>
+              <span class="home-spec-version" aria-hidden="true">v116</span>
             </div>
           </div>
 
@@ -10485,6 +10485,19 @@ const I18N = {
     fup_thanks: "Merci, suivi enregistré.",
     card_table:       "Synthèse des zones détectées",
     card_verdict:     "Verdict détaillé par zone",
+    /* V116 — Verdict v3 i18n (avant : labels FR en dur dans le code render
+       → utilisateurs EN/ES/DE voyaient un mélange anglais-français).
+       Pattern : verd_* groupe tout ce qui touche la fiche zone verdict. */
+    verd_zone:        "Zone",
+    verd_conf_pfx:    "Confiance",
+    verd_conf_low:    "Faible",
+    verd_conf_medium: "Moyenne",
+    verd_conf_high:   "Élevée",
+    verd_axis_color:  "Couleur",
+    verd_axis_texture:"Texture",
+    verd_axis_shape:  "Forme",
+    verd_area:        "Aire",
+    verd_intensity:   "Intensité",
     uv_bleed_warning_one: "<strong>1 zone</strong> est probablement un reflet optique de la lampe UV plutôt qu'un résidu réel. Vérifiez sa position dans la cartographie avant toute action.",
     uv_bleed_warning_n: "<strong>{n} zones</strong> sont probablement des reflets optiques de la lampe UV plutôt que des résidus réels. Vérifiez leur position dans la cartographie avant toute action.",
     decision_title: "Limites de l'analyse",
@@ -10990,6 +11003,17 @@ const I18N = {
     fup_thanks: "Thank you, follow-up recorded.",
     card_table:       "Detected zones summary",
     card_verdict:     "Detailed verdict per zone",
+    /* V116 — Verdict v3 i18n (see FR comment). */
+    verd_zone:        "Zone",
+    verd_conf_pfx:    "Confidence",
+    verd_conf_low:    "Low",
+    verd_conf_medium: "Medium",
+    verd_conf_high:   "High",
+    verd_axis_color:  "Color",
+    verd_axis_texture:"Texture",
+    verd_axis_shape:  "Shape",
+    verd_area:        "Area",
+    verd_intensity:   "Intensity",
     uv_bleed_warning_one: "<strong>1 zone</strong> is likely an optical reflection of the UV lamp rather than an actual residue. Verify its position in the cartography before taking action.",
     uv_bleed_warning_n: "<strong>{n} zones</strong> are likely optical reflections of the UV lamp rather than actual residues. Verify their position in the cartography before taking action.",
     decision_title: "Analysis limits",
@@ -11495,6 +11519,17 @@ const I18N = {
     fup_thanks: "Gracias, seguimiento registrado.",
     card_table:       "Resumen de zonas detectadas",
     card_verdict:     "Veredicto detallado por zona",
+    /* V116 — Verdict v3 i18n (ver comentario FR). */
+    verd_zone:        "Zona",
+    verd_conf_pfx:    "Confianza",
+    verd_conf_low:    "Baja",
+    verd_conf_medium: "Media",
+    verd_conf_high:   "Alta",
+    verd_axis_color:  "Color",
+    verd_axis_texture:"Textura",
+    verd_axis_shape:  "Forma",
+    verd_area:        "Área",
+    verd_intensity:   "Intensidad",
     uv_bleed_warning_one: "<strong>1 zona</strong> probablemente sea un reflejo óptico de la lámpara UV en lugar de un residuo real. Verifique su posición en la cartografía antes de actuar.",
     uv_bleed_warning_n: "<strong>{n} zonas</strong> probablemente sean reflejos ópticos de la lámpara UV en lugar de residuos reales. Verifique su posición en la cartografía antes de actuar.",
     decision_title: "Límites del análisis",
@@ -12000,6 +12035,17 @@ const I18N = {
     fup_thanks: "Danke, Nachverfolgung gespeichert.",
     card_table:       "Übersicht der erkannten Zonen",
     card_verdict:     "Detailliertes Urteil pro Zone",
+    /* V116 — Verdict v3 i18n (siehe FR-Kommentar). */
+    verd_zone:        "Zone",
+    verd_conf_pfx:    "Sicherheit",
+    verd_conf_low:    "Gering",
+    verd_conf_medium: "Mittel",
+    verd_conf_high:   "Hoch",
+    verd_axis_color:  "Farbe",
+    verd_axis_texture:"Textur",
+    verd_axis_shape:  "Form",
+    verd_area:        "Fläche",
+    verd_intensity:   "Intensität",
     uv_bleed_warning_one: "<strong>1 Zone</strong> ist wahrscheinlich eine optische Reflexion der UV-Lampe und kein tatsächlicher Rückstand. Prüfen Sie die Position in der Kartografie vor jeder Maßnahme.",
     uv_bleed_warning_n: "<strong>{n} Zonen</strong> sind wahrscheinlich optische Reflexionen der UV-Lampe und keine tatsächlichen Rückstände. Prüfen Sie ihre Position in der Kartografie vor jeder Maßnahme.",
     decision_title: "Analysegrenzen",
@@ -20120,6 +20166,13 @@ const Annotator = (() => {
     const theme = riskTheme(score);
     lastResult = res;
     lastRenderArgs = [res, imgData, W, H, origUrl];
+    /* V116 — Hook lecture-seule pour audits Playwright et debug terrain.
+       Deep-clone du résultat normalisé (zones, probabilities, raw fields).
+       Pas de données sensibles : tout vient de Claude (anonymisé côté serveur)
+       ou de l'heuristique locale. Pas de PII. Utile pour reproduire un bug
+       UI à partir des données réelles d'un inspecteur (copier window.__lucensResult
+       dans une issue). */
+    try { window.__lucensResult = JSON.parse(JSON.stringify(res)); } catch (e) {}
 
     /* V21 — Carte verdict principale (analyse Lucens IA pédagogique).
        Affichée AVANT tout. Si les nouveaux champs sont présents on l'affiche,
@@ -20308,7 +20361,11 @@ const Annotator = (() => {
     const aScore = typeof res.analyzability_score === 'number' ? res.analyzability_score : null;
     if (confEl && confValueEl && confBarEl) {
       if (aScore !== null && aScore < 60 && res.analyzable !== false) {
-        confValueEl.textContent = aScore + ' / 100';
+        /* V116 — Avant : 'aScore + " / 100"' → rendu "45 / 100" avec espaces
+           voyants, divergent de la version score principal qui dit "62/100"
+           sans espaces dans `.score-suffix`. Maintenant aligné : pas
+           d'espaces autour de la barre oblique, lecture instantanée. */
+        confValueEl.textContent = aScore + '/100';
         confBarEl.style.width = '0%';
         confEl.hidden = false;
         requestAnimationFrame(() => {
@@ -20595,16 +20652,21 @@ const Annotator = (() => {
           const hyp = z.hypothesis || 'unknown_residue';
           const human = HYPOT_LABELS[hyp] || hyp;
           const risk = RISK_BY_HYP[hyp] || 'medium';
+          /* V116 — Le confidence_label brut (low/medium/high) servait
+             aussi de classe CSS ET de texte affiché → "CONFIANCE MEDIUM"
+             en anglais figé dans toutes les langues. Maintenant : le
+             code reste pour la classe (CSS), l'affichage passe par t(). */
           const conf = (z.confidence_label || (z.confidence > 0.75 ? 'high' : (z.confidence > 0.4 ? 'medium' : 'low'))).toLowerCase();
           const item = el('div', 'zone-verdict-item risk-' + risk);
           /* Head : numéro + titre + confidence pill */
           const head = el('div', 'zone-verdict-head');
           const titleWrap = el('div');
-          const numSpan = el('span', 'zone-verdict-num', 'Zone ' + (i + 1));
+          const numSpan = el('span', 'zone-verdict-num', (t('verd_zone') || 'Zone') + ' ' + (i + 1));
           const titleSpan = el('span', 'zone-verdict-title', human);
           titleWrap.appendChild(numSpan);
           titleWrap.appendChild(titleSpan);
-          const confPill = el('span', 'zone-verdict-conf ' + conf, 'Confiance ' + conf);
+          const confLabel = t('verd_conf_' + conf) || conf;
+          const confPill = el('span', 'zone-verdict-conf ' + conf, (t('verd_conf_pfx') || 'Confiance') + ' ' + confLabel);
           head.appendChild(titleWrap);
           head.appendChild(confPill);
           item.appendChild(head);
@@ -20619,9 +20681,9 @@ const Annotator = (() => {
               chip.appendChild(document.createTextNode(' ' + value));
               return chip;
             };
-            const cChip = mkChip('Couleur', z.color);
-            const tChip = mkChip('Texture', z.texture);
-            const sChip = mkChip('Forme', z.shape);
+            const cChip = mkChip(t('verd_axis_color')   || 'Couleur',  z.color);
+            const tChip = mkChip(t('verd_axis_texture') || 'Texture',  z.texture);
+            const sChip = mkChip(t('verd_axis_shape')   || 'Forme',    z.shape);
             if (cChip) axes.appendChild(cChip);
             if (tChip) axes.appendChild(tChip);
             if (sChip) axes.appendChild(sChip);
@@ -20636,10 +20698,10 @@ const Annotator = (() => {
              text-transform:uppercase du .zone-verdict-meta). */
           const meta = el('div', 'zone-verdict-meta');
           if (typeof z.area_pct === 'number') {
-            meta.appendChild(el('span', '', 'Aire ' + z.area_pct.toFixed(1) + '%'));
+            meta.appendChild(el('span', '', (t('verd_area') || 'Aire') + ' ' + z.area_pct.toFixed(1) + '%'));
           }
           if (z.intensity) {
-            meta.appendChild(el('span', '', 'Intensité ' + z.intensity));
+            meta.appendChild(el('span', '', (t('verd_intensity') || 'Intensité') + ' ' + z.intensity));
           }
           if (meta.firstChild) item.appendChild(meta);
           verdictList.appendChild(item);
