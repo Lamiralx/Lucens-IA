@@ -3178,74 +3178,10 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 }
 .zone-verdict-meta span { white-space: nowrap; }
 
-/* decision-card : limites auditables de l'analyse (ChatGPT P2.3).
-   Pattern identique à observations-card pour cohérence visuelle. */
-.decision-card {
-  margin-top: 14px;
-  /* Vague 5A.5 — padding resserré 22/26/24 → 16/20/18 pour densifier. */
-  padding: 16px 20px 18px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  position: relative;
-}
-.decision-card[hidden] { display: none; }
-.decision-card::before {
-  content: '';
-  position: absolute;
-  top: 22px; left: 0;
-  width: 18px; height: 1px;
-  background: #D84315;
-}
-.decision-hdr {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink-secondary);
-  margin: 0 0 14px;
-  padding-left: 28px;
-}
-.decision-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-.decision-row {
-  display: grid;
-  grid-template-columns: 150px 1fr;
-  gap: 16px;
-  padding: 12px 0;
-  border-top: 1px solid var(--hairline);
-  align-items: baseline;
-}
-.decision-row:last-child {
-  border-bottom: 1px solid var(--hairline);
-}
-.decision-key {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-tertiary);
-}
-.decision-val {
-  font-family: var(--font-body);
-  font-size: 12.5px;
-  line-height: 1.5;
-  color: var(--ink-secondary);
-  letter-spacing: -0.003em;
-}
-@media (max-width: 640px) {
-  .decision-row {
-    grid-template-columns: 1fr;
-    gap: 4px;
-    padding: 14px 0;
-  }
-  .decision-val { font-size: 12px; }
-}
+/* V119 — Styles .decision-card / .decision-row / .decision-key / .decision-val
+   supprimés. HTML + render() + parseDecision + history retirés en V119 :
+   le champ `decision_summary` n'est plus dans le schéma Claude (jamais
+   peuplé en pratique). */
 .results-table {
   width: 100%;
   border-collapse: collapse;
@@ -6195,11 +6131,10 @@ body.has-sw-update .home {
    Le hide CSS était combiné à mapZone qui strippait les champs : le
    code calculait et le CSS cachait → travail entièrement perdu.
    Maintenant : géré normalement par .hidden via JS render(). */
-/* V111 — #differentialCard retiré (HTML supprimé, plus besoin de la règle). */
-#decisionCard,
-#missingContextCard {
-  display: none !important;
-}
+/* V111 — #differentialCard retiré (HTML supprimé, plus besoin de la règle).
+   V119 — #decisionCard HTML supprimé + #missingContextCard rendu visible
+   (champ Claude `missing_context` réactivé en UI). La règle complète
+   `display:none !important` est donc obsolète et retirée. */
 
 /* ═══════════════════════════════════════════════════════════════════════════
    INSTRUMENT CARD — refonte intake (2026-05-15)
@@ -9255,7 +9190,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v118</span>
+              <span class="home-spec-version" aria-hidden="true">v119</span>
             </div>
           </div>
 
@@ -9565,32 +9500,19 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <div class="observations-text" id="observationsText"></div>
             </details>
 
-            <!-- DECISION_BOUNDARY parsé en 4 sections (audit ChatGPT Commit 4 P2.3).
-                 Affiché si l'IA produit un decision_summary structuré dans la
-                 réponse — limite auditable de ce que l'analyse permet de conclure. -->
-            <div class="decision-card" id="decisionCard" hidden>
-              <div class="decision-hdr" data-i18n="decision_title">Limites de l'analyse</div>
-              <div class="decision-grid">
-                <div class="decision-row" data-section="can">
-                  <span class="decision-key" data-i18n="decision_can">Conclusion possible</span>
-                  <span class="decision-val" id="decisionCanText"></span>
-                </div>
-                <div class="decision-row" data-section="cannot">
-                  <span class="decision-key" data-i18n="decision_cannot">Conclusion impossible</span>
-                  <span class="decision-val" id="decisionCannotText"></span>
-                </div>
-                <div class="decision-row" data-section="confirm">
-                  <span class="decision-key" data-i18n="decision_confirm">Confirmation requise</span>
-                  <span class="decision-val" id="decisionConfirmText"></span>
-                </div>
-                <div class="decision-row" data-section="limit">
-                  <span class="decision-key" data-i18n="decision_limit">Limite juridico-scientifique</span>
-                  <span class="decision-val" id="decisionLimitText"></span>
-                </div>
-              </div>
-            </div>
+            <!-- V119 — decisionCard supprimé : champ `decision_summary` jamais
+                 retourné par Claude (absent du schéma api/analyze.js). Code mort
+                 depuis V44 (CSS hide) + JS render() le maintenait hidden via
+                 `decision_summary === undefined`. Suppression complète : HTML,
+                 i18n keys decision_*, render block, parseDecision history. -->
 
-            <!-- Panneau "Pour affiner cette analyse" (Sprint 1) -->
+            <!-- V119 — missingContextCard RÉACTIVÉ. Avant : masqué CSS V44
+                 ("redondant avec le contexte saisi"). Mais Claude peut renvoyer
+                 missing_context non-vide dans les cas où le contexte fourni
+                 reste insuffisant (image floue, surface ambiguë, etc.) →
+                 cacher cette info utile par CSS n'est pas conforme à la
+                 directive "précision". Le render écrit déjà dedans, on
+                 retire juste l'override CSS. -->
             <div class="missing-context-card" id="missingContextCard">
               <div class="missing-context-hdr" data-i18n="missing_ctx_title">Pour affiner cette analyse, précisez</div>
               <div class="missing-context-list" id="missingContextList"></div>
@@ -10300,11 +10222,7 @@ const I18N = {
     h_stat_coverage: "Couverture",
     h_sec_signatures: "Signatures détectées",
     h_sec_observations: "Observations",
-    h_sec_decision: "Aide à la décision",
-    h_dec_can: "Ce qu'on peut conclure",
-    h_dec_cannot: "Ce qu'on ne peut pas conclure",
-    h_dec_confirm: "Confirmation requise",
-    h_dec_limit: "Limite",
+    /* V119 — h_sec_decision + h_dec_* retirés (parseDecision history supprimé). */
     h_btn_pdf: "Télécharger le rapport",
     h_btn_delete: "Supprimer",
     h_confirm_delete: "Supprimer définitivement cette inspection ?",
@@ -10544,11 +10462,7 @@ const I18N = {
     hyp_unknown_residue:     "Résidu non identifié",
     uv_bleed_warning_one: "<strong>1 zone</strong> est probablement un reflet optique de la lampe UV plutôt qu'un résidu réel. Vérifiez sa position dans la cartographie avant toute action.",
     uv_bleed_warning_n: "<strong>{n} zones</strong> sont probablement des reflets optiques de la lampe UV plutôt que des résidus réels. Vérifiez leur position dans la cartographie avant toute action.",
-    decision_title: "Limites de l'analyse",
-    decision_can: "Conclusion possible",
-    decision_cannot: "Conclusion impossible",
-    decision_confirm: "Confirmation requise",
-    decision_limit: "Limite juridico-scientifique",
+    /* V119 — decision_* retirés (decisionCard HTML supprimé). */
     tbl_category:     "Catégorie",
     tbl_zones:        "Nombre",
     tbl_area:         "% surface",
@@ -10845,11 +10759,7 @@ const I18N = {
     h_stat_coverage: "Coverage",
     h_sec_signatures: "Detected signatures",
     h_sec_observations: "Observations",
-    h_sec_decision: "Decision support",
-    h_dec_can: "What can be concluded",
-    h_dec_cannot: "What cannot be concluded",
-    h_dec_confirm: "Confirmation required",
-    h_dec_limit: "Limitation",
+    /* V119 — h_sec_decision + h_dec_* removed (parseDecision history dropped). */
     h_btn_pdf: "Download the report",
     h_btn_delete: "Delete",
     h_confirm_delete: "Permanently delete this inspection?",
@@ -11077,11 +10987,7 @@ const I18N = {
     hyp_unknown_residue:     "Unidentified residue",
     uv_bleed_warning_one: "<strong>1 zone</strong> is likely an optical reflection of the UV lamp rather than an actual residue. Verify its position in the cartography before taking action.",
     uv_bleed_warning_n: "<strong>{n} zones</strong> are likely optical reflections of the UV lamp rather than actual residues. Verify their position in the cartography before taking action.",
-    decision_title: "Analysis limits",
-    decision_can: "What can be concluded",
-    decision_cannot: "What cannot be concluded",
-    decision_confirm: "Required confirmation",
-    decision_limit: "Legal & scientific limit",
+    /* V119 — decision_* removed (decisionCard HTML deleted). */
     tbl_category:     "Category",
     tbl_zones:        "Count",
     tbl_area:         "% area",
@@ -11451,11 +11357,7 @@ const I18N = {
     h_stat_coverage: "Cobertura",
     h_sec_signatures: "Firmas detectadas",
     h_sec_observations: "Observaciones",
-    h_sec_decision: "Apoyo a la decisión",
-    h_dec_can: "Lo que se puede concluir",
-    h_dec_cannot: "Lo que no se puede concluir",
-    h_dec_confirm: "Confirmación necesaria",
-    h_dec_limit: "Límite",
+    /* V119 — h_sec_decision + h_dec_* retirados (parseDecision history suprimido). */
     h_btn_pdf: "Descargar el informe",
     h_btn_delete: "Eliminar",
     h_confirm_delete: "¿Eliminar definitivamente esta inspección?",
@@ -11610,11 +11512,7 @@ const I18N = {
     hyp_unknown_residue:     "Residuo no identificado",
     uv_bleed_warning_one: "<strong>1 zona</strong> probablemente sea un reflejo óptico de la lámpara UV en lugar de un residuo real. Verifique su posición en la cartografía antes de actuar.",
     uv_bleed_warning_n: "<strong>{n} zonas</strong> probablemente sean reflejos ópticos de la lámpara UV en lugar de residuos reales. Verifique su posición en la cartografía antes de actuar.",
-    decision_title: "Límites del análisis",
-    decision_can: "Conclusión posible",
-    decision_cannot: "Conclusión imposible",
-    decision_confirm: "Confirmación requerida",
-    decision_limit: "Límite jurídico-científico",
+    /* V119 — decision_* retirados (decisionCard HTML eliminado). */
     tbl_category:     "Categoría",
     tbl_zones:        "Cantidad",
     tbl_area:         "% área",
@@ -11984,11 +11882,7 @@ const I18N = {
     h_stat_coverage: "Abdeckung",
     h_sec_signatures: "Erkannte Signaturen",
     h_sec_observations: "Beobachtungen",
-    h_sec_decision: "Entscheidungshilfe",
-    h_dec_can: "Was sich schließen lässt",
-    h_dec_cannot: "Was sich nicht schließen lässt",
-    h_dec_confirm: "Bestätigung erforderlich",
-    h_dec_limit: "Grenze",
+    /* V119 — h_sec_decision + h_dec_* entfernt (parseDecision history gelöscht). */
     h_btn_pdf: "Bericht herunterladen",
     h_btn_delete: "Löschen",
     h_confirm_delete: "Diese Inspektion endgültig löschen?",
@@ -12143,11 +12037,7 @@ const I18N = {
     hyp_unknown_residue:     "Nicht identifizierter Rückstand",
     uv_bleed_warning_one: "<strong>1 Zone</strong> ist wahrscheinlich eine optische Reflexion der UV-Lampe und kein tatsächlicher Rückstand. Prüfen Sie die Position in der Kartografie vor jeder Maßnahme.",
     uv_bleed_warning_n: "<strong>{n} Zonen</strong> sind wahrscheinlich optische Reflexionen der UV-Lampe und keine tatsächlichen Rückstände. Prüfen Sie ihre Position in der Kartografie vor jeder Maßnahme.",
-    decision_title: "Analysegrenzen",
-    decision_can: "Mögliche Schlussfolgerung",
-    decision_cannot: "Unmögliche Schlussfolgerung",
-    decision_confirm: "Erforderliche Bestätigung",
-    decision_limit: "Rechtlich-wissenschaftliche Grenze",
+    /* V119 — decision_* entfernt (decisionCard HTML gelöscht). */
     tbl_category:     "Kategorie",
     tbl_zones:        "Anzahl",
     tbl_area:         "% Fläche",
@@ -20966,36 +20856,10 @@ const Annotator = (() => {
         }
       }
 
-      /* État 2b — decision_summary parsé en 4 sections (Commit 4 P2.3).
-         Format attendu de l'IA :
-         "CONCLUSION POSSIBLE: ...\nCONCLUSION IMPOSSIBLE: ...\nCONFIRMATION REQUISE: ...\nLIMITE JURIDICO-SCIENTIFIQUE: ..." */
-      const decisionCard = $('decisionCard');
-      const decisionCanText = $('decisionCanText');
-      const decisionCannotText = $('decisionCannotText');
-      const decisionConfirmText = $('decisionConfirmText');
-      const decisionLimitText = $('decisionLimitText');
-      if (decisionCard && typeof res.decision_summary === 'string' && res.decision_summary.trim()) {
-        const raw = res.decision_summary;
-        const extract = (label) => {
-          const re = new RegExp(label + '\\s*:\\s*(.+?)(?=\\n[A-ZÉÈÊÀÂÎÏÔÙÛŒÆ ]{3,}\\s*:|$)', 's');
-          const m = raw.match(re);
-          return m ? m[1].trim() : '';
-        };
-        const canTxt = extract('CONCLUSION POSSIBLE');
-        const cannotTxt = extract('CONCLUSION IMPOSSIBLE');
-        const confirmTxt = extract('CONFIRMATION REQUISE');
-        const limitTxt = extract('LIMITE JURIDICO-SCIENTIFIQUE');
-        if (decisionCanText) decisionCanText.textContent = canTxt;
-        if (decisionCannotText) decisionCannotText.textContent = cannotTxt;
-        if (decisionConfirmText) decisionConfirmText.textContent = confirmTxt;
-        if (decisionLimitText) decisionLimitText.textContent = limitTxt;
-        /* Afficher seulement si au moins 2 sections sont remplies (sinon le modèle
-           n'a probablement pas suivi le format demandé). */
-        const filled = [canTxt, cannotTxt, confirmTxt, limitTxt].filter(Boolean).length;
-        decisionCard.hidden = filled < 2;
-      } else if (decisionCard) {
-        decisionCard.hidden = true;
-      }
+      /* V119 — bloc decision_summary supprimé : champ jamais retourné par
+         Claude (absent du schéma api/analyze.js), parseDecision avalait
+         systématiquement undefined → la card ne s'affichait jamais. HTML +
+         CSS + i18n + history-side parseDecision également retirés. */
 
       /* État 3 — Panneau "Pour affiner précisez" si missing_context */
       const missing = Array.isArray(res.missing_context) ? res.missing_context : [];
@@ -24449,31 +24313,10 @@ const Annotator = (() => {
     }
     return items;
   }
-  function parseDecision(raw){
-    if (typeof raw !== 'string' || !raw.trim()) return [];
-    var defs = [
-      ['CONCLUSION POSSIBLE',          tr('h_dec_can',     "Ce qu'on peut conclure")],
-      ['CONCLUSION IMPOSSIBLE',        tr('h_dec_cannot',  "Ce qu'on ne peut pas conclure")],
-      ['CONFIRMATION REQUISE',         tr('h_dec_confirm', 'Confirmation requise')],
-      ['LIMITE JURIDICO-SCIENTIFIQUE', tr('h_dec_limit',   'Limite')]
-    ];
-    /* On localise chaque étiquette par sa position, puis on découpe le
-       texte entre deux étiquettes consécutives — robuste aux tirets/accents. */
-    var marks = [];
-    defs.forEach(function(d){
-      var idx = raw.indexOf(d[0]);
-      if (idx >= 0) marks.push({ key: d[0], label: d[1], idx: idx });
-    });
-    marks.sort(function(a,b){ return a.idx - b.idx; });
-    var out = [];
-    marks.forEach(function(m, i){
-      var start = m.idx + m.key.length;
-      var end = (i + 1 < marks.length) ? marks[i + 1].idx : raw.length;
-      var txt = raw.slice(start, end).replace(/^\s*:\s*/, '').trim();
-      if (txt) out.push({ label: m.label, text: txt });
-    });
-    return out;
-  }
+  /* V119 — parseDecision supprimé. `res.decision_summary` n'est jamais
+     populée par Claude (champ absent du schéma api/analyze.js). La
+     section "Aide à la décision" de l'historique était systématiquement
+     vide. Cohérent avec la suppression de decisionCard côté rapport live. */
   function svgIcon(paths){
     var NS = 'http://www.w3.org/2000/svg';
     var svg = document.createElementNS(NS,'svg');
@@ -24706,19 +24549,7 @@ const Annotator = (() => {
         report.appendChild(sObs);
       }
 
-      /* Aide à la décision */
-      var dec = parseDecision(res.decision_summary);
-      if (dec.length){
-        var sDec = E('div','hist-section');
-        sDec.appendChild(E('div','hist-section-title', tr('h_sec_decision', 'Aide à la décision')));
-        dec.forEach(function(d){
-          var b = E('div','hist-dec-block');
-          b.appendChild(E('div','hist-dec-label', d.label));
-          b.appendChild(E('div','hist-dec-text', d.text));
-          sDec.appendChild(b);
-        });
-        report.appendChild(sDec);
-      }
+      /* V119 — Aide à la décision retirée (décision_summary jamais peuplée). */
 
       /* Actions */
       var actions = E('div','hist-actions');
