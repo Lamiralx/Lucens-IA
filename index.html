@@ -9190,7 +9190,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v120</span>
+              <span class="home-spec-version" aria-hidden="true">v121</span>
             </div>
           </div>
 
@@ -19540,11 +19540,15 @@ const Annotator = (() => {
         tone: 'warn',
       });
     }
+    /* Rejet = nombre de cellules supprimées par l'étape de nettoyage.
+       Toujours ≥ 0 par construction, mais clamp défensif au cas où un bug
+       pipeline produirait une valeur négative (ex : image synthétique). */
+    const cleanedCount = Math.max(0, (det.cellsRejectedBySubstrate || 0) + (det.cellsRejectedByCleanup || 0));
     items.push({
       key: t('verif_cleaned'),
-      val: (det.cellsRejectedBySubstrate || 0) + (det.cellsRejectedByCleanup || 0),
+      val: cleanedCount,
       hint: t('verif_cleaned_h'),
-      tone: ((det.cellsRejectedBySubstrate || 0) + (det.cellsRejectedByCleanup || 0)) > det.initialCells * 0.40 ? 'warn' : 'ok',
+      tone: cleanedCount > det.initialCells * 0.40 ? 'warn' : 'ok',
     });
     items.push({
       key: t('verif_grown'),
