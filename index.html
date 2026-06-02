@@ -9190,7 +9190,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v119</span>
+              <span class="home-spec-version" aria-hidden="true">v120</span>
             </div>
           </div>
 
@@ -17369,6 +17369,11 @@ const Annotator = (() => {
         res = adaptApiResponse(rawApi);
         res._source = 'ai';
         res.grid = localRes.grid;
+        /* V120 fix — Le rapport de vérification (métriques pipeline locale) n'était
+           jamais propagé dans res après adaptApiResponse → verifCard toujours caché.
+           localRes.verification contient les métriques de la pipeline pixel :
+           initialCells, rejectedBySubstrate, rejectedByCleanup, cellsAddedByGrowth. */
+        res.verification = localRes.verification;
         /* ═══════════════════════════════════════════════════════════════
            ÉTAPE 6 — VÉRIFICATION APPROFONDIE
            ═══════════════════════════════════════════════════════════════
@@ -20279,6 +20284,45 @@ const Annotator = (() => {
       Annotator.drawGrid(annCanvas, imgData, grid, W, H);
     } else {
       Annotator.draw(annCanvas, imgData, [], W, H);
+    }
+    /* V120 — Numéros de zone sur la cartographie.
+       Problème : le verdict card affiche "ZONE 1", "ZONE 2", "ZONE 3" mais le
+       canvas ne montrait que des taches colorées anonymes → l'inspecteur ne peut
+       pas corréler "Zone 2 = résidu protéique" avec le blob vert sur l'image.
+       Solution : badge blanc numéroté au centroïde de chaque bbox zone, dans le
+       même ordre (par aire décroissante) que les fiches de verdict.
+       Taille du badge : 2 % de la dimension minimale de l'image (min 10px, max 20px). */
+    try {
+      const zonesForLabels = zones.filter(z => z && (z.hypothesis || z.color || z.texture || z.shape || z.action_recommendation));
+      if (zonesForLabels.length && annCanvas) {
+        const ctxLbl = annCanvas.getContext('2d');
+        if (ctxLbl) {
+          zonesForLabels.forEach((z, i) => {
+            if (typeof z.x !== 'number' || typeof z.w !== 'number') return;
+            const cx = (z.x + z.w / 2) * W;
+            const cy = (z.y + z.h / 2) * H;
+            const r = Math.max(10, Math.min(20, Math.min(W, H) * 0.02));
+            ctxLbl.save();
+            /* Fond blanc semi-opaque */
+            ctxLbl.beginPath();
+            ctxLbl.arc(cx, cy, r, 0, Math.PI * 2);
+            ctxLbl.fillStyle = 'rgba(255,255,255,0.92)';
+            ctxLbl.fill();
+            ctxLbl.strokeStyle = 'rgba(0,0,0,0.22)';
+            ctxLbl.lineWidth = Math.max(1, r * 0.12);
+            ctxLbl.stroke();
+            /* Numéro centré */
+            ctxLbl.fillStyle = '#111827';
+            ctxLbl.font = 'bold ' + Math.round(r * 1.1) + 'px Inter,Arial,sans-serif';
+            ctxLbl.textAlign = 'center';
+            ctxLbl.textBaseline = 'middle';
+            ctxLbl.fillText(String(i + 1), cx, cy);
+            ctxLbl.restore();
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('[V120 zone-labels]', e);
     }
     /* V21.1 — Fallback cartographie en ROUGE signature Lucens (216,67,21).
        Quand la cartographie pixel-précise échoue, on dessine pour chaque
