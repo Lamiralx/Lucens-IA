@@ -7474,16 +7474,17 @@ body.has-sw-update .home {
    Design system aligné sur l'app : IBM Plex, surfaces #06070A→#2A2F3D,
    blanc sober, pas de néon ni animation gimmick. Niveau outil pro.
    ═══════════════════════════════════════════════════════════════════ */
+/* V126 — VRAIE cause de la "bande blanche en bas" iOS : avec viewport-fit=cover,
+   la zone de la barre d'accueil (home indicator) en bas de l'écran rend le FOND
+   DE PAGE (--surface-page, clair). Le modal fixed ne peint PAS cette zone (elle
+   est hors viewport de mise en page) → liseré clair sous le Live View. Ni inset:0
+   (v108) ni height:100dvh (v125, essai raté) ne la couvraient. Fix réel : fond
+   noir sur html+body tant que le Live View est ouvert → le liseré devient noir,
+   invisible. (100dvh retiré, mauvaise piste.) */
+html.lv-open, body.lv-open { background: #000 !important; }
+
 .lv-modal {
   position: fixed; inset: 0; z-index: 99999;
-  /* V125 — "bande blanche en bas" sur iOS : inset:0 (donc bottom:0) ancre le
-     modal au viewport de mise en page, qui sur iOS Safari peut être plus court
-     que la zone visible quand la barre d'outils se rétracte → un liseré du
-     fond de page (clair) apparaît sous le modal. height:100dvh force le modal
-     à suivre le viewport DYNAMIQUE (toolbar incluse) et couvre toujours le bas.
-     min-height en filet. NON vérifiable en Playwright (rendu iOS device-only). */
-  height: 100dvh;
-  min-height: 100dvh;
   background: #000;
   display: flex; flex-direction: column;
   font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
@@ -9068,7 +9069,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v125</span>
+              <span class="home-spec-version" aria-hidden="true">v126</span>
             </div>
           </div>
 
@@ -22795,6 +22796,9 @@ const Annotator = (() => {
     lv.isOpen = true;
     modal.classList.remove('lv-hidden');
     modal.setAttribute('aria-hidden', 'false');
+    /* V126 — html ET body en .lv-open : le fond noir doit couvrir la zone home
+       indicator iOS (peinte par le fond du document, pas du body seul). */
+    document.documentElement.classList.add('lv-open');
     document.body.classList.add('lv-open');
     /* V87 — Diag pill V84/V85 retirée (i18n confirmé OK par capture user).
        On garde le filet i18n ultra-défensif sans bruit visuel. */
@@ -22833,6 +22837,7 @@ const Annotator = (() => {
     ctx.clearRect(0, 0, overlay.width, overlay.height);
     modal.classList.add('lv-hidden');
     modal.setAttribute('aria-hidden', 'true');
+    document.documentElement.classList.remove('lv-open');
     document.body.classList.remove('lv-open');
     releaseWakeLock();
     stopReadinessLoop();
