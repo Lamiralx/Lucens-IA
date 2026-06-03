@@ -78,12 +78,17 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { image, mediaType } = req.body || {};
+  const { image, mediaType, lang } = req.body || {};
   if (!image || typeof image !== 'string' || image.length < 100) {
     res.status(400).json({ error: 'Missing or invalid image base64' });
     return;
   }
   const mt = (mediaType === 'image/png' || mediaType === 'image/webp') ? mediaType : 'image/jpeg';
+  /* V124 — Langue de la "reason" : avant, toujours en français → bandeau Live View
+     mixte (ex: "NOT FLUO · clavier RGB" quand l'app est en anglais). On force
+     Claude à écrire reason dans la langue de l'app. */
+  const LANG_NAMES = { fr: 'français', en: 'English', es: 'español', de: 'Deutsch' };
+  const langName = LANG_NAMES[String(lang || '').toLowerCase()] || 'français';
 
   const t0 = Date.now();
   try {
@@ -95,7 +100,7 @@ export default async function handler(req, res) {
         role: 'user',
         content: [
           { type: 'image', source: { type: 'base64', media_type: mt, data: image } },
-          { type: 'text', text: 'Classifie cette zone. JSON uniquement.' }
+          { type: 'text', text: 'Classifie cette zone. JSON uniquement. La valeur "reason" doit être écrite en ' + langName + ' (3 à 6 mots).' }
         ]
       }]
     });

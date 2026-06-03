@@ -7626,17 +7626,21 @@ body.has-sw-update .home {
   box-shadow: 0 0 0 4px rgba(45,212,191,0.22),
               0 0 22px 6px rgba(45,212,191,0.55);
 }
+/* V124 — État "object" (= pas une fluo) : passé du ROUGE alarme (#d04848)
+   au SLATE neutre (#94A3B8). "Pas une fluo" est un résultat neutre/rassurant
+   (juste un objet, rien à traiter), le rouge le faisait lire comme un danger.
+   Le rouge reste réservé aux vraies alertes. */
 .lv-crosshair[data-state="object"]::before,
 .lv-crosshair[data-state="object"]::after {
   background: linear-gradient(to bottom,
-    #d04848 0%, #d04848 30%, transparent 30%, transparent 70%, #d04848 70%, #d04848 100%);
+    #94A3B8 0%, #94A3B8 30%, transparent 30%, transparent 70%, #94A3B8 70%, #94A3B8 100%);
 }
 .lv-crosshair[data-state="object"]::after {
   background: linear-gradient(to right,
-    #d04848 0%, #d04848 30%, transparent 30%, transparent 70%, #d04848 70%, #d04848 100%);
+    #94A3B8 0%, #94A3B8 30%, transparent 30%, transparent 70%, #94A3B8 70%, #94A3B8 100%);
 }
 .lv-crosshair[data-state="object"] .lv-crosshair-dot {
-  background: #d04848;
+  background: #94A3B8;
 }
 
 /* V35 — Banner de statut LIVE déplacé dans la lv-topbar (entre lvClose
@@ -7652,8 +7656,8 @@ body.has-sw-update .home {
   align-items: center;
   gap: 8px;
   padding: 7px 12px;
-  width: 180px;
-  max-width: calc(100vw - 130px);
+  width: 210px;
+  max-width: calc(100vw - 120px);
   background: rgba(8, 10, 14, 0.78);
   color: rgba(245, 247, 250, 0.96);
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -7691,8 +7695,8 @@ body.has-sw-update .home {
   .lv-status-banner {
     font-size: 9.5px;
     padding: 6px 10px;
-    width: 150px;
-    max-width: calc(100vw - 120px);
+    width: 180px;
+    max-width: calc(100vw - 110px);
     gap: 6px;
   }
 }
@@ -7708,7 +7712,7 @@ body.has-sw-update .home {
 .lv-status-banner[data-state="idle"]    .lv-status-dot { background: rgba(180, 180, 200, 0.65); }
 .lv-status-banner[data-state="pending"] .lv-status-dot { background: #FFB020; }
 .lv-status-banner[data-state="fluo"]    .lv-status-dot { background: #2DD4BF; box-shadow: 0 0 8px rgba(45,212,191,0.7); }
-.lv-status-banner[data-state="object"]  .lv-status-dot { background: #d04848; }
+.lv-status-banner[data-state="object"]  .lv-status-dot { background: #94A3B8; }  /* V124 — neutre, plus rouge alarme */
 
 /* V26 — Banner statut MASQUÉ pendant les modes calibration (carte +
    zone propre) car il chevauche les boutons des popups. */
@@ -9056,7 +9060,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v123</span>
+              <span class="home-spec-version" aria-hidden="true">v124</span>
             </div>
           </div>
 
@@ -18283,7 +18287,7 @@ const Annotator = (() => {
       const resp = await fetch('/api/validate-cluster', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: b64, mediaType: 'image/jpeg' }),
+        body: JSON.stringify({ image: b64, mediaType: 'image/jpeg', lang: currentLang }),
       });
       if (!resp.ok) return null;
       return await resp.json();
@@ -20736,9 +20740,12 @@ const Annotator = (() => {
         <span class="lv-status-label" id="lvStatusLabel" data-i18n="lv_status_idle">Visez une zone</span>
       </div>
       <button class="lv-icon-btn" id="lvSettingsBtn" type="button" data-i18n-aria-label="lv_aria_settings" aria-label="Réglages">
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="10" cy="10" r="2.6"/>
-          <path d="M10 2.6v2.3M10 15.1v2.3M17.4 10h-2.3M4.9 10H2.6M15.2 4.8l-1.6 1.6M6.4 13.6l-1.6 1.6M15.2 15.2l-1.6-1.6M6.4 6.4L4.8 4.8"/>
+        <!-- V124 — Icône soleil (ambiguë : luminosité ?) remplacée par des
+             curseurs/réglages, cohérent avec le contenu du tiroir (cartographie,
+             sensibilité, calibration) et avec l'icône réglages du home. -->
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="3.5" y1="6.5" x2="16.5" y2="6.5"/><circle cx="12.5" cy="6.5" r="2.2"/>
+          <line x1="3.5" y1="13.5" x2="16.5" y2="13.5"/><circle cx="7.5" cy="13.5" r="2.2"/>
         </svg>
       </button>
     </div>
@@ -21573,7 +21580,7 @@ const Annotator = (() => {
       fetch('/api/validate-cluster', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: b64, mediaType: 'image/jpeg' }),
+        body: JSON.stringify({ image: b64, mediaType: 'image/jpeg', lang: currentLang }),
       })
       .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
       .then(res => {
@@ -21652,8 +21659,10 @@ const Annotator = (() => {
     const label  = document.getElementById('lvStatusLabel');
     if (banner) banner.setAttribute('data-state', state);
     if (label) {
-      /* V80 — reason raccourcie 22 → 10 chars pour tenir dans le banner fixe */
-      const shortReason = (reason || '').trim().slice(0, 10);
+      /* V124 — Troncature 10 chars retirée : elle coupait "clavier RGB" en
+         "clavier RG" (B perdu). Cap généreux à 30, l'ellipsis CSS de
+         .lv-status-label gère proprement tout dépassement avec « … ». */
+      const shortReason = (reason || '').trim().slice(0, 30);
       const tr = (k, fb) => (typeof t === 'function' ? t(k) : fb) || fb;
       const map = {
         idle:    tr('lv_status_idle',    'Visez une zone'),
@@ -21794,7 +21803,7 @@ const Annotator = (() => {
       fetch('/api/validate-cluster', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: b64, mediaType: 'image/jpeg' }),
+        body: JSON.stringify({ image: b64, mediaType: 'image/jpeg', lang: currentLang }),
       })
       .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
       .then(res => {
@@ -21903,7 +21912,7 @@ const Annotator = (() => {
             fetch('/api/validate-cluster', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ image: b64, mediaType: 'image/jpeg' }),
+              body: JSON.stringify({ image: b64, mediaType: 'image/jpeg', lang: currentLang }),
             })
             .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
             .then(res => {
