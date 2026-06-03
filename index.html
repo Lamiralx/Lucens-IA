@@ -9070,7 +9070,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v133</span>
+              <span class="home-spec-version" aria-hidden="true">v134</span>
             </div>
           </div>
 
@@ -12746,11 +12746,21 @@ const Engine = (() => {
     const sInt = Math.min(wIntensity, wIntensity * Math.min(1, avgRatio * 2.8));
 
     let clust = 0;
+    /* V134 — GEL CORRIGÉ. Avant : grid.filter() (16384 cellules) DANS la boucle
+       sur les cellules actives (16384) = O(active×grid) ≈ 268 MILLIONS d'itérations
+       synchrones sur une grille saturée → thread principal figé / app qui plante.
+       Désormais : index O(1) des coords actives, on teste les 8 voisins directs.
+       Résultat strictement identique (compte des 8-voisins actifs), coût O(N×8). */
+    const _activeSet = new Set();
+    for (const c of active) _activeSet.add(c.cx + ',' + c.cy);
     for (const c of active) {
-      const n = grid.filter(x =>
-        x.active && Math.abs(x.cx - c.cx) <= 1 && Math.abs(x.cy - c.cy) <= 1 &&
-        (x.cx !== c.cx || x.cy !== c.cy)
-      ).length;
+      let n = 0;
+      for (let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+          if (dx === 0 && dy === 0) continue;
+          if (_activeSet.has((c.cx + dx) + ',' + (c.cy + dy))) n++;
+        }
+      }
       clust += n >= 4 ? 1.6 : n >= 2 ? 1.0 : 0.35;
     }
     const normClust = active.length ? clust / active.length : 0;
@@ -13314,6 +13324,17 @@ const Engine = (() => {
     /* Pass 1 : détection initiale */
     let grid = buildGrid(imageData.data, W, H, bg);
     const initialActive = grid.filter(c => c.active).length;
+    /* V134 — GARDE-FOU SUR-DÉTECTION (cause des "16384 cellules" + cartographie
+       qui couvre toute l'image). Si > 85 % de la grille est active, ce n'est pas
+       une fluorescence localisée mais une image sur-exposée / surface uniformément
+       brillante (le fond local a basculé sur la zone la plus sombre → tout passe
+       le seuil). On désactive tout : la cartographie locale ne couvrira pas toute
+       l'image (faux), et Claude (API) reste la source du verdict réel. On signale
+       le défaut de qualité via _overExposed. */
+    const _overExposed = initialActive / (CFG.gridN * CFG.gridN) > 0.85;
+    if (_overExposed) {
+      for (const c of grid) { c.active = false; c.typeId = null; }
+    }
     /* Pass 1.5 : suppression substrat dominant (sol jaune, surface colorée) */
     const substrateInfo = suppressSubstrate(grid, CFG.gridN);
     const afterSubstrate = grid.filter(c => c.active).length;
@@ -13345,6 +13366,7 @@ const Engine = (() => {
         cellsAddedByGrowth: growth.grownCells,
       },
       substrate: substrateInfo.detected ? substrateInfo : null,
+      overExposed: _overExposed,   /* V134 — sur-détection : image uniforme/sur-exposée */
     };
 
     return {
@@ -13352,6 +13374,7 @@ const Engine = (() => {
       probabilities: probs, grid, zoneCount: zones,
       quality,
       verification,          /* nouveau : rapport de contrôle exposé */
+      _overExposed: _overExposed,  /* V134 — propagé pour info qualité (carto locale neutralisée) */
       _bg: bg,
     };
   }
@@ -17104,6 +17127,12 @@ const Annotator = (() => {
       /* ── Étape 1 — Réception photo ── */
       setLoaderStep('loader_step1', 6);
       let { imgData, base64, mediaType, W, H } = await loadImage(url);
+      /* V134 — DÉCALAGE CARTO CORRIGÉ. Source AFFICHÉE = photo originale par
+         défaut. Si la perspective est corrigée plus bas, imgData/W/H deviennent
+         l'image REDRESSÉE et la cartographie est peinte dessus — mais la source
+         restait l'originale (non redressée) → carto et photo désalignées
+         ("ça me décale l'image"). On affichera donc l'image redressée comme source. */
+      let displayUrl = url;
       /* Délai minimal de perception (sinon le step disparaît en <100ms) */
       await delay(150);
 
@@ -17143,6 +17172,7 @@ const Annotator = (() => {
           cv.getContext('2d').putImageData(imgData, 0, 0);
           const compressed = compressAdaptive(cv, W, H);
           base64 = compressed.dataUrl.split(',')[1];
+          displayUrl = compressed.dataUrl;  /* V134 — source affichée = image redressée (alignée avec la carto) */
           if (compressed.finalW !== W || compressed.finalH !== H) {
             console.warn('[perspective] Image downscaled after correction to fit API: ' + compressed.finalW + 'x' + compressed.finalH);
             W = compressed.finalW;
@@ -17487,7 +17517,7 @@ const Annotator = (() => {
          on log l'erreur et on affiche un toast clair. Le finally externe
          ferme le loader de toute façon. */
       try {
-        render(res, imgData, W, H, url);
+        render(res, imgData, W, H, displayUrl);
       } catch (renderErr) {
         console.error('[DIAG] RENDER ERROR:', renderErr);
         toast(t('err_load') || 'Échec de l\'affichage du rapport', 'error');
@@ -19182,6 +19212,22 @@ const Annotator = (() => {
     if (lastRenderArgs && results.classList.contains('visible')) {
       const [res, imgData, W, H, origUrl] = lastRenderArgs;
       render(res, imgData, W, H, origUrl);
+      /* V134 — Le texte d'analyse rédigé par Claude est FIGÉ dans la langue de
+         l'analyse (res.language). Changer la langue de l'UI retraduit les libellés
+         (data-i18n) mais PAS le texte de l'IA → rapport "à moitié traduit", et
+         l'utilisateur croit que le sélecteur de langue est cassé. On l'avertit. */
+      try {
+        const aLang = (res && res.language) ? String(res.language).toLowerCase() : null;
+        if (aLang && currentLang && aLang !== currentLang.toLowerCase() && typeof toast === 'function') {
+          const MSG = {
+            fr: "Le texte de cette analyse a été rédigé dans une autre langue. Relance une analyse pour le traduire entièrement.",
+            en: 'This analysis was written in another language. Re-run an analysis to fully translate it.',
+            es: 'Este análisis se redactó en otro idioma. Vuelve a analizar para traducirlo por completo.',
+            de: 'Diese Analyse wurde in einer anderen Sprache verfasst. Starte eine neue Analyse zur vollständigen Übersetzung.',
+          };
+          toast(MSG[currentLang] || MSG.fr, 'info');
+        }
+      } catch (e) {}
     }
     /* Re-build guide content if currently open */
     if (guideCard && guideCard.classList.contains('open')) buildGuide();
@@ -20130,12 +20176,22 @@ const Annotator = (() => {
     const cartoZones = (Array.isArray(res._rawZones) && res._rawZones.length)
       ? res._rawZones
       : zones;
-    if (cartoZones.length && grid.length) {
-      Annotator.drawZones(annCanvas, imgData, { grid, zones: cartoZones }, W, H);
-    } else if (grid.length) {
-      Annotator.drawGrid(annCanvas, imgData, grid, W, H);
-    } else {
-      Annotator.draw(annCanvas, imgData, [], W, H);
+    /* V134 — CARTOGRAPHIE PROTÉGÉE (cause racine du "pas de score / seulement
+       certains éléments"). Avant, cet appel n'était PAS dans un try/catch et le
+       bloc score venait APRÈS → si drawZones plantait (ex: grille saturée 16384
+       cellules), le rapport restait à moitié rendu : verdict visible mais NI
+       score NI tableau. Désormais une erreur de dessin dégrade la carte SEULE,
+       jamais le reste du rapport. */
+    try {
+      if (cartoZones.length && grid.length) {
+        Annotator.drawZones(annCanvas, imgData, { grid, zones: cartoZones }, W, H);
+      } else if (grid.length) {
+        Annotator.drawGrid(annCanvas, imgData, grid, W, H);
+      } else {
+        Annotator.draw(annCanvas, imgData, [], W, H);
+      }
+    } catch (e) {
+      console.warn('[V134 cartographie] échec du rendu — score + rapport préservés:', e?.message || e);
     }
     /* V120 — Numéros de zone sur la cartographie.
        Problème : le verdict card affiche "ZONE 1", "ZONE 2", "ZONE 3" mais le
