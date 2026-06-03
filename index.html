@@ -7578,7 +7578,8 @@ html.lv-open, body.lv-open { background: #000 !important; }
   width: 68px; height: 68px;
   pointer-events: none;
   opacity: 1;
-  transition: width 0.18s ease, height 0.18s ease;
+  /* V127 — transition de taille retirée : le réticule ne doit JAMAIS changer
+     de taille (stabilité absolue, plus de "respiration"). */
   filter: drop-shadow(0 0 1.5px rgba(0,0,0,0.95))
           drop-shadow(0 0 3px rgba(0,0,0,0.55));
 }
@@ -8094,7 +8095,9 @@ html.lv-open, body.lv-open { background: #000 !important; }
   border-radius: 50%;
   background: #f0a830;
   box-shadow: 0 0 6px rgba(240, 168, 48, 0.6);
-  animation: lv-prescan-pulse 2.4s ease-in-out infinite;
+  /* V127 — pulsation permanente retirée : un point qui clignote en continu
+     pendant la visée = animation "pas adaptée" (directive). Point fixe. */
+  opacity: 0.9;
 }
 @keyframes lv-prescan-pulse {
   0%, 100% { opacity: 0.55; }
@@ -8343,7 +8346,9 @@ html.lv-open, body.lv-open { background: #000 !important; }
 }
 .lv-analyze-btn.lv-ready-green::before {
   border-color: rgba(45, 212, 191, 0.85);
-  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.18), 0 0 18px rgba(45, 212, 191, 0.32);
+  /* V127 — gros halo 18px retiré : anneau fin et sobre. Un halo qui s'allume/
+     s'éteint au gré des micro-variations de la scène = "animation pas adaptée". */
+  box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.16);
   opacity: 1;
 }
 .lv-analyze-btn.lv-ready-amber::before {
@@ -9069,7 +9074,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v126</span>
+              <span class="home-spec-version" aria-hidden="true">v127</span>
             </div>
           </div>
 
