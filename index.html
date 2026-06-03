@@ -9073,7 +9073,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v129</span>
+              <span class="home-spec-version" aria-hidden="true">v130</span>
             </div>
           </div>
 
@@ -20925,7 +20925,12 @@ const Annotator = (() => {
          plus haut = plus strict). Conversion : seuil = 85 − display×0.6 */
     sensDisplay: 65,        /* valeur affichée par défaut */
     sensitivity: 46,        /* seuil interne = 85 − 65×0.6 */
-    procEvery: 2,
+    /* V130 — SURSAUT (cause vue sur vidéo user : frames vidéo gelées puis bond).
+       Le traitement par frame (getImageData 240×180 + analyse) tournait ~30×/s
+       (procEvery 2 à 59fps) et bloquait le thread principal → la vidéo caméra
+       décrochait/gelait → saccade. Passé à 4 (~15×/s) : détection toujours
+       réactive pour un viseur, mais 2× moins de blocage → vidéo fluide. */
+    procEvery: 4,
     rafId: 0,
     lastT: 0,
     frameCount: 0,
