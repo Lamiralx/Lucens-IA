@@ -9073,7 +9073,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v128</span>
+              <span class="home-spec-version" aria-hidden="true">v129</span>
             </div>
           </div>
 
@@ -21842,11 +21842,19 @@ const Annotator = (() => {
     if (!lv.isOpen || !lv.stream) return;
     lv.lastT = performance.now();
 
-    /* Resize overlay au DOM */
-    const W = overlay.clientWidth, H = overlay.clientHeight;
-    if (overlay.width !== W || overlay.height !== H) {
-      overlay.width = W; overlay.height = H;
+    /* V129 — SURSAUT PERMANENT (cause racine) : relire overlay.clientWidth/Height
+       à CHAQUE frame (60 fps) force un reflow synchrone permanent = layout
+       thrashing = saccades iOS. Et si la valeur oscille d'1px (barre Safari,
+       sous-pixel), le canvas se redimensionne → se vide → flash à chaque frame.
+       On ne resynchronise la taille qu'~1×/seconde ; le reste du temps on lit le
+       backing-store du canvas (overlay.width/height) qui ne déclenche AUCUN reflow. */
+    if (lv.frameCount % 60 === 0) {
+      const cw = overlay.clientWidth, ch = overlay.clientHeight;
+      if (cw > 0 && ch > 0 && (overlay.width !== cw || overlay.height !== ch)) {
+        overlay.width = cw; overlay.height = ch;
+      }
     }
+    const W = overlay.width, H = overlay.height;
 
     lv.frameCount++;
     /* Frame skipping pour perf */
