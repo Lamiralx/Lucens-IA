@@ -7666,7 +7666,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   align-items: center;
   gap: 8px;
   padding: 7px 12px;
-  width: 210px;
+  width: 185px;  /* V132 — taille FIXE unique, dimensionnée pour le plus long verdict court (toutes langues), petite et stable */
   max-width: calc(100vw - 120px);
   background: rgba(8, 10, 14, 0.9);  /* V128 — plus opaque : compense le retrait du blur */
   color: rgba(245, 247, 250, 0.96);
@@ -7694,12 +7694,9 @@ html.lv-open, body.lv-open { background: #000 !important; }
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 2;          /* V131 — 2 lignes au lieu de tronquer. Les messages longs ("Non fluo · thermal imaging screen") étaient coupés ("THERMAL IMAGIN…" vu sur la vidéo). */
-  -webkit-box-orient: vertical;
-  line-clamp: 2;
-  line-height: 1.22;
-  word-break: break-word;
-  white-space: normal;            /* V131 — wrap autorisé (nowrap forçait la troncature sur 1 ligne) */
+  /* V132 — Retour à UNE ligne fixe. Le texte est désormais court (verdict seul),
+     donc plus besoin de wrap ni de troncature : ça tient toujours. */
+  white-space: nowrap;
 }
 @media (max-width: 380px) {
   .lv-status-banner {
@@ -9073,7 +9070,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v131</span>
+              <span class="home-spec-version" aria-hidden="true">v132</span>
             </div>
           </div>
 
@@ -9954,7 +9951,7 @@ const I18N = {
     lv_status_idle:           "Visez une zone",
     lv_status_pending:        "Analyse…",
     lv_status_fluo:           "Résidu détecté",
-    lv_status_object:         "Non fluo",
+    lv_status_object:         "Pas un résidu",
     lv_status_object_prefix:  "Non fluo",
     lv_cal_banner:            "Calibration · Zone propre",
     lv_cal_instruction:       "Touchez une zone propre pour calibrer",
@@ -10489,7 +10486,7 @@ const I18N = {
     lv_status_idle:           "Aim at a spot",
     lv_status_pending:        "Analysing…",
     lv_status_fluo:           "Residue detected",
-    lv_status_object:         "Not fluo",
+    lv_status_object:         "Not a residue",
     lv_status_object_prefix:  "Not fluo",
     lv_cal_banner:            "Calibration · Clean area",
     lv_cal_instruction:       "Tap a clean area to calibrate",
@@ -11085,7 +11082,7 @@ const I18N = {
     lv_status_idle:           "Apunte una zona",
     lv_status_pending:        "Analizando…",
     lv_status_fluo:           "Residuo detectado",
-    lv_status_object:         "No fluo",
+    lv_status_object:         "No es un residuo",
     lv_status_object_prefix:  "No fluo",
     lv_cal_banner:            "Calibración · Zona limpia",
     lv_cal_instruction:       "Toque una zona limpia para calibrar",
@@ -11608,7 +11605,7 @@ const I18N = {
     lv_status_idle:           "Bereich anvisieren",
     lv_status_pending:        "Analyse…",
     lv_status_fluo:           "Rückstand erkannt",
-    lv_status_object:         "Keine Fluo",
+    lv_status_object:         "Kein Rückstand",
     lv_status_object_prefix:  "Keine Fluo",
     lv_cal_banner:            "Kalibrierung · Saubere Zone",
     lv_cal_instruction:       "Berühren Sie eine saubere Zone zum Kalibrieren",
@@ -21680,15 +21677,16 @@ const Annotator = (() => {
       /* V124 — Troncature 10 chars retirée : elle coupait "clavier RGB" en
          "clavier RG" (B perdu). Cap généreux à 30, l'ellipsis CSS de
          .lv-status-label gère proprement tout dépassement avec « … ». */
-      const shortReason = (reason || '').trim().slice(0, 30);
       const tr = (k, fb) => (typeof t === 'function' ? t(k) : fb) || fb;
+      /* V132 — Bannière PETITE et FIXE, texte COURT (verdict seul). La raison
+         Claude (3-6 mots type "thermal imaging screen") faisait déborder/tronquer
+         le bandeau. On n'affiche QUE le verdict, immédiatement lisible d'un
+         coup d'œil. Vocabulaire 100% "résidu" (plus de "fluo"). */
       const map = {
         idle:    tr('lv_status_idle',    'Visez une zone'),
-        pending: tr('lv_status_pending', 'Analyse en cours…'),
+        pending: tr('lv_status_pending', 'Analyse…'),
         fluo:    tr('lv_status_fluo',    'Résidu détecté'),
-        object:  shortReason
-                   ? (tr('lv_status_object_prefix', 'Pas une fluo') + ' · ' + shortReason)
-                   : tr('lv_status_object', 'Pas une fluorescence'),
+        object:  tr('lv_status_object',  'Pas un résidu'),
       };
       label.textContent = map[state] || tr('lv_status_idle', 'Visez une zone');
     }
