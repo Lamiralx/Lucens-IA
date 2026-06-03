@@ -9070,7 +9070,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v132</span>
+              <span class="home-spec-version" aria-hidden="true">v133</span>
             </div>
           </div>
 
@@ -18504,7 +18504,18 @@ const Annotator = (() => {
       if (lastResp) return lastResp;
       throw lastErr || new Error('NETWORK_FAILED');
     }
-    /* Sinon : flow normal, on construit une réponse compatible avec l'ancien code */
+    /* V133 — BUG CORRIGÉ : DOUBLE APPEL Opus par analyse.
+       submitAnalysisWithOfflineFallback (ci-dessus) fait DÉJÀ un fetch complet de
+       /api/analyze. En cas de SUCCÈS il renvoie { ok:true, data } SANS champ
+       .response. L'ancien ternaire ci-dessous ne testait que .response → il
+       RELANÇAIT fetchAnalyzeWithRetry = 2ᵉ appel Opus (~20-40s de plus, 2× coût).
+       Ce cumul (~40-80s) dépassait souvent le watchdog / saturait l'API →
+       fallback "analyse locale provisoire". On réutilise le résultat OK direct. */
+    if (_offlineResult && _offlineResult.ok && _offlineResult.data) {
+      try { if (typeof InstrumentStatusDot !== 'undefined') InstrumentStatusDot.notifyApiSuccess(); } catch {}
+      return _offlineResult.data;
+    }
+    /* Sinon : flow normal (réponse en erreur réutilisable, ou aucun fetch encore fait) */
     const resp = _offlineResult && _offlineResult.response
       ? _offlineResult.response
       : await fetchAnalyzeWithRetry();
