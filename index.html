@@ -9070,7 +9070,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v134</span>
+              <span class="home-spec-version" aria-hidden="true">v135</span>
             </div>
           </div>
 
@@ -17175,6 +17175,15 @@ const Annotator = (() => {
           displayUrl = compressed.dataUrl;  /* V134 — source affichée = image redressée (alignée avec la carto) */
           if (compressed.finalW !== W || compressed.finalH !== H) {
             console.warn('[perspective] Image downscaled after correction to fit API: ' + compressed.finalW + 'x' + compressed.finalH);
+            /* V135 — ré-extraire imgData à la résolution finale (sinon imgData
+               reste à la grande taille redressée mais W/H = finalW/finalH → même
+               décalage carto que le bug loadImage corrigé ci-dessus). */
+            const cvP = document.createElement('canvas');
+            cvP.width = compressed.finalW; cvP.height = compressed.finalH;
+            const cP = cvP.getContext('2d');
+            cP.imageSmoothingEnabled = true; cP.imageSmoothingQuality = 'high';
+            cP.drawImage(cv, 0, 0, compressed.finalW, compressed.finalH);
+            imgData = cP.getImageData(0, 0, compressed.finalW, compressed.finalH);
             W = compressed.finalW;
             H = compressed.finalH;
           }
@@ -17241,6 +17250,7 @@ const Annotator = (() => {
            localRes.verification contient les métriques de la pipeline pixel :
            initialCells, rejectedBySubstrate, rejectedByCleanup, cellsAddedByGrowth. */
         res.verification = localRes.verification;
+        res._overExposed = localRes._overExposed;  /* V135 — propagé pour l'avertissement qualité (carto locale neutralisée) */
         /* ═══════════════════════════════════════════════════════════════
            ÉTAPE 6 — VÉRIFICATION APPROFONDIE
            ═══════════════════════════════════════════════════════════════
@@ -18117,6 +18127,10 @@ const Annotator = (() => {
       contextual_reasoning: raw.contextual_reasoning || null,
       point_of_vigilance: raw.point_of_vigilance || null,
       reference_logic: raw.reference_logic || null,
+      /* V135 — langue de l'analyse exposée au top-level. Le toast de langue V134
+         lisait res.language qui n'était jamais posé ici → code mort. Maintenant
+         l'avertissement "analyse dans une autre langue" peut fonctionner. */
+      language: raw.language || null,
       /* V109 — Même pattern V108 : analyzable + analyzability_score requis
          pour le heroConfidence (fiabilité d'analyse) qui ne s'affichait
          JAMAIS car analyzability_score = undefined après normalize.
@@ -18871,7 +18885,6 @@ const Annotator = (() => {
       canvas = result.canvas; W = result.W; H = result.H;
     }
     const ctx = canvas.getContext('2d');
-    const imgData = ctx.getImageData(0, 0, W, H);
 
     /* Pré-traitements CLAHE et auto-crop DÉSACTIVÉS — retour à l'image native
        après orientation EXIF uniquement. Ils dégradaient les analyses utilisateur
@@ -18884,6 +18897,24 @@ const Annotator = (() => {
        qualités décroissantes et si toutes échouent, on downscale en plus. */
     const { dataUrl, finalW, finalH } = compressAdaptive(canvas, W, H);
     const base64 = dataUrl.split(',')[1];
+    /* V135 — CAUSE RACINE du "ça décale l'image" (ratée en V134). imgData DOIT
+       être à finalW×finalH. Avant : imgData extrait à W×H (≤3072) mais on
+       retournait W:finalW/H:finalH (≤2048, après downscale de compressAdaptive)
+       → putImageData(imgData) peignait un buffer 3072 dans un canvas 2048
+       (image rognée/décalée) et buildGrid samplait au mauvais stride (détection
+       faussée). On ré-extrait imgData à la résolution finale → triple {imgData,W,H}
+       toujours cohérent. */
+    let imgData;
+    if (finalW !== W || finalH !== H) {
+      const cvF = document.createElement('canvas');
+      cvF.width = finalW; cvF.height = finalH;
+      const cF = cvF.getContext('2d');
+      cF.imageSmoothingEnabled = true; cF.imageSmoothingQuality = 'high';
+      cF.drawImage(canvas, 0, 0, finalW, finalH);
+      imgData = cF.getImageData(0, 0, finalW, finalH);
+    } else {
+      imgData = ctx.getImageData(0, 0, W, H);
+    }
     return { imgData, base64, mediaType: 'image/jpeg', W: finalW, H: finalH };
   }
 
@@ -20042,9 +20073,13 @@ const Annotator = (() => {
     if (grid.length && !grid.pixelMask && imgData && typeof Engine !== 'undefined' && Engine.analyze) {
       try {
         const rebuilt = Engine.analyze(imgData, W, H);
-        if (rebuilt && rebuilt.pixelMask) {
-          grid.pixelMask = rebuilt.pixelMask;
-          grid.gridN     = rebuilt.gridN || grid.gridN;
+        /* V135 — Engine.analyze attache le mask sur rebuilt.GRID.pixelMask
+           (propriété de l'array grid), pas rebuilt.pixelMask. L'ancien test était
+           TOUJOURS faux → le rebuild ne s'exécutait jamais → carto dégradée en
+           halo rouge au rechargement depuis l'historique. Chemin corrigé. */
+        if (rebuilt && rebuilt.grid && rebuilt.grid.pixelMask) {
+          grid.pixelMask = rebuilt.grid.pixelMask;
+          grid.gridN     = rebuilt.grid.gridN || grid.gridN;
         }
       } catch (e) {
         console.warn('[V42] pixelMask rebuild failed (fallback rectangles activé) :', e?.message || e);
