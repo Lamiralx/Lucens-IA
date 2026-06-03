@@ -7501,11 +7501,11 @@ html.lv-open, body.lv-open { background: #000 !important; }
   width: 100%; height: 100%;
   object-fit: cover;
   transform: translateZ(0);
-  /* iOS Safari sort une vidéo plus terne que l'app caméra native (pas de HDR).
-     On compense par un léger boost saturation + contraste pour retrouver
-     l'éclat des vraies fluorescences sans dénaturer l'image. */
-  filter: saturate(1.18) contrast(1.06);
-  -webkit-filter: saturate(1.18) contrast(1.06);
+  /* V128 — filter CSS RETIRÉ. Appliquer un filter (saturate/contrast) sur une
+     <video> live force iOS Safari à traiter chaque frame dans le pipeline GPU
+     du filtre → micro-saccades / sursauts permanents. Le boost vivacité n'était
+     QUE cosmétique (la détection se fait sur le work-canvas via drawImage, pas
+     sur la vidéo affichée) → on le sacrifie pour la stabilité. */
 }
 .lv-overlay {
   position: absolute; inset: 0;
@@ -7668,7 +7668,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   padding: 7px 12px;
   width: 210px;
   max-width: calc(100vw - 120px);
-  background: rgba(8, 10, 14, 0.78);
+  background: rgba(8, 10, 14, 0.9);  /* V128 — plus opaque : compense le retrait du blur */
   color: rgba(245, 247, 250, 0.96);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 14px;
@@ -7678,8 +7678,8 @@ html.lv-open, body.lv-open { background: #000 !important; }
   letter-spacing: 0.04em;
   text-transform: uppercase;
   pointer-events: none;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  /* V128 — backdrop-filter blur retiré : flouter en continu le fond vidéo qui
+     bouge = compositing GPU permanent sur iOS → saccades. Fond opaque à la place. */
   /* V45 — Plus de transition de couleur. Les changements d'état (idle ↔
      fluo ↔ object) sont des informations INSTANTANÉES pour le user terrain
      HACCP — ne doivent pas être enrobés d'une animation 200ms qui fait
@@ -8087,8 +8087,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   text-transform: uppercase;
   pointer-events: none;
   z-index: 6;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  /* V128 — backdrop-filter blur retiré (perf iOS sur vidéo live). */
 }
 .lv-prescan-dot {
   width: 6px; height: 6px;
@@ -9074,7 +9073,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v127</span>
+              <span class="home-spec-version" aria-hidden="true">v128</span>
             </div>
           </div>
 
