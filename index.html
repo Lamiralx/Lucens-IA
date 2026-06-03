@@ -7694,12 +7694,12 @@ html.lv-open, body.lv-open { background: #000 !important; }
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 1;          /* V35 : une seule ligne dans la topbar */
+  -webkit-line-clamp: 2;          /* V131 — 2 lignes au lieu de tronquer. Les messages longs ("Non fluo · thermal imaging screen") étaient coupés ("THERMAL IMAGIN…" vu sur la vidéo). */
   -webkit-box-orient: vertical;
-  line-clamp: 1;
-  line-height: 1.3;
+  line-clamp: 2;
+  line-height: 1.22;
   word-break: break-word;
-  white-space: nowrap;
+  white-space: normal;            /* V131 — wrap autorisé (nowrap forçait la troncature sur 1 ligne) */
 }
 @media (max-width: 380px) {
   .lv-status-banner {
@@ -9073,7 +9073,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v130</span>
+              <span class="home-spec-version" aria-hidden="true">v131</span>
             </div>
           </div>
 
@@ -9953,7 +9953,7 @@ const I18N = {
        permet "Visez une zone" sans débordement, vérifié Playwright). */
     lv_status_idle:           "Visez une zone",
     lv_status_pending:        "Analyse…",
-    lv_status_fluo:           "Fluo détectée",
+    lv_status_fluo:           "Résidu détecté",
     lv_status_object:         "Non fluo",
     lv_status_object_prefix:  "Non fluo",
     lv_cal_banner:            "Calibration · Zone propre",
@@ -10488,7 +10488,7 @@ const I18N = {
     lv_btn_auth:              "Authenticate",
     lv_status_idle:           "Aim at a spot",
     lv_status_pending:        "Analysing…",
-    lv_status_fluo:           "Fluo detected",
+    lv_status_fluo:           "Residue detected",
     lv_status_object:         "Not fluo",
     lv_status_object_prefix:  "Not fluo",
     lv_cal_banner:            "Calibration · Clean area",
@@ -11084,7 +11084,7 @@ const I18N = {
     lv_btn_auth:              "Autenticar",
     lv_status_idle:           "Apunte una zona",
     lv_status_pending:        "Analizando…",
-    lv_status_fluo:           "Fluo detectada",
+    lv_status_fluo:           "Residuo detectado",
     lv_status_object:         "No fluo",
     lv_status_object_prefix:  "No fluo",
     lv_cal_banner:            "Calibración · Zona limpia",
@@ -11607,7 +11607,7 @@ const I18N = {
     lv_btn_auth:              "Authentifizieren",
     lv_status_idle:           "Bereich anvisieren",
     lv_status_pending:        "Analyse…",
-    lv_status_fluo:           "Fluo erkannt",
+    lv_status_fluo:           "Rückstand erkannt",
     lv_status_object:         "Keine Fluo",
     lv_status_object_prefix:  "Keine Fluo",
     lv_cal_banner:            "Kalibrierung · Saubere Zone",
@@ -21685,7 +21685,7 @@ const Annotator = (() => {
       const map = {
         idle:    tr('lv_status_idle',    'Visez une zone'),
         pending: tr('lv_status_pending', 'Analyse en cours…'),
-        fluo:    tr('lv_status_fluo',    'Fluorescence détectée'),
+        fluo:    tr('lv_status_fluo',    'Résidu détecté'),
         object:  shortReason
                    ? (tr('lv_status_object_prefix', 'Pas une fluo') + ' · ' + shortReason)
                    : tr('lv_status_object', 'Pas une fluorescence'),
