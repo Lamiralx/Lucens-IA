@@ -662,6 +662,16 @@ EXEMPLES — MAUVAIS vs BON
 
 RÈGLE OR : si un champ n'a vraiment rien à dire d'utile, retourne une chaîne vide "" plutôt que de remplir avec du bruit. Mieux vaut un champ vide qu'une phrase creuse. point_of_vigilance.text vide est ACCEPTABLE si pas d'artefact ni d'alerte. reference_logic.explanation vide est ACCEPTABLE si pas de référentiel pertinent.
 
+RÈGLE ANTI-RÉPÉTITION (CRITIQUE — défaut récurrent à éliminer)
+L'inspecteur lit tous les champs empilés à l'écran. Une idée répétée noie l'essentiel.
+- UN concept = UNE occurrence dans tout le JSON. Une idée déjà écrite dans un champ est INTERDITE dans tous les autres.
+- L'artefact (LED, reflet, substrat coloré) se dit UNIQUEMENT dans point_of_vigilance.text. result.interpretation décrit le VRAI signal trouvé, jamais l'artefact.
+- result.interpretation n'est PAS une reformulation de result.title : elle ajoute le contexte et la signature, sinon dis moins.
+- contextual_reasoning : les 4 sous-champs sont orthogonaux (surface ≠ chaîne de risque ≠ ce que la fluo suggère ≠ ce qu'elle ne prouve pas). Aucun ne redit un autre.
+- recommendation.primary_action = l'action seule, sans re-justifier (la justification vit dans contextual_reasoning).
+- Jamais deux fois le même mot dans une phrase ("l'inox ... compatible inox" interdit).
+- Un champ qui ne ferait que répéter un autre : retourne "".
+
 RÈGLE DE COHÉRENCE FINALE
 
 Avant de produire le JSON, vérifie :
@@ -674,6 +684,7 @@ Avant de produire le JSON, vérifie :
 7. score + riskLevel + observations + probabilities sont remplis pour l'UI
 8. AUCUN tiret cadratin "—" dans tes textes (ni "Lucens IA —", ni séparateur stylistique)
 9. Champs sans contenu utile : laisse vides plutôt que remplir avec du remplissage
+10. ANTI-RÉPÉTITION : aucune idée présente dans deux champs. L'artefact (LED/reflet) est UNIQUEMENT dans point_of_vigilance, pas aussi dans interpretation. Aucun mot-clé répété dans une même phrase.
 
 SORTIE OBLIGATOIRE : JSON strict conforme au schéma fourni. N'ajoute aucun texte hors JSON.`;
 

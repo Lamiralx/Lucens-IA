@@ -2438,15 +2438,13 @@ input[type="file"] { display: none; }
 .results.visible .hero-row,
 .results.visible .results-zone-top,
 .results.visible .lucens-verdict-card,
-.results.visible .card,
-.results.visible .observations-card {
+.results.visible .card {
   animation: lucens-fade-up 0.4s var(--ease-out, ease-out) both;
 }
 .results.visible .results-zone-top { animation-delay: 0.02s; }
 .results.visible .hero-row { animation-delay: 0.08s; }
 .results.visible .lucens-verdict-card { animation-delay: 0.14s; }
 .results.visible .card { animation-delay: 0.20s; }
-.results.visible .observations-card { animation-delay: 0.26s; }
 @media (prefers-reduced-motion: reduce) {
   .results.visible * { animation: none !important; }
 }
@@ -3360,140 +3358,8 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 .zone-intensity.moyenne  { color: var(--risk-mid); }
 .zone-intensity.forte    { color: var(--risk-hi); }
 
-/* ─── OBSERVATIONS IA — Concept 2 Tagged Editorial ─── */
-.observations-card {
-  margin-top: var(--space-md);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  /* Vague 5A.5 — padding resserré 22/26/24 → 16/20/18 pour densifier
-     le rapport sans réduire la lisibilité. Gain ~25% espace vertical. */
-  padding: 16px 20px 18px;
-  display: none;
-}
-.observations-card.visible { display: block; }
-/* V62 — Titre observations refondu : retire le trait décoratif que les
-   utilisateurs lisaient comme un em-dash parasite. Titre passe en
-   font-display 16px gras, vraie hiérarchie visuelle séparée du body.
-   V112 — Le header est maintenant un <summary> cliquable (toggle natif
-   <details>). Cursor pointer + flex layout pour titre+chevron + retire
-   le marker triangle natif du navigateur. */
-.observations-hdr {
-  font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: -0.005em;
-  text-transform: none;
-  color: var(--ink-primary);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  cursor: pointer;
-  list-style: none;          /* Firefox marker */
-  user-select: none;
-  /* Borders only when expanded — closed state stays minimal */
-  padding-bottom: 0;
-  margin-bottom: 0;
-  border-bottom: none;
-  transition: margin-bottom .15s ease, padding-bottom .15s ease;
-}
-.observations-hdr::-webkit-details-marker { display: none; }   /* Safari/Chrome marker */
-.observations-hdr::marker                  { display: none; }
-.observations-hdr:hover .observations-chev { color: var(--accent); }
-.observations-chev {
-  color: var(--ink-tertiary);
-  transition: transform .18s ease, color .15s ease;
-  flex-shrink: 0;
-}
-.observations-card[open] .observations-hdr {
-  margin-bottom: 18px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--hairline);
-}
-.observations-card[open] .observations-chev {
-  transform: rotate(180deg);
-}
-.observations-list {
-  display: flex;
-  flex-direction: column;
-}
-.observations-item {
-  padding-bottom: 18px;
-  margin-bottom: 18px;
-  border-bottom: 1px solid var(--hairline);
-}
-.observations-item:last-child {
-  padding-bottom: 0;
-  margin-bottom: 0;
-  border-bottom: none;
-}
-.observations-tag {
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #D84315;
-  margin-bottom: 6px;
-  display: inline-block;
-}
-.observations-body {
-  font-family: var(--font-display);
-  font-size: 14.5px;
-  font-weight: 400;
-  line-height: 1.55;
-  color: var(--ink-secondary);
-}
-.observations-body strong {
-  font-weight: 500;
-  color: var(--ink-primary);
-}
-
-/* ─── Indicateur de confidence par observation (Sprint 1) ─── */
-.observations-tag-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-.observations-conf {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  display: inline-block;
-  flex-shrink: 0;
-}
-.observations-conf.high   { background: #6FCF8E; }
-.observations-conf.medium { background: #E8C16A; }
-.observations-conf.low    { background: #969CAB; }
-
-/* Légende confidence — visible si au moins une observation a un indicator */
-.observations-legend {
-  display: none;
-  margin-top: 18px;
-  padding-top: 14px;
-  border-top: 1px solid var(--hairline);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  color: var(--ink-tertiary);
-  flex-wrap: wrap;
-  gap: 16px;
-}
-.observations-legend.visible { display: flex; }
-.observations-legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.observations-legend-dot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-}
-.observations-legend-dot.high   { background: #6FCF8E; }
-.observations-legend-dot.medium { background: #E8C16A; }
-.observations-legend-dot.low    { background: #969CAB; }
+/* V122 — CSS .observations-* SUPPRIMÉ avec la carte Observations (doublon
+   du verdict). Voir le commentaire HTML V122 + le retrait render. */
 
 /* ─── Bandeau analyzability low (Sprint 1) ─── */
 .analyzability-warning {
@@ -9190,7 +9056,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v121</span>
+              <span class="home-spec-version" aria-hidden="true">v122</span>
             </div>
           </div>
 
@@ -9486,19 +9352,16 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span id="analyzabilityWarningText" hidden></span>
             </div>
 
-            <!-- V112 — observationsCard converti en <details> collapsed
-                 par défaut. Réduit la paroi de texte par défaut sur le rapport
-                 (multi-paragraphes IA verbeux). L'inspecteur ouvre s'il
-                 veut creuser. Pattern aligné avec le repli verdict. -->
-            <details class="observations-card" id="observationsCard">
-              <summary class="observations-hdr">
-                <span data-i18n="obs_title">Observations Lucens IA</span>
-                <svg class="observations-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <polyline points="6 9 12 15 18 9"/>
-                </svg>
-              </summary>
-              <div class="observations-text" id="observationsText"></div>
-            </details>
+            <!-- V122 — observationsCard SUPPRIMÉ. C'était un doublon complet
+                 de la carte verdict : RISQUE = titre+score, SURFACE =
+                 contextual_reasoning.surface_logic, SIGNAL OBSERVÉ =
+                 interpretation, RECOMMANDATION = recommendation. Claude écrivait
+                 la même analyse deux fois (observations[] + result/reasoning/
+                 recommendation) et l'UI affichait les deux → répétition que
+                 l'inspecteur subissait. La carte verdict reste la source unique.
+                 observations[] reste dans les données (consommé par PDF + historique).
+                 HTML + render + CSS + i18n obs_title retirés (même pattern que
+                 le retrait decisionCard en V119). -->
 
             <!-- V119 — decisionCard supprimé : champ `decision_summary` jamais
                  retourné par Claude (absent du schéma api/analyze.js). Code mort
@@ -10130,9 +9993,7 @@ const I18N = {
     cat_unknown: "Signature non identifiée", cat_unknown_h: "Hors plages connues",                          cat_unknown_a: "Signature ambiguë",
     guide_title: "Guide d'interprétation",
     guide_origins: "Origines probables",
-    guide_aspect: "Aspect typique",
-    obs_title: "Observations Lucens IA",
-    diff_title: "Diagnostic différentiel",
+    guide_aspect: "Aspect typique",    diff_title: "Diagnostic différentiel",
     diff_hint: "Hypothèses & priorité de test",
     diff_priority: "Priorité",
     urg_low: "Faible", urg_medium: "Moyenne", urg_high: "Élevée", urg_critical: "Critique",
@@ -10667,9 +10528,7 @@ const I18N = {
     cat_unknown: "Unidentified signature",   cat_unknown_h: "Outside known ranges",                      cat_unknown_a: "Ambiguous signature",
     guide_title: "Interpretation guide",
     guide_origins: "Probable origins",
-    guide_aspect: "Typical aspect",
-    obs_title: "Lucens IA observations",
-    diff_title: "Differential diagnosis",
+    guide_aspect: "Typical aspect",    diff_title: "Differential diagnosis",
     diff_hint: "Hypotheses & testing priority",
     diff_priority: "Priority",
     urg_low: "Low", urg_medium: "Medium", urg_high: "High", urg_critical: "Critical",
@@ -11265,9 +11124,7 @@ const I18N = {
     cat_unknown: "Firma no identificada",    cat_unknown_h: "Fuera de los rangos conocidos",                    cat_unknown_a: "Firma ambigua",
     guide_title: "Guía de interpretación",
     guide_origins: "Orígenes probables",
-    guide_aspect: "Aspecto típico",
-    obs_title: "Observaciones de Lucens IA",
-    diff_title: "Diagnóstico diferencial",
+    guide_aspect: "Aspecto típico",    diff_title: "Diagnóstico diferencial",
     diff_hint: "Hipótesis y prioridad de prueba",
     diff_priority: "Prioridad",
     urg_low: "Baja", urg_medium: "Media", urg_high: "Alta", urg_critical: "Crítica",
@@ -11790,9 +11647,7 @@ const I18N = {
     cat_unknown: "Nicht identifizierte Signatur", cat_unknown_h: "Außerhalb bekannter Bereiche",                    cat_unknown_a: "Mehrdeutige Signatur",
     guide_title: "Auslegungsleitfaden",
     guide_origins: "Wahrscheinliche Quellen",
-    guide_aspect: "Typisches Aussehen",
-    obs_title: "Beobachtungen von Lucens IA",
-    diff_title: "Differenzialdiagnose",
+    guide_aspect: "Typisches Aussehen",    diff_title: "Differenzialdiagnose",
     diff_hint: "Hypothesen & Testpriorität",
     diff_priority: "Priorität",
     urg_low: "Gering", urg_medium: "Mittel", urg_high: "Hoch", urg_critical: "Kritisch",
@@ -20742,8 +20597,7 @@ const Annotator = (() => {
     const warningText = $('analyzabilityWarningText');
     const missingCard = $('missingContextCard');
     const missingList = $('missingContextList');
-    const obsCard = $('observationsCard');
-    const obsContainer = $('observationsText');
+    /* V122 — obsCard/obsContainer retirés (carte Observations supprimée). */
 
     /* Reset visibilité des cartes dynamiques avant rendu */
     if (refusalCard) refusalCard.classList.remove('visible');
@@ -20756,7 +20610,6 @@ const Annotator = (() => {
         refusalReason.textContent = res.reason_not_analyzable || '';
         refusalCard.classList.add('visible');
       }
-      if (obsCard) obsCard.classList.remove('visible');
     } else {
       /* État 2 — Bandeau fiabilité limitée si score < 30 */
       /* V68 — La "Fiabilité d'analyse limitée" ne doit apparaître que si
@@ -20774,135 +20627,10 @@ const Annotator = (() => {
         warningCard.classList.add('visible');
       }
 
-      /* V59 — Observations refondues : 4 tags max, labels FR propres, ordre strict.
-         Filtre les tags obsolètes (ambient_uv, artifacts_excluded, context_clue,
-         user_to_confirm, scoring_rationale) au cas où Claude les renvoie encore.
-         L'ordre canonique met le risk_summary EN PREMIER. */
-      const OBS_ALLOWED = {
-        risk_summary:        { label: 'Risque',         order: 1 },
-        surface_summary:     { label: 'Surface',        order: 2 },
-        fluorescence_summary:{ label: 'Signal observé', order: 3 },
-        recommendation:      { label: 'Recommandation', order: 4 },
-        /* Backward compat : remappe les anciens noms vers les nouveaux */
-        hygiene_note:        { label: 'Recommandation', order: 4 },
-        surface_inspected:   { label: 'Surface',        order: 2 },
-        fluorescence_detected:{ label: 'Signal observé', order: 3 },
-      };
-      const OBS_BLOCKED = new Set([
-        'ambient_uv', 'artifacts_excluded', 'context_clue',
-        'user_to_confirm', 'scoring_rationale',
-      ]);
-      if (obsCard && obsContainer) {
-        const raw = res.observations;
-        let items = [];
-        if (Array.isArray(raw)) {
-          items = raw.map(o => {
-            if (o && typeof o === 'object' && o.body) {
-              const tag = String(o.tag || '').toLowerCase().trim();
-              if (OBS_BLOCKED.has(tag)) return null;  /* skip obsolète */
-              return { tag, body: String(o.body), confidence: o.confidence || null };
-            }
-            if (typeof o === 'string' && o.trim()) return { tag: '', body: o.trim(), confidence: null };
-            return null;
-          }).filter(Boolean);
-          /* Tri canonique : risk_summary → surface → signal → hygiène */
-          items.sort((a, b) => {
-            const oa = (OBS_ALLOWED[a.tag] && OBS_ALLOWED[a.tag].order) || 99;
-            const ob = (OBS_ALLOWED[b.tag] && OBS_ALLOWED[b.tag].order) || 99;
-            return oa - ob;
-          });
-        } else if (typeof raw === 'string' && raw.trim()) {
-          items = [{ tag: '', body: raw.trim(), confidence: null }];
-        }
-
-        while (obsContainer.firstChild) obsContainer.removeChild(obsContainer.firstChild);
-
-        if (items.length) {
-          const list = document.createElement('div');
-          list.className = 'observations-list';
-          let hasAnyConfidence = false;
-          for (const it of items) {
-            const item = document.createElement('div');
-            item.className = 'observations-item';
-            if (it.tag) {
-              const tagRow = document.createElement('div');
-              tagRow.className = 'observations-tag-row';
-              const tag = document.createElement('span');
-              tag.className = 'observations-tag';
-              /* V59 — Mapping tag → label FR humain (au lieu de "RISK_SUMMARY"
-                 en CAPS_UNDERSCORE). Fallback : nettoyage générique si tag
-                 inconnu (capitalise + remplace _ par espace). */
-              const tagKey = String(it.tag).toLowerCase().trim();
-              const mapped = OBS_ALLOWED[tagKey];
-              let cleanTag;
-              if (mapped) {
-                cleanTag = mapped.label;
-              } else {
-                cleanTag = String(it.tag)
-                  .replace(/^[\s\-–—•·:]+/, '')
-                  .replace(/_/g, ' ')
-                  .trim()
-                  .toLowerCase()
-                  .replace(/\b\w/g, c => c.toUpperCase());
-              }
-              tag.textContent = cleanTag;
-              tagRow.appendChild(tag);
-              if (it.confidence && ['high','medium','low'].includes(it.confidence)) {
-                hasAnyConfidence = true;
-                const conf = document.createElement('span');
-                conf.className = 'observations-conf ' + it.confidence;
-                conf.title = 'Confiance : ' + (it.confidence === 'high' ? 'élevée — observable directement' :
-                                              it.confidence === 'medium' ? 'modérée — inférée du contexte' :
-                                              'faible — hypothétique');
-                tagRow.appendChild(conf);
-              }
-              item.appendChild(tagRow);
-            }
-            const body = document.createElement('div');
-            body.className = 'observations-body';
-            /* V59 — Nettoie em-dash et en-dash dans le body (Claude en colle
-               malgré l'interdiction prompt). Remplace " — " et " – " par ". ".
-               Garde le simple tiret "-" (utile pour mots composés type re-rincer). */
-            const cleanBody = String(it.body || '')
-              .replace(/^[\s\-–—•·]+/, '')
-              .replace(/\s*[—–]\s*/g, '. ')
-              .replace(/\.\s*\./g, '.')  /* double point résiduel après remplacement */
-              .trim();
-            body.textContent = cleanBody;
-            item.appendChild(body);
-            list.appendChild(item);
-          }
-          obsContainer.appendChild(list);
-
-          /* Légende explicite si au moins une observation a un indicator.
-             Évite que le pro doive deviner ce que signifient les points. */
-          if (hasAnyConfidence) {
-            const legend = document.createElement('div');
-            legend.className = 'observations-legend visible';
-            const labels = [
-              { cls: 'high',   txt: 'Observé' },
-              { cls: 'medium', txt: 'Inféré' },
-              { cls: 'low',    txt: 'Hypothèse' },
-            ];
-            for (const lbl of labels) {
-              const item = document.createElement('span');
-              item.className = 'observations-legend-item';
-              const dot = document.createElement('span');
-              dot.className = 'observations-legend-dot ' + lbl.cls;
-              item.appendChild(dot);
-              const txt = document.createElement('span');
-              txt.textContent = lbl.txt;
-              item.appendChild(txt);
-              legend.appendChild(item);
-            }
-            obsContainer.appendChild(legend);
-          }
-
-          obsCard.classList.add('visible');
-        } else {
-          obsCard.classList.remove('visible');
-        }
-      }
+      /* V122 — Rendu de la carte Observations SUPPRIMÉ (doublon de la carte
+         verdict). observations[] reste dans res (PDF + historique l'utilisent
+         via leur propre rendu), mais n'est plus affiché en double dans le
+         rapport. OBS_ALLOWED/OBS_BLOCKED/légende retirés avec la carte. */
 
       /* V119 — bloc decision_summary supprimé : champ jamais retourné par
          Claude (absent du schéma api/analyze.js), parseDecision avalait
