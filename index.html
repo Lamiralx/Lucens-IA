@@ -7476,6 +7476,14 @@ body.has-sw-update .home {
    ═══════════════════════════════════════════════════════════════════ */
 .lv-modal {
   position: fixed; inset: 0; z-index: 99999;
+  /* V125 — "bande blanche en bas" sur iOS : inset:0 (donc bottom:0) ancre le
+     modal au viewport de mise en page, qui sur iOS Safari peut être plus court
+     que la zone visible quand la barre d'outils se rétracte → un liseré du
+     fond de page (clair) apparaît sous le modal. height:100dvh force le modal
+     à suivre le viewport DYNAMIQUE (toolbar incluse) et couvre toujours le bas.
+     min-height en filet. NON vérifiable en Playwright (rendu iOS device-only). */
+  height: 100dvh;
+  min-height: 100dvh;
   background: #000;
   display: flex; flex-direction: column;
   font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
@@ -9060,7 +9068,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v124</span>
+              <span class="home-spec-version" aria-hidden="true">v125</span>
             </div>
           </div>
 
