@@ -9056,7 +9056,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="home-spec-tag" data-i18n="home_spec">Aide à la décision HACCP</span>
               <!-- V75 — Badge version discret en footer home (sortie du Live View).
                    Accessible pour debug cache si besoin, sans perturber l'inspection. -->
-              <span class="home-spec-version" aria-hidden="true">v122</span>
+              <span class="home-spec-version" aria-hidden="true">v123</span>
             </div>
           </div>
 
@@ -15673,43 +15673,11 @@ const Annotator = (() => {
       });
     }
 
-    /* ─── OBSERVATIONS (rédigées par l'IA, format Concept 2 Tagged) ─── */
-    if (observations) {
-      /* Normalise en items {tag, body} pour rendu PDF tagué */
-      let obsItems = [];
-      if (Array.isArray(observations)) {
-        obsItems = observations.map(o => {
-          if (o && typeof o === 'object' && o.body) return { tag: o.tag || '', body: String(o.body) };
-          if (typeof o === 'string' && o.trim()) return { tag: '', body: o.trim() };
-          return null;
-        }).filter(Boolean);
-      } else if (typeof observations === 'string' && observations.trim()) {
-        obsItems = [{ tag: '', body: observations.trim() }];
-      }
-
-      if (obsItems.length) {
-        py += 2;
-        ensurePageSpace(20);
-        sectionTitle(t('pdf_observations'));
-
-        for (const it of obsItems) {
-          ensurePageSpace(10);
-          if (it.tag) {
-            pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(7);
-            pdf.setTextColor(216, 67, 21);  /* terra cotta */
-            pdf.text(it.tag.toUpperCase(), margin, py);
-            py += 3.6;
-          }
-          pdf.setFont('helvetica', 'normal');
-          pdf.setFontSize(8);
-          pdf.setTextColor(60, 70, 90);
-          const lines = pdf.splitTextToSize(it.body, contentW);
-          pdf.text(lines, margin, py);
-          py += lines.length * 3.6 + 3;
-        }
-      }
-    }
+    /* V123 — Section OBSERVATIONS du PDF SUPPRIMÉE (doublon, même raison que
+       le retrait de la carte Observations en V122). Le PDF a déjà une section
+       "Verdict Lucens IA" (result + interpretation + primary_action) + un
+       "Raisonnement contextuel". observations[] répétait RISQUE/SURFACE/SIGNAL/
+       RECOMMANDATION déjà couverts → retiré pour ne plus dupliquer dans le PDF. */
 
     /* ─── RAISONNEMENT IA (4 champs structurés, si présents) ─── */
     if (reasoning_summary && typeof reasoning_summary === 'object') {
