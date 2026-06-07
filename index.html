@@ -10350,6 +10350,117 @@ body.lv-open { overflow: hidden; touch-action: none; }
         #results.visible .results-toolbar .btn-back { height: 44px !important; font-size: 13.5px !important; }
       }
 
+      /* ═══════ V188.6 — RAPPORT : VRAIS BLOCS DISTINCTS, AÉRÉS ═══════
+         Demande utilisateur : la fenêtre « Niveau de risque » doit être un BLOC
+         clair, ne pas chevaucher « Origine probable », chaque section nette,
+         aérée. On force des filets de séparation explicites entre chaque bloc
+         et on aère le padding interne. */
+
+      /* ─── 1. Bloc « Niveau de risque » (#hero) : aéré + filet de séparation en bas ─── */
+      #results.visible #hero {
+        padding: 14px 15px 14px !important;
+        border-bottom: 1px solid var(--border, #E5E7EB) !important;
+      }
+      #results.visible #hero .hero-row { margin-bottom: 12px !important; }
+      #results.visible #hero .score-value { font-size: 24px !important; }
+      #results.visible .hero-seg { gap: 7px !important; }
+
+      /* ─── 2. Bloc IMAGE : rectangle plein largeur, filet bas net ─── */
+      #results.visible .result-grid { padding: 0 !important; }
+      #results.visible .result-grid > .card { padding: 0 !important; background: transparent !important; }
+      #results.visible #viewerStage {
+        border-radius: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        height: 180px !important;
+      }
+      /* La légende est sa propre LIGNE distincte sous l'image, avec un filet en bas
+         pour bien la séparer du bloc « Origine probable ». */
+      #results.visible .viewer-legend {
+        padding: 10px 15px 10px !important;
+        border-bottom: 1px solid var(--border, #E5E7EB) !important;
+        background: #fff !important;
+      }
+
+      /* ─── 3. Bloc « Origine probable » : head + interprétation UNIFIÉS ─── */
+      #results.visible .lucens-verdict-card { padding: 0 !important; }
+      #results.visible .lv-verdict-head {
+        padding: 14px 15px 6px !important;
+        border-top: 0 !important;
+      }
+      #results.visible .lv-verdict-eyebrow {
+        margin: 0 0 6px !important;
+        display: block !important;
+      }
+      #results.visible .lv-verdict-title {
+        margin: 0 !important;
+        font-size: 22px !important;
+        line-height: 1.2 !important;
+      }
+      #results.visible .lv-verdict-interpretation {
+        padding: 4px 15px 14px !important;
+        margin: 0 !important;
+        font-size: 13.5px !important;
+        line-height: 1.5 !important;
+        color: var(--text-2, #4B5563) !important;
+      }
+
+      /* ─── 4. Bloc « Risque associé » : padding aéré + filet net en haut ─── */
+      #results.visible #lvRisque {
+        padding: 14px 15px !important;
+        border-top: 1px solid var(--border, #E5E7EB) !important;
+        margin: 0 !important;
+      }
+      #results.visible .lv-risque-label {
+        font-size: 12px !important; font-weight: 600 !important;
+        color: var(--text-3, #6B7280) !important;
+        margin: 0 0 6px !important;
+      }
+      #results.visible .lv-risque-text {
+        font-size: 13.5px !important; line-height: 1.5 !important;
+        color: var(--text-2, #4B5563) !important;
+      }
+
+      /* ─── 5. Bloc « Action recommandée » : padding aéré + filet net en haut ─── */
+      #results.visible .lv-verdict-action {
+        padding: 14px 15px !important;
+        border-top: 1px solid var(--border, #E5E7EB) !important;
+        margin: 0 !important;
+      }
+      #results.visible .lv-verdict-action-title {
+        margin: 0 0 6px !important;
+      }
+      #results.visible .lv-verdict-action-text {
+        font-size: 14.5px !important; line-height: 1.4 !important;
+      }
+      #results.visible .lv-verify {
+        margin-top: 8px !important;
+        font-size: 12px !important;
+        line-height: 1.45 !important;
+      }
+
+      /* ─── Espacement boutons sous la carte ─── */
+      #results.visible .results-toolbar { margin: 16px 0 0 !important; }
+
+      /* ─── Mobile : même structure, tailles ajustées pour tenir sur iPhone ─── */
+      @media (max-width: 500px) {
+        #results.visible #hero { padding: 12px 13px 12px !important; }
+        #results.visible #hero .hero-row { margin-bottom: 10px !important; }
+        #results.visible #hero .score-value { font-size: 22px !important; }
+        #results.visible .hero-seg-s { padding: 9px 4px !important; font-size: 13px !important; }
+        #results.visible #viewerStage { height: 155px !important; }
+        #results.visible .viewer-legend { padding: 8px 13px !important; font-size: 11px !important; }
+        #results.visible .lv-verdict-head { padding: 12px 13px 5px !important; }
+        #results.visible .lv-verdict-interpretation { padding: 3px 13px 12px !important; font-size: 13px !important; }
+        #results.visible #lvRisque { padding: 12px 13px !important; }
+        #results.visible .lv-verdict-action { padding: 12px 13px !important; }
+        #results.visible .lv-verdict-title { font-size: 19px !important; }
+        #results.visible .lv-risque-text { font-size: 13px !important; }
+        #results.visible .lv-verdict-action-text { font-size: 14px !important; }
+        #results.visible .lv-verify { font-size: 11.5px !important; }
+        #results.visible .results-toolbar { margin: 13px 0 0 !important; }
+      }
+
       /* ═══════ V188 — ACCUEIL EN BLOCS (demande utilisateur insistante) ═══════
          L'accueil doit avoir DEUX cartes blanches arrondies :
            1. « Dernières inspections » → liste de lignes dans UNE carte
