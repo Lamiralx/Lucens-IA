@@ -9374,7 +9374,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v193</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v194</div>
         </div>
       </div>
     </div>
@@ -9997,9 +9997,10 @@ body.lv-open { overflow: hidden; touch-action: none; }
       /* ── Refonte écran « application métier » : spine page analyse (mockup-ex-analyse) ── */
       #hero .hero-gauge, #hero .hero-gauge-labels, #hero .hero-stats,
       #hero #riskPill, #hero .hero-confidence { display:none !important; }
-      .lv-verdict-details, #lvVerdictVigilance, #lvVerdictFrameworks,
+      /* SEUL le niveau de confiance reste masqué (ta demande). TOUTE la profondeur d'analyse
+         — raisonnement complet, zones, tableau, référentiels HACCP, vérification, guide —
+         est RESTAURÉE : elle était seulement cachée en CSS, jamais supprimée du code. */
       .lv-verdict-confidence { display:none !important; }
-      .card:has(#resultsTable), #zonesVerdictCard, #verifCard, #guideCard { display:none !important; }
       #hero .hero-row { display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
       .hero-risk-label { font-size:13px; font-weight:600; color:var(--text-3,#6B7280); }
       .hero-seg { display:flex; gap:6px; margin-top:12px; }
@@ -10506,14 +10507,10 @@ body.lv-open { overflow: hidden; touch-action: none; }
         box-shadow: none !important;
         display: block !important;
       }
-      /* Garde-fou : on RE-CACHE explicitement les autres cards dans .result-grid
-         (Synthèse + Verdict détaillé par zone) au cas où d'autres règles
-         essaieraient de les afficher. */
-      #results.visible .result-grid > .card:not(:has(#viewerStage)),
-      #results.visible #zonesVerdictCard,
-      #results.visible details.zones-verdict-card,
-      #results.visible #verifCard,
-      #results.visible #guideCard { display: none !important; }
+      /* V194 — Mes overrides V188.x cachaient ces cartes (« Synthèse des zones »,
+         « Verdict détaillé par zone », « Contrôle de détection »). L'utilisateur
+         a demandé que la PROFONDEUR D'ANALYSE soit restaurée (raisonnement,
+         zones, tableau, référentiels HACCP). On retire le masque ici. */
 
       /* Bloc 1 — Niveau de risque (filet de risque en haut + ligne label/score) */
       #results.visible #hero .hero-row {
@@ -11041,10 +11038,11 @@ body.lv-open { overflow: hidden; touch-action: none; }
         color: var(--ink-tertiary, #6B7280) !important;
         margin-top: 7px !important;
       }
-      /* Force hide vigilance/frameworks/details qui peuvent réapparaître */
-      #results.visible .lv-verdict-details,
-      #results.visible #lvVerdictVigilance,
-      #results.visible #lvVerdictFrameworks { display: none !important; }
+      /* V194 — RESTAURATION : .lv-verdict-details (« Voir le raisonnement complet »),
+         #lvVerdictVigilance (point de vigilance), #lvVerdictFrameworks (référentiels
+         HACCP) ne sont PLUS forcés en display:none. La profondeur d'analyse demandée
+         par l'utilisateur est rétablie. Ces blocs apparaissent uniquement si Claude
+         renvoie du contenu pour eux (logique JS existante les hide si vide). */
 
       /* ─── Boutons : CÔTE À CÔTE, sans icône svg ─── */
       #results.visible .results-toolbar {
