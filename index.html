@@ -10098,8 +10098,12 @@ body.lv-open { overflow: hidden; touch-action: none; }
         color: var(--ink-secondary,#4B5563) !important;
         margin: 18px 2px 8px !important;
       }
-      /* Pas de filet en haut des sections : la carte fait la séparation visuelle. */
-      .home-history { border-top: 0 !important; padding-top: 4px !important; }
+      /* Pas de filet en haut des sections : la carte fait la séparation visuelle.
+         V188 — On lève AUSSI le max-height de .home-history (était clamp 140-280px)
+         qui coupait la 2ᵉ ligne. La liste est limitée à 2 entrées en JS, donc la
+         carte s'auto-dimensionne et ne coupera jamais une ligne. */
+      .home-history { border-top: 0 !important; padding-top: 4px !important;
+        max-height: none !important; min-height: 0 !important; flex: 0 0 auto !important; }
       .home-accordions { border-top: 0 !important; }
 
       /* — Carte 1 : Dernières inspections — */
@@ -10110,23 +10114,24 @@ body.lv-open { overflow: hidden; touch-action: none; }
         overflow: hidden !important;
         padding: 0 !important;
       }
-      .home-history-body { padding: 0 !important; gap: 0 !important; }
+      .home-history-body { padding: 0 !important; gap: 0 !important; overflow: visible !important; }
       /* Les lignes deviennent FLAT à l'intérieur de la carte (la carte les contient).
-         V188 — Aucun trait de séparation entre lignes (demande utilisateur). */
+         V188 — Aucun trait de séparation entre lignes (demande utilisateur).
+         Padding intérieur généreux pour ne pas chevaucher les bords (12px V/14px H)
+         + gap pour respirer entre vignette / texte / badge. */
       .home-hrow {
         background: transparent !important;
         border: 0 !important;
         border-radius: 0 !important;
-        padding: 10px 12px !important;
+        padding: 12px 14px !important;
+        gap: 12px !important;
         box-shadow: none !important;
       }
-      /* Hauteur de la carte plafonnée pour ne pas « casser le design » au-delà
-         de ~2 lignes : on garde 2 lignes visibles, le reste scrolle proprement
-         à l'intérieur de la carte (sans indicateur de scroll visible). */
-      .home-history-scroll { max-height: 154px !important; }
-      .home-history-body { overflow-y: auto !important;
-        scrollbar-width: none !important; -ms-overflow-style: none !important; }
-      .home-history-body::-webkit-scrollbar { display: none !important; }
+      .home-hrow-body { min-width: 0 !important; padding-right: 4px !important; }
+      .home-hrow-badge { margin-left: 4px !important; }
+      /* Plus de cap de hauteur : la liste est limitée à 2 entrées max en JS,
+         donc la carte s'auto-dimensionne (jamais de ligne coupée). */
+      .home-history-scroll { max-height: none !important; }
       /* Indicateur de scroll teal collé au bord droit : MASQUÉ. */
       .home-history-scroll .home-hscroll { display: none !important; }
 
@@ -26414,7 +26419,10 @@ const Annotator = (() => {
         requestAnimationFrame(updateHistGauge);
         return;
       }
-      items.slice(0, 8).forEach(function(entry){
+      /* V188 — On limite la carte d'accueil aux 2 inspections les plus récentes
+         (demande utilisateur : ne pas casser le design au-delà de 2 lignes).
+         L'historique complet reste accessible via « Tout voir ». */
+      items.slice(0, 2).forEach(function(entry){
         var row = E('button','home-hrow');
         row.type = 'button';
         if (entry.image){
