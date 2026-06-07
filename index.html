@@ -9374,7 +9374,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v191</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v192</div>
         </div>
       </div>
     </div>
@@ -11155,6 +11155,102 @@ body.lv-open { overflow: hidden; touch-action: none; }
       /* Sécurité supplémentaire : si pour une raison X la section est visible
          mais le texte est vide (Claude renvoie un risk_logic blanc), on cache. */
       #results.visible #lvRisque:has(.lv-risque-text:empty) { display: none !important; }
+
+      /* ══════════ V192 — Suite des correctifs (terrain V190/V191) ══════════
+         Demande utilisateur : (a) blocs unifiés visuellement, à séparer en
+         3 vraies cartes ; (b) jauge à coder couleur clairement (vert/ambre/
+         rouge plus vifs) ; (c) segmented control encore trop gros. */
+
+      /* (a) 3 BLOCS SÉPARÉS — la carte verdict (.lucens-verdict-card) ne porte
+            plus son propre border. Chacune des 3 sections internes devient une
+            vraie carte avec son propre fond/bord/radius, séparées par un GAP. */
+      #results.visible .lucens-verdict-card {
+        background: transparent !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+      }
+      /* Bloc 1 — Origine probable : head + interpretation regroupés visuellement
+         dans une seule carte autonome. */
+      #results.visible .lv-verdict-head {
+        background: #fff !important;
+        border: 1px solid var(--border, #E5E7EB) !important;
+        border-radius: 13px !important;
+        border-bottom: 0 !important;
+        border-bottom-left-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+        padding: 13px 15px 0 !important;
+        margin: 0 !important;
+      }
+      #results.visible .lv-verdict-interpretation {
+        background: #fff !important;
+        border-left: 1px solid var(--border, #E5E7EB) !important;
+        border-right: 1px solid var(--border, #E5E7EB) !important;
+        border-bottom: 1px solid var(--border, #E5E7EB) !important;
+        border-top: 0 !important;
+        border-bottom-left-radius: 13px !important;
+        border-bottom-right-radius: 13px !important;
+        padding: 4px 15px 13px !important;
+        margin: 0 !important;
+      }
+      /* Bloc 2 — Risque associé : carte indépendante. */
+      #results.visible #lvRisque {
+        background: #fff !important;
+        border: 1px solid var(--border, #E5E7EB) !important;
+        border-radius: 13px !important;
+        padding: 13px 15px 13px 18px !important;
+        margin: 0 !important;
+      }
+      #results.visible #lvRisque::before {
+        top: 13px !important;
+        bottom: 13px !important;
+      }
+      /* Bloc 3 — Action recommandée : carte indépendante. */
+      #results.visible .lv-verdict-action {
+        background: #fff !important;
+        border: 1px solid var(--border, #E5E7EB) !important;
+        border-radius: 13px !important;
+        padding: 13px 15px !important;
+        margin: 0 !important;
+      }
+
+      /* (b) JAUGE PLUS VIVE : 45% au lieu de 22%. Le code couleur saute aux yeux. */
+      #results.visible #hero .hero-gauge {
+        background: linear-gradient(90deg,
+          rgba(46,125,50,0.45) 0%, rgba(46,125,50,0.45) 33.33%,
+          rgba(232,165,69,0.55) 33.33%, rgba(232,165,69,0.55) 66.66%,
+          rgba(180,35,24,0.50) 66.66%, rgba(180,35,24,0.50) 100%) !important;
+        height: 9px !important;
+        border-radius: 5px !important;
+      }
+      /* Marqueur encore plus visible : bordure blanche épaisse + ombre. */
+      #results.visible #hero .hero-gauge::after {
+        width: 20px !important; height: 20px !important;
+        border-width: 4px !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,.3) !important;
+      }
+
+      /* (c) SEGMENTED CONTROL plus petit encore : font 11.5px, padding 4px 10px. */
+      #results.visible .viewer-tab {
+        padding: 4px 11px !important;
+        font-size: 11.5px !important;
+        min-height: 0 !important;
+        line-height: 1.3 !important;
+      }
+      #results.visible .viewer-tabs {
+        padding: 2px !important;
+        margin: 8px auto 7px !important;
+        border-radius: 8px !important;
+      }
+      #results.visible .viewer-tab {
+        border-radius: 6px !important;
+      }
+      #results.visible .viewer-tab.active {
+        box-shadow: 0 0.5px 2px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.04) !important;
+      }
 
       /* ═══════ V188 — ACCUEIL EN BLOCS (demande utilisateur insistante) ═══════
          L'accueil doit avoir DEUX cartes blanches arrondies :
@@ -20280,6 +20376,44 @@ const Annotator = (() => {
           es: { title_clean:'Sin residuo fluorescente detectado', interp:'Firma compatible con {hint}.', clean:'Sin fluorescencia clara en la superficie analizada.', reco_high:'Limpieza específica de las zonas marcadas y nueva verificación con UV.', reco_mid:'Revise y limpie las zonas marcadas.', reco_low:'Superficie conforme. No se requiere acción.', caveat:'La firma de color orienta la categoría; conviene confirmar en puntos críticos.', action:'Acción recomendada' },
           de: { title_clean:'Kein fluoreszierender Rückstand erkannt', interp:'Signatur passt zu {hint}.', clean:'Keine deutliche Fluoreszenz auf der analysierten Fläche.', reco_high:'Gezielte Reinigung der markierten Zonen, danach erneute UV-Kontrolle.', reco_mid:'Markierte Zonen prüfen und reinigen.', reco_low:'Fläche konform. Keine Maßnahme erforderlich.', caveat:'Die Farbsignatur weist auf die Kategorie hin; eine Bestätigung bleibt an kritischen Stellen sinnvoll.', action:'Empfohlene Maßnahme' },
         };
+        /* V192 — DESCRIPTIONS par catégorie en LANGAGE MÉTIER (non-jargon).
+           Avant V192 : "Signature compatible avec tensioactifs, azurants, films
+           lisses." → incompréhensible pour un inspecteur HACCP. Maintenant :
+           1 phrase courte en français professionnel courant. */
+        const _DESCRIPTION_PAR_CATEGORIE = {
+          fr: {
+            organic:  'Résidu alimentaire, graisse ou protéine.',
+            fatty:    'Couche grasse ou huileuse résiduelle.',
+            chemical: 'Produit de nettoyage insuffisamment rincé.',
+            mineral:  'Dépôt minéral type tartre ou trace d\'eau séchée.',
+            biofilm:  'Colonisation microbienne probable.',
+            unknown:  'Signature non identifiée — origine à confirmer.',
+          },
+          en: {
+            organic:  'Food residue, fat or protein.',
+            fatty:    'Residual fatty or oily layer.',
+            chemical: 'Cleaning agent insufficiently rinsed.',
+            mineral:  'Mineral deposit such as scale or water mark.',
+            biofilm:  'Probable microbial colonisation.',
+            unknown:  'Unidentified signature — origin to be confirmed.',
+          },
+          es: {
+            organic:  'Residuo alimentario, grasa o proteína.',
+            fatty:    'Capa grasa u oleosa residual.',
+            chemical: 'Producto de limpieza mal aclarado.',
+            mineral:  'Depósito mineral tipo cal o marca de agua.',
+            biofilm:  'Probable colonización microbiana.',
+            unknown:  'Firma no identificada — origen por confirmar.',
+          },
+          de: {
+            organic:  'Lebensmittelrückstand, Fett oder Eiweiß.',
+            fatty:    'Restliche Fett- oder Ölschicht.',
+            chemical: 'Reinigungsmittel unzureichend gespült.',
+            mineral:  'Mineralablagerung wie Kalk oder Wasserspur.',
+            biofilm:  'Wahrscheinliche mikrobielle Besiedelung.',
+            unknown:  'Nicht identifizierte Signatur – Herkunft zu klären.',
+          },
+        };
         /* V190 — risk_logic par catégorie : on a TOUJOURS une vraie explication du
            risque associé (la section ne sera plus vide dans la carte verdict). */
         const _RISQUE_PAR_CATEGORIE = {
@@ -20318,9 +20452,11 @@ const Annotator = (() => {
         };
         const _lv = _LVB[(typeof currentLang !== 'undefined' && _LVB[currentLang]) ? currentLang : 'fr'];
         const _riskByCat = _RISQUE_PAR_CATEGORIE[(typeof currentLang !== 'undefined' && _RISQUE_PAR_CATEGORIE[currentLang]) ? currentLang : 'fr'];
+        const _descByCat = _DESCRIPTION_PAR_CATEGORIE[(typeof currentLang !== 'undefined' && _DESCRIPTION_PAR_CATEGORIE[currentLang]) ? currentLang : 'fr'];
         const _riskLogicLocal = _zc ? (_riskByCat[_domType] || _riskByCat.unknown) : '';
         const _fill = (s, m) => String(s).replace(/\{(\w+)\}/g, (_, k) => (m[k] != null ? m[k] : ''));
-        const _interpText = _zc ? _fill(_lv.interp, { hint: _domHint }) : _lv.clean;
+        /* V192 — On utilise la description métier propre (pas le hint chimiste). */
+        const _interpText = _zc ? (_descByCat[_domType] || _descByCat.unknown) : _lv.clean;
         const _recoText = !_zc ? _lv.reco_low
                         : res.riskLevel === 'high' ? _lv.reco_high
                         : res.riskLevel === 'moderate' ? _lv.reco_mid : _lv.reco_low;
