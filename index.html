@@ -9374,7 +9374,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v192</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v193</div>
         </div>
       </div>
     </div>
@@ -20418,36 +20418,36 @@ const Annotator = (() => {
            risque associé (la section ne sera plus vide dans la carte verdict). */
         const _RISQUE_PAR_CATEGORIE = {
           fr: {
-            organic:  'Nourrit les bactéries : risque de contamination des aliments (Listeria, salmonelle, E. coli).',
-            fatty:    'Couche grasse résiduelle : support de prolifération bactérienne et de mauvaise hygiène apparente.',
-            chemical: 'Résidu de produit de nettoyage : risque d\'ingestion ou de réaction allergique en cas de contact alimentaire.',
-            mineral:  'Dépôt minéral (tartre) : peut héberger des micro-organismes et masquer d\'autres résidus.',
-            biofilm:  'Colonie bactérienne établie : risque de contamination élevé et persistant.',
-            unknown:  'Origine à identifier pour évaluer le risque précisément. Confirmation conseillée.',
+            organic:  'Risque de contamination croisée : le résidu nourrit les bactéries (Listeria, salmonelle, E. coli) qui se transfèrent aux aliments par contact direct ou via les mains et ustensiles.',
+            fatty:    'Risque de contamination croisée : la couche grasse héberge des bactéries qui migrent vers les aliments lors de tout contact avec la surface, les mains ou les ustensiles.',
+            chemical: 'Risque de contamination croisée : le résidu de nettoyant migre vers les aliments par contact direct (surface) ou indirect (mains, ustensiles, emballage). Ingestion possible.',
+            mineral:  'Le dépôt minéral peut héberger des micro-organismes et masquer d\'autres résidus. Décollement possible vers les aliments par friction ou contact humide.',
+            biofilm:  'Risque de contamination croisée : colonie bactérienne établie qui libère des cellules vers les aliments à chaque contact (surface, eau, mains, ustensiles). Persistant.',
+            unknown:  'Origine à identifier pour évaluer le risque de contamination croisée précisément. Confirmation conseillée.',
           },
           en: {
-            organic:  'Feeds bacteria: risk of food contamination (Listeria, Salmonella, E. coli).',
-            fatty:    'Residual fatty layer: substrate for bacterial growth and apparent poor hygiene.',
-            chemical: 'Cleaning agent residue: risk of ingestion or allergic reaction on food contact.',
-            mineral:  'Mineral deposit (scale): may harbour micro-organisms and mask other residues.',
-            biofilm:  'Established bacterial colony: high persistent contamination risk.',
-            unknown:  'Origin to be identified to evaluate risk precisely. Confirmation recommended.',
+            organic:  'Cross-contamination risk: residue feeds bacteria (Listeria, Salmonella, E. coli) that transfer to food via direct contact or via hands and utensils.',
+            fatty:    'Cross-contamination risk: fatty layer harbours bacteria that migrate to food on any contact with the surface, hands or utensils.',
+            chemical: 'Cross-contamination risk: cleaning agent residue transfers to food via direct contact (surface) or indirect (hands, utensils, packaging). Possible ingestion.',
+            mineral:  'Mineral deposit may harbour micro-organisms and mask other residues. Possible detachment to food via friction or wet contact.',
+            biofilm:  'Cross-contamination risk: established bacterial colony releases cells to food on every contact (surface, water, hands, utensils). Persistent.',
+            unknown:  'Origin to be identified to evaluate cross-contamination risk precisely. Confirmation recommended.',
           },
           es: {
-            organic:  'Alimenta las bacterias: riesgo de contaminación alimentaria (Listeria, Salmonella, E. coli).',
-            fatty:    'Capa grasa residual: soporte para el crecimiento bacteriano y signo de mala higiene.',
-            chemical: 'Residuo de producto de limpieza: riesgo de ingestión o reacción alérgica.',
-            mineral:  'Depósito mineral (cal): puede albergar microorganismos y enmascarar otros residuos.',
-            biofilm:  'Colonia bacteriana establecida: riesgo de contaminación elevado y persistente.',
-            unknown:  'Origen por identificar para evaluar el riesgo con precisión.',
+            organic:  'Riesgo de contaminación cruzada: el residuo alimenta bacterias (Listeria, Salmonella, E. coli) que se transfieren a los alimentos por contacto directo o a través de manos y utensilios.',
+            fatty:    'Riesgo de contaminación cruzada: la capa grasa alberga bacterias que migran a los alimentos en cualquier contacto con la superficie, las manos o los utensilios.',
+            chemical: 'Riesgo de contaminación cruzada: el residuo de limpiador se transfiere a los alimentos por contacto directo (superficie) o indirecto (manos, utensilios, envases). Posible ingestión.',
+            mineral:  'El depósito mineral puede albergar microorganismos y enmascarar otros residuos. Posible desprendimiento hacia los alimentos por fricción o contacto húmedo.',
+            biofilm:  'Riesgo de contaminación cruzada: colonia bacteriana establecida que libera células a los alimentos en cada contacto (superficie, agua, manos, utensilios). Persistente.',
+            unknown:  'Origen por identificar para evaluar el riesgo de contaminación cruzada con precisión.',
           },
           de: {
-            organic:  'Nährt Bakterien: Risiko einer Lebensmittelkontamination (Listerien, Salmonellen, E. coli).',
-            fatty:    'Restfettschicht: Nährboden für Bakterienwachstum und Zeichen mangelnder Hygiene.',
-            chemical: 'Reinigungsmittelrückstand: Risiko bei Lebensmittelkontakt (Verschlucken, Allergie).',
-            mineral:  'Mineralablagerung (Kalk): kann Mikroorganismen beherbergen und andere Rückstände verdecken.',
-            biofilm:  'Etablierte Bakterienkolonie: hohes anhaltendes Kontaminationsrisiko.',
-            unknown:  'Ursache zur genauen Risikobewertung identifizieren.',
+            organic:  'Kreuzkontaminationsrisiko: Rückstand nährt Bakterien (Listerien, Salmonellen, E. coli), die sich durch direkten Kontakt oder über Hände und Geräte auf Lebensmittel übertragen.',
+            fatty:    'Kreuzkontaminationsrisiko: Fettschicht beherbergt Bakterien, die bei jedem Kontakt mit Oberfläche, Händen oder Geräten auf Lebensmittel übergehen.',
+            chemical: 'Kreuzkontaminationsrisiko: Reinigungsmittelrückstand überträgt sich durch direkten Kontakt (Oberfläche) oder indirekt (Hände, Geräte, Verpackung) auf Lebensmittel. Verschlucken möglich.',
+            mineral:  'Mineralablagerung kann Mikroorganismen beherbergen und andere Rückstände verdecken. Ablösung zu Lebensmitteln durch Reibung oder feuchten Kontakt möglich.',
+            biofilm:  'Kreuzkontaminationsrisiko: etablierte Bakterienkolonie gibt bei jedem Kontakt (Oberfläche, Wasser, Hände, Geräte) Zellen an Lebensmittel ab. Persistent.',
+            unknown:  'Ursache zur genauen Bewertung des Kreuzkontaminationsrisikos identifizieren.',
           },
         };
         const _lv = _LVB[(typeof currentLang !== 'undefined' && _LVB[currentLang]) ? currentLang : 'fr'];
