@@ -10079,6 +10079,117 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results.visible .results-toolbar .btn-export > svg,
       #results.visible .results-toolbar .btn-back > svg { display:none !important; }
 
+      /* V188.3 — Filet orange suspendu en haut du rapport SUPPRIMÉ.
+         Quand le score chiffré est masqué (V188), ce filet décoratif (vestige
+         qui colorait le bord supérieur selon le risque) reste suspendu au-dessus
+         d'un cadre vide « Niveau de risque » → pollue le coup d'œil. La barre
+         segmentée colorée (Faible/Modéré/Élevé) porte déjà la couleur du risque.
+         On efface aussi le « cadre vide » du hero ET du .hero-row (dont le
+         background/bord/ombre simulait un champ de saisie vide une fois le score
+         masqué). */
+      #results.visible #hero,
+      #results.visible #hero.visible {
+        border: 0 !important; border-top: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important; box-shadow: none !important;
+        padding: 0 2px !important; margin-bottom: 6px !important;
+      }
+      #results.visible #hero .hero-row {
+        background: transparent !important; border: 0 !important;
+        border-radius: 0 !important; box-shadow: none !important;
+        padding: 0 !important; margin: 0 !important;
+        align-items: flex-start !important;
+      }
+      /* <main> gère déjà le padding-bas pour la nav (calc bottom-bar-total +
+         space-8). Pas besoin de doubler ici. On se contente de garantir que
+         la toolbar n'ajoute pas elle-même de margin-bottom inutile. */
+      #results.visible .results-toolbar {
+        margin-top: 14px !important;
+        margin-bottom: 0 !important;
+      }
+
+      /* ═══════ V188.4 — RAPPORT STRICT MINIMAL (tient en une vue mobile) ═══════
+         Demande utilisateur : « hypothèse, niveau de risque, recommandation,
+         c'est tout ». Plus d'interprétation, plus de risque associé. Score
+         intégré DANS la case active de la barre. Toggle image avec/sans carto
+         réactivé. Tout doit tenir sur une vue sans scroll. */
+
+      /* 1) On masque strictement le texte non essentiel sur la carte verdict. */
+      #results.visible .lv-verdict-interpretation { display: none !important; }
+      #results.visible #lvRisque { display: none !important; }
+      #results.visible .lv-verdict-confidence { display: none !important; }
+
+      /* 2) Carte verdict resserrée (moins de padding, moins de marges). */
+      #results.visible .lucens-verdict-card { padding: 12px 14px !important; margin: 8px 0 !important;
+        background: #fff !important; border: 1px solid var(--border,#E5E7EB) !important;
+        border-radius: 14px !important; box-shadow: none !important; }
+      #results.visible .lv-verdict-head { margin-bottom: 6px !important; }
+      #results.visible .lv-verdict-title { font-size: 18px !important; line-height: 1.25 !important; margin-top: 2px !important; }
+      #results.visible .lv-verdict-action { padding: 10px 0 0 !important; margin-top: 10px !important;
+        border-top: 1px solid var(--border,#E5E7EB) !important; }
+      #results.visible .lv-verdict-action-title { font-size: 11.5px !important; margin-bottom: 2px !important; }
+      #results.visible .lv-verdict-action-text { font-size: 14px !important; line-height: 1.35 !important; }
+
+      /* 3) Score INTÉGRÉ dans la case active de la barre segmentée
+         (élément injecté par render() : .hero-seg-score, classe ajoutée en JS). */
+      #results.visible .hero-seg-s { padding: 9px 4px !important; font-size: 12.5px !important;
+        display: flex !important; align-items: baseline !important; justify-content: center !important; gap: 5px !important; }
+      #results.visible .hero-seg-s .hero-seg-score { font-size: 11px !important; font-weight: 500 !important; opacity: .92 !important; }
+      /* Le score est ajouté en JS uniquement sur la case active, donc les autres
+         cases n'ont jamais de .hero-seg-score à masquer. Style direct, rien à cacher. */
+
+      /* 4) Toggle Image avec / sans cartographie : on RÉACTIVE viewer-tabs
+         et on les style en pillules compactes au-dessus du canvas. */
+      #results.visible .viewer-tabs { display: flex !important; gap: 8px !important;
+        padding: 0 !important; margin: 0 0 8px 0 !important; background: transparent !important;
+        border: 0 !important; }
+      #results.visible .viewer-tab { flex: 1 1 50% !important; padding: 7px 10px !important;
+        background: var(--surface-low,#F8FAFC) !important; color: var(--text-3,#6B7280) !important;
+        border: 1px solid var(--border,#E5E7EB) !important; border-radius: 9px !important;
+        font-size: 12px !important; font-weight: 600 !important; cursor: pointer !important; }
+      #results.visible .viewer-tab.active { background: var(--primary,#0F3D4E) !important;
+        color: #fff !important; border-color: var(--primary,#0F3D4E) !important; }
+
+      /* 5) Image : hauteur compacte + remplit toute la largeur (le canvas suit). */
+      #results.visible #viewerStage { height: 220px !important; min-height: 0 !important;
+        width: 100% !important; border-radius: 12px !important; overflow: hidden !important;
+        position: relative !important; background: #0a1119 !important; }
+      #results.visible #viewerStage canvas,
+      #results.visible #viewerStage img.original {
+        position: absolute !important; inset: 0 !important;
+        width: 100% !important; height: 100% !important;
+        object-fit: contain !important; max-width: none !important; }
+      /* Légende positionnée correctement par-dessus le canvas. */
+      #results.visible #viewerStage .viewer-legend,
+      #results.visible #viewerStage .viewer-meta { z-index: 2 !important; }
+
+      /* 6) Hauteur stricte mobile : on garde header + (label+barre) + image
+         + verdict (titre+action) + boutons + nav = ~720-780px, tient sur iPhone. */
+      @media (max-width: 500px) {
+        main { padding-top: 4px !important; padding-left: 12px !important; padding-right: 12px !important; }
+        #results.visible #hero { margin-bottom: 2px !important; }
+        #results.visible .hero-risk-label { font-size: 11px !important; }
+        #results.visible .lucens-verdict-card { margin: 4px 0 !important; padding: 9px 12px !important; }
+        #results.visible .lv-verdict-eyebrow { font-size: 11px !important; }
+        #results.visible .lv-verdict-title { font-size: 15.5px !important; line-height: 1.2 !important; }
+        #results.visible .lv-verdict-action { padding: 7px 0 0 !important; margin-top: 7px !important; }
+        #results.visible .lv-verdict-action-title { font-size: 10.5px !important; }
+        #results.visible .lv-verdict-action-text { font-size: 13px !important; }
+        #results.visible .results-toolbar { margin-top: 8px !important; gap: 7px !important; }
+        #results.visible .results-toolbar .btn-export,
+        #results.visible .results-toolbar .btn-back { height: 42px !important; font-size: 13.5px !important;
+          border-radius: 10px !important; }
+        /* Image très compacte (priorité aux blocs texte + boutons accessibles). */
+        #results.visible #viewerStage { height: 130px !important; }
+        #results.visible .viewer-tabs { margin: 0 0 4px 0 !important; gap: 6px !important; }
+        #results.visible .viewer-tab { padding: 4px 8px !important; font-size: 11px !important;
+          border-radius: 7px !important; }
+        #results.visible .hero-seg { gap: 4px !important; margin-top: 6px !important; }
+        #results.visible .hero-seg-s { padding: 6px 3px !important; font-size: 12px !important;
+          border-radius: 7px !important; }
+        #results.visible .hero-seg-s .hero-seg-score { font-size: 10.5px !important; }
+      }
+
       /* ═══════ V188 — ACCUEIL EN BLOCS (demande utilisateur insistante) ═══════
          L'accueil doit avoir DEUX cartes blanches arrondies :
            1. « Dernières inspections » → liste de lignes dans UNE carte
@@ -22000,7 +22111,20 @@ const Annotator = (() => {
           }
           const seg = document.getElementById('heroSeg');
           if (seg) { const rl = (res.riskLevel || '').toString().toLowerCase();
-            seg.setAttribute('data-risk', rl === 'high' ? 'high' : (rl === 'mid' || rl === 'moyen' || rl === 'medium') ? 'mid' : 'low'); }
+            const _rk = rl === 'high' ? 'high' : (rl === 'mid' || rl === 'moyen' || rl === 'medium') ? 'mid' : 'low';
+            seg.setAttribute('data-risk', _rk);
+            /* V188.4 — Score INTÉGRÉ dans la case active de la barre (demande user). */
+            try {
+              const sc = (typeof res.score === 'number') ? Math.round(res.score) : null;
+              seg.querySelectorAll('.hero-seg-s').forEach(p => {
+                let s = p.querySelector('.hero-seg-score');
+                if (p.getAttribute('data-seg') === _rk && sc != null) {
+                  if (!s) { s = document.createElement('span'); s.className = 'hero-seg-score'; p.appendChild(s); }
+                  s.textContent = sc + '/100';
+                } else if (s) { s.remove(); }
+              });
+            } catch (e) {}
+          }
           /* V188 — titre de l'hypothèse coloré selon le risque (classe sur la carte verdict) */
           { const rl2 = (res.riskLevel || '').toString().toLowerCase();
             const rk = rl2 === 'high' ? 'high' : (rl2 === 'mid' || rl2 === 'moyen' || rl2 === 'medium') ? 'mid' : 'low';
