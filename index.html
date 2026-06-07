@@ -9374,7 +9374,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v188</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v189</div>
         </div>
       </div>
     </div>
@@ -10461,6 +10461,648 @@ body.lv-open { overflow: hidden; touch-action: none; }
         #results.visible .results-toolbar { margin: 13px 0 0 !important; }
       }
 
+      /* ═══════ V188.7 — CHAQUE SECTION DEVIENT UNE CARTE AUTONOME ═══════
+         Demande utilisateur : 6 blocs distincts (Niveau de risque, Notation
+         segmentée, Image+toggle, Origine probable, Risque associé, Action
+         recommandée), chacun dans sa propre carte avec gap entre. Aéré, lisible.
+         Le toggle « avec / sans cartographie » est réactivé sur le bloc image. */
+
+      /* Containers parents redeviennent transparents (n'ont plus de carte). */
+      #results.visible #hero {
+        display: block !important;
+        background: transparent !important;
+        border: 0 !important; border-top: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      #results.visible .result-grid {
+        background: transparent !important;
+        border: 0 !important;
+        padding: 0 !important;
+        margin: 0 0 9px !important;
+      }
+      #results.visible .lucens-verdict-card {
+        background: transparent !important;
+        border: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+      }
+
+      /* Style commun de CARTE AUTONOME pour les blocs simples.
+         IMPORTANT : on cible UNIQUEMENT la 1ère .card (viewer) — pas les autres
+         (Synthèse des zones, Verdict détaillé par zone) qui doivent rester
+         cachées par le metier-spine CSS. */
+      #results.visible #hero .hero-row,
+      #results.visible #hero .hero-seg,
+      #results.visible .result-grid > .card:has(#viewerStage),
+      #results.visible #lvRisque,
+      #results.visible .lv-verdict-action {
+        background: #fff !important;
+        border: 1px solid var(--border, #E5E7EB) !important;
+        border-radius: 13px !important;
+        padding: 12px 14px !important;
+        margin: 0 0 9px !important;
+        box-shadow: none !important;
+        display: block !important;
+      }
+      /* Garde-fou : on RE-CACHE explicitement les autres cards dans .result-grid
+         (Synthèse + Verdict détaillé par zone) au cas où d'autres règles
+         essaieraient de les afficher. */
+      #results.visible .result-grid > .card:not(:has(#viewerStage)),
+      #results.visible #zonesVerdictCard,
+      #results.visible details.zones-verdict-card,
+      #results.visible #verifCard,
+      #results.visible #guideCard { display: none !important; }
+
+      /* Bloc 1 — Niveau de risque (filet de risque en haut + ligne label/score) */
+      #results.visible #hero .hero-row {
+        border-top: 3px solid var(--risk-color, #B42318) !important;
+        display: flex !important;
+        align-items: baseline !important;
+        justify-content: space-between !important;
+        padding: 13px 14px !important;
+      }
+      #results.visible #hero .hero-risk-label {
+        font-size: 12.5px !important; font-weight: 600 !important;
+        color: var(--text-3, #6B7280) !important;
+      }
+      #results.visible #hero .score-block {
+        display: inline-flex !important; align-items: baseline !important; gap: 3px !important;
+      }
+      #results.visible #hero .score-value {
+        font-size: 23px !important; font-weight: 800 !important;
+        color: var(--risk-color, #B42318) !important; line-height: 1 !important;
+      }
+
+      /* Bloc 2 — Notation segmentée (3 pilules horizontales) */
+      #results.visible #hero .hero-seg {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 7px !important;
+        padding: 10px 12px !important;
+        align-items: stretch !important;
+        margin: 0 0 9px !important;
+      }
+      #results.visible .hero-seg-s {
+        flex: 1 !important;
+        padding: 10px 6px !important;
+        background: var(--surface-low, #FAFBFC) !important;
+        border: 1px solid var(--border, #E5E7EB) !important;
+        border-radius: 8px !important;
+        color: var(--text-3, #6B7280) !important;
+        font-size: 12.5px !important;
+        font-weight: 700 !important;
+        text-align: center !important;
+        display: block !important;
+      }
+      /* Pilule active colorée selon le risque */
+      #results.visible .hero-seg[data-risk="low"]  .hero-seg-s[data-seg="low"]  { background: #2E7D32 !important; border-color: #2E7D32 !important; color: #fff !important; }
+      #results.visible .hero-seg[data-risk="mid"]  .hero-seg-s[data-seg="mid"]  { background: #B7791F !important; border-color: #B7791F !important; color: #fff !important; }
+      #results.visible .hero-seg[data-risk="high"] .hero-seg-s[data-seg="high"] { background: #B42318 !important; border-color: #B42318 !important; color: #fff !important; }
+
+      /* Bloc 3 — Image avec toggle « Zones détectées » / « Image source » */
+      #results.visible .result-grid > .card:has(#viewerStage) {
+        padding: 11px 11px 11px !important;
+      }
+      #results.visible .viewer-tabs {
+        display: flex !important;
+        gap: 7px !important;
+        margin: 0 0 9px !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: 0 !important;
+      }
+      #results.visible .viewer-tab {
+        flex: 1 !important;
+        padding: 7px 10px !important;
+        background: var(--surface-low, #F8FAFC) !important;
+        color: var(--text-3, #6B7280) !important;
+        border: 1px solid var(--border, #E5E7EB) !important;
+        border-radius: 8px !important;
+        font-size: 11.5px !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+      }
+      #results.visible .viewer-tab.active {
+        background: var(--primary, #0F3D4E) !important;
+        color: #fff !important;
+        border-color: var(--primary, #0F3D4E) !important;
+      }
+      #results.visible #viewerStage {
+        border-radius: 8px !important;
+        height: 160px !important;
+        margin: 0 !important;
+        width: 100% !important;
+        position: relative !important;
+        background: #0a1119 !important;
+        overflow: hidden !important;
+      }
+      #results.visible #viewerStage canvas,
+      #results.visible #viewerStage img.original {
+        position: absolute !important; inset: 0 !important;
+        width: 100% !important; height: 100% !important;
+        object-fit: cover !important; max-width: none !important;
+      }
+      #results.visible .viewer-legend {
+        padding: 9px 2px 0 !important;
+        margin: 0 !important;
+        background: transparent !important;
+        border: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 7px !important;
+        color: var(--text-3, #6B7280) !important;
+        font-size: 11px !important;
+      }
+      #results.visible .viewer-legend-swatch {
+        width: 10px !important; height: 10px !important;
+        border-radius: 50% !important;
+        background: transparent !important;
+        border: 2px solid var(--risk-color, #B42318) !important;
+        display: inline-block !important;
+        flex-shrink: 0 !important;
+      }
+
+      /* Bloc 4 — Origine probable (head + description UNIFIÉS en une carte) */
+      #results.visible .lv-verdict-head {
+        background: #fff !important;
+        border-top: 1px solid var(--border, #E5E7EB) !important;
+        border-left: 1px solid var(--border, #E5E7EB) !important;
+        border-right: 1px solid var(--border, #E5E7EB) !important;
+        border-bottom: 0 !important;
+        border-top-left-radius: 13px !important;
+        border-top-right-radius: 13px !important;
+        border-bottom-left-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+        padding: 12px 14px 5px !important;
+        margin: 0 !important;
+      }
+      #results.visible .lv-verdict-eyebrow {
+        font-size: 12px !important; font-weight: 600 !important;
+        color: var(--text-3, #6B7280) !important;
+        text-transform: none !important; letter-spacing: 0 !important;
+        margin: 0 0 4px !important;
+        display: block !important;
+      }
+      #results.visible .lv-verdict-title {
+        font-size: 20px !important; font-weight: 800 !important;
+        line-height: 1.2 !important;
+        color: var(--risk-color, #B42318) !important;
+        margin: 0 !important;
+      }
+      #results.visible .lv-verdict-interpretation {
+        background: #fff !important;
+        border-left: 1px solid var(--border, #E5E7EB) !important;
+        border-right: 1px solid var(--border, #E5E7EB) !important;
+        border-bottom: 1px solid var(--border, #E5E7EB) !important;
+        border-top: 0 !important;
+        border-bottom-left-radius: 13px !important;
+        border-bottom-right-radius: 13px !important;
+        padding: 2px 14px 12px !important;
+        margin: 0 0 9px !important;
+        display: block !important;
+        font-size: 13px !important;
+        line-height: 1.45 !important;
+        color: var(--text-2, #4B5563) !important;
+      }
+
+      /* Bloc 5 — Risque associé */
+      #results.visible #lvRisque {
+        display: block !important;
+      }
+      #results.visible .lv-risque-label {
+        font-size: 12px !important; font-weight: 600 !important;
+        color: var(--text-3, #6B7280) !important;
+        margin: 0 0 5px !important;
+      }
+      #results.visible .lv-risque-text {
+        font-size: 13px !important; line-height: 1.45 !important;
+        color: var(--text-2, #4B5563) !important;
+      }
+
+      /* Bloc 6 — Action recommandée + ligne ATP */
+      #results.visible .lv-verdict-action {
+        display: block !important;
+        margin: 0 !important;
+      }
+      #results.visible .lv-verdict-action-title {
+        font-size: 12px !important; font-weight: 600 !important;
+        color: var(--text-3, #6B7280) !important;
+        text-transform: none !important;
+        margin: 0 0 5px !important;
+      }
+      #results.visible .lv-verdict-action-text {
+        font-size: 14px !important; font-weight: 600 !important;
+        color: var(--text, #111827) !important;
+        line-height: 1.4 !important;
+        margin: 0 !important;
+      }
+      #results.visible .lv-verify {
+        font-size: 11.5px !important;
+        color: var(--text-3, #6B7280) !important;
+        line-height: 1.4 !important;
+        margin-top: 7px !important;
+      }
+
+      /* Boutons sous la carte */
+      #results.visible .results-toolbar { margin: 12px 0 0 !important; }
+
+      /* @media mobile : tout reste mais paddings serrés pour iPhone */
+      @media (max-width: 500px) {
+        #results.visible #hero .hero-row { padding: 11px 13px !important; }
+        #results.visible #hero .hero-row,
+        #results.visible #hero .hero-seg,
+        #results.visible .result-grid > .card:has(#viewerStage),
+        #results.visible #lvRisque,
+        #results.visible .lv-verdict-action { margin-bottom: 8px !important; }
+        #results.visible #hero .score-value { font-size: 22px !important; }
+        #results.visible #hero .hero-seg { padding: 9px 10px !important; gap: 6px !important; }
+        #results.visible .hero-seg-s { padding: 9px 4px !important; font-size: 12px !important; }
+        #results.visible .result-grid > .card:has(#viewerStage) { padding: 10px 10px !important; }
+        #results.visible #viewerStage { height: 140px !important; }
+        #results.visible .viewer-tab { padding: 6px 8px !important; font-size: 11px !important; }
+        #results.visible .lv-verdict-head { padding: 11px 13px 4px !important; }
+        #results.visible .lv-verdict-interpretation { padding: 2px 13px 11px !important; margin-bottom: 8px !important; font-size: 12.5px !important; }
+        #results.visible .lv-verdict-title { font-size: 18px !important; }
+        #results.visible #lvRisque,
+        #results.visible .lv-verdict-action { padding: 11px 13px !important; }
+        #results.visible .lv-risque-text,
+        #results.visible .lv-verdict-action-text { font-size: 13px !important; }
+        #results.visible .lv-verify { font-size: 11px !important; }
+        #results.visible .results-toolbar { margin: 10px 0 0 !important; }
+      }
+
+      /* ═════════ V188.8 — RAPPORT FINAL : 3 macro-blocs propres ═════════
+         Maquette validée mockup-rapport-v188-8.html. Override final des
+         V188.x précédents. Pattern best-in-class :
+           • Bloc 1 VERDICT : score gros à droite, jauge slim Apple Health
+                              avec marqueur ROND coloré, labels Faible/Modéré/Élevé.
+           • Bloc 2 IMAGE   : segmented control iOS (Avec carto / Source),
+                              image edge-to-edge (carte ne lui ajoute pas de bord rond).
+           • Bloc 3 ANALYSE : 3 sections (Origine probable, Risque associé,
+                              Action recommandée) séparées par filets, icônes
+                              color-codées, titre Origine en couleur de risque.
+         Pas de tab bar du bas (focus sur le verdict), pas de bouton ✕ (clic logo
+         = retour accueil). flex-shrink:0 sur les cards pour éviter le clipping
+         en cas de contenu IA long (testé en DE/iPhone). */
+
+      /* ─── Empêche le shrink des sections du rapport (sinon overflow:hidden des
+            cards rognerait le texte sur petit écran avec contenu IA long). */
+      main > #results.visible { display: flex !important; flex-direction: column; }
+      #results.visible > * { flex-shrink: 0; }
+
+      /* ─── Couleur de risque héritée via data-risk sur #hero ─── */
+      #results.visible #hero[data-risk="low"]  { --risk-color: #2E7D32; }
+      #results.visible #hero[data-risk="mid"]  { --risk-color: #B7791F; }
+      #results.visible #hero[data-risk="high"] { --risk-color: #B42318; }
+
+      /* ─── BLOC 1 — VERDICT : score à droite + jauge slim ─── */
+      /* On RESTITUE .hero-gauge (cachée par metier-spine V136), on l'utilise
+         comme jauge slim Apple Health. On hide .hero-seg (pilules bouton). */
+      #results.visible #hero {
+        background: #fff !important;
+        border: 1px solid var(--border, #E5E7EB) !important;
+        border-radius: 13px !important;
+        padding: 13px 16px 14px !important;
+        margin: 0 0 9px !important;
+        box-shadow: none !important;
+        order: -3 !important;
+      }
+      #results.visible #hero .hero-row {
+        display: flex !important;
+        align-items: baseline !important;
+        justify-content: space-between !important;
+        margin-bottom: 12px !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        gap: 10px !important;
+      }
+      #results.visible #hero .score-block {
+        display: inline-flex !important; align-items: baseline !important; gap: 3px !important;
+        margin: 0 !important;
+      }
+      #results.visible #hero .score-value {
+        font-size: 26px !important; font-weight: 800 !important;
+        color: var(--risk-color, #B42318) !important; line-height: 1 !important;
+      }
+      #results.visible #hero .score-suffix {
+        font-size: 13px !important; color: var(--ink-tertiary,#6B7280) !important; font-weight: 600 !important;
+      }
+      #results.visible #hero .hero-risk-label {
+        font-size: 12px !important; font-weight: 600 !important;
+        color: var(--ink-tertiary, #6B7280) !important;
+      }
+      /* La jauge slim — RE-AFFICHÉE et restylée façon Apple Health */
+      #results.visible #hero .hero-gauge {
+        display: block !important;
+        position: relative !important;
+        height: 8px !important;
+        border-radius: 6px !important;
+        background: linear-gradient(90deg, #DCEAD9 0%, #DCEAD9 33.33%, #F0E0C2 33.33%, #F0E0C2 66.66%, #F0D0CB 66.66%, #F0D0CB 100%) !important;
+        margin: 0 0 9px !important;
+        overflow: visible !important;
+        box-shadow: none !important;
+      }
+      /* Le fill bar original est remplacé par un MARQUEUR rond à la position du score */
+      #results.visible #hero .hero-gauge .hero-gauge-fill { display: none !important; }
+      #results.visible #hero .hero-gauge::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: var(--score-pos, 50%);
+        transform: translate(-50%, -50%);
+        width: 18px; height: 18px;
+        border-radius: 50%;
+        background: var(--risk-color, #B42318);
+        border: 3px solid #fff;
+        box-shadow: 0 1px 3px rgba(0,0,0,.25);
+        z-index: 2;
+      }
+      /* Labels Faible / Modéré / Élevé sous la jauge */
+      #results.visible #hero .hero-gauge-labels {
+        display: flex !important;
+        justify-content: space-between !important;
+        padding: 0 2px !important;
+        font-size: 10.5px !important;
+        font-weight: 600 !important;
+        color: var(--ink-tertiary, #6B7280) !important;
+      }
+      #results.visible #hero[data-risk="low"]  .hero-gauge-labels span:nth-child(1),
+      #results.visible #hero[data-risk="mid"]  .hero-gauge-labels span:nth-child(2),
+      #results.visible #hero[data-risk="high"] .hero-gauge-labels span:nth-child(3) {
+        color: var(--risk-color) !important;
+      }
+      /* Hide .hero-seg (pilules) — on utilise .hero-gauge à la place */
+      #results.visible #hero .hero-seg { display: none !important; }
+      /* Reste hidden : confidence + stats déjà OK par metier-spine */
+
+      /* ─── BLOC 2 — IMAGE : segmented control iOS + image edge-to-edge ─── */
+      #results.visible .result-grid {
+        background: transparent !important;
+        border: 0 !important; padding: 0 !important;
+        margin: 0 0 9px !important;
+        order: -2 !important;
+      }
+      #results.visible .result-grid > .card:has(#viewerStage) {
+        background: #fff !important;
+        border: 1px solid var(--border, #E5E7EB) !important;
+        border-radius: 13px !important;
+        padding: 0 !important; margin: 0 !important;
+        box-shadow: none !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+      }
+      /* Segmented control iOS — pilule grise centrée */
+      #results.visible .viewer-tabs {
+        display: inline-flex !important;
+        align-self: center !important;
+        background: #EFF0F3 !important;
+        border-radius: 9px !important;
+        padding: 2px !important;
+        gap: 0 !important;
+        margin: 10px auto 9px !important;
+        border: 0 !important;
+        width: auto !important;
+      }
+      #results.visible .viewer-tab {
+        padding: 6px 14px !important;
+        font-size: 12.5px !important; font-weight: 500 !important;
+        color: var(--ink-tertiary, #6B7280) !important;
+        background: transparent !important;
+        border: 0 !important;
+        border-radius: 7px !important;
+        cursor: pointer !important;
+        letter-spacing: -.005em !important;
+        text-transform: none !important;
+        font-family: var(--font-body) !important;
+      }
+      #results.visible .viewer-tab.active {
+        background: #fff !important;
+        color: var(--ink-primary, #0C0E13) !important;
+        font-weight: 600 !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,.07), 0 0 0 .5px rgba(0,0,0,.04) !important;
+      }
+      /* Image elle-même : edge-to-edge dans la carte, pas de border-radius */
+      #results.visible #viewerStage {
+        height: 175px !important; min-height: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        background: #0a1119 !important;
+        position: relative !important;
+        overflow: hidden !important;
+        display: block !important;
+      }
+      #results.visible #viewerStage canvas,
+      #results.visible #viewerStage img.original {
+        position: absolute !important; inset: 0 !important;
+        width: 100% !important; height: 100% !important;
+        object-fit: cover !important; max-width: none !important;
+      }
+      /* Pas de légende ni de pastille sur l'image (l'image parle d'elle-même). */
+      #results.visible .viewer-legend { display: none !important; }
+      #results.visible .viewer-meta { display: none !important; }
+
+      /* ─── BLOC 3 — ANALYSE : 3 sections séparées par filets ─── */
+      #results.visible .lucens-verdict-card {
+        background: #fff !important;
+        border: 1px solid var(--border, #E5E7EB) !important;
+        border-radius: 13px !important;
+        padding: 0 !important; margin: 0 !important;
+        box-shadow: none !important;
+        order: 0 !important;
+        display: block !important;
+      }
+      /* Section 1 (Origine probable) : head + interprétation regroupés */
+      #results.visible .lv-verdict-head {
+        padding: 14px 16px 0 !important;
+        margin: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+      }
+      #results.visible .lv-verdict-eyebrow {
+        display: flex !important; align-items: center !important; gap: 7px !important;
+        font-size: 12px !important; font-weight: 700 !important;
+        letter-spacing: .04em !important; text-transform: uppercase !important;
+        color: var(--ink-secondary, #4B5563) !important;
+        margin: 0 0 7px !important;
+        font-family: var(--font-body) !important;
+      }
+      /* Icône loupe (Origine probable) — colorée primary navy */
+      #results.visible .lv-verdict-eyebrow .lv-eyebrow-ico {
+        display: inline-block !important;
+        width: 14px !important; height: 14px !important;
+        color: var(--primary, #0F3D4E) !important;
+        flex-shrink: 0 !important;
+      }
+      #results.visible .lv-verdict-title {
+        font-size: 22px !important; font-weight: 800 !important;
+        line-height: 1.2 !important; letter-spacing: -0.01em !important;
+        color: var(--risk-color, #B42318) !important;
+        margin: 0 !important;
+      }
+      #results.visible .lv-verdict-interpretation {
+        padding: 5px 16px 14px !important;
+        margin: 0 !important;
+        font-size: 13.5px !important; line-height: 1.45 !important;
+        color: var(--ink-secondary, #4B5563) !important;
+        background: transparent !important;
+        border: 0 !important;
+        display: block !important;
+      }
+
+      /* Section 2 (Risque associé) : icône triangle rouge + accent rouge vertical */
+      #results.visible #lvRisque {
+        position: relative !important;
+        padding: 14px 16px 14px 19px !important;
+        margin: 0 !important;
+        border-top: 1px solid var(--hairline, rgba(12,14,19,0.07)) !important;
+        background: transparent !important;
+        display: block !important;
+      }
+      #results.visible #lvRisque::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 14px; bottom: 14px;
+        width: 3px;
+        background: var(--risk-color, #B42318);
+        border-radius: 2px;
+      }
+      #results.visible .lv-risque-label {
+        display: flex !important; align-items: center !important; gap: 7px !important;
+        font-size: 12px !important; font-weight: 700 !important;
+        letter-spacing: .04em !important; text-transform: uppercase !important;
+        color: var(--ink-secondary, #4B5563) !important;
+        margin: 0 0 6px !important;
+        font-family: var(--font-body) !important;
+      }
+      /* Icône triangle ⚠️ injectée via pseudo-element (couleur risque) */
+      #results.visible .lv-risque-label::before {
+        content: '';
+        display: inline-block;
+        width: 14px; height: 14px;
+        background-color: var(--risk-color, #B42318);
+        mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'/><line x1='12' y1='9' x2='12' y2='13'/><line x1='12' y1='17' x2='12.01' y2='17'/></svg>");
+        -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'/><line x1='12' y1='9' x2='12' y2='13'/><line x1='12' y1='17' x2='12.01' y2='17'/></svg>");
+        mask-size: contain; -webkit-mask-size: contain;
+        mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat;
+        flex-shrink: 0;
+      }
+      #results.visible .lv-risque-text {
+        font-size: 13px !important; line-height: 1.45 !important;
+        color: var(--ink-secondary, #4B5563) !important;
+        background: transparent !important; border: 0 !important;
+      }
+      #results.visible .lv-risque-text b { color: var(--ink-primary, #0C0E13) !important; font-weight: 700 !important; }
+
+      /* Section 3 (Action recommandée) : icône flèche → navy primary */
+      #results.visible .lv-verdict-action {
+        padding: 14px 16px !important;
+        margin: 0 !important;
+        border-top: 1px solid var(--hairline, rgba(12,14,19,0.07)) !important;
+        background: transparent !important;
+        display: block !important;
+      }
+      #results.visible .lv-verdict-action-icon { display: none !important; }
+      #results.visible .lv-verdict-action-title {
+        display: flex !important; align-items: center !important; gap: 7px !important;
+        font-size: 12px !important; font-weight: 700 !important;
+        letter-spacing: .04em !important; text-transform: uppercase !important;
+        color: var(--ink-secondary, #4B5563) !important;
+        margin: 0 0 7px !important;
+        font-family: var(--font-body) !important;
+      }
+      #results.visible .lv-verdict-action-title::before {
+        content: '';
+        display: inline-block;
+        width: 14px; height: 14px;
+        background-color: var(--primary, #0F3D4E);
+        mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M5 12h14'/><path d='m13 6 6 6-6 6'/></svg>");
+        -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M5 12h14'/><path d='m13 6 6 6-6 6'/></svg>");
+        mask-size: contain; -webkit-mask-size: contain;
+        mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat;
+        flex-shrink: 0;
+      }
+      #results.visible .lv-verdict-action-text {
+        font-size: 15px !important; font-weight: 700 !important;
+        color: var(--ink-primary, #0C0E13) !important;
+        line-height: 1.35 !important;
+        margin: 0 !important;
+      }
+      #results.visible .lv-verify {
+        display: block !important;
+        font-size: 11.5px !important; line-height: 1.45 !important;
+        color: var(--ink-tertiary, #6B7280) !important;
+        margin-top: 7px !important;
+      }
+      /* Force hide vigilance/frameworks/details qui peuvent réapparaître */
+      #results.visible .lv-verdict-details,
+      #results.visible #lvVerdictVigilance,
+      #results.visible #lvVerdictFrameworks { display: none !important; }
+
+      /* ─── Boutons : CÔTE À CÔTE, sans icône svg ─── */
+      #results.visible .results-toolbar {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 10px !important;
+        margin: 14px 0 0 !important;
+        padding: 0 !important;
+        max-width: none !important;
+        order: 10 !important;
+      }
+      #results.visible .results-toolbar .btn-export,
+      #results.visible .results-toolbar .btn-back {
+        flex: 1 1 50% !important;
+        width: auto !important;
+        height: 46px !important;
+        font-size: 14px !important;
+        border-radius: 11px !important;
+      }
+      #results.visible .results-toolbar .btn-export {
+        background: var(--primary, #0F3D4E) !important;
+        color: #fff !important;
+        border: 1px solid var(--primary, #0F3D4E) !important;
+        box-shadow: none !important;
+        order: -1 !important;
+      }
+      #results.visible .results-toolbar .btn-back {
+        background: #fff !important;
+        color: var(--primary, #0F3D4E) !important;
+        border: 1px solid var(--border, #CBD5E1) !important;
+        box-shadow: none !important;
+      }
+
+      /* ─── Pas de tab bar du bas sur la page rapport (focus verdict + 2 actions) ─── */
+      body.on-results .bottom-bar { display: none !important; }
+      body.on-results main { padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)) !important; }
+
+      /* ─── Mobile @media : compactage pour iPhone (testé jusqu'en DE) ─── */
+      @media (max-width: 480px) {
+        #results.visible #hero { padding: 12px 14px 13px !important; margin-bottom: 8px !important; }
+        #results.visible #hero .hero-row { margin-bottom: 11px !important; }
+        #results.visible #hero .score-value { font-size: 23px !important; }
+        #results.visible #viewerStage { height: 150px !important; }
+        #results.visible .viewer-tabs { margin: 9px auto 8px !important; }
+        #results.visible .viewer-tab { padding: 5px 12px !important; font-size: 12px !important; }
+        #results.visible .lv-verdict-head { padding: 12px 14px 0 !important; }
+        #results.visible .lv-verdict-title { font-size: 19px !important; }
+        #results.visible .lv-verdict-interpretation { padding: 4px 14px 12px !important; font-size: 13px !important; }
+        #results.visible #lvRisque { padding: 12px 14px 12px 17px !important; }
+        #results.visible .lv-verdict-action { padding: 12px 14px !important; }
+        #results.visible .lv-verdict-action-text { font-size: 14.5px !important; }
+        #results.visible .lv-risque-text { font-size: 12.5px !important; }
+        #results.visible .lv-verify { font-size: 11px !important; }
+        #results.visible .results-toolbar { margin: 12px 0 0 !important; gap: 8px !important; }
+        #results.visible .results-toolbar .btn-export,
+        #results.visible .results-toolbar .btn-back { height: 44px !important; font-size: 13.5px !important; }
+      }
+
       /* ═══════ V188 — ACCUEIL EN BLOCS (demande utilisateur insistante) ═══════
          L'accueil doit avoir DEUX cartes blanches arrondies :
            1. « Dernières inspections » → liste de lignes dans UNE carte
@@ -10597,9 +11239,12 @@ body.lv-open { overflow: hidden; touch-action: none; }
           <div class="hero-gauge-fill" id="heroGaugeFill"></div>
         </div>
         <div class="hero-gauge-labels">
-          <span data-i18n="risk_low">Faible</span>
-          <span data-i18n="risk_mid">Moyen</span>
-          <span data-i18n="risk_hi">Élevé</span>
+          <!-- V188.8 — clés courtes (rep_seg_*) : labels sous la jauge slim doivent
+               rester "Faible/Modéré/Élevé", pas "Risque faible/moyen/élevé" qui
+               casserait la mise en page sur petit écran. -->
+          <span data-i18n="rep_seg_low">Faible</span>
+          <span data-i18n="rep_seg_mid">Modéré</span>
+          <span data-i18n="rep_seg_high">Élevé</span>
         </div>
         <div class="hero-seg" id="heroSeg" data-risk="">
           <span class="hero-seg-s" data-seg="low" data-i18n="rep_seg_low">Faible</span>
@@ -15753,6 +16398,7 @@ const Annotator = (() => {
     window.__navHome = () => {
       const results = document.getElementById('results');
       if (results) results.classList.remove('visible');
+      document.body.classList.remove('on-results');  /* V188.8 — restitue la nav */
       if (typeof window.__closeSettings === 'function') window.__closeSettings();
       const histO = document.getElementById('histOverlay');
       if (histO) { histO.hidden = true; histO.classList.remove('is-open'); }
@@ -15945,6 +16591,7 @@ const Annotator = (() => {
 
   resetBtn.addEventListener('click', () => {
     results.classList.remove('visible');
+    document.body.classList.remove('on-results');  /* V188.8 — restitue la nav */
     uploadHub.style.display = '';
     cameraInput.value = ''; galleryInput.value = '';
     /* V38 fix F-05 : libère la dernière Object URL (l'origImg n'en a plus
@@ -22396,6 +23043,16 @@ const Annotator = (() => {
           if (seg) { const rl = (res.riskLevel || '').toString().toLowerCase();
             const _rk = rl === 'high' ? 'high' : (rl === 'mid' || rl === 'moyen' || rl === 'medium') ? 'mid' : 'low';
             seg.setAttribute('data-risk', _rk);
+            /* V188.8 — Sur #hero on pose data-risk (drive --risk-color via CSS)
+               + --score-pos (position du marqueur sur la jauge slim Apple Health). */
+            try {
+              const heroEl = document.getElementById('hero');
+              if (heroEl) {
+                heroEl.setAttribute('data-risk', _rk);
+                const sc = (typeof res.score === 'number') ? Math.max(0, Math.min(100, Math.round(res.score))) : 50;
+                heroEl.style.setProperty('--score-pos', sc + '%');
+              }
+            } catch (e) {}
             /* V188.4 — Score INTÉGRÉ dans la case active de la barre (demande user). */
             try {
               const sc = (typeof res.score === 'number') ? Math.round(res.score) : null;
@@ -23053,6 +23710,9 @@ const Annotator = (() => {
 
     /* Reveal */
     results.classList.add('visible');
+    /* V188.8 — body.on-results masque la barre Historique/Contexte/Réglages sur
+       l'écran rapport (focus verdict + 2 actions). */
+    document.body.classList.add('on-results');
     try { window.__setScreenTitle('screen_report'); } catch (e) {}
     requestAnimationFrame(() => results.scrollIntoView({ behavior: 'smooth', block: 'start' }));
     /* V54 fix Bug F — Toast fallback décalé : si le rapport vient du fallback
