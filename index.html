@@ -10162,6 +10162,30 @@ body.lv-open { overflow: hidden; touch-action: none; }
         padding: 14px 14px !important;
         font-size: 14.5px !important;
       }
+
+      /* ─── V188.2 — Compactage MOBILE (≤500px) : tout doit tenir à l'écran ───
+         L'utilisateur exige que l'accueil tienne en UNE vue (sans scroll) entre
+         le bouton d'analyse et la barre du bas, sans que les cartes ne touchent
+         la nav Historique/Contexte/Réglages. Resserrement vertical scopé .home. */
+      @media (max-width: 500px) {
+        .home { gap: 8px !important; padding-top: 4px !important; }
+        .home-hero { gap: 6px !important; }
+        .home-title, .home-tagline { font-size: 14px !important; line-height: 1.35 !important; }
+        .home-actions { gap: 8px !important; }
+        .home-btn { height: 48px !important; font-size: 14.5px !important; }
+        .home-benefits { font-size: 11.5px !important; margin: 4px 0 6px !important; }
+        .home-history-title, .home-more-label { font-size: 12.5px !important; }
+        .home-more-label { margin: 10px 2px 6px !important; }
+        .home-history { padding-top: 2px !important; }
+        /* Lignes d'inspection compactes : vignette plus petite, padding réduit. */
+        .home-hrow { padding: 8px 12px !important; gap: 10px !important; }
+        .home-hrow-thumb { width: 32px !important; height: 32px !important; }
+        .home-hrow-date { font-size: 13px !important; }
+        .home-hrow-meta { font-size: 11px !important; }
+        .home-hrow-badge { padding: 4px 9px !important; font-size: 10.5px !important; }
+        /* Accordéons compacts : moins d'air, mais cible tactile préservée (≥44px). */
+        .home-accordions .acc-head { padding: 13px 14px !important; font-size: 14px !important; }
+      }
       </style>
       <!-- V187 — bloc .results-hdr (en-tête LUCENS dupliqué + croix ✕) retiré. -->
       <!-- HERO SCORE — version épurée -->
