@@ -9374,7 +9374,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v195</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v196</div>
         </div>
       </div>
     </div>
@@ -11360,6 +11360,95 @@ body.lv-open { overflow: hidden; touch-action: none; }
         .home-hrow-badge { padding: 4px 9px !important; font-size: 10.5px !important; }
         /* Accordéons compacts : moins d'air, mais cible tactile préservée (≥44px). */
         .home-accordions .acc-head { padding: 13px 14px !important; font-size: 14px !important; }
+      }
+
+      /* ════════════ V196 — CONSOLIDATION : lisibilité + cohérence + couleurs ════════════
+         Capture utilisateur V195 : texte gris (pas noir), couleurs ternes, typo
+         incohérente entre les 3 blocs (Action gras-noir vs Origine/Risque gris),
+         toggle trop gros (texte sur 2 lignes). Plutôt qu'un Nᵉ patch, ce bloc est
+         EN DERNIER et fait AUTORITÉ. Source de vérité unique pour ces éléments —
+         ne plus ré-éditer les blocs V188→V192 au-dessus.
+         ─ Logique typo UNIQUE :
+            • Eyebrow (ORIGINE/RISQUE/ACTION) = libellé : 11px maj, gris, 600.
+            • Titre Origine = SEULE ligne mise en avant : encre quasi-noire 700/17.
+            • Les 3 phrases (interpretation/risque/action) = STRICTEMENT IDENTIQUES :
+              encre foncée lisible 14.5/500. Plus de gris pâle, plus de gras isolé.
+         ─ Couleur = UNIQUEMENT le niveau de risque, porté par le score + la jauge
+           (vifs). Le titre n'est plus coloré (source de confusion signalée).        */
+
+      /* Couleur de risque VIVE, disponible dans tout #results (token redéfini). */
+      #results.visible:has(.lucens-verdict-card.risk-low)  { --risk-color: #1BA84C !important; }
+      #results.visible:has(.lucens-verdict-card.risk-mid)  { --risk-color: #F39A0E !important; }
+      #results.visible:has(.lucens-verdict-card.risk-high) { --risk-color: #EF4444 !important; }
+
+      /* 1 — SCORE : couleur du risque, gras (était délavé). */
+      #results.visible #hero .score-value { font-weight: 800 !important; }
+      #results.visible #hero[data-risk="low"]  .score-value { color: #15803D !important; }
+      #results.visible #hero[data-risk="mid"]  .score-value { color: #C2710C !important; }
+      #results.visible #hero[data-risk="high"] .score-value { color: #D92D20 !important; }
+      #results.visible #hero .score-suffix { color: #9CA3AF !important; font-weight: 600 !important; }
+
+      /* 2 — JAUGE : 3 segments PLEINS et vifs (fini le pastel quasi blanc). */
+      #results.visible #hero .hero-gauge {
+        background: linear-gradient(90deg,
+          #34A853 0%, #34A853 33.33%,
+          #F6A609 33.33%, #F6A609 66.66%,
+          #E5392B 66.66%, #E5392B 100%) !important;
+        height: 10px !important; border-radius: 5px !important;
+      }
+      /* Labels sous la jauge : gris, sauf l'actif → couleur du risque, gras. */
+      #results.visible #hero .hero-gauge-labels > span {
+        color: #9CA3AF !important; font-weight: 600 !important;
+        font-size: 11px !important; letter-spacing: .02em !important;
+      }
+      #results.visible #hero[data-risk="low"]  .hero-gauge-labels > span:nth-child(1) { color: #15803D !important; font-weight: 800 !important; }
+      #results.visible #hero[data-risk="mid"]  .hero-gauge-labels > span:nth-child(2) { color: #C2710C !important; font-weight: 800 !important; }
+      #results.visible #hero[data-risk="high"] .hero-gauge-labels > span:nth-child(3) { color: #D92D20 !important; font-weight: 800 !important; }
+
+      /* 3 — TYPOGRAPHIE UNIFORME sur les 3 blocs (la correction clé) ─────────── */
+      /* Eyebrows : identiques partout (libellé de section, jamais le contenu). */
+      #results.visible .lv-verdict-eyebrow,
+      #results.visible .lv-risque-label,
+      #results.visible .lv-verdict-action-title {
+        font-family: var(--font-body) !important;
+        font-size: 11px !important; font-weight: 600 !important;
+        text-transform: uppercase !important; letter-spacing: .055em !important;
+        color: #6B7280 !important; margin: 0 0 6px !important;
+      }
+      /* Titre Origine : unique ligne mise en avant, EN ENCRE (plus d'orange). */
+      #results.visible .lv-verdict-title {
+        color: #14171C !important; font-weight: 700 !important;
+        font-size: 17px !important; line-height: 1.3 !important; margin: 0 0 5px !important;
+      }
+      #results.visible .lv-verdict-confidence { display: none !important; }
+      /* Les 3 PHRASES de contenu : STRICTEMENT identiques, encre foncée lisible. */
+      #results.visible .lv-verdict-interpretation,
+      #results.visible .lv-risque-text,
+      #results.visible .lv-verdict-action-text {
+        color: #23272F !important; font-weight: 500 !important;
+        font-size: 14.5px !important; line-height: 1.5 !important; margin: 0 !important;
+      }
+      /* Bloc Risque : accent gauche à la couleur (vive) du risque, sans ::before. */
+      #results.visible #lvRisque { border-left: 3px solid var(--risk-color, #E5E7EB) !important; padding-left: 15px !important; }
+      #results.visible #lvRisque::before { display: none !important; }
+      /* Icône d'action : discrète, alignée. */
+      #results.visible .lv-verdict-action-icon { color: #9CA3AF !important; }
+
+      /* 4 — TOGGLE compact, centré, discret (était trop gros, texte sur 2 lignes). */
+      #results.visible .viewer-tabs {
+        display: flex !important; width: fit-content !important; max-width: 100% !important;
+        margin: 6px auto 10px !important; padding: 3px !important; gap: 0 !important;
+        background: #EEF0F2 !important; border-radius: 9px !important;
+      }
+      #results.visible .viewer-tab {
+        flex: 0 0 auto !important; min-height: 0 !important; width: auto !important;
+        padding: 5px 13px !important; font-size: 12px !important; font-weight: 600 !important;
+        line-height: 1.2 !important; white-space: nowrap !important;
+        border-radius: 7px !important; color: #6B7280 !important;
+      }
+      #results.visible .viewer-tab.active {
+        background: #fff !important; color: #14171C !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,.10) !important;
       }
       </style>
       <!-- V187 — bloc .results-hdr (en-tête LUCENS dupliqué + croix ✕) retiré. -->
