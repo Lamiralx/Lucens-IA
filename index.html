@@ -9374,7 +9374,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v190</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v191</div>
         </div>
       </div>
     </div>
@@ -16125,29 +16125,43 @@ const Annotator = (() => {
          dans le tableau. */
       const _cells = [];
       for (const [, cells] of activeCellsByType) { for (const c of cells) _cells.push(c); }
-      /* V155 — GARDE-FOU hors-ligne : si la cartographie couvrirait une part
-         ABUSIVE de l'image (voile fluorescent uniforme mal détecté par
-         l'heuristique locale), on NE trace RIEN (photo seule) plutôt que de
-         "cartographier toute l'image". Seuil haut (40%) : ne se déclenche que
-         sur une sur-détection manifeste. En mode IA, jamais de plafond (les
-         zones validées font foi). */
+      /* V190 — CHOIX DE RENDU CARTO selon le mode :
+         - aiMode (en ligne, IA Claude a validé les zones) : on dessine UNIQUEMENT
+           les bbox arrondies des zones IA (contour propre type rounded rect).
+           Le contour pixel-précis suit la forme des cellules actives → sur une
+           vraie photo bruitée, ça produit un rendu "spotty" (l'utilisateur l'a
+           remonté en V189 sur photo terrain). Les bbox IA sont stables et
+           lisibles. C'est aussi la forme validée dans la maquette V188.8.
+         - !aiMode (offline, heuristique pure) : on garde le contour pixel-précis
+           historique (V145) avec le garde-fou V155 contre la sur-détection. */
       const _gridTotal = (grid && grid.length) ? grid.length : (128 * 128);
-      const _overCover = !aiMode && _cells.length > _gridTotal * 0.40;
-      if (!_overCover) {
-        const _keySet = new Set(_cells.map(c => c.cx + ',' + c.cy));
-        strokeCartoContour(ctx, _cells, _keySet, W, H);
-        if (_cells.length) _cartoPainted = true;   /* V187 — quelque chose a été tracé */
+      if (aiMode) {
+        /* Mode IA : bbox arrondies des zones validées (non-artefact). Propre. */
+        const _aiZones = (zones || []).filter(z =>
+          z && z.artifact_rejection !== true &&
+          typeof z.x === 'number' && typeof z.y === 'number' &&
+          typeof z.w === 'number' && typeof z.h === 'number');
+        if (_aiZones.length) {
+          strokeBboxContours(ctx, _aiZones, W, H);
+          _cartoPainted = true;
+        }
       } else {
-        console.warn('[V155 carto] couverture ' + Math.round(_cells.length / _gridTotal * 100) + '% > 40% en local → voile uniforme probable, carto supprimée (photo seule).');
+        /* Mode local pur : pixel-précis avec garde-fou V155 (couverture > 40%
+           = voile uniforme mal détecté → on ne trace rien). */
+        const _overCover = _cells.length > _gridTotal * 0.40;
+        if (!_overCover) {
+          const _keySet = new Set(_cells.map(c => c.cx + ',' + c.cy));
+          strokeCartoContour(ctx, _cells, _keySet, W, H);
+          if (_cells.length) _cartoPainted = true;
+        } else {
+          console.warn('[V155 carto] couverture ' + Math.round(_cells.length / _gridTotal * 100) + '% > 40% en local → voile uniforme probable, carto supprimée (photo seule).');
+        }
       }
     }
 
-    /* V187 — FILET DE SÉCURITÉ CARTO : la détection pixel locale n'a peint AUCUNE
-       zone (photo uniforme/sur-exposée, faible contraste, ou pas de grille) alors
-       que l'IA a validé des zones → on trace directement le contour de leurs bbox,
-       pour que la cartographie ne soit JAMAIS vide quand des zones existent.
-       Limité au mode IA (zones validées font foi) et borné aux bbox validées
-       (artefacts exclus) → aucun risque de "cartographier toute l'image". */
+    /* V187 — FILET DE SÉCURITÉ CARTO : si AUCUNE zone n'a été peinte (photo
+       uniforme, AI vide, grille absente), on tente une dernière passe sur les
+       bbox IA pour ne JAMAIS afficher une carto vide quand des zones existent. */
     if (!_cartoPainted && aiMode) {
       const _fallbackZones = (zones || []).filter(z =>
         z && z.artifact_rejection !== true &&
