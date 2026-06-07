@@ -9374,7 +9374,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v194</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v195</div>
         </div>
       </div>
     </div>
@@ -10507,10 +10507,16 @@ body.lv-open { overflow: hidden; touch-action: none; }
         box-shadow: none !important;
         display: block !important;
       }
-      /* V194 — Mes overrides V188.x cachaient ces cartes (« Synthèse des zones »,
-         « Verdict détaillé par zone », « Contrôle de détection »). L'utilisateur
-         a demandé que la PROFONDEUR D'ANALYSE soit restaurée (raisonnement,
-         zones, tableau, référentiels HACCP). On retire le masque ici. */
+      /* V195 — ÉCRAN = 5 BLOCS ESSENTIELS (décision utilisateur explicite).
+         L'inspecteur terrain veut en 3 secondes : c'est grave ? · c'est quoi ? ·
+         je fais quoi ?. La profondeur (tableau zones, verdict par zone, contrôle
+         de détection, référentiels) reste DANS LE MOTEUR et DANS LE PDF, mais
+         n'encombre PAS l'écran. On masque donc ces cartes ici. */
+      #results.visible .result-grid > .card:not(:has(#viewerStage)),
+      #results.visible #zonesVerdictCard,
+      #results.visible details.zones-verdict-card,
+      #results.visible #verifCard,
+      #results.visible #guideCard { display: none !important; }
 
       /* Bloc 1 — Niveau de risque (filet de risque en haut + ligne label/score) */
       #results.visible #hero .hero-row {
@@ -11032,17 +11038,15 @@ body.lv-open { overflow: hidden; touch-action: none; }
         line-height: 1.35 !important;
         margin: 0 !important;
       }
-      #results.visible .lv-verify {
-        display: block !important;
-        font-size: 11.5px !important; line-height: 1.45 !important;
-        color: var(--ink-tertiary, #6B7280) !important;
-        margin-top: 7px !important;
-      }
-      /* V194 — RESTAURATION : .lv-verdict-details (« Voir le raisonnement complet »),
-         #lvVerdictVigilance (point de vigilance), #lvVerdictFrameworks (référentiels
-         HACCP) ne sont PLUS forcés en display:none. La profondeur d'analyse demandée
-         par l'utilisateur est rétablie. Ces blocs apparaissent uniquement si Claude
-         renvoie du contenu pour eux (logique JS existante les hide si vide). */
+      /* V195 — Ligne « En cas de doute… (ATP/labo) » RETIRÉE de l'écran : strict
+         1 phrase par bloc (demande utilisateur). L'élément reste dans le DOM et
+         dans les données → conservé tel quel dans le PDF rapport. */
+      #results.visible .lv-verify { display: none !important; }
+      /* V195 — ÉCRAN = 5 blocs : on masque le raisonnement complet, le point de
+         vigilance et les référentiels HACCP. Ils restent dans les données (PDF). */
+      #results.visible .lv-verdict-details,
+      #results.visible #lvVerdictVigilance,
+      #results.visible #lvVerdictFrameworks { display: none !important; }
 
       /* ─── Boutons : CÔTE À CÔTE, sans icône svg ─── */
       #results.visible .results-toolbar {
@@ -20414,38 +20418,41 @@ const Annotator = (() => {
         };
         /* V190 — risk_logic par catégorie : on a TOUJOURS une vraie explication du
            risque associé (la section ne sera plus vide dans la carte verdict). */
+        /* V195 — 1 PHRASE par catégorie (décision utilisateur : texte court).
+           On garde la notion HACCP de « contamination croisée » + le vecteur clé,
+           sans énumérer tous les vecteurs (ça reste dans le PDF si besoin). */
         const _RISQUE_PAR_CATEGORIE = {
           fr: {
-            organic:  'Risque de contamination croisée : le résidu nourrit les bactéries (Listeria, salmonelle, E. coli) qui se transfèrent aux aliments par contact direct ou via les mains et ustensiles.',
-            fatty:    'Risque de contamination croisée : la couche grasse héberge des bactéries qui migrent vers les aliments lors de tout contact avec la surface, les mains ou les ustensiles.',
-            chemical: 'Risque de contamination croisée : le résidu de nettoyant migre vers les aliments par contact direct (surface) ou indirect (mains, ustensiles, emballage). Ingestion possible.',
-            mineral:  'Le dépôt minéral peut héberger des micro-organismes et masquer d\'autres résidus. Décollement possible vers les aliments par friction ou contact humide.',
-            biofilm:  'Risque de contamination croisée : colonie bactérienne établie qui libère des cellules vers les aliments à chaque contact (surface, eau, mains, ustensiles). Persistant.',
-            unknown:  'Origine à identifier pour évaluer le risque de contamination croisée précisément. Confirmation conseillée.',
+            organic:  'Contamination croisée : nourrit les bactéries (Listeria, salmonelle) qui passent aux aliments par contact.',
+            fatty:    'Contamination croisée : la couche grasse héberge des bactéries transférables aux aliments.',
+            chemical: 'Contamination croisée : le résidu de nettoyant passe aux aliments par contact direct ou via les mains.',
+            mineral:  'Peut héberger des micro-organismes et masquer d\'autres résidus sur la surface.',
+            biofilm:  'Contamination croisée : colonie bactérienne persistante qui passe aux aliments à chaque contact.',
+            unknown:  'Origine à confirmer pour évaluer le risque de contamination croisée.',
           },
           en: {
-            organic:  'Cross-contamination risk: residue feeds bacteria (Listeria, Salmonella, E. coli) that transfer to food via direct contact or via hands and utensils.',
-            fatty:    'Cross-contamination risk: fatty layer harbours bacteria that migrate to food on any contact with the surface, hands or utensils.',
-            chemical: 'Cross-contamination risk: cleaning agent residue transfers to food via direct contact (surface) or indirect (hands, utensils, packaging). Possible ingestion.',
-            mineral:  'Mineral deposit may harbour micro-organisms and mask other residues. Possible detachment to food via friction or wet contact.',
-            biofilm:  'Cross-contamination risk: established bacterial colony releases cells to food on every contact (surface, water, hands, utensils). Persistent.',
-            unknown:  'Origin to be identified to evaluate cross-contamination risk precisely. Confirmation recommended.',
+            organic:  'Cross-contamination: feeds bacteria (Listeria, Salmonella) that pass to food on contact.',
+            fatty:    'Cross-contamination: fatty layer harbours bacteria transferable to food.',
+            chemical: 'Cross-contamination: cleaning residue passes to food via direct contact or hands.',
+            mineral:  'May harbour micro-organisms and mask other residues on the surface.',
+            biofilm:  'Cross-contamination: persistent bacterial colony passing to food on every contact.',
+            unknown:  'Origin to confirm to assess cross-contamination risk.',
           },
           es: {
-            organic:  'Riesgo de contaminación cruzada: el residuo alimenta bacterias (Listeria, Salmonella, E. coli) que se transfieren a los alimentos por contacto directo o a través de manos y utensilios.',
-            fatty:    'Riesgo de contaminación cruzada: la capa grasa alberga bacterias que migran a los alimentos en cualquier contacto con la superficie, las manos o los utensilios.',
-            chemical: 'Riesgo de contaminación cruzada: el residuo de limpiador se transfiere a los alimentos por contacto directo (superficie) o indirecto (manos, utensilios, envases). Posible ingestión.',
-            mineral:  'El depósito mineral puede albergar microorganismos y enmascarar otros residuos. Posible desprendimiento hacia los alimentos por fricción o contacto húmedo.',
-            biofilm:  'Riesgo de contaminación cruzada: colonia bacteriana establecida que libera células a los alimentos en cada contacto (superficie, agua, manos, utensilios). Persistente.',
-            unknown:  'Origen por identificar para evaluar el riesgo de contaminación cruzada con precisión.',
+            organic:  'Contaminación cruzada: alimenta bacterias (Listeria, Salmonella) que pasan a los alimentos por contacto.',
+            fatty:    'Contaminación cruzada: la capa grasa alberga bacterias transferibles a los alimentos.',
+            chemical: 'Contaminación cruzada: el residuo de limpiador pasa a los alimentos por contacto o por las manos.',
+            mineral:  'Puede albergar microorganismos y enmascarar otros residuos en la superficie.',
+            biofilm:  'Contaminación cruzada: colonia bacteriana persistente que pasa a los alimentos en cada contacto.',
+            unknown:  'Origen por confirmar para evaluar el riesgo de contaminación cruzada.',
           },
           de: {
-            organic:  'Kreuzkontaminationsrisiko: Rückstand nährt Bakterien (Listerien, Salmonellen, E. coli), die sich durch direkten Kontakt oder über Hände und Geräte auf Lebensmittel übertragen.',
-            fatty:    'Kreuzkontaminationsrisiko: Fettschicht beherbergt Bakterien, die bei jedem Kontakt mit Oberfläche, Händen oder Geräten auf Lebensmittel übergehen.',
-            chemical: 'Kreuzkontaminationsrisiko: Reinigungsmittelrückstand überträgt sich durch direkten Kontakt (Oberfläche) oder indirekt (Hände, Geräte, Verpackung) auf Lebensmittel. Verschlucken möglich.',
-            mineral:  'Mineralablagerung kann Mikroorganismen beherbergen und andere Rückstände verdecken. Ablösung zu Lebensmitteln durch Reibung oder feuchten Kontakt möglich.',
-            biofilm:  'Kreuzkontaminationsrisiko: etablierte Bakterienkolonie gibt bei jedem Kontakt (Oberfläche, Wasser, Hände, Geräte) Zellen an Lebensmittel ab. Persistent.',
-            unknown:  'Ursache zur genauen Bewertung des Kreuzkontaminationsrisikos identifizieren.',
+            organic:  'Kreuzkontamination: nährt Bakterien (Listerien, Salmonellen), die bei Kontakt auf Lebensmittel übergehen.',
+            fatty:    'Kreuzkontamination: Fettschicht beherbergt auf Lebensmittel übertragbare Bakterien.',
+            chemical: 'Kreuzkontamination: Reinigungsrückstand geht bei Kontakt oder über die Hände auf Lebensmittel über.',
+            mineral:  'Kann Mikroorganismen beherbergen und andere Rückstände auf der Oberfläche verdecken.',
+            biofilm:  'Kreuzkontamination: persistente Bakterienkolonie, die bei jedem Kontakt auf Lebensmittel übergeht.',
+            unknown:  'Ursache bestätigen, um das Kreuzkontaminationsrisiko zu bewerten.',
           },
         };
         const _lv = _LVB[(typeof currentLang !== 'undefined' && _LVB[currentLang]) ? currentLang : 'fr'];

@@ -27,3 +27,7 @@ node_modules/
 
 # Logs
 *.log
+
+# ─── Artefacts de dev / validation (jamais en prod) ───
+.claude/
+mockup-*.html
