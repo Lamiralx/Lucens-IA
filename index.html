@@ -9374,7 +9374,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v189</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v190</div>
         </div>
       </div>
     </div>
@@ -11102,6 +11102,59 @@ body.lv-open { overflow: hidden; touch-action: none; }
         #results.visible .results-toolbar .btn-export,
         #results.visible .results-toolbar .btn-back { height: 44px !important; font-size: 13.5px !important; }
       }
+
+      /* ══════════ V190 — Correctifs post-déploiement (audit terrain) ══════════
+         Bugs visuels remontés par l'utilisateur sur prod V189 avec une vraie photo :
+         (1) Labels FAIBLE/MODÉRÉ/ÉLEVÉ pas colorés
+         (2) Barre orange parasite sous "Zones détectées" (ancien indicateur)
+         (3) Segmented control trop gros (44px min-height des viewer-tab)
+         (4) Jauge trop terne (gradient pastel quasi blanc)
+         (5) Section "Risque associé" affichée vide → écrasée par display:block !important
+         Corrections additives, en dernier dans la cascade. */
+
+      /* (1) Force la couleur d'accent sur le label actif — spécificité haute pour
+            battre le défaut grey et fonctionner aussi sur les viewports élargis. */
+      #results.visible #hero[data-risk="low"]  .hero-gauge-labels > span:nth-child(1) { color: #2E7D32 !important; font-weight: 700 !important; }
+      #results.visible #hero[data-risk="mid"]  .hero-gauge-labels > span:nth-child(2) { color: #B7791F !important; font-weight: 700 !important; }
+      #results.visible #hero[data-risk="high"] .hero-gauge-labels > span:nth-child(3) { color: #B42318 !important; font-weight: 700 !important; }
+
+      /* (2) Kill l'indicateur ::after orange-terra (était l'underline sous le tab actif). */
+      #results.visible .viewer-tab.active::after,
+      #results.visible .viewer-tab::after { content: none !important; display: none !important;
+        background: transparent !important; animation: none !important; }
+
+      /* (3) Compacte le segmented control : min-height 44px hérité de l'app → 32px. */
+      #results.visible .viewer-tab {
+        min-height: 0 !important;
+        padding: 6px 14px !important;
+        font-family: var(--font-body) !important;
+        font-size: 12.5px !important;
+        font-weight: 500 !important;
+        text-transform: none !important;
+        letter-spacing: -.005em !important;
+      }
+      #results.visible .viewer-tabs {
+        padding: 2px !important;
+        align-items: center !important;
+      }
+
+      /* (4) Saturation du gradient de la jauge : on remplace les pastels quasi
+            invisibles par des tints 18% au-dessus du fond blanc. Les 3 zones sont
+            désormais clairement distinguables d'un coup d'œil. */
+      #results.visible #hero .hero-gauge {
+        background: linear-gradient(90deg,
+          rgba(46,125,50,0.22) 0%, rgba(46,125,50,0.22) 33.33%,
+          rgba(183,121,31,0.22) 33.33%, rgba(183,121,31,0.22) 66.66%,
+          rgba(180,35,24,0.22) 66.66%, rgba(180,35,24,0.22) 100%) !important;
+      }
+
+      /* (5) Section Risque associé : si #lvRisque[hidden] est posé par render()
+            (parce que risk_logic est vide), on doit RESPECTER le hidden. V188.8
+            forçait display:block — on l'annule via :not([hidden]). */
+      #results.visible #lvRisque[hidden] { display: none !important; }
+      /* Sécurité supplémentaire : si pour une raison X la section est visible
+         mais le texte est vide (Claude renvoie un risk_logic blanc), on cache. */
+      #results.visible #lvRisque:has(.lv-risque-text:empty) { display: none !important; }
 
       /* ═══════ V188 — ACCUEIL EN BLOCS (demande utilisateur insistante) ═══════
          L'accueil doit avoir DEUX cartes blanches arrondies :
@@ -20200,17 +20253,60 @@ const Annotator = (() => {
         const _domCat = getCategory(_domType);            /* label + hint localisés */
         const _domLabel = _domCat.label || '';
         const _domHint = (_domCat.hint || '').toLowerCase();
-        const _pct = (typeof res.coveragePercent === 'number') ? res.coveragePercent : 0;
-        /* Textes du verdict, toutes langues regroupées (1 seul endroit à maintenir). */
+        /* V190 — Cap explicite à 100% : le calcul amont peut renvoyer
+           des valeurs > 100 quand plusieurs détecteurs se chevauchent. */
+        const _pctRaw = (typeof res.coveragePercent === 'number') ? res.coveragePercent : 0;
+        const _pct = Math.max(0, Math.min(100, Math.round(_pctRaw * 10) / 10));
+        /* V190 — Textes du verdict NETTOYÉS. Plus de "X zone(s) marquée(s) sur Y%"
+           (jargon technique inutile pour l'inspecteur). Description en 1 phrase
+           courte. + risk_logic par catégorie injecté ailleurs. */
         const _LVB = {
-          fr: { title_clean:'Aucun résidu fluorescent détecté', interp:'Signature dominante compatible avec {hint}. {n} zone(s) marquée(s) sur {pct}% de la surface.', clean:'Aucune fluorescence franche sur la surface analysée.', reco_high:'Nettoyage ciblé des zones marquées, puis recontrôle sous UV.', reco_mid:'Contrôlez et nettoyez les zones marquées.', reco_low:'Surface conforme. Aucune action requise.', caveat:'La signature colorimétrique oriente la catégorie ; une confirmation reste utile sur les points critiques.', action:'Action recommandée' },
-          en: { title_clean:'No fluorescent residue detected', interp:'Dominant signature consistent with {hint}. {n} zone(s) flagged across {pct}% of the surface.', clean:'No distinct fluorescence on the analysed surface.', reco_high:'Targeted cleaning of the flagged zones, then re-check under UV.', reco_mid:'Check and clean the flagged zones.', reco_low:'Surface compliant. No action required.', caveat:'The colour signature points to the category; confirmation remains useful on critical points.', action:'Recommended action' },
-          es: { title_clean:'Sin residuo fluorescente detectado', interp:'Firma dominante compatible con {hint}. {n} zona(s) marcada(s) en {pct}% de la superficie.', clean:'Sin fluorescencia clara en la superficie analizada.', reco_high:'Limpieza específica de las zonas marcadas y nueva verificación con UV.', reco_mid:'Revise y limpie las zonas marcadas.', reco_low:'Superficie conforme. No se requiere acción.', caveat:'La firma de color orienta la categoría; conviene confirmar en puntos críticos.', action:'Acción recomendada' },
-          de: { title_clean:'Kein fluoreszierender Rückstand erkannt', interp:'Dominante Signatur passt zu {hint}. {n} Zone(n) auf {pct}% der Fläche markiert.', clean:'Keine deutliche Fluoreszenz auf der analysierten Fläche.', reco_high:'Gezielte Reinigung der markierten Zonen, danach erneute UV-Kontrolle.', reco_mid:'Markierte Zonen prüfen und reinigen.', reco_low:'Fläche konform. Keine Maßnahme erforderlich.', caveat:'Die Farbsignatur weist auf die Kategorie hin; eine Bestätigung bleibt an kritischen Stellen sinnvoll.', action:'Empfohlene Maßnahme' },
+          fr: { title_clean:'Aucun résidu fluorescent détecté', interp:'Signature compatible avec {hint}.', clean:'Aucune fluorescence franche sur la surface analysée.', reco_high:'Nettoyage ciblé des zones marquées, puis recontrôle sous UV.', reco_mid:'Contrôlez et nettoyez les zones marquées.', reco_low:'Surface conforme. Aucune action requise.', caveat:'La signature colorimétrique oriente la catégorie ; une confirmation reste utile sur les points critiques.', action:'Action recommandée' },
+          en: { title_clean:'No fluorescent residue detected', interp:'Signature consistent with {hint}.', clean:'No distinct fluorescence on the analysed surface.', reco_high:'Targeted cleaning of the flagged zones, then re-check under UV.', reco_mid:'Check and clean the flagged zones.', reco_low:'Surface compliant. No action required.', caveat:'The colour signature points to the category; confirmation remains useful on critical points.', action:'Recommended action' },
+          es: { title_clean:'Sin residuo fluorescente detectado', interp:'Firma compatible con {hint}.', clean:'Sin fluorescencia clara en la superficie analizada.', reco_high:'Limpieza específica de las zonas marcadas y nueva verificación con UV.', reco_mid:'Revise y limpie las zonas marcadas.', reco_low:'Superficie conforme. No se requiere acción.', caveat:'La firma de color orienta la categoría; conviene confirmar en puntos críticos.', action:'Acción recomendada' },
+          de: { title_clean:'Kein fluoreszierender Rückstand erkannt', interp:'Signatur passt zu {hint}.', clean:'Keine deutliche Fluoreszenz auf der analysierten Fläche.', reco_high:'Gezielte Reinigung der markierten Zonen, danach erneute UV-Kontrolle.', reco_mid:'Markierte Zonen prüfen und reinigen.', reco_low:'Fläche konform. Keine Maßnahme erforderlich.', caveat:'Die Farbsignatur weist auf die Kategorie hin; eine Bestätigung bleibt an kritischen Stellen sinnvoll.', action:'Empfohlene Maßnahme' },
+        };
+        /* V190 — risk_logic par catégorie : on a TOUJOURS une vraie explication du
+           risque associé (la section ne sera plus vide dans la carte verdict). */
+        const _RISQUE_PAR_CATEGORIE = {
+          fr: {
+            organic:  'Nourrit les bactéries : risque de contamination des aliments (Listeria, salmonelle, E. coli).',
+            fatty:    'Couche grasse résiduelle : support de prolifération bactérienne et de mauvaise hygiène apparente.',
+            chemical: 'Résidu de produit de nettoyage : risque d\'ingestion ou de réaction allergique en cas de contact alimentaire.',
+            mineral:  'Dépôt minéral (tartre) : peut héberger des micro-organismes et masquer d\'autres résidus.',
+            biofilm:  'Colonie bactérienne établie : risque de contamination élevé et persistant.',
+            unknown:  'Origine à identifier pour évaluer le risque précisément. Confirmation conseillée.',
+          },
+          en: {
+            organic:  'Feeds bacteria: risk of food contamination (Listeria, Salmonella, E. coli).',
+            fatty:    'Residual fatty layer: substrate for bacterial growth and apparent poor hygiene.',
+            chemical: 'Cleaning agent residue: risk of ingestion or allergic reaction on food contact.',
+            mineral:  'Mineral deposit (scale): may harbour micro-organisms and mask other residues.',
+            biofilm:  'Established bacterial colony: high persistent contamination risk.',
+            unknown:  'Origin to be identified to evaluate risk precisely. Confirmation recommended.',
+          },
+          es: {
+            organic:  'Alimenta las bacterias: riesgo de contaminación alimentaria (Listeria, Salmonella, E. coli).',
+            fatty:    'Capa grasa residual: soporte para el crecimiento bacteriano y signo de mala higiene.',
+            chemical: 'Residuo de producto de limpieza: riesgo de ingestión o reacción alérgica.',
+            mineral:  'Depósito mineral (cal): puede albergar microorganismos y enmascarar otros residuos.',
+            biofilm:  'Colonia bacteriana establecida: riesgo de contaminación elevado y persistente.',
+            unknown:  'Origen por identificar para evaluar el riesgo con precisión.',
+          },
+          de: {
+            organic:  'Nährt Bakterien: Risiko einer Lebensmittelkontamination (Listerien, Salmonellen, E. coli).',
+            fatty:    'Restfettschicht: Nährboden für Bakterienwachstum und Zeichen mangelnder Hygiene.',
+            chemical: 'Reinigungsmittelrückstand: Risiko bei Lebensmittelkontakt (Verschlucken, Allergie).',
+            mineral:  'Mineralablagerung (Kalk): kann Mikroorganismen beherbergen und andere Rückstände verdecken.',
+            biofilm:  'Etablierte Bakterienkolonie: hohes anhaltendes Kontaminationsrisiko.',
+            unknown:  'Ursache zur genauen Risikobewertung identifizieren.',
+          },
         };
         const _lv = _LVB[(typeof currentLang !== 'undefined' && _LVB[currentLang]) ? currentLang : 'fr'];
+        const _riskByCat = _RISQUE_PAR_CATEGORIE[(typeof currentLang !== 'undefined' && _RISQUE_PAR_CATEGORIE[currentLang]) ? currentLang : 'fr'];
+        const _riskLogicLocal = _zc ? (_riskByCat[_domType] || _riskByCat.unknown) : '';
         const _fill = (s, m) => String(s).replace(/\{(\w+)\}/g, (_, k) => (m[k] != null ? m[k] : ''));
-        const _interpText = _zc ? _fill(_lv.interp, { hint: _domHint, n: _zc, pct: _pct }) : _lv.clean;
+        const _interpText = _zc ? _fill(_lv.interp, { hint: _domHint }) : _lv.clean;
         const _recoText = !_zc ? _lv.reco_low
                         : res.riskLevel === 'high' ? _lv.reco_high
                         : res.riskLevel === 'moderate' ? _lv.reco_mid : _lv.reco_low;
@@ -20238,7 +20334,9 @@ const Annotator = (() => {
         };
         res.contextual_reasoning = {
           surface_logic: '',
-          risk_logic: '',
+          /* V190 — risk_logic injecté par catégorie (au lieu de vide).
+             La section "Risque associé" du rapport ne sera plus vide. */
+          risk_logic: _riskLogicLocal,
           what_fluorescence_suggests: _zc ? _domHint : '',
           what_fluorescence_does_not_prove: _lv.caveat,
         };
@@ -23040,10 +23138,22 @@ const Annotator = (() => {
             } else { rq.hidden = true; }
           }
           const seg = document.getElementById('heroSeg');
-          if (seg) { const rl = (res.riskLevel || '').toString().toLowerCase();
-            const _rk = rl === 'high' ? 'high' : (rl === 'mid' || rl === 'moyen' || rl === 'medium') ? 'mid' : 'low';
+          /* V190 — Calcul ROBUSTE du _rk : accepte toutes les variantes que le
+             moteur local OU Claude peuvent renvoyer (high/severe/élevé/grav/…)
+             + fallback sur le score si la chaîne ne matche pas. */
+          let _rk;
+          {
+            const rl = (res.riskLevel || '').toString().toLowerCase();
+            if (/(high|haut|élev|elev|severe|grav|critic)/.test(rl)) _rk = 'high';
+            else if (/(mid|moyen|moder|modér|medium)/.test(rl)) _rk = 'mid';
+            else if (/(low|faible|bas|propre|conform)/.test(rl)) _rk = 'low';
+            else if (typeof res.score === 'number') {
+              _rk = res.score >= 66 ? 'high' : res.score >= 33 ? 'mid' : 'low';
+            } else _rk = 'low';
+          }
+          if (seg) {
             seg.setAttribute('data-risk', _rk);
-            /* V188.8 — Sur #hero on pose data-risk (drive --risk-color via CSS)
+            /* V188.8 / V190 — Sur #hero on pose data-risk (drive --risk-color via CSS)
                + --score-pos (position du marqueur sur la jauge slim Apple Health). */
             try {
               const heroEl = document.getElementById('hero');
