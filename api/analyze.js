@@ -347,9 +347,9 @@ FORMAT DE SORTIE
 Tu DOIS retourner UNIQUEMENT un JSON valide conforme au schéma fourni. Pas de texte hors JSON.
 
 - result.title : identité PROBABLE du signal, pas sa couleur. Ex : "Traces de contact humain accumulées" et non "Signal bleu-cyan détecté".
-- result.interpretation : 1-2 phrases qui répondent à "qu'est-ce que c'est dans CE contexte".
+- result.interpretation : 1 phrase COURTE (une seule ligne à l'écran) qui répond à "qu'est-ce que c'est dans CE contexte". Pas de second énoncé : si tu n'as qu'une chose utile à dire, dis-la en une ligne.
 - contextual_reasoning.surface_logic : 1 phrase décrivant le rôle/usage de la surface.
-- contextual_reasoning.risk_logic : la CHAÎNE de risque (ex : surface → main → aliment).
+- contextual_reasoning.risk_logic : le RISQUE ASSOCIÉ en 1 phrase concise = mécanisme + danger NOMMÉ. Si le signal est organique/biologique, nomme les pathogènes recherchés par les pros, ex : "Nourrit les bactéries : risque de contamination des aliments (Listeria, salmonelle, E. coli)". Si chimique, nomme le danger : résidu ingéré, faux négatif de contrôle d'hygiène. Court, concret, sans jargon.
 - contextual_reasoning.what_fluorescence_suggests : ce que la fluo permet de dire.
 - contextual_reasoning.what_fluorescence_does_not_prove : ce qu'elle ne permet PAS de prouver.
 - recommendation.primary_action : 1 phrase impérative ACTIONNABLE.
@@ -677,7 +677,7 @@ RÈGLE DE COHÉRENCE FINALE
 Avant de produire le JSON, vérifie :
 1. result.title nomme l'IDENTITÉ probable (pas la couleur)
 2. recommendation.primary_action est une ACTION CONCRÈTE à l'impératif
-3. contextual_reasoning.risk_logic décrit la CHAÎNE complète
+3. contextual_reasoning.risk_logic = mécanisme + danger NOMMÉ, concis (pathogènes nommés si organique/biologique : Listeria, salmonelle, E. coli)
 4. La recommandation est PROPORTIONNÉE au risque
 5. Tu n'as PAS affirmé une contamination microbiologique sans confirmation
 6. zones[] est rempli pour la cartographie visuelle
@@ -1062,6 +1062,24 @@ export default async function handler(req, res) {
            (erp, residential, low_risk) on monte à 0.65 pour éviter de
            sur-détecter sur des matériaux inertes. */
         userContextLine = `\nCONTEXTE UTILISATEUR (à intégrer dans la criticité) : établissement de type ${typeFr}.${momentFr}${roleFr} Adapte le niveau de risque, la lecture procédurale et la position normative HACCP à ce cadre. RÈGLE IMPÉRATIVE : ne JAMAIS dicter à l'utilisateur comment faire son métier ; le rôle indique seulement le ton et la priorité de présentation. Reste impartial, synthétique, factuel. Ne demande pas le type d'établissement ni le moment dans missing_context puisqu'ils sont fournis.\n\nSEUIL DE CONFIDENCE ADAPTATIF : surfaces critiques (food_contact, wet_area, critical_clean_area) → liste les zones dès confidence ≥ 0.55 pour priorité sanitaire. Surfaces moins critiques (erp, residential, low_risk) → ne liste que les zones avec confidence ≥ 0.65 pour éviter la sur-détection.${sensorWarning}\n`;
+      }
+    }
+    /* V144 — MOMENT sans secteur : le moment du cliché (avant/après nettoyage)
+       calibre la sévérité du score INDÉPENDAMMENT du secteur. Avant V144 il était
+       perdu si aucun secteur n'était configuré (le cas par défaut) → la modal
+       "avant/après" ne servait à rien pour la majorité. On l'injecte désormais
+       aussi quand SEUL le moment est fourni. Whitelist stricte (clé → libellé
+       fixe), donc pas d'injection de prompt. */
+    if (!userContextLine && userContext && typeof userContext === 'object' && userContext.moment) {
+      const momentLabelsStd = {
+        before_cleaning: "AVANT nettoyage (contrôle initial). Une contamination étendue est attendue à ce stade — le but est de mesurer la charge présente avant intervention. Ne pas pénaliser le score pour la présence de salissures.",
+        after_cleaning: "APRÈS nettoyage (validation d'efficacité). À ce stade la surface devrait être propre. Toute fluorescence résiduelle indique un défaut du protocole de nettoyage. Pénalise sévèrement le score pour toute contamination résiduelle.",
+        routine_check: "contrôle de routine. Vigilance normale, ni laxiste ni alarmiste.",
+        incident: "suite à un incident ou alerte signalée. Lecture renforcée, attention à tout signal de risque.",
+      };
+      const mFr = momentLabelsStd[userContext.moment];
+      if (mFr) {
+        userContextLine = `\nCONTEXTE : Moment du cliché : ${mFr} Adapte la sévérité du score à ce moment du protocole. Ne demande pas le moment dans missing_context puisqu'il est fourni.\n`;
       }
     }
 

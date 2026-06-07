@@ -13,7 +13,7 @@
  * Versionning : bump CACHE_VERSION à chaque déploiement majeur pour purge propre.
  */
 
-const CACHE_VERSION = 'lucens-v135-2026-06-02';
+const CACHE_VERSION = 'lucens-v188-2026-06-07';
 const APP_SHELL_CACHE = `app-shell-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 
@@ -134,7 +134,11 @@ async function networkFirst(req, cacheName) {
   const cache = await caches.open(cacheName);
   try {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 3000);
+    /* V156 — Timeout réseau porté à 6s (était 3s). Sur connexion mobile lente,
+       3s déclenchait trop tôt le repli sur le cache → l'utilisateur restait sur
+       l'ANCIENNE version en cache. Hors-ligne réel : le fetch échoue tout de
+       suite (pas via ce timeout), donc le repli reste instantané. */
+    const timer = setTimeout(() => controller.abort(), 6000);
     const fresh = await fetch(req, { signal: controller.signal });
     clearTimeout(timer);
     if (fresh && fresh.ok) {
