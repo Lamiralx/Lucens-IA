@@ -7040,22 +7040,23 @@ body.has-sw-update .home {
               color .15s var(--ease-out), transform .12s var(--ease-out), box-shadow .15s var(--ease-out);
 }
 .home-btn:active { transform: scale(0.985); }
+/* V201 — Boutons PRO, 100% PLATS : aucune ombre, aucun dégradé (demande
+   répétée). Paire pro classique = REMPLI vs CONTOUR :
+     • Primaire  : aplat teal plein, texte blanc.
+     • Secondaire: blanc, contour teal net 1.5px, texte teal.
+   Hiérarchie franche, nette, sans effet. */
 .home-btn-primary {
   background: var(--accent);
-  color: var(--surface-low);
-  /* élévation douce teal — rend le bouton « plus visible », SANS dégradé */
-  box-shadow: 0 8px 20px -4px rgba(15, 61, 78, 0.30), 0 2px 6px rgba(15, 61, 78, 0.16);
+  color: #fff;
 }
 .home-btn-primary:hover { background: var(--accent-hi); }
-.home-btn-primary:active { box-shadow: 0 3px 10px -2px rgba(15, 61, 78, 0.26); }
 .home-btn-secondary {
-  background: rgba(15, 61, 78, 0.055);
+  background: #fff;
   color: var(--accent);
-  border-color: rgba(15, 61, 78, 0.16);
+  border: 1.5px solid var(--accent);
 }
 .home-btn-secondary:hover {
-  background: rgba(15, 61, 78, 0.09);
-  border-color: rgba(15, 61, 78, 0.28);
+  background: rgba(15, 61, 78, 0.06);
 }
 
 /* ─── V164 — ACCUEIL « application métier » (brief §5-6, §9, §11) ─────────────
@@ -9386,7 +9387,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v200</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v201</div>
         </div>
       </div>
     </div>
