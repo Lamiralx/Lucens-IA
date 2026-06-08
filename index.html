@@ -9389,7 +9389,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v207</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v208</div>
         </div>
       </div>
     </div>
@@ -28195,34 +28195,5 @@ const Annotator = (() => {
   </aside>
 </template>
 
-<!-- V207 — SONDE DE DIAGNOSTIC TEMPORAIRE (bande blanche du bas). Affiche les
-     VRAIES valeurs de l'iPhone (safe-area, position réelle de la barre). À
-     retirer une fois la cause identifiée. -->
-<div id="saDbg" style="position:fixed;top:78px;left:6px;z-index:99999;background:rgba(8,10,16,.9);color:#5ef08a;font:12px/1.55 ui-monospace,Menlo,monospace;padding:9px 11px;border-radius:9px;pointer-events:none;max-width:94vw;white-space:pre;box-shadow:0 6px 22px rgba(0,0,0,.3)">sonde…</div>
-<script>
-(function(){
-  var probe=document.createElement('div');
-  probe.style.cssText='position:fixed;bottom:0;left:0;width:1px;height:env(safe-area-inset-bottom);visibility:hidden;pointer-events:none';
-  document.body.appendChild(probe);
-  function go(){
-    var vh=Math.round(window.innerHeight), bar=document.querySelector('.bottom-bar');
-    var br=bar?bar.getBoundingClientRect():null, cs=bar?getComputedStyle(bar):null;
-    var lab=bar?bar.querySelector('.bb-label,.hdr-ctx-text,.hdr-hist-text'):null, lr=lab?lab.getBoundingClientRect():null;
-    var sa=Math.round(probe.getBoundingClientRect().height);
-    var sd=(window.navigator.standalone===true)||window.matchMedia('(display-mode: standalone)').matches;
-    var el=document.getElementById('saDbg'); if(!el)return;
-    el.textContent=
-      'v207 SONDE\n'+
-      'standalone='+sd+'\n'+
-      'vh='+vh+'  ecran.h='+window.screen.height+'\n'+
-      'safe-area-bas='+sa+'px\n'+
-      'barre.bas='+(br?Math.round(br.bottom):'?')+'  BLANC sous barre='+(br?(vh-Math.round(br.bottom)):'?')+'px\n'+
-      'barre.h='+(br?Math.round(br.height):'?')+'  padBas='+(cs?cs.paddingBottom:'?')+'\n'+
-      'BLANC sous labels='+(lr?(vh-Math.round(lr.bottom)):'?')+'px';
-  }
-  setTimeout(go,900); window.addEventListener('resize',go);
-  window.addEventListener('orientationchange',function(){setTimeout(go,400);});
-})();
-</script>
 </body>
 </html>
