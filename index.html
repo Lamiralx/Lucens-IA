@@ -9521,7 +9521,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v216</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v217</div>
         </div>
       </div>
     </div>
@@ -11473,6 +11473,55 @@ body.lv-open { overflow: hidden; touch-action: none; }
       .home-accordions .acc-head {
         padding: 14px 14px !important;
         font-size: 14.5px !important;
+      }
+
+      /* ═══════════ V217 — ACCUEIL PAYSAGE : 2 colonnes (mockup-paysage.html) ═══════════
+         STRICTEMENT en paysage (téléphone, hauteur réduite) : boutons à GAUCHE,
+         « Dernières inspections » + « En savoir plus » à DROITE, pleine largeur.
+         Le portrait n'est PAS touché. Grille (pas de wrapper) : la colonne gauche
+         (actions) s'étend sur les 2 rangées, la droite empile histo + accordéons. */
+      @media (orientation: landscape) and (max-height: 540px) {
+        /* Le repli « écran court » (@media max-height:560) passe .upload-hub en
+           position:static (page scrollable). En PAYSAGE on REFIXE la coque pour
+           garder une mise en page 2 colonnes qui tient à l'écran (pas de scroll). */
+        .upload-hub {
+          position: fixed !important;
+          top: calc(74px + env(safe-area-inset-top, 0px)) !important;
+          bottom: var(--bottom-bar-total, 46px) !important;
+          height: auto !important; padding: 0 !important; overflow: hidden !important;
+        }
+        body.has-offline-banner .upload-hub { top: calc(74px + var(--offline-banner-height, 36px) + env(safe-area-inset-top, 0px)) !important; }
+        .upload-hub-content { height: 100% !important; min-height: 0 !important; overflow: hidden !important; flex: 1 1 auto !important; }
+        .home {
+          display: grid !important;
+          grid-template-columns: 45% 1fr !important;
+          grid-template-areas: "actions history" "actions accordions" !important;
+          grid-template-rows: minmax(0, auto) minmax(0, 1fr) !important;
+          column-gap: 24px !important; row-gap: 8px !important;
+          align-content: stretch !important; align-items: stretch !important;
+          height: 100% !important; min-height: 0 !important; overflow: hidden !important;
+          max-width: none !important; width: 100% !important;
+          padding: 8px 10px 6px !important;
+        }
+        .home-actions {
+          grid-area: actions !important; align-self: center !important;
+          display: flex !important; flex-direction: column !important; gap: 11px !important;
+          border-right: 1px solid var(--hairline) !important; padding-right: 24px !important;
+          min-width: 0 !important;
+        }
+        .home-btn { height: 50px !important; font-size: 14.5px !important; }
+        #homeHistory.home-history {
+          grid-area: history !important; align-self: start !important;
+          min-height: 0 !important; max-height: 124px !important;
+          display: flex !important; flex-direction: column !important; overflow: hidden !important;
+        }
+        .home-history-scroll { min-height: 0 !important; max-height: 92px !important; overflow-y: auto !important; flex: 0 1 auto !important; }
+        .home-accordions {
+          grid-area: accordions !important; align-self: stretch !important;
+          min-height: 0 !important; overflow-y: auto !important;
+        }
+        .home-accordions .home-more-label { margin: 2px 2px 6px !important; }
+        .home-footer { display: none !important; }
       }
 
       /* ─── V188.2 — Compactage MOBILE (≤500px) : tout doit tenir à l'écran ───
