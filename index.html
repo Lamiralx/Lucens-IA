@@ -1018,13 +1018,14 @@ body.has-offline-banner .upload-hub {
    block qui casserait position:fixed).
    ═══════════════════════════════════════════════════════════════════ */
 :root {
-  --bottom-bar-h: 46px;   /* V202 — zone tactile des onglets (légèrement resserrée) */
-  /* V202 — La bande blanche sous les onglets (signalée plusieurs fois) = l'inset
-     « home indicator » iPhone réservé sous la barre. On le RÉDUIT au strict
-     minimum : on ne garde plus que ~8px de dégagement pour l'indicateur (au lieu
-     de 16px) → les onglets collent quasiment au bas de l'écran, fini le ~1 cm
-     de blanc gâché. UN SEUL token partagé par la barre ET tout ce qui s'aligne. */
-  --bottom-bar-safe: max(4px, calc(env(safe-area-inset-bottom, 0px) - 26px));
+  --bottom-bar-h: 42px;   /* V206 — rangée d'onglets resserrée (moins de blanc interne) */
+  /* V206 — Bande blanche sous les onglets = inset « home indicator » iPhone.
+     Audit (offsetParent=viewport, traps=[], whiteBelowBar=0) : la barre touche
+     bien le bas, le blanc = 8px de padding + 7px de centrage interne. On réduit
+     les DEUX : dégagement home-indicator au plancher praticable (~4px, juste de
+     quoi ne pas chevaucher le trait) + rangée plus courte (centrage resserré).
+     On ne peut pas descendre à 0 : iOS réserve cette zone dans TOUTE app. */
+  --bottom-bar-safe: max(2px, calc(env(safe-area-inset-bottom, 0px) - 30px));
   --bottom-bar-total: calc(var(--bottom-bar-h) + var(--bottom-bar-safe));
 }
 .bottom-bar {
@@ -1061,7 +1062,7 @@ body.has-offline-banner .upload-hub {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 2px;
   height: var(--bottom-bar-h);
   min-height: var(--bottom-bar-h);
   width: auto !important;
@@ -9388,7 +9389,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v205</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v206</div>
         </div>
       </div>
     </div>
