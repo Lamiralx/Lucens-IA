@@ -9378,7 +9378,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v198</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v199</div>
         </div>
       </div>
     </div>
@@ -11419,11 +11419,17 @@ body.lv-open { overflow: hidden; touch-action: none; }
         text-transform: uppercase !important; letter-spacing: .055em !important;
         color: #6B7280 !important; margin: 0 0 6px !important;
       }
-      /* Titre Origine : unique ligne mise en avant, EN ENCRE (plus d'orange). */
+      /* Titre Origine : unique ligne mise en avant. V199 — sa COULEUR = le niveau
+         de risque (demande utilisateur) : vert faible / ambre modéré / rouge élevé,
+         EXACTEMENT les teintes du score et de la jauge → code couleur cohérent et
+         lisible d'un coup d'œil. Encre par défaut tant que le risque n'est pas posé. */
       #results.visible .lv-verdict-title {
         color: #14171C !important; font-weight: 700 !important;
         font-size: 17px !important; line-height: 1.3 !important; margin: 0 0 5px !important;
       }
+      #results.visible .lucens-verdict-card.risk-low  .lv-verdict-title { color: #15803D !important; }
+      #results.visible .lucens-verdict-card.risk-mid  .lv-verdict-title { color: #C2710C !important; }
+      #results.visible .lucens-verdict-card.risk-high .lv-verdict-title { color: #D92D20 !important; }
       #results.visible .lv-verdict-confidence { display: none !important; }
       /* Les 3 PHRASES de contenu : STRICTEMENT identiques, encre foncée lisible. */
       #results.visible .lv-verdict-interpretation,
