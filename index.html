@@ -2,7 +2,7 @@
 <html lang="fr" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#F4F6F8">
 <!-- Thème : applique le choix sauvegardé AVANT le rendu (anti-flash) -->
 <script>
@@ -137,7 +137,7 @@ if ('serviceWorker' in navigator) {
 <meta name="application-name" content="Lucens IA">
 <meta name="apple-mobile-web-app-title" content="Lucens IA">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="mobile-web-app-capable" content="yes">
 
 <!-- Open Graph / Facebook / LinkedIn / WhatsApp -->
@@ -458,6 +458,9 @@ html, body {
   /* iOS Safari : 100% pour body + min-height: 100dvh sur .app pour
      gérer dynamiquement la barre d'URL iOS qui fait varier la viewport */
   height: 100%;
+  /* V215 — JAMAIS de zoom (demande) : double-tap zoom supprimé app-wide.
+     Complète maximum-scale=1/user-scalable=no du viewport. */
+  touch-action: manipulation;
   background: var(--surface-page);
   color: var(--ink-secondary);
   font-family: var(--font-body);
@@ -1264,14 +1267,14 @@ body.has-offline-banner .upload-hub {
 .settings-lang-grid .lang-btn {
   display: flex; align-items: center; gap: 9px;
   width: 100%; padding: 12px; margin: 0; min-height: 0;
-  background: #fff; border: 1px solid var(--border); border-radius: 12px;
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px;
   cursor: pointer; position: relative;
 }
-.settings-lang-grid .lang-btn:hover { border-color: var(--border-hi); background: #fff; }
+.settings-lang-grid .lang-btn:hover { border-color: var(--border-hi); background: var(--surface-mid); }
 .settings-lang-grid .lang-btn .lang-flag { width: 23px; height: 16px; border-radius: 3px; flex-shrink: 0; box-shadow: 0 0 0 1px rgba(0,0,0,.12); }
 .settings-lang-grid .lang-btn .lang-name { font-size: 13.5px; font-weight: 600; color: var(--ink-primary); }
 .settings-lang-grid .lang-btn .lang-check { margin-left: auto; color: var(--accent); display: none; width: 16px; height: 16px; flex-shrink: 0; }
-.settings-lang-grid .lang-btn.active { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: #fff; }
+.settings-lang-grid .lang-btn.active { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--bg-2); }
 .settings-lang-grid .lang-btn.active .lang-check { display: block; }
 .settings-theme-text { display: flex; flex-direction: column; gap: 2px; text-align: left; }
 .settings-theme-title { font-size: 14.5px; font-weight: 600; color: var(--ink-primary); }
@@ -5724,7 +5727,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 .ctx-overlay .ctx-dot .ctx-dot-num {
   display: inline-flex; align-items: center; justify-content: center;
   width: 22px; height: 22px; border-radius: 50%;
-  border: 1.5px solid var(--border); background: #fff; color: var(--ink-tertiary);
+  border: 1.5px solid var(--border); background: var(--bg-2); color: var(--ink-tertiary);
   font: 800 11px/1 var(--font-mono); transition: all .16s ease;
 }
 .ctx-overlay .ctx-dot-label { font-size: 12px; font-weight: 600; color: var(--ink-tertiary); }
@@ -5736,21 +5739,21 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 .ctx-overlay .ctx-dot[data-state="answered"]::after { content: none !important; }
 
 /* Options : pastille radio visible à gauche (style mockup .opt). */
-.ctx-overlay .ctx-opt-pill { position: relative; padding: 12px 14px 12px 42px; background: #fff; }
+.ctx-overlay .ctx-opt-pill { position: relative; padding: 12px 14px 12px 42px; background: var(--bg-2); }
 .ctx-overlay .ctx-opt-pill::before {
   content: ''; position: absolute; left: 14px; top: 13px;
   width: 19px; height: 19px; border-radius: 50%;
-  border: 2px solid #cbd5e1; background: #fff;
+  border: 2px solid var(--border-hi); background: transparent;
   transition: border-color .15s, background .15s;
 }
 .ctx-overlay .ctx-opt input:checked + .ctx-opt-pill {
   border-color: var(--accent) !important;
   box-shadow: inset 0 0 0 1px var(--accent);
-  background: #fff !important;
+  background: var(--bg-2) !important;
 }
 .ctx-overlay .ctx-opt input:checked + .ctx-opt-pill::before {
   border-color: var(--accent);
-  background: radial-gradient(circle at center, var(--accent) 0 4.5px, #fff 5.5px);
+  background: radial-gradient(circle at center, var(--accent) 0 4.5px, transparent 5.5px);
 }
 .ctx-overlay .ctx-opt-title { font-size: 14px; }
 
@@ -9498,7 +9501,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v214</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v215</div>
         </div>
       </div>
     </div>
