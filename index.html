@@ -9529,7 +9529,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v220</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v221</div>
         </div>
       </div>
     </div>
@@ -11516,7 +11516,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
           align-content: stretch !important; align-items: stretch !important;
           height: 100% !important; min-height: 0 !important; overflow: hidden !important;
           max-width: none !important; width: 100% !important;
-          padding: 8px 10px 6px !important;
+          padding: 8px 12px 12px !important;
         }
         .home-actions {
           grid-area: actions !important; align-self: center !important;
@@ -11527,13 +11527,16 @@ body.lv-open { overflow: hidden; touch-action: none; }
         .home-btn { height: 50px !important; font-size: 14.5px !important; }
         #homeHistory.home-history {
           grid-area: history !important; align-self: start !important;
-          min-height: 0 !important; max-height: 124px !important;
+          min-height: 0 !important; max-height: 150px !important;
           display: flex !important; flex-direction: column !important; overflow: hidden !important;
         }
-        .home-history-scroll { min-height: 0 !important; max-height: 92px !important; overflow-y: auto !important; flex: 0 1 auto !important; }
+        .home-history-scroll { min-height: 0 !important; max-height: 116px !important; overflow-y: auto !important; flex: 0 1 auto !important; }
+        /* Écart NET avec « En savoir plus » (le row-gap ne suffisait pas → elles
+           se touchaient) + l'accordéon défile dans son cadre, ne déborde plus. */
         .home-accordions {
           grid-area: accordions !important; align-self: stretch !important;
           min-height: 0 !important; overflow-y: auto !important;
+          margin-top: 14px !important; border-top: 1px solid var(--hairline) !important; padding-top: 12px !important;
         }
         .home-accordions .home-more-label { margin: 2px 2px 6px !important; }
         .home-footer { display: none !important; }
