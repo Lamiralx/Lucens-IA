@@ -9388,7 +9388,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v202</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v203</div>
         </div>
       </div>
     </div>
@@ -11462,32 +11462,32 @@ body.lv-open { overflow: hidden; touch-action: none; }
         box-shadow: 0 1px 2px rgba(0,0,0,.10) !important;
       }
 
-      /* ════════════ V197 — ACCUEIL : remplir l'espace bas + nav collée en bas ════════════
-         Mesuré (iPhone émulé) : un blanc de ~66px (et + sur grands écrans)
-         entre le bas du contenu et la barre, car .home-history était bloquée
-         en flex:0 0 auto → le contenu restait collé en haut. Correctif : la carte
-         « Dernières inspections » (3 lignes) ABSORBE l'espace libre et descend
-         jusqu'à la barre. Les lignes gardent leur style, réparties dans la carte
-         agrandie (space-evenly). Fonctionne sur toutes les tailles d'écran.        */
-      #homeHistory.home-history {
-        flex: 1 1 auto !important;
-        min-height: 0 !important;
-        display: flex !important;
-        flex-direction: column !important;
-      }
-      .home-history-scroll {
-        flex: 1 1 auto !important;
-        display: flex !important;
-        flex-direction: column !important;
-        max-height: none !important;
-      }
-      .home-history-body {
-        flex: 1 1 auto !important;
-        display: flex !important;
-        flex-direction: column !important;
+      /* ════════════ V203 — ACCUEIL : RÉPARTIR l'espace entre les blocs ════════════
+         Demande utilisateur : les boutons sont trop près de l'en-tête et les blocs
+         sont tassés en haut. Au lieu que la carte inspections absorbe tout l'espace
+         (V197), on DISTRIBUE l'espace libre de .home également : header→boutons,
+         boutons→inspections, inspections→en savoir plus, +bas → l'accueil occupe
+         tout l'écran, aéré. La carte inspections reprend une hauteur NATURELLE
+         (3 lignes), et peut se resserrer si l'écran est très court. */
+      .home {
         justify-content: space-evenly !important;
         gap: 0 !important;
+        padding-top: 6px !important;
       }
+      /* Cause racine du « blanc en bas » (2 fautifs) :
+         1) .home-accordions avait flex:1 1 auto → il GROSSISSAIT pour absorber
+            tout l'espace (en-têtes en haut, reste de la boîte = vide).
+         2) .home-footer avait margin-top:auto → il ASPIRAIT l'espace libre vers
+            le bas (contenu tassé en haut, gros vide juste au-dessus du footer).
+         Les deux annulaient le space-evenly. On les neutralise → l'espace se
+         répartit enfin également entre les blocs. */
+      .home-accordions { flex: 0 0 auto !important; }
+      /* Footer = micro-label de version : masqué sur l'accueil (la version est dans
+         Réglages, demande utilisateur) → la répartition se fait sur 3 blocs nets. */
+      .home-footer { display: none !important; }
+      #homeHistory.home-history { flex: 0 1 auto !important; min-height: 0 !important; }
+      .home-history-scroll { flex: 0 1 auto !important; max-height: none !important; }
+      .home-history-body { display: flex !important; flex-direction: column !important; gap: 0 !important; }
       </style>
       <!-- V187 — bloc .results-hdr (en-tête LUCENS dupliqué + croix ✕) retiré. -->
       <!-- HERO SCORE — version épurée -->
