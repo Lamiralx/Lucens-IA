@@ -1022,13 +1022,11 @@ body.has-offline-banner .upload-hub {
    ═══════════════════════════════════════════════════════════════════ */
 :root {
   --bottom-bar-h: 42px;   /* V206 — rangée d'onglets resserrée (moins de blanc interne) */
-  /* V206 — Bande blanche sous les onglets = inset « home indicator » iPhone.
-     Audit (offsetParent=viewport, traps=[], whiteBelowBar=0) : la barre touche
-     bien le bas, le blanc = 8px de padding + 7px de centrage interne. On réduit
-     les DEUX : dégagement home-indicator au plancher praticable (~4px, juste de
-     quoi ne pas chevaucher le trait) + rangée plus courte (centrage resserré).
-     On ne peut pas descendre à 0 : iOS réserve cette zone dans TOUTE app. */
-  --bottom-bar-safe: max(2px, calc(env(safe-area-inset-bottom, 0px) - 30px));
+  /* V219 — Onglets façon barre Apple : le fond teal remplit la zone « home
+     indicator » et les onglets se posent AU-DESSUS du trait (ils ne le touchent
+     plus). Dégagement = quasi tout l'inset iOS (au lieu du ~4px de V206 qui les
+     collait au trait). Le dark teal sous les onglets = fond de barre, pas du blanc. */
+  --bottom-bar-safe: max(14px, calc(env(safe-area-inset-bottom, 0px) - 8px));
   --bottom-bar-total: calc(var(--bottom-bar-h) + var(--bottom-bar-safe));
 }
 .bottom-bar {
@@ -5903,13 +5901,16 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   cursor: pointer;
   transition: all .15s ease;
 }
+/* V219 — « Plus tard » plus VISIBLE (demande) : bouton secondaire tonal lisible
+   (texte foncé + fond léger + bordure nette) au lieu du fantôme gris clair. */
 .ctx-skip {
   flex: 0 0 auto;
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--ink-tertiary);
+  background: var(--surface-mid);
+  border: 1px solid var(--border-hi);
+  color: var(--ink-secondary);
+  font-weight: 600;
 }
-.ctx-skip:hover { color: var(--ink-primary); background: var(--surface-mid); }
+.ctx-skip:hover { color: var(--ink-primary); background: var(--surface-low); border-color: var(--ink-tertiary); }
 .ctx-submit {
   flex: 1;
   background: var(--accent);
@@ -9521,7 +9522,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v218</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v219</div>
         </div>
       </div>
     </div>
