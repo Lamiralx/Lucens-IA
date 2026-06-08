@@ -9378,7 +9378,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v197</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v198</div>
         </div>
       </div>
     </div>
@@ -16035,6 +16035,107 @@ const Annotator = (() => {
     ctx.restore();
   }
 
+  /* V198 — Lissage passe-bas (moyenne glissante) d'une boucle FERMÉE de points.
+     Dissout l'escalier de quantification de la grille → courbe douce qui suit
+     la forme globale de la tache (sans le crénelage cellule par cellule). */
+  function _smoothPoly(pts, win) {
+    const n = pts.length;
+    if (n < win * 2 || win < 1) return pts;
+    const half = Math.floor(win / 2);
+    const out = new Array(n);
+    for (let i = 0; i < n; i++) {
+      let sx = 0, sy = 0;
+      for (let k = -half; k <= half; k++) {
+        const p = pts[((i + k) % n + n) % n];
+        sx += p[0]; sy += p[1];
+      }
+      out[i] = [sx / (half * 2 + 1), sy / (half * 2 + 1)];
+    }
+    return out;
+  }
+
+  /* V198 — Lissage Chaikin d'une boucle de points (arrondit les angles). */
+  function _chaikin(pts, iters) {
+    for (let it = 0; it < iters; it++) {
+      const n = pts.length;
+      if (n < 3) break;
+      const out = [];
+      for (let i = 0; i < n; i++) {
+        const p = pts[i], q = pts[(i + 1) % n];
+        out.push([p[0] * 0.75 + q[0] * 0.25, p[1] * 0.75 + q[1] * 0.25]);
+        out.push([p[0] * 0.25 + q[0] * 0.75, p[1] * 0.25 + q[1] * 0.75]);
+      }
+      pts = out;
+    }
+    return pts;
+  }
+
+  /* V198 — CONTOUR LISSE QUI ÉPOUSE LA FORME RÉELLE de la fluorescence
+     (style A demandé : « le tracé épouse la zone, extrêmement précis »).
+     On part des cellules fluorescentes déjà détectées et filtrées (pixel-précis,
+     côté client) : on extrait les arêtes frontière (cellule pleine ↔ vide), on
+     les chaîne en boucles fermées, puis on lisse (Chaikin) → un contour net qui
+     suit la silhouette de la tache, pas un cadre/cercle/équerre arbitraire. */
+  function smoothCellContour(ctx, cells, W, H) {
+    if (!cells || !cells.length) return;
+    const cw = cells[0].w, ch = cells[0].h;
+    if (!cw || !ch) return;
+    const ox = cells[0].x - cells[0].cx * cw;   /* origine pixel (robuste à un offset de grille) */
+    const oy = cells[0].y - cells[0].cy * ch;
+    const occ = new Set(cells.map(c => c.cx + ',' + c.cy));
+    /* Arêtes frontière, orientées sens horaire autour de chaque cellule pleine. */
+    const edges = [];
+    for (const c of cells) {
+      const i = c.cx, j = c.cy;
+      if (!occ.has(i + ',' + (j - 1))) edges.push([[i, j], [i + 1, j]]);
+      if (!occ.has((i + 1) + ',' + j)) edges.push([[i + 1, j], [i + 1, j + 1]]);
+      if (!occ.has(i + ',' + (j + 1))) edges.push([[i + 1, j + 1], [i, j + 1]]);
+      if (!occ.has((i - 1) + ',' + j)) edges.push([[i, j + 1], [i, j]]);
+    }
+    if (!edges.length) return;
+    /* Chaînage des arêtes en boucles fermées (par point de départ). */
+    const byStart = new Map();
+    for (const e of edges) {
+      const k = e[0][0] + ',' + e[0][1];
+      let a = byStart.get(k); if (!a) { a = []; byStart.set(k, a); }
+      a.push(e);
+    }
+    const used = new Set();
+    const loops = [];
+    for (const e0 of edges) {
+      if (used.has(e0)) continue;
+      const loop = [];
+      let cur = e0, guard = 0;
+      while (cur && !used.has(cur) && guard++ < 200000) {
+        used.add(cur);
+        loop.push(cur[0]);
+        const cands = byStart.get(cur[1][0] + ',' + cur[1][1]);
+        cur = cands ? cands.find(x => !used.has(x)) : null;
+      }
+      if (loop.length >= 3) loops.push(loop);
+    }
+    ctx.save();
+    ctx.strokeStyle = CARTO_COLOR.stroke;
+    ctx.lineWidth = Math.max(2.5, Math.round(Math.min(W, H) * 0.0042));
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+    ctx.shadowBlur = Math.max(1.5, Math.round(Math.min(W, H) * 0.003));
+    for (const loop of loops) {
+      let pts = loop.map(p => [ox + p[0] * cw, oy + p[1] * ch]);
+      /* passe-bas (fenêtre ∝ périmètre) pour effacer l'escalier, puis Chaikin
+         léger pour la rondeur finale → contour lisse qui épouse la tache. */
+      pts = _smoothPoly(pts, Math.max(5, Math.round(pts.length / 11)));
+      pts = _chaikin(pts, 2);
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (let k = 1; k < pts.length; k++) ctx.lineTo(pts[k][0], pts[k][1]);
+      ctx.closePath();
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
   function drawGrid(canvas, imageData, grid, W, H) {
     canvas.width = W; canvas.height = H;
     const ctx = canvas.getContext('2d');
@@ -16382,37 +16483,22 @@ const Annotator = (() => {
          dans le tableau. */
       const _cells = [];
       for (const [, cells] of activeCellsByType) { for (const c of cells) _cells.push(c); }
-      /* V190 — CHOIX DE RENDU CARTO selon le mode :
-         - aiMode (en ligne, IA Claude a validé les zones) : on dessine UNIQUEMENT
-           les bbox arrondies des zones IA (contour propre type rounded rect).
-           Le contour pixel-précis suit la forme des cellules actives → sur une
-           vraie photo bruitée, ça produit un rendu "spotty" (l'utilisateur l'a
-           remonté en V189 sur photo terrain). Les bbox IA sont stables et
-           lisibles. C'est aussi la forme validée dans la maquette V188.8.
-         - !aiMode (offline, heuristique pure) : on garde le contour pixel-précis
-           historique (V145) avec le garde-fou V155 contre la sur-détection. */
+      /* V198 — RENDU CARTO UNIFIÉ (en ligne IA ET hors-ligne) : CONTOUR LISSE
+         qui ÉPOUSE LA FORME RÉELLE de la fluorescence (style A demandé). La
+         précision vient de la détection pixel CLIENT ; en mode IA, le veto bbox
+         a déjà restreint _cells aux SEULES zones validées par Claude → contour
+         précis ET sans bruit hors-zone. L'API ne limite donc en rien la
+         précision : elle valide QUELLES zones sont réelles, le client en trace
+         la silhouette exacte. (Avant V198 : on retombait sur des bbox/équerres
+         pour éviter le bruit — mauvais compromis, le bruit est déjà filtré.)
+         Garde-fou V155 conservé (couverture > 40% = voile → on ne trace rien). */
       const _gridTotal = (grid && grid.length) ? grid.length : (128 * 128);
-      if (aiMode) {
-        /* Mode IA : bbox arrondies des zones validées (non-artefact). Propre. */
-        const _aiZones = (zones || []).filter(z =>
-          z && z.artifact_rejection !== true &&
-          typeof z.x === 'number' && typeof z.y === 'number' &&
-          typeof z.w === 'number' && typeof z.h === 'number');
-        if (_aiZones.length) {
-          strokeBboxContours(ctx, _aiZones, W, H);
-          _cartoPainted = true;
-        }
-      } else {
-        /* Mode local pur : pixel-précis avec garde-fou V155 (couverture > 40%
-           = voile uniforme mal détecté → on ne trace rien). */
-        const _overCover = _cells.length > _gridTotal * 0.40;
-        if (!_overCover) {
-          const _keySet = new Set(_cells.map(c => c.cx + ',' + c.cy));
-          strokeCartoContour(ctx, _cells, _keySet, W, H);
-          if (_cells.length) _cartoPainted = true;
-        } else {
-          console.warn('[V155 carto] couverture ' + Math.round(_cells.length / _gridTotal * 100) + '% > 40% en local → voile uniforme probable, carto supprimée (photo seule).');
-        }
+      const _overCover = _cells.length > _gridTotal * 0.40;
+      if (_cells.length && !_overCover) {
+        smoothCellContour(ctx, _cells, W, H);
+        _cartoPainted = true;
+      } else if (_overCover) {
+        console.warn('[V155 carto] couverture ' + Math.round(_cells.length / _gridTotal * 100) + '% > 40% → voile uniforme probable, carto supprimée (photo seule).');
       }
     }
 
