@@ -1018,12 +1018,13 @@ body.has-offline-banner .upload-hub {
    block qui casserait position:fixed).
    ═══════════════════════════════════════════════════════════════════ */
 :root {
-  --bottom-bar-h: 48px;   /* V170 — zone tactile des onglets */
-  /* Marge sous les onglets : on consomme l'excédent de l'inset iPhone pour
-     ramener les onglets plus bas (min 6px), tout en gardant ~16px pour le home
-     indicator. UN SEUL token partagé par la barre ET tout ce qui s'aligne dessus
-     (pages, contenu, carte d'erreur) → plus de désync barre/contenu. */
-  --bottom-bar-safe: max(6px, calc(env(safe-area-inset-bottom, 0px) - 16px));
+  --bottom-bar-h: 46px;   /* V202 — zone tactile des onglets (légèrement resserrée) */
+  /* V202 — La bande blanche sous les onglets (signalée plusieurs fois) = l'inset
+     « home indicator » iPhone réservé sous la barre. On le RÉDUIT au strict
+     minimum : on ne garde plus que ~8px de dégagement pour l'indicateur (au lieu
+     de 16px) → les onglets collent quasiment au bas de l'écran, fini le ~1 cm
+     de blanc gâché. UN SEUL token partagé par la barre ET tout ce qui s'aligne. */
+  --bottom-bar-safe: max(4px, calc(env(safe-area-inset-bottom, 0px) - 26px));
   --bottom-bar-total: calc(var(--bottom-bar-h) + var(--bottom-bar-safe));
 }
 .bottom-bar {
@@ -9387,7 +9388,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v201</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v202</div>
         </div>
       </div>
     </div>
