@@ -1156,6 +1156,33 @@ body.has-offline-banner .upload-hub {
 .bottom-bar .bb-settings-btn svg { color: var(--ink-secondary) !important; }
 .bottom-bar .bb-settings-btn .bb-label { color: var(--ink-tertiary); }
 
+/* ════════════ V212 — BARRE DU BAS : surface TEAL FONCÉ (demande utilisateur) ════════════
+   Avant : barre BLANCHE → se fondait dans le contenu blanc, onglets peu lisibles
+   (gris clair sur blanc). Maintenant : surface teal foncé de la marque (accordée
+   au logo LUCENS + au bouton « Analyser en direct ») → onglets clairs TRÈS
+   visibles, barre clairement identifiée comme zone de navigation. */
+.bottom-bar {
+  background: #0F3D4E !important;
+  border-top: 1px solid rgba(255,255,255,0.10) !important;
+  box-shadow: 0 -8px 24px -14px rgba(12,14,19,0.40) !important;
+  backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+}
+/* Onglets INACTIFS : clairs, bien lisibles sur le teal. */
+.bottom-bar .bb-item,
+.bottom-bar .bb-item svg,
+.bottom-bar .bb-item .bb-label,
+.bottom-bar .bb-item .hdr-hist-text,
+.bottom-bar .bb-item .hdr-ctx-text,
+.bottom-bar .bb-settings-btn svg,
+.bottom-bar .bb-settings-btn .bb-label { color: rgba(255,255,255,0.76) !important; }
+/* Onglet ACTIF : blanc plein + 600 (contraste net avec les inactifs). */
+.bottom-bar .bb-item.is-active,
+.bottom-bar .bb-item.is-active svg,
+.bottom-bar .bb-item.is-active .bb-label,
+.bottom-bar .bb-item.is-active .hdr-hist-text,
+.bottom-bar .bb-item.is-active .hdr-ctx-text { color: #FFFFFF !important; font-weight: 600 !important; }
+.bottom-bar .lang-current-code { color: rgba(255,255,255,0.88) !important; }
+
 .settings-overlay {
   position: fixed; inset: 0; z-index: 60;
   display: flex; align-items: flex-end; justify-content: center;
@@ -9389,7 +9416,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v211</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v212</div>
         </div>
       </div>
     </div>
