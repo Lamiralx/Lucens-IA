@@ -9521,7 +9521,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v217</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v218</div>
         </div>
       </div>
     </div>
@@ -11533,6 +11533,10 @@ body.lv-open { overflow: hidden; touch-action: none; }
         .home-hero { gap: 6px !important; }
         .home-title, .home-tagline { font-size: 14px !important; line-height: 1.35 !important; }
         .home-actions { gap: 9px !important; }
+        /* V218 — Boutons « un tout petit peu trop bas » : on les remonte d'un cran
+           (réduit l'espace au-dessus que space-evenly plaçait sous l'en-tête),
+           sans casser la répartition (cartes fixes + écran occupé). */
+        .home-actions { margin-top: -18px !important; }
         /* V200 — boutons élargis aussi sur mobile (étaient 48px, trop discrets). */
         .home-btn { height: 56px !important; font-size: 15.5px !important; }
         .home-benefits { font-size: 11.5px !important; margin: 4px 0 6px !important; }
