@@ -5675,6 +5675,59 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   color: var(--ink-tertiary);
   line-height: 1.3;
 }
+
+/* ════════════ V213 — POP-UP CONTEXTE aligné sur mockup-popups.html ════════════
+   Demande : pop-up Contexte « exactement identique » au mockup.
+   • En-tête épuré (pas de sélecteur de langue — la langue est dans Réglages).
+   • Stepper « 1 Secteur — 2 Rôle » : pastilles numérotées + libellés + barre.
+   • Options : pastille radio visible à gauche + état sélectionné teal sur blanc. */
+.ctx-overlay .ctx-lang-dropdown { display: none !important; }
+/* Navigation par le footer (Suivant/Enregistrer) + dots cliquables → on masque
+   les boutons Précédent/Suivant du bandeau d'étapes (épuré comme le mockup). */
+.ctx-overlay .ctx-back, .ctx-overlay .ctx-next { display: none !important; }
+.ctx-overlay .ctx-eyebrow { color: var(--ink-tertiary) !important; }
+.ctx-overlay .ctx-title { font-weight: 800 !important; }
+
+/* Stepper numéroté + libellés + barre de liaison. */
+.ctx-overlay .ctx-dots { display: flex; align-items: center; gap: 9px; width: 100%; }
+.ctx-overlay .ctx-dot {
+  width: auto; height: auto; min-height: 0;
+  border: 0 !important; background: transparent !important;
+  display: inline-flex; align-items: center; gap: 7px; padding: 0; transform: none !important;
+}
+.ctx-overlay .ctx-dot .ctx-dot-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 1.5px solid var(--border); background: #fff; color: var(--ink-tertiary);
+  font: 800 11px/1 var(--font-mono); transition: all .16s ease;
+}
+.ctx-overlay .ctx-dot-label { font-size: 12px; font-weight: 600; color: var(--ink-tertiary); }
+.ctx-overlay .ctx-dot-bar { flex: 1; height: 1.5px; background: var(--border); border-radius: 1px; }
+.ctx-overlay .ctx-dot[data-state="current"] .ctx-dot-num,
+.ctx-overlay .ctx-dot[data-state="answered"] .ctx-dot-num { background: var(--accent); border-color: var(--accent); color: #fff; }
+.ctx-overlay .ctx-dot[data-state="current"] .ctx-dot-label,
+.ctx-overlay .ctx-dot[data-state="answered"] .ctx-dot-label { color: var(--ink-primary); }
+.ctx-overlay .ctx-dot[data-state="answered"]::after { content: none !important; }
+
+/* Options : pastille radio visible à gauche (style mockup .opt). */
+.ctx-overlay .ctx-opt-pill { position: relative; padding: 12px 14px 12px 42px; background: #fff; }
+.ctx-overlay .ctx-opt-pill::before {
+  content: ''; position: absolute; left: 14px; top: 13px;
+  width: 19px; height: 19px; border-radius: 50%;
+  border: 2px solid #cbd5e1; background: #fff;
+  transition: border-color .15s, background .15s;
+}
+.ctx-overlay .ctx-opt input:checked + .ctx-opt-pill {
+  border-color: var(--accent) !important;
+  box-shadow: inset 0 0 0 1px var(--accent);
+  background: #fff !important;
+}
+.ctx-overlay .ctx-opt input:checked + .ctx-opt-pill::before {
+  border-color: var(--accent);
+  background: radial-gradient(circle at center, var(--accent) 0 4.5px, #fff 5.5px);
+}
+.ctx-overlay .ctx-opt-title { font-size: 14px; }
+
 .ctx-sector {
   width: 100%;
   padding: 10px 12px;
@@ -9416,7 +9469,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v212</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v213</div>
         </div>
       </div>
     </div>
@@ -12100,10 +12153,11 @@ body.lv-open { overflow: hidden; touch-action: none; }
              Dot vert = répondu, dot ambre = en cours, dot gris = non répondu. -->
         <div class="ctx-dots" id="ctxDots" role="tablist" data-i18n-aria-label="ctx_steps_aria" aria-label="Étapes">
           <button type="button" class="ctx-dot" data-step="0" role="tab" data-i18n-aria-label="ctx_step1_aria" aria-label="Question 1">
-            <span class="ctx-dot-num">1</span>
+            <span class="ctx-dot-num">1</span><span class="ctx-dot-label" data-i18n="ctx_step1_label">Secteur</span>
           </button>
+          <span class="ctx-dot-bar" aria-hidden="true"></span>
           <button type="button" class="ctx-dot" data-step="1" role="tab" data-i18n-aria-label="ctx_step2_aria" aria-label="Question 2">
-            <span class="ctx-dot-num">2</span>
+            <span class="ctx-dot-num">2</span><span class="ctx-dot-label" data-i18n="ctx_step2_label">Rôle</span>
           </button>
         </div>
         <button type="button" class="ctx-next" id="ctxNextBtn" hidden>
@@ -12527,6 +12581,8 @@ const I18N = {
     ctx_q_type:                "Secteur d'activité",
     /* V80 — Contexte modal — boutons + aria */
     ctx_next:                  "Suivant",
+    ctx_step1_label:           "Secteur",
+    ctx_step2_label:           "Rôle",
     ctx_steps_aria:            "Étapes",
     ctx_step1_aria:            "Question 1",
     ctx_step2_aria:            "Question 2",
@@ -19429,6 +19485,9 @@ const Annotator = (() => {
             else el.classList.remove('is-on');
           });
           if (progressCur) progressCur.textContent = String(idx + 1);
+          /* V213 — Flux mockup : bouton footer = « Suivant › » tant qu'il reste
+             une étape, « Enregistrer » à la dernière. */
+          if (submitBtn) submitBtn.textContent = (idx < steps.length - 1) ? (t('ctx_next') + ' ›') : t('ctx_submit');
           if (backBtn) backBtn.hidden = (idx === 0);
           if (bodyEl) bodyEl.scrollTop = 0;
           if (typeof updateCtxScrollbar === 'function') {
@@ -19487,6 +19546,9 @@ const Annotator = (() => {
         };
 
         const onSubmit = () => {
+          /* V213 — Flux mockup : le bouton AVANCE tant qu'on n'est pas à la
+             dernière étape ; il n'ENREGISTRE qu'à la dernière. */
+          if (currentStep < steps.length - 1) { goToStep(currentStep + 1); return; }
           const chosenType = overlay.querySelector('input[name="ctx_type"]:checked');
           const chosenRole = overlay.querySelector('input[name="ctx_role"]:checked');
           const type = chosenType ? chosenType.value : null;
