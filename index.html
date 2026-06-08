@@ -1028,6 +1028,13 @@ body.has-offline-banner .upload-hub {
      collait au trait). Le dark teal sous les onglets = fond de barre, pas du blanc. */
   --bottom-bar-safe: max(14px, calc(env(safe-area-inset-bottom, 0px) - 8px));
   --bottom-bar-total: calc(var(--bottom-bar-h) + var(--bottom-bar-safe));
+  /* V220 — Safe-areas exposées en variables (défaut = env() réel) pour pouvoir
+     les SIMULER dans les tests (Dynamic Island sur le côté en paysage, trait du
+     bas). Sur l'appareil, var() retombe sur env(). */
+  --sa-l: env(safe-area-inset-left, 0px);
+  --sa-r: env(safe-area-inset-right, 0px);
+  --sa-b: env(safe-area-inset-bottom, 0px);
+  --sa-t: env(safe-area-inset-top, 0px);
 }
 .bottom-bar {
   position: fixed;
@@ -9522,7 +9529,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v219</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v220</div>
         </div>
       </div>
     </div>
@@ -11487,11 +11494,18 @@ body.lv-open { overflow: hidden; touch-action: none; }
            garder une mise en page 2 colonnes qui tient à l'écran (pas de scroll). */
         .upload-hub {
           position: fixed !important;
-          top: calc(74px + env(safe-area-inset-top, 0px)) !important;
+          top: calc(74px + var(--sa-t)) !important;
           bottom: var(--bottom-bar-total, 46px) !important;
-          height: auto !important; padding: 0 !important; overflow: hidden !important;
+          height: auto !important;
+          /* SAFE-AREAS : on garde la marge latérale (Dynamic Island sur le côté
+             en paysage) — c'est ce padding:0 qui faisait chevaucher l'île. */
+          padding: 0 max(10px, var(--sa-r)) 0 max(10px, var(--sa-l)) !important;
+          overflow: hidden !important;
         }
-        body.has-offline-banner .upload-hub { top: calc(74px + var(--offline-banner-height, 36px) + env(safe-area-inset-top, 0px)) !important; }
+        body.has-offline-banner .upload-hub { top: calc(74px + var(--offline-banner-height, 36px) + var(--sa-t)) !important; }
+        /* En-tête + barre du bas : on écarte aussi de l'île latérale en paysage. */
+        header, .app-header, .hdr, .header-bar { padding-left: max(16px, var(--sa-l)) !important; padding-right: max(16px, var(--sa-r)) !important; }
+        .bottom-bar { padding-left: var(--sa-l) !important; padding-right: var(--sa-r) !important; }
         .upload-hub-content { height: 100% !important; min-height: 0 !important; overflow: hidden !important; flex: 1 1 auto !important; }
         .home {
           display: grid !important;
