@@ -6965,7 +6965,11 @@ body.has-sw-update .home {
   display: flex;
   flex-direction: column;
   gap: clamp(8px, 1.6vh, 14px);
-  padding: clamp(4px, 0.8vh, 10px) 16px calc(var(--bottom-bar-total) + clamp(12px, 2vh, 20px) + env(safe-area-inset-bottom, 0px));
+  /* V197 — .upload-hub réserve DÉJÀ la barre du bas (bottom: var(--bottom-bar-total))
+     ET la safe-area est gérée par la barre elle-même. L'ancien padding-bottom
+     re-réservait la barre → bande blanche morte d'environ 66px en bas de l'accueil
+     (la « bande invisible » signalée). On ne garde qu'une respiration. */
+  padding: clamp(4px, 0.8vh, 10px) 16px clamp(10px, 1.8vh, 16px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -9374,7 +9378,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v196</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v197</div>
         </div>
       </div>
     </div>
@@ -11449,6 +11453,33 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results.visible .viewer-tab.active {
         background: #fff !important; color: #14171C !important;
         box-shadow: 0 1px 2px rgba(0,0,0,.10) !important;
+      }
+
+      /* ════════════ V197 — ACCUEIL : remplir l'espace bas + nav collée en bas ════════════
+         Mesuré (iPhone émulé) : un blanc de ~66px (et + sur grands écrans)
+         entre le bas du contenu et la barre, car .home-history était bloquée
+         en flex:0 0 auto → le contenu restait collé en haut. Correctif : la carte
+         « Dernières inspections » (3 lignes) ABSORBE l'espace libre et descend
+         jusqu'à la barre. Les lignes gardent leur style, réparties dans la carte
+         agrandie (space-evenly). Fonctionne sur toutes les tailles d'écran.        */
+      #homeHistory.home-history {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+      }
+      .home-history-scroll {
+        flex: 1 1 auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        max-height: none !important;
+      }
+      .home-history-body {
+        flex: 1 1 auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-evenly !important;
+        gap: 0 !important;
       }
       </style>
       <!-- V187 — bloc .results-hdr (en-tête LUCENS dupliqué + croix ✕) retiré. -->
@@ -15938,28 +15969,67 @@ const Annotator = (() => {
      arrondis) de chaque zone validée par l'IA, même style que le contour
      cellulaire (CARTO_COLOR + glow). Borné aux bbox → jamais "toute l'image".
      Évite une cartographie VIDE alors que l'IA a bien détecté des zones. */
+  /* V197 — Fusionne les bbox qui se chevauchent / s'englobent. Évite les
+     « doubles encadrés » quand l'IA renvoie plusieurs boîtes pour une même
+     tache de fluorescence (cause racine signalée par l'utilisateur). */
+  function _mergeBoxes(zones) {
+    let boxes = zones.map(z => ({ x: z.x, y: z.y, w: z.w, h: z.h }));
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (let i = 0; i < boxes.length && !changed; i++) {
+        for (let j = i + 1; j < boxes.length; j++) {
+          const a = boxes[i], b = boxes[j];
+          const ix = Math.max(a.x, b.x), iy = Math.max(a.y, b.y);
+          const iw = Math.min(a.x + a.w, b.x + b.w) - ix;
+          const ih = Math.min(a.y + a.h, b.y + b.h) - iy;
+          if (iw > 0 && ih > 0) {
+            const inter = iw * ih;
+            const minA = Math.min(a.w * a.h, b.w * b.h);
+            if (inter > 0.18 * minA) {           /* chevauchement notable → fusion */
+              const nx = Math.min(a.x, b.x), ny = Math.min(a.y, b.y);
+              const nx2 = Math.max(a.x + a.w, b.x + b.w);
+              const ny2 = Math.max(a.y + a.h, b.y + b.h);
+              boxes[i] = { x: nx, y: ny, w: nx2 - nx, h: ny2 - ny };
+              boxes.splice(j, 1);
+              changed = true;
+              break;
+            }
+          }
+        }
+      }
+    }
+    return boxes;
+  }
+
+  /* V197 — CARTOGRAPHIE ÉPURÉE : au lieu d'un cadre plein (qui pollue) avec un
+     halo orange (lu comme un 2ᵉ trait), on marque chaque zone fluorescente par
+     4 ÉQUERRES d'angle façon viseur. Localise la fluorescence avec précision,
+     sans encadrer toute la surface ni doubler les traits. Les bbox qui se
+     chevauchent sont d'abord fusionnées → une seule marque par tache. */
   function strokeBboxContours(ctx, zones, W, H) {
     if (!zones || !zones.length) return;
+    const boxes = _mergeBoxes(zones);
     ctx.save();
     ctx.strokeStyle = CARTO_COLOR.stroke;
-    ctx.lineWidth = Math.max(2, Math.round(Math.min(W, H) * 0.0032));
+    ctx.lineWidth = Math.max(2.5, Math.round(Math.min(W, H) * 0.0045));
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
-    ctx.shadowColor = 'rgba(255, 120, 70, 0.9)';
-    ctx.shadowBlur = Math.max(2, Math.round(Math.min(W, H) * 0.0035));
-    const rad = Math.max(6, Math.round(Math.min(W, H) * 0.02));
-    for (const z of zones) {
-      const x = Math.max(0, z.x * W), y = Math.max(0, z.y * H);
-      const w = Math.min(W - x, z.w * W), h = Math.min(H - y, z.h * H);
-      if (w < 2 || h < 2) continue;
-      const rr = Math.min(rad, w / 2, h / 2);
+    /* Ombre NEUTRE et discrète (lisibilité sur fond clair OU sombre), sans
+       halo coloré qui se lisait comme un second contour. */
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+    ctx.shadowBlur = Math.max(1.5, Math.round(Math.min(W, H) * 0.003));
+    for (const b of boxes) {
+      const x = Math.max(0, b.x * W), y = Math.max(0, b.y * H);
+      const w = Math.min(W - x, b.w * W), h = Math.min(H - y, b.h * H);
+      if (w < 8 || h < 8) continue;
+      /* Longueur des équerres : ~22% du plus petit côté, bornée. */
+      const len = Math.max(12, Math.min(w, h) * 0.22);
       ctx.beginPath();
-      ctx.moveTo(x + rr, y);
-      ctx.arcTo(x + w, y,     x + w, y + h, rr);
-      ctx.arcTo(x + w, y + h, x,     y + h, rr);
-      ctx.arcTo(x,     y + h, x,     y,     rr);
-      ctx.arcTo(x,     y,     x + w, y,     rr);
-      ctx.closePath();
+      ctx.moveTo(x, y + len);          ctx.lineTo(x, y);           ctx.lineTo(x + len, y);            /* ┌ */
+      ctx.moveTo(x + w - len, y);      ctx.lineTo(x + w, y);       ctx.lineTo(x + w, y + len);        /* ┐ */
+      ctx.moveTo(x + w, y + h - len);  ctx.lineTo(x + w, y + h);   ctx.lineTo(x + w - len, y + h);    /* ┘ */
+      ctx.moveTo(x + len, y + h);      ctx.lineTo(x, y + h);       ctx.lineTo(x, y + h - len);        /* └ */
       ctx.stroke();
     }
     ctx.restore();
@@ -27864,10 +27934,10 @@ const Annotator = (() => {
         requestAnimationFrame(updateHistGauge);
         return;
       }
-      /* V188 — On limite la carte d'accueil aux 2 inspections les plus récentes
-         (demande utilisateur : ne pas casser le design au-delà de 2 lignes).
+      /* V197 — On montre les 3 inspections les plus récentes (demande utilisateur :
+         remplir l'espace libre en bas sans changer le style des lignes).
          L'historique complet reste accessible via « Tout voir ». */
-      items.slice(0, 2).forEach(function(entry){
+      items.slice(0, 3).forEach(function(entry){
         var row = E('button','home-hrow');
         row.type = 'button';
         if (entry.image){
