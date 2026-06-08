@@ -7016,54 +7016,62 @@ body.has-sw-update .home {
   transition: outline-color .15s var(--ease-out);
 }
 .home-actions.drag-over { outline-color: var(--accent); }
+/* V200 — Boutons d'action ÉLARGIS + intégrés (demande utilisateur) : plus
+   grands, icône brand, pas de dégradé. Le primaire « pop » via une élévation
+   douce (ombre), pas un gradient. Le secondaire passe en TONAL teal (plus
+   visible qu'un simple contour, clairement secondaire). */
 .home-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 9px;
   width: 100%;
-  height: 56px;
-  border-radius: var(--radius-md);
+  height: 60px;
+  border-radius: 14px;
   border: 1px solid transparent;
   box-shadow: none;
   font-family: var(--font-display);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.005em;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition: background .15s var(--ease-out), border-color .15s var(--ease-out),
-              color .15s var(--ease-out), transform .12s var(--ease-out);
+              color .15s var(--ease-out), transform .12s var(--ease-out), box-shadow .15s var(--ease-out);
 }
-.home-btn:active { transform: scale(0.98); }
+.home-btn:active { transform: scale(0.985); }
 .home-btn-primary {
   background: var(--accent);
   color: var(--surface-low);
+  /* élévation douce teal — rend le bouton « plus visible », SANS dégradé */
+  box-shadow: 0 8px 20px -4px rgba(15, 61, 78, 0.30), 0 2px 6px rgba(15, 61, 78, 0.16);
 }
 .home-btn-primary:hover { background: var(--accent-hi); }
+.home-btn-primary:active { box-shadow: 0 3px 10px -2px rgba(15, 61, 78, 0.26); }
 .home-btn-secondary {
-  background: transparent;
-  color: var(--ink-secondary);
-  border-color: var(--border-hi);
+  background: rgba(15, 61, 78, 0.055);
+  color: var(--accent);
+  border-color: rgba(15, 61, 78, 0.16);
 }
 .home-btn-secondary:hover {
-  color: var(--ink-primary);
-  border-color: var(--ink-tertiary);
-  background: var(--hairline);
+  background: rgba(15, 61, 78, 0.09);
+  border-color: rgba(15, 61, 78, 0.28);
 }
 
 /* ─── V164 — ACCUEIL « application métier » (brief §5-6, §9, §11) ─────────────
    Hiérarchie : logo (en-tête) → sous-titre → phrase → 2 boutons → bénéfices →
    accès secondaires. Sobre, centré, sans effet. L'historique rapide sort de
    l'accueil (onglet Historique) ; le sélecteur de secteur aussi (déjà masqué). */
-.home-hero { text-align: center; padding: 2px 0 6px; }
+.home-hero { text-align: center; padding: 0 0 2px; }
 .home-hero-sub {
   font-size: 15px; font-weight: 600; color: #374151;
   letter-spacing: -0.01em; line-height: 1.3;
 }
+/* V200 — Phrase métier renforcée : encre foncée + corps plus présent, mesure
+   resserrée → un vrai énoncé hero, plus une légende grise flottante. */
 .home-hero-lead {
-  font-size: 14px; line-height: 1.45; color: var(--ink-secondary);
-  max-width: 420px; margin: 10px auto 0;
+  font-size: 16px; line-height: 1.4; color: #1F2937; font-weight: 500;
+  max-width: 350px; margin: 4px auto 0; letter-spacing: -0.005em;
 }
 .home-benefits {
   font-size: 13px; color: var(--ink-tertiary); text-align: center;
@@ -9378,7 +9386,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v199</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v200</div>
         </div>
       </div>
     </div>
@@ -9448,16 +9456,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
              IDs JS préservés : dropzone, cameraBtn, galleryBtn, sectorChip, instStats. -->
         <div class="home">
 
-          <!-- V164 — EN-TÊTE ACCUEIL (brief §5-6) : sous-titre métier + phrase
-               courte. Le logo « LUCENS » est dans l'en-tête fixe au-dessus ;
-               ici on enchaîne sous-titre + phrase, puis les 2 actions. Sobre,
-               centré, sans effet décoratif. -->
-          <!-- V167 — Sous-titre « Résidus, biofilms et contaminants invisibles »
-               RETIRÉ d'ici : il est désormais la tagline du logo dans l'en-tête.
-               On garde la phrase métier seule. -->
-          <div class="home-hero">
-            <p class="home-hero-lead" data-i18n="home_hero_lead">Repérez en direct les zones à risque et les résidus invisibles à l'œil nu.</p>
-          </div>
+          <!-- V200 — Hero MARKETING retiré (tagline + ligne bénéfices) : il faisait
+               « page web / landing ». Une APPLICATION mobile va droit à la fonction :
+               actions en haut → dernières inspections (le contenu vivant). -->
 
           <div class="home-sector" style="display:none">
             <button class="home-sector-btn is-empty" id="sectorChip" type="button" aria-label="Configurer le contexte d'inspection">
@@ -9493,9 +9494,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span data-i18n="inst_alt_gallery">Importer une image</span>
             </button>
           </div>
-
-          <!-- V164 — Ligne de bénéfices (brief §11) : courte, discrète, jamais une carte. -->
-          <p class="home-benefits" data-i18n="home_benefits">Résidus invisibles • Risque évalué • Rapport visuel</p>
 
           <section class="home-history" id="homeHistory">
             <div class="home-history-head">
@@ -11350,8 +11348,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
         .home { gap: 8px !important; padding-top: 4px !important; }
         .home-hero { gap: 6px !important; }
         .home-title, .home-tagline { font-size: 14px !important; line-height: 1.35 !important; }
-        .home-actions { gap: 8px !important; }
-        .home-btn { height: 48px !important; font-size: 14.5px !important; }
+        .home-actions { gap: 9px !important; }
+        /* V200 — boutons élargis aussi sur mobile (étaient 48px, trop discrets). */
+        .home-btn { height: 56px !important; font-size: 15.5px !important; }
         .home-benefits { font-size: 11.5px !important; margin: 4px 0 6px !important; }
         .home-history-title, .home-more-label { font-size: 12.5px !important; }
         .home-more-label { margin: 10px 2px 6px !important; }
