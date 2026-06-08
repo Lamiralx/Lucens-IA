@@ -9388,7 +9388,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v203</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v204</div>
         </div>
       </div>
     </div>
@@ -11469,10 +11469,14 @@ body.lv-open { overflow: hidden; touch-action: none; }
          boutons→inspections, inspections→en savoir plus, +bas → l'accueil occupe
          tout l'écran, aéré. La carte inspections reprend une hauteur NATURELLE
          (3 lignes), et peut se resserrer si l'écran est très court. */
+      /* V204 — Espacement RESSERRÉ (demande : « l'espace est trop grand,
+         rétrécir en haut »). space-evenly étalait trop l'accueil quand il y a peu
+         de contenu (0 inspection). On revient à un haut COLLÉ (flex-start), petit
+         retrait sous l'en-tête, et des écarts MODÉRÉS plafonnés entre blocs. */
       .home {
-        justify-content: space-evenly !important;
-        gap: 0 !important;
-        padding-top: 6px !important;
+        justify-content: flex-start !important;
+        gap: clamp(13px, 2.2vh, 20px) !important;
+        padding-top: 8px !important;
       }
       /* Cause racine du « blanc en bas » (2 fautifs) :
          1) .home-accordions avait flex:1 1 auto → il GROSSISSAIT pour absorber
