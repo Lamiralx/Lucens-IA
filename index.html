@@ -1349,25 +1349,46 @@ body.has-offline-banner .upload-hub {
 .settings-theme-title { font-size: 14.5px; font-weight: 600; color: var(--ink-primary); }
 .settings-theme-sub { font-size: 12.5px; color: var(--ink-tertiary); }
 
-/* ════════════ V216 — BOUTON FERMETURE UNIFIÉ (demande : un seul design) ════════════
-   Avant : chaque pop-up avait sa croix (carré, plat, tailles différentes).
-   Maintenant : partout un cercle 32px, bordure fine, croix grise. Cohérent +
-   theme-aware (clair/sombre). S'applique à Contexte, Réglages, Historique,
-   Feedback, Moment. */
-.ctx-close, .settings-close, .fb-close, .mo-close, .hist-bar-btn {
-  width: 32px !important; height: 32px !important; min-width: 32px; min-height: 32px;
+/* ═══════════════ V250 — BOUTONS RETOUR + FERMETURE 100% UNIFIÉS ═══════════════
+   SOURCE UNIQUE DE VÉRITÉ. Tout bouton retour (chevron) ET tout bouton fermeture
+   (croix) de l'app = EXACTEMENT le même cercle : 40px, fond bleu pétrole logo
+   (var(--accent), theme-aware), pas de bordure, icône blanche identique.
+   Les règles ci-dessous portent !important sur FORME / TAILLE / FOND / COULEUR
+   pour écraser tous les styles par-bouton dispersés ailleurs dans la feuille
+   (.ctx-close 4871, .fb-close 5301, .hist-bar-btn 7940, .settings-close 1289,
+   .info-page-back 1422, .learn-back 759, .lv-codepad-close 9437 …).
+   Les règles de POSITION (left/right/top/absolute) restent dans leurs blocs
+   respectifs : on n'y touche pas → la mise en page des pop-ups ne casse pas.
+   Référence visuelle = .lv-icon-btn de la Live View (cercle pétrole). Les SVG
+   inline sont normalisés (même viewBox 0 0 24 24, même path chevron / croix). */
+.info-page-back, .learn-back, .hist-bar-btn,
+.ctx-close, .settings-close, .fb-close, .mo-close, .lv-codepad-close {
+  width: 40px !important; height: 40px !important; min-width: 40px !important; min-height: 40px !important;
   border-radius: 50% !important;
-  border: 1px solid var(--border) !important;
-  background: transparent !important;
-  display: flex !important; align-items: center; justify-content: center;
-  color: var(--ink-tertiary) !important; padding: 0 !important;
+  border: 0 !important;
+  background: var(--accent) !important;
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  color: #fff !important; padding: 0 !important;
   flex-shrink: 0; cursor: pointer;
-  transition: background .15s, border-color .15s, transform .1s;
+  box-shadow: none !important;
+  transition: filter .15s, transform .1s;
 }
-.ctx-close:hover, .settings-close:hover, .fb-close:hover, .mo-close:hover, .hist-bar-btn:hover { border-color: var(--border-hi) !important; color: var(--ink-secondary) !important; }
-.ctx-close:active, .settings-close:active, .fb-close:active, .mo-close:active, .hist-bar-btn:active { transform: scale(0.92); }
-.ctx-close svg, .settings-close svg, .fb-close svg, .mo-close svg, .hist-bar-btn svg { width: 16px !important; height: 16px !important; }
+.info-page-back:hover, .learn-back:hover, .hist-bar-btn:hover,
+.ctx-close:hover, .settings-close:hover, .fb-close:hover, .mo-close:hover, .lv-codepad-close:hover {
+  filter: brightness(1.08); border-color: transparent !important; color: #fff !important; background: var(--accent) !important;
+}
+.info-page-back:active, .learn-back:active, .hist-bar-btn:active,
+.ctx-close:active, .settings-close:active, .fb-close:active, .mo-close:active, .lv-codepad-close:active {
+  transform: scale(0.92); filter: brightness(0.94);
+}
+.info-page-back svg, .learn-back svg, .hist-bar-btn svg,
+.ctx-close svg, .settings-close svg, .fb-close svg, .mo-close svg, .lv-codepad-close svg {
+  width: 20px !important; height: 20px !important;
+  stroke: #fff !important; color: #fff !important; stroke-width: 2.2 !important;
+  font-size: 0 !important;
+}
 .hist-bar-btn[hidden] { display: none !important; }
+.ctx-back[hidden] { display: none !important; }
 
 /* Titre de l'écran dans l'en-tête (à droite du logo). */
 .hdr-screen-title {
@@ -1432,17 +1453,7 @@ body.has-offline-banner .info-page { top: var(--offline-banner-height, 36px); }
 }
 .info-page-back:hover { background: var(--surface-low); border-color: var(--hairline-hi); }
 .info-page-back:active { transform: scale(0.92); }
-/* V249 — UNIFICATION des boutons RETOUR : rond BLEU (couleur logo / Live View)
-   PARTOUT — « En savoir plus » + pages info. Fini le fond carré / transparent :
-   un seul et même bouton sur toute l'app. */
-.info-page-back, .learn-back {
-  width: 40px !important; height: 40px !important;
-  border-radius: 50% !important;
-  background: var(--accent) !important;
-  border: 0 !important;
-  color: #fff !important;
-}
-.info-page-back svg, .learn-back svg { width: 20px !important; height: 20px !important; stroke: #fff !important; color: #fff !important; }
+/* V249 remplacé par le bloc unifié V250 (boutons retour + fermeture) plus haut. */
 .info-page-title {
   font-family: var(--font-display);
   font-size: 18px;
@@ -9636,7 +9647,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
       <div class="settings-head">
         <span class="settings-title" id="settingsTitle" data-i18n="settings_title">Réglages</span>
         <button type="button" class="settings-close" id="settingsClose" aria-label="Fermer les réglages">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6 L14 14 M14 6 L6 14"/></svg>
+          <!-- V250 — croix CANONIQUE (identique partout) -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
         </button>
       </div>
       <div class="settings-body">
@@ -9678,7 +9690,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v254</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v255</div>
         </div>
       </div>
     </div>
@@ -9692,7 +9704,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
   <section class="info-page" data-page="why" hidden aria-hidden="true" role="region" aria-label="Pourquoi Lucens">
     <div class="info-page-top">
       <button class="info-page-back" type="button" aria-label="Retour">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        <!-- V250 — chevron retour CANONIQUE (identique partout) -->
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
       </button>
       <span class="info-page-title" data-i18n="home_why">Pourquoi Lucens</span>
     </div>
@@ -9711,7 +9724,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
   <section class="info-page" data-page="how" hidden aria-hidden="true" role="region" aria-label="Comment ça marche">
     <div class="info-page-top">
       <button class="info-page-back" type="button" aria-label="Retour">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        <!-- V250 — chevron retour CANONIQUE (identique partout) -->
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
       </button>
       <span class="info-page-title" data-i18n="home_how">Comment ça marche</span>
     </div>
@@ -9730,7 +9744,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
   <section class="info-page" data-page="legal" hidden aria-hidden="true" role="region" aria-label="Avertissement légal">
     <div class="info-page-top">
       <button class="info-page-back" type="button" aria-label="Retour">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        <!-- V250 — chevron retour CANONIQUE (identique partout) -->
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
       </button>
       <span class="info-page-title" data-i18n="home_precautions">Précautions d'usage</span>
     </div>
@@ -12181,7 +12196,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
            une fois qu'il a vu et compris ses résultats -->
       <div class="results-toolbar">
         <button class="btn-back" id="resetBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          <!-- V250 — chevron retour CANONIQUE (bouton libellé : reste une pilule, pas un cercle) -->
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
           <span data-i18n="btn_reset">Nouvelle analyse</span>
         </button>
         <button class="btn-export" id="exportBtn">
@@ -12288,8 +12304,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <p class="fb-sub" data-i18n="fb_sub">3 questions ciblées · 15 secondes</p>
       </div>
       <button type="button" class="fb-close" id="fbCloseBtn" aria-label="Fermer">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        <!-- V250 — croix CANONIQUE (identique partout) -->
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M18 6 6 18M6 6l12 12"/>
         </svg>
       </button>
     </div>
@@ -12375,8 +12392,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
       <div class="mo-header-top">
         <span class="mo-eyebrow" data-i18n="mo_eyebrow">Contexte du cliché</span>
         <button type="button" class="mo-close" id="moCloseBtn" data-i18n-aria-label="mo_close_aria" aria-label="Fermer">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          <!-- V250 — croix CANONIQUE (identique partout) -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12"/>
           </svg>
         </button>
       </div>
@@ -12473,8 +12491,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
           </div>
         </div>
         <button type="button" class="ctx-close" id="ctxCloseBtn" aria-label="Fermer">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          <!-- V250 — croix CANONIQUE (identique partout) -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12"/>
           </svg>
         </button>
       </div>
@@ -12486,7 +12505,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
     <div class="ctx-body" id="ctxBody">
       <div class="ctx-stepnav">
         <button type="button" class="ctx-back" id="ctxBackBtn" hidden>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <!-- V250 — chevron retour CANONIQUE (bouton libellé : reste inline texte, pas un cercle) -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M15 6l-6 6 6 6"/>
           </svg>
           <span data-i18n="ctx_back">Précédent</span>
@@ -24697,13 +24717,13 @@ const Annotator = (() => {
     <!-- Top bar V35 : retour à gauche, banner statut centré, réglages à droite -->
     <div class="lv-topbar">
       <button class="lv-icon-btn" id="lvClose" type="button" data-i18n-aria-label="lv_aria_back" aria-label="Retour">
-        <!-- V153 — flèche retour (Live View normal) -->
-        <svg class="lv-close-ico lv-close-back" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M12 15 L7 10 L12 5"/>
+        <!-- V250 — chevron retour CANONIQUE (identique partout) -->
+        <svg class="lv-close-ico lv-close-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M15 6l-6 6 6 6"/>
         </svg>
-        <!-- V153 — croix ✕ pendant la calibration (= fermer la calibration) -->
-        <svg class="lv-close-ico lv-close-x" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M6 6 L14 14 M14 6 L6 14"/>
+        <!-- V250 — croix ✕ CANONIQUE (identique partout) ; ici = fermer la calibration -->
+        <svg class="lv-close-ico lv-close-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M18 6 6 18M6 6l12 12"/>
         </svg>
       </button>
       <span class="lv-bar-sep" aria-hidden="true"></span>
@@ -24784,7 +24804,7 @@ const Annotator = (() => {
     <!-- V36 — Overlay de saisie du code carte (fallback QR) -->
     <div class="lv-codepad lv-hidden" id="lvCodepad" role="dialog" aria-labelledby="lvCodepadTitle" aria-modal="true">
       <div class="lv-codepad-card">
-        <button class="lv-codepad-close" id="lvCodepadClose" type="button" data-i18n-aria-label="lv_aria_close" aria-label="Fermer">×</button>
+        <button class="lv-codepad-close" id="lvCodepadClose" type="button" data-i18n-aria-label="lv_aria_close" aria-label="Fermer"><!-- V250 — croix CANONIQUE (identique partout) --><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
         <h3 class="lv-codepad-title" id="lvCodepadTitle" data-i18n="lv_codepad_title">Code de votre carte Lucens</h3>
         <p class="lv-codepad-help" data-i18n-html="lv_codepad_help">
           Si la lecture automatique du QR ne fonctionne pas, saisissez le code
@@ -28090,7 +28110,8 @@ const Annotator = (() => {
 <div class="learn-overlay" id="learnOverlay" hidden aria-hidden="true">
   <header class="learn-nav">
     <button type="button" class="learn-back" id="learnBack" aria-label="Retour">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+      <!-- V250 — chevron retour CANONIQUE (identique partout) -->
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
     </button>
     <span class="learn-title" data-i18n="home_more">En savoir plus</span>
   </header>
@@ -28100,10 +28121,12 @@ const Annotator = (() => {
 <div class="hist-overlay" id="histOverlay" hidden aria-hidden="true">
   <header class="hist-bar">
     <button type="button" class="hist-bar-btn" id="histBack" hidden aria-label="Retour à la liste">
+      <!-- V250 — chevron retour CANONIQUE (identique partout) -->
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
     </button>
     <span class="hist-bar-title" id="histTitle">Historique</span>
     <button type="button" class="hist-bar-btn" id="histClose" aria-label="Fermer">
+      <!-- V250 — croix CANONIQUE (identique partout) -->
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
     </button>
   </header>
