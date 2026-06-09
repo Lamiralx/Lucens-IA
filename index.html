@@ -9605,7 +9605,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v229</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v230</div>
         </div>
       </div>
     </div>
@@ -11801,14 +11801,19 @@ body.lv-open { overflow: hidden; touch-action: none; }
       /* État vide centré dans la carte fixe (au lieu d'une mini-boîte). */
       .home-history-empty { margin: auto !important; }
 
-      /* ═══ V228 — Accueil : la carte « Dernières inspections » REMPLIT l'espace
-         libre sous les boutons (fini le grand vide) et montre 4 inspections, les
-         lignes se répartissant pour combler la hauteur sans chevauchement. ═══ */
-      .home { justify-content: flex-start !important; gap: clamp(12px, 2.2vh, 20px) !important; padding-top: 6px !important; }
-      #homeHistory.home-history { flex: 1 1 auto !important; min-height: 0 !important; max-height: none !important; }
-      .home-history-scroll { flex: 1 1 auto !important; min-height: 0 !important; max-height: none !important; overflow-y: auto !important; }
-      .home-history-body { flex: 1 1 auto !important; display: flex !important; flex-direction: column !important; }
-      .home-hrow { flex: 1 1 auto !important; min-height: 62px !important; }      /* chaque ligne s'étire pour combler */
+      /* ═══ V230 — Accueil : inspections en LISTE NORMALE. Erreur V228 corrigée :
+         les lignes étaient ÉTIRÉES (flex:1) pour combler → « espacées comme ça ».
+         Désormais densité NORMALE (lignes non étirées) ; la carte s'agrandit en
+         montrant PLUS d'inspections (jusqu'à 6), pas en gonflant les lignes.
+         Carte groupée juste sous les boutons (pas de grand vide intermédiaire). ═══ */
+      .home { justify-content: center !important; gap: clamp(12px, 2vh, 20px) !important; padding-top: 0 !important; }
+      #homeHistory.home-history { flex: 0 1 auto !important; min-height: 0 !important; max-height: none !important; }
+      /* Carte dimensionnée à son contenu (lignes à densité NORMALE, non étirées),
+         défile au-delà de 6 inspections ; l'ensemble (boutons · liste · savoir+)
+         est CENTRÉ verticalement → respiration égale en haut et en bas. */
+      .home-history-scroll { flex: 0 1 auto !important; min-height: 0 !important; max-height: 460px !important; overflow-y: auto !important; }
+      .home-history-body { display: flex !important; flex-direction: column !important; }
+      .home-hrow { flex: 0 0 auto !important; min-height: 78px !important; }      /* densité NORMALE, non étirée */
       .home-learn-link { flex: 0 0 auto !important; }
       </style>
       <!-- V187 — bloc .results-hdr (en-tête LUCENS dupliqué + croix ✕) retiré. -->
@@ -28377,7 +28382,7 @@ const Annotator = (() => {
       /* V228 — On montre les 4 inspections les plus récentes (demande : combler
          l'espace vide sous les boutons). La carte s'étire pour les afficher en
          entier (CSS flex). L'historique complet reste accessible via « Tout voir ». */
-      items.slice(0, 4).forEach(function(entry){
+      items.slice(0, 6).forEach(function(entry){
         var row = E('button','home-hrow');
         row.type = 'button';
         if (entry.image){
