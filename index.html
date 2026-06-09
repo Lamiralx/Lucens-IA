@@ -9629,7 +9629,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v236</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v237</div>
         </div>
       </div>
     </div>
@@ -11851,6 +11851,14 @@ body.lv-open { overflow: hidden; touch-action: none; }
       .home-hrow:not(:last-child) { border-bottom: 1px solid var(--hairline) !important; }
       .home-hrow-thumb { width: 42px !important; height: 42px !important; border-radius: 11px !important; }
       .home-learn-link { flex: 0 0 auto !important; margin-top: auto !important; margin-bottom: auto !important; }
+      /* V236b — PAYSAGE : annule le min-height 326px (portrait) qui débordait (1re
+         et dernière inspection rognées par l'en-tête et la barre). En paysage le
+         bloc remplit sa colonne et défile → au moins 3 inspections visibles, sans
+         chevauchement ni débordement. */
+      @media (orientation: landscape) and (max-height: 600px) {
+        #homeHistory.home-history { align-self: stretch !important; min-height: 0 !important; max-height: 100% !important; }
+        .home-history-scroll { flex: 1 1 auto !important; min-height: 0 !important; max-height: none !important; overflow-y: auto !important; }
+      }
       </style>
       <!-- V187 — bloc .results-hdr (en-tête LUCENS dupliqué + croix ✕) retiré. -->
       <!-- HERO SCORE — version épurée -->
