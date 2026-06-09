@@ -9258,7 +9258,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
 }
 .lv-analyze-btn.lv-pressing .lv-press-fill {
   transform: scaleX(1);
-  transition: transform 0.40s linear;
+  transition: none !important;   /* V253 — remplissage INSTANTANÉ : plus aucune animation au maintien du bouton ANALYSER (demande). */
 }
 /* Le contenu (icône + texte) reste au-dessus du fill */
 .lv-analyze-btn .lv-analyze-content {
@@ -9267,7 +9267,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
 }
 /* Pulse final quand le long press est confirmé — feedback visuel de succès */
 .lv-analyze-btn.lv-press-success {
-  animation: lvPressSuccess 0.32s cubic-bezier(.4, 0, .2, 1);
+  animation: none !important;   /* V253 — plus de pulse de succès sur ANALYSER (demande). */
 }
 /* V94 — Fin de keyframe corrigée : ne plus terminer sur blanc pur
    (créait un flash blanc parasite après le long-press confirmé qui
@@ -9678,7 +9678,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v252</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v253</div>
         </div>
       </div>
     </div>
