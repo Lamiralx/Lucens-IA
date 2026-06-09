@@ -702,6 +702,66 @@ body.has-offline-banner .upload-hub {
 @media (max-width: 360px) {
   .hdr-tagline { display: none; }
 }
+
+/* ════════════════ V227 — REDESIGN ACCUEIL « app » (maquette validée) ════════════════
+   En-tête wordmark CENTRÉ sans tagline · accueil épuré : inspections DOMINANTES +
+   UNE ligne « En savoir plus » → page dédiée (les 3 accordéons y sont déplacés). */
+.hdr { justify-content: center !important; }
+.hdr-tagline { display: none !important; }
+
+/* Accueil : actions (haut) · inspections (remplissent, dominantes) · ligne savoir+ (bas). */
+.home { justify-content: space-evenly !important; gap: 0 !important; padding-top: 0 !important; }
+.home .home-accordions { display: none !important; }          /* déplacé en page par JS */
+.home-actions { flex: 0 0 auto !important; }
+#homeHistory.home-history { flex: 0 0 auto !important; min-height: 0 !important; max-height: none !important; display: flex !important; flex-direction: column !important; }
+.home-history-scroll { min-height: 0 !important; max-height: none !important; flex: 0 0 auto !important; overflow-y: auto !important; }
+.home-hrow { padding: 14px 15px !important; gap: 13px !important; }
+.home-hrow-thumb { width: 50px !important; height: 50px !important; border-radius: 13px !important; }
+
+/* Ligne « En savoir plus » unique → ouvre la page. */
+.home-learn-link {
+  flex: 0 0 auto !important;
+  display: flex; align-items: center; gap: 13px;
+  width: 100%; padding: 15px 16px; margin: 0;
+  background: var(--surface, #fff); border: 1px solid var(--border); border-radius: 16px;
+  cursor: pointer; text-align: left; -webkit-tap-highlight-color: transparent;
+  transition: transform .12s var(--ease-out, ease);
+}
+.home-learn-link:active { transform: scale(0.99); }
+.home-learn-link .hl-ic { width: 38px; height: 38px; border-radius: 11px; background: var(--bg-2); display: flex; align-items: center; justify-content: center; color: var(--accent); flex-shrink: 0; }
+.home-learn-link .hl-ic svg { width: 20px; height: 20px; }
+.home-learn-link .hl-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.home-learn-link .hl-t { display: block; }
+.home-learn-link .hl-t { font-size: 15px; font-weight: 700; color: var(--ink-primary); }
+.home-learn-link .hl-s { font-size: 12.5px; color: var(--ink-tertiary); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.home-learn-link .hl-chev { color: var(--border-hi); font-size: 20px; line-height: 1; flex-shrink: 0; }
+
+/* Page « En savoir plus » : overlay plein écran qui glisse depuis la DROITE. */
+.learn-overlay {
+  position: fixed; inset: 0; z-index: 70;
+  background: var(--surface-page);
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .3s cubic-bezier(.32,.72,0,1);
+}
+.learn-overlay.visible { transform: translateX(0); }
+.learn-overlay[hidden] { display: none; }
+.learn-nav {
+  min-height: calc(56px + env(safe-area-inset-top, 0px)); padding-top: env(safe-area-inset-top, 0px);
+  display: flex; align-items: center; justify-content: center; position: relative;
+  border-bottom: 1px solid var(--hairline); flex-shrink: 0;
+  padding-left: max(13px, env(safe-area-inset-left)); padding-right: max(13px, env(safe-area-inset-right));
+}
+.learn-back { position: absolute; left: max(8px, env(safe-area-inset-left)); bottom: 10px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: transparent; border: 0; color: var(--ink-secondary); cursor: pointer; }
+.learn-back svg { width: 22px; height: 22px; }
+.learn-title { font-family: var(--font-display); font-size: 17px; font-weight: 800; color: var(--ink-primary); align-self: flex-end; padding-bottom: 14px; }
+.learn-scroll { flex: 1; overflow-y: auto; padding: 16px 16px calc(24px + var(--bottom-bar-total, 56px)); display: flex; flex-direction: column; gap: 12px; }
+.learn-scroll .home-more-label { display: none !important; }   /* titre déjà dans la nav */
+/* Chaque sujet = une CARTE dédiée (zones dédiées, maquette). */
+.learn-scroll .home-accordions { display: flex !important; flex-direction: column !important; gap: 12px !important; border: 0 !important; background: transparent !important; padding: 0 !important; margin: 0 !important; }
+.learn-scroll .acc-item { background: var(--surface, #fff) !important; border: 1px solid var(--border) !important; border-radius: 16px !important; overflow: hidden; }
+.learn-scroll .acc-head { padding: 16px 16px !important; }
+
 /* (legacy .hdr-title/.hdr-sub/.hdr-mark/.hdr-tag classes removed —
     remplacés par .hdr-brand / .hdr-wordmark / .hdr-tagline ci-dessus) */
 
@@ -9545,7 +9605,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v226</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v227</div>
         </div>
       </div>
     </div>
@@ -9664,6 +9724,14 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <div class="home-hscroll" id="homeHScroll"><div class="home-hscroll-thumb" id="homeHScrollThumb"></div></div>
             </div>
           </section>
+
+          <!-- V227 — UNE seule entrée « En savoir plus » → ouvre la page dédiée
+               (#learnOverlay). Les 3 accordéons sont déplacés dans cette page. -->
+          <button class="home-learn-link" id="homeLearnLink" type="button" aria-label="En savoir plus">
+            <span class="hl-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16v-5M12 8h.01"/></svg></span>
+            <span class="hl-tx"><span class="hl-t" data-i18n="home_more">En savoir plus</span><span class="hl-s" data-i18n="learn_sub">Pourquoi Lucens · Comment ça marche · Précautions</span></span>
+            <span class="hl-chev" aria-hidden="true">›</span>
+          </button>
 
           <div class="home-accordions">
             <span class="home-more-label" data-i18n="home_more" style="display:block;font-size:12.5px;font-weight:600;color:var(--text-3,#6B7280);margin:22px 2px 6px">En savoir plus</span>
@@ -11553,6 +11621,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         .home-history-scroll { min-height: 0 !important; max-height: 204px !important; overflow-y: auto !important; flex: 0 1 auto !important; }
         /* « En savoir plus » MASQUÉ en paysage (secondaire) → affichage épuré. */
         .home-accordions { display: none !important; }
+        .home-learn-link { display: none !important; }
         .home-footer { display: none !important; }
       }
 
@@ -12630,6 +12699,7 @@ const I18N = {
     h_home_all: "Tout voir",
     home_recent: "Dernières inspections",
     home_more: "En savoir plus",
+    learn_sub: "Pourquoi Lucens · Comment ça marche · Précautions",
     h_empty_t: "Aucune inspection",
     h_empty_s: "Stockage local sur cet appareil.",
     h_unnamed: "Inspection sans nom",
@@ -27762,6 +27832,19 @@ const Annotator = (() => {
 </script>
 
 <!-- ═══ HISTORIQUE DES INSPECTIONS — écran local plein écran ═══ -->
+<!-- V227 — Page « En savoir plus » : overlay plein écran qui glisse depuis la
+     droite. Les 3 accordéons (Pourquoi / Comment / Précautions) y sont déplacés
+     au chargement par JS (#learnScroll). Flèche retour → accueil. -->
+<div class="learn-overlay" id="learnOverlay" hidden aria-hidden="true">
+  <header class="learn-nav">
+    <button type="button" class="learn-back" id="learnBack" aria-label="Retour">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+    </button>
+    <span class="learn-title" data-i18n="home_more">En savoir plus</span>
+  </header>
+  <div class="learn-scroll" id="learnScroll"></div>
+</div>
+
 <div class="hist-overlay" id="histOverlay" hidden aria-hidden="true">
   <header class="hist-bar">
     <button type="button" class="hist-bar-btn" id="histBack" hidden aria-label="Retour à la liste">
@@ -28445,5 +28528,24 @@ const Annotator = (() => {
   </aside>
 </template>
 
+<!-- V227 — Page « En savoir plus » : déplace les accordéons existants dans la
+     page dédiée + ouverture/fermeture (glisse depuis la droite). -->
+<script>
+(function(){
+  var overlay = document.getElementById('learnOverlay');
+  var scroll  = document.getElementById('learnScroll');
+  var link    = document.getElementById('homeLearnLink');
+  var back    = document.getElementById('learnBack');
+  if (!overlay || !scroll) return;
+  var acc = document.querySelector('.home .home-accordions') || document.querySelector('.home-accordions');
+  if (acc) scroll.appendChild(acc);   /* réutilise le contenu + i18n + handlers existants */
+  function open(){ overlay.hidden = false; overlay.removeAttribute('aria-hidden'); requestAnimationFrame(function(){ overlay.classList.add('visible'); }); }
+  function close(){ overlay.classList.remove('visible'); setTimeout(function(){ overlay.hidden = true; overlay.setAttribute('aria-hidden','true'); }, 300); }
+  window.__openLearn = open; window.__closeLearn = close;
+  if (link) link.addEventListener('click', function(e){ e.preventDefault(); open(); });
+  if (back) back.addEventListener('click', close);
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && overlay && !overlay.hidden) close(); });
+})();
+</script>
 </body>
 </html>
