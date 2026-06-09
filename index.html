@@ -8431,6 +8431,18 @@ html.lv-open, body.lv-open { background: #000 !important; }
 .lv-topbar .lv-icon-btn { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 50%; background: var(--accent); border: 0; }
 .lv-topbar .lv-status-banner { flex: 1 1 auto; min-width: 0; }
 .lv-bar-sep { flex: 0 0 auto; width: 1px; height: 22px; background: rgba(255,255,255,0.13); }
+/* V250 — PAYSAGE : la barre unifiée NE DOIT PAS s'étirer sur toute la largeur.
+   Centrée + compacte (largeur du contenu, ~comme en portrait), au milieu en haut.
+   Bouton retour à la même taille qu'en portrait (38px). */
+@media (orientation: landscape) and (max-height: 600px) {
+  .lv-topbar {
+    left: 50% !important; right: auto !important;
+    transform: translateX(-50%) !important;
+    width: auto !important; max-width: 440px !important;
+  }
+  .lv-topbar .lv-status-banner { flex: 0 1 auto !important; }
+  .lv-topbar .lv-icon-btn { width: 38px !important; height: 38px !important; }
+}
 /* AUCUNE animation ni transition sur le Live View (demande explicite). */
 .lv-modal, .lv-modal * { animation: none !important; transition: none !important; }
 
@@ -9666,7 +9678,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v249</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v250</div>
         </div>
       </div>
     </div>
