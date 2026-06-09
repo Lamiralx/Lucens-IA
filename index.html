@@ -755,7 +755,7 @@ body.has-offline-banner .upload-hub {
 .learn-back { position: absolute; left: max(8px, env(safe-area-inset-left)); bottom: 10px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: transparent; border: 0; color: var(--ink-secondary); cursor: pointer; }
 .learn-back svg { width: 22px; height: 22px; }
 .learn-title { font-family: var(--font-display); font-size: 17px; font-weight: 800; color: var(--ink-primary); align-self: flex-end; padding-bottom: 14px; }
-.learn-scroll { flex: 1; overflow-y: auto; padding: 16px 16px calc(24px + var(--bottom-bar-total, 56px)); display: flex; flex-direction: column; gap: 12px; }
+.learn-scroll { flex: 1; overflow-y: auto; padding: 16px 16px calc(28px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 12px; }
 .learn-scroll .home-more-label { display: none !important; }   /* titre déjà dans la nav */
 /* Chaque sujet = une CARTE dédiée (zones dédiées, maquette). */
 .learn-scroll .home-accordions { display: flex !important; flex-direction: column !important; gap: 12px !important; border: 0 !important; background: transparent !important; padding: 0 !important; margin: 0 !important; }
@@ -1393,7 +1393,7 @@ body.has-offline-banner .upload-hub {
 .info-page {
   position: fixed;
   top: 0; left: 0; right: 0;
-  bottom: var(--bottom-bar-total);
+  bottom: 0;            /* V236 — remplit jusqu'en bas : supprime la BANDE BLANCHE (la zone réservée à la barre d'onglets restait blanche car la barre est couverte sur cette sous-page) */
   z-index: 75;            /* V228 — AU-DESSUS de la page « En savoir plus » (#learnOverlay=70) : les sujets (Pourquoi/Comment/Précautions) s'ouvrent PAR-DESSUS et non plus derrière l'overlay (bug navigation corrigé) */
   background: var(--surface-page);
   display: flex;
@@ -9629,7 +9629,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v235</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v236</div>
         </div>
       </div>
     </div>
@@ -11842,7 +11842,10 @@ body.lv-open { overflow: hidden; touch-action: none; }
          plus » est CENTRÉ verticalement dans la zone restante entre le bloc et la
          barre du bas (margin auto haut+bas) → comble la zone vide signalée. */
       #homeHistory.home-history { flex: 0 0 auto !important; min-height: 0 !important; max-height: none !important; display: flex !important; flex-direction: column !important; }
-      .home-history-scroll { flex: 0 0 auto !important; min-height: 0 !important; max-height: none !important; overflow: hidden !important; background: var(--surface-low) !important; border: 1px solid var(--border) !important; border-radius: 16px !important; box-shadow: none !important; padding: 0 12px !important; }
+      /* V236 — bloc TAILLE FIXE même VIDE : min-height 326px (≈5 lignes). Avec 0
+         inspection (« Aucune inspection ») le bloc ne rétrécit plus. « En savoir
+         plus » reste centré dans la zone restante. */
+      .home-history-scroll { flex: 0 0 auto !important; min-height: 326px !important; max-height: none !important; overflow: hidden !important; background: var(--surface-low) !important; border: 1px solid var(--border) !important; border-radius: 16px !important; box-shadow: none !important; padding: 0 12px !important; }
       .home-history-body { display: flex !important; flex-direction: column !important; gap: 0 !important; }
       .home-hrow { flex: 0 0 auto !important; min-height: 62px !important; padding: 11px 2px !important; gap: 12px !important; background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; }
       .home-hrow:not(:last-child) { border-bottom: 1px solid var(--hairline) !important; }
