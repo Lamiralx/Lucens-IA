@@ -8372,8 +8372,120 @@ body.has-sw-update .home {
   html.lucens-printing .hist-verdict,
   html.lucens-printing .hist-stat,
   html.lucens-printing .hist-obs-item,
+  html.lucens-printing .hist-live-result,
   html.lucens-printing .hist-detail-img { break-inside: avoid; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   V251 — FICHE HISTORIQUE = ÉCRAN ANALYSE À L'IDENTIQUE
+   ═══════════════════════════════════════════════════════════════════
+   Demande utilisateur : la fiche détail de l'historique doit afficher
+   EXACTEMENT les mêmes blocs que l'écran de résultat d'une analyse
+   fraîche (spec « écran analyse = 5 blocs »), rien de plus :
+     • Zone nommée
+     • Niveau de risque (libellé + couleur) sur jauge segmentée
+     • Origine probable (1 phrase)
+     • Risque associé (1 phrase)
+     • Action recommandée (1 phrase)
+     • 2 actions : Télécharger le rapport + Supprimer
+   Ce bloc reproduit le RENDU FINAL de #results.visible (après tous les
+   overrides V188/V190/V192/V199), mais en autonome, scoped sur
+   .hist-live-result → identique visuellement sans dépendre de #results
+   ni casser l'écran de résultat. Couleur de risque pilotée par
+   .r-low/.r-mid/.r-high (--risk-color), comme la carte verdict live. */
+.hist-live-result { display: flex; flex-direction: column; gap: 8px; --risk-color: #B42318; }
+.hist-live-result.r-low  { --risk-color: #2E7D32; }
+.hist-live-result.r-mid  { --risk-color: #B7791F; }
+.hist-live-result.r-high { --risk-color: #B42318; }
+
+/* ── En-tête : « Niveau de risque » + score, puis jauge segmentée (= #hero) ── */
+.hlr-hero {
+  padding: 13px 15px 11px;
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-top: 3px solid var(--risk-color, #B42318);
+  border-radius: 14px;
+}
+.hlr-hero-row {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 10px; margin-bottom: 9px;
+}
+.hlr-hero-label { font-size: 12px; font-weight: 600; color: #6B7280; }
+.hlr-hero-score { display: inline-flex; align-items: baseline; gap: 3px; }
+.hlr-hero-score-val { font-size: 22px; font-weight: 800; line-height: 1; color: var(--risk-color, #B42318); }
+.hlr-hero-score-sfx { font-size: 12.5px; font-weight: 600; color: #6B7280; }
+.hlr-seg { display: flex; gap: 6px; }
+.hlr-seg-s {
+  flex: 1; text-align: center; display: block;
+  padding: 10px 6px; font-size: 13px; font-weight: 600;
+  border-radius: 9px;
+  background: #FAFBFC;
+  border: 1px solid #E5E7EB;
+  color: #6B7280;
+}
+.hist-live-result.r-low  .hlr-seg-s[data-seg="low"]  { background: #2E7D32; border-color: #2E7D32; color: #fff; }
+.hist-live-result.r-mid  .hlr-seg-s[data-seg="mid"]  { background: #B7791F; border-color: #B7791F; color: #fff; }
+.hist-live-result.r-high .hlr-seg-s[data-seg="high"] { background: #B42318; border-color: #B42318; color: #fff; }
+
+/* ── Image fluorescente annotée (continue la fiche, comme l'écran) ── */
+.hlr-img {
+  width: 100%; height: 175px; object-fit: cover; display: block;
+  border-radius: 8px;
+  background: #0a1119;
+}
+
+/* ── 3 blocs verdict : 3 cartes blanches séparées (= V192/V199) ── */
+.hlr-card {
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 13px;
+  padding: 13px 15px;
+}
+.hlr-card.hlr-risque { border-left: 3px solid var(--risk-color, #E5E7EB); padding-left: 15px; }
+.hlr-eyebrow {
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--font-body);
+  font-size: 12px; font-weight: 700;
+  letter-spacing: .04em; text-transform: uppercase;
+  color: #4B5563;
+  margin: 0 0 7px;
+}
+.hlr-eyebrow svg { width: 14px; height: 14px; flex-shrink: 0; color: #0F3D4E; stroke: #0F3D4E; }
+/* Icône triangle (risque) + flèche (action) injectées en pseudo-element, couleur cohérente */
+.hlr-eyebrow.hlr-eyebrow-risque::before,
+.hlr-eyebrow.hlr-eyebrow-action::before {
+  content: ''; display: inline-block; width: 14px; height: 14px; flex-shrink: 0;
+  mask-size: contain; -webkit-mask-size: contain;
+  mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat;
+}
+.hlr-eyebrow.hlr-eyebrow-risque::before {
+  background-color: var(--risk-color, #B42318);
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'/><line x1='12' y1='9' x2='12' y2='13'/><line x1='12' y1='17' x2='12.01' y2='17'/></svg>");
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'/><line x1='12' y1='9' x2='12' y2='13'/><line x1='12' y1='17' x2='12.01' y2='17'/></svg>");
+}
+.hlr-eyebrow.hlr-eyebrow-action::before {
+  background-color: #0F3D4E;
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M5 12h14'/><path d='m13 6 6 6-6 6'/></svg>");
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M5 12h14'/><path d='m13 6 6 6-6 6'/></svg>");
+}
+/* Titre Origine = couleur du niveau de risque (= V199) */
+.hlr-title {
+  margin: 0 0 5px;
+  font-family: var(--font-body);
+  font-size: 17px; font-weight: 700; line-height: 1.3;
+  color: #14171C;
+}
+.hist-live-result.r-low  .hlr-title { color: #15803D; }
+.hist-live-result.r-mid  .hlr-title { color: #C2710C; }
+.hist-live-result.r-high .hlr-title { color: #D92D20; }
+/* Les 3 phrases de contenu : strictement identiques, encre foncée lisible */
+.hlr-text {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 14.5px; font-weight: 500; line-height: 1.5;
+  color: #23272F;
+}
+.hlr-text b { color: #0C0E13; font-weight: 700; }
 
 /* ═══════════════════════════════════════════════════════════════════
    LIVE VIEW MODAL — Inspection UV temps réel (v2 sobre)
@@ -9690,7 +9802,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v255</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v256</div>
         </div>
       </div>
     </div>
@@ -28274,40 +28386,11 @@ const Annotator = (() => {
     });
   }
 
-  /* ── Helpers fiche détail ── */
-  function catOf(id){
-    try {
-      if (typeof getCategory === 'function'){
-        var c = getCategory(id);
-        if (c && c.label) return { color: c.color || '#64748B', label: c.label };
-      }
-    } catch(e){}
-    return { color: '#64748B', label: id || 'Inconnu' };
-  }
-  function consolidateProbs(arr){
-    if (!Array.isArray(arr)) return [];
-    var m = {};
-    arr.forEach(function(p){ if (p && p.id) m[p.id] = (m[p.id]||0) + (p.probability||0); });
-    return Object.keys(m).map(function(id){ return { id:id, probability: Math.round(m[id]) }; })
-      .filter(function(p){ return !(p.id === 'unknown' && p.probability < 20); })
-      .sort(function(a,b){ return b.probability - a.probability; });
-  }
-  function parseObs(raw){
-    var items = [];
-    if (Array.isArray(raw)){
-      raw.forEach(function(o){
-        if (o && typeof o === 'object' && o.body) items.push({ tag: o.tag||'', body: String(o.body) });
-        else if (typeof o === 'string' && o.trim()) items.push({ tag:'', body: o.trim() });
-      });
-    } else if (typeof raw === 'string' && raw.trim()){
-      items.push({ tag:'', body: raw.trim() });
-    }
-    return items;
-  }
-  /* V119 — parseDecision supprimé. `res.decision_summary` n'est jamais
-     populée par Claude (champ absent du schéma api/analyze.js). La
-     section "Aide à la décision" de l'historique était systématiquement
-     vide. Cohérent avec la suppression de decisionCard côté rapport live. */
+  /* ── Helpers fiche détail ──
+     V251 — catOf / consolidateProbs / parseObs RETIRÉS : ils n'alimentaient
+     que les sections verbeuses (Signatures détectées, Observations) de
+     l'ancienne fiche. La fiche détail reproduit désormais l'écran d'analyse
+     (5 blocs), qui ne les utilise pas. svgIcon reste (icônes eyebrow + PDF). */
   function svgIcon(paths){
     var NS = 'http://www.w3.org/2000/svg';
     var svg = document.createElementNS(NS,'svg');
@@ -28336,12 +28419,17 @@ const Annotator = (() => {
       var inner = E('div','hist-scroll-inner');
       var report = E('div','hist-report');
       var res = entry.res || {};
-      var rk = riskOf(entry);
+      var rk = riskOf(entry);            /* 'low' | 'mid' | 'high' | 'na' */
+      /* La carte live n'a pas d'état 'na' : on retombe sur 'low' (vert) si le
+         risque est indéterminable, exactement comme l'écran d'analyse. */
+      var rkClass = (rk === 'high' || rk === 'mid' || rk === 'low') ? rk : 'low';
 
       /* En-tête imprimé (visible uniquement dans le PDF) */
       report.appendChild(E('div','hist-print-head', tr('h_report_head', "Lucens IA · Rapport d'inspection UV")));
 
-      /* Nom de zone : champ libellé, auto-save, retour visuel "Enregistré" */
+      /* ── Nom de la zone inspectée (libellé éditable, auto-save) ──
+         La fiche DOIT afficher la zone nommée par l'utilisateur (exigence).
+         Champ conservé tel quel : il identifie l'inspection et reste modifiable. */
       var zoneWrap = E('div','hist-zone-block');
       zoneWrap.appendChild(E('label','hist-zone-label', tr('h_zone_label', 'Nom de la zone inspectée')));
       var zoneInput = document.createElement('input');
@@ -28376,173 +28464,100 @@ const Annotator = (() => {
         persistZone();
       });
 
-      /* Image fluorescente annotée */
-      if (entry.image){
-        var img = document.createElement('img');
-        img.className = 'hist-detail-img';
-        img.src = entry.image;
-        img.alt = "Image fluorescente annotée de l'inspection";
-        report.appendChild(img);
-      }
+      /* ══════════════════════════════════════════════════════════════════
+         V251 — BLOC RÉSULTAT À L'IDENTIQUE DE L'ÉCRAN D'ANALYSE
+         ══════════════════════════════════════════════════════════════════
+         Exactement les mêmes blocs qu'une analyse fraîche (« écran = 5 blocs »),
+         rien de plus : niveau de risque (libellé + couleur) → image → origine
+         probable → risque associé → action recommandée. Le contenu vient du même
+         objet `res` que le rendu live (res.result / res.contextual_reasoning /
+         res.recommendation). Aucun texte verbeux. */
+      var live = E('div','hist-live-result r-'+rkClass);
 
-      /* V23 — Carte verdict Lucens IA (analyse pédagogique contextualisée) */
-      if (res.result && res.recommendation) {
-        var verdictBox = E('div','hist-section hist-verdict-v21');
-        var eyebrow = E('div','hist-section-eyebrow', 'Analyse Lucens IA');
-        verdictBox.appendChild(eyebrow);
-        if (res.result.title) {
-          var vt = E('div','hist-v21-title', res.result.title);
-          verdictBox.appendChild(vt);
-        }
-        if (res.result.confidence_label) {
-          verdictBox.appendChild(E('div','hist-v21-conf', res.result.confidence_label));
-        }
-        if (res.result.interpretation) {
-          verdictBox.appendChild(E('p','hist-v21-interp', res.result.interpretation));
-        }
-        if (res.recommendation.primary_action) {
-          var actBox = E('div','hist-v21-action');
-          actBox.appendChild(E('div','hist-v21-action-eyebrow',
-            res.recommendation.title || 'Action recommandée'));
-          actBox.appendChild(E('div','hist-v21-action-text', res.recommendation.primary_action));
-          verdictBox.appendChild(actBox);
-        }
-        if (res.point_of_vigilance && res.point_of_vigilance.text) {
-          var vigBox = E('div','hist-v21-vigilance');
-          vigBox.appendChild(document.createTextNode('⚠ ' + res.point_of_vigilance.text));
-          verdictBox.appendChild(vigBox);
-        }
-        report.appendChild(verdictBox);
-      }
-
-      /* V23 — Raisonnement contextuel */
-      var cr = res.contextual_reasoning;
-      if (cr && (cr.surface_logic || cr.risk_logic)) {
-        var crBox = E('div','hist-section');
-        crBox.appendChild(E('div','hist-section-title', 'Raisonnement contextuel'));
-        if (cr.surface_logic) {
-          var b = E('div','hist-dec-block');
-          b.appendChild(E('div','hist-dec-label','Logique de la surface'));
-          b.appendChild(E('div','hist-dec-text', cr.surface_logic));
-          crBox.appendChild(b);
-        }
-        if (cr.risk_logic) {
-          var b2 = E('div','hist-dec-block');
-          b2.appendChild(E('div','hist-dec-label','Chaîne de risque'));
-          b2.appendChild(E('div','hist-dec-text', cr.risk_logic));
-          crBox.appendChild(b2);
-        }
-        if (cr.what_fluorescence_suggests) {
-          var b3 = E('div','hist-dec-block');
-          b3.appendChild(E('div','hist-dec-label','Ce que la fluorescence suggère'));
-          b3.appendChild(E('div','hist-dec-text', cr.what_fluorescence_suggests));
-          crBox.appendChild(b3);
-        }
-        if (cr.what_fluorescence_does_not_prove) {
-          var b4 = E('div','hist-dec-block');
-          b4.appendChild(E('div','hist-dec-label','Ce qu\'elle ne prouve pas'));
-          b4.appendChild(E('div','hist-dec-text', cr.what_fluorescence_does_not_prove));
-          crBox.appendChild(b4);
-        }
-        report.appendChild(crBox);
-      }
-
-      /* V23 — Suite recommandation : follow-up + confirmation */
-      if (res.recommendation && (res.recommendation.follow_up || res.recommendation.confirmation_if_needed)) {
-        var rcBox = E('div','hist-section');
-        rcBox.appendChild(E('div','hist-section-title', 'Suite de la recommandation'));
-        if (res.recommendation.follow_up) {
-          var fb = E('div','hist-dec-block');
-          fb.appendChild(E('div','hist-dec-label','Étape suivante'));
-          fb.appendChild(E('div','hist-dec-text', res.recommendation.follow_up));
-          rcBox.appendChild(fb);
-        }
-        /* V111 — sector_adaptation retiré (champ supprimé du prompt). */
-        if (res.recommendation.confirmation_if_needed) {
-          var cb = E('div','hist-dec-block');
-          cb.appendChild(E('div','hist-dec-label','Confirmation si besoin'));
-          cb.appendChild(E('div','hist-dec-text', res.recommendation.confirmation_if_needed));
-          rcBox.appendChild(cb);
-        }
-        report.appendChild(rcBox);
-      }
-
-      /* V23 — Référentiels applicables */
-      if (res.reference_logic && Array.isArray(res.reference_logic.applicable_frameworks)
-          && res.reference_logic.applicable_frameworks.length) {
-        var refBox = E('div','hist-section');
-        refBox.appendChild(E('div','hist-section-title', 'Référentiels applicables'));
-        var fwList = E('div','hist-ref-list');
-        res.reference_logic.applicable_frameworks.forEach(function(f){
-          fwList.appendChild(E('span','hist-ref-chip', f));
-        });
-        refBox.appendChild(fwList);
-        if (res.reference_logic.explanation) {
-          refBox.appendChild(E('p','hist-ref-explain', res.reference_logic.explanation));
-        }
-        report.appendChild(refBox);
-      }
-
-      /* Verdict : score + risque */
-      var verdict = E('div','hist-verdict r-'+rk);
-      var vScore = E('div','hist-verdict-score r-'+rk);
-      vScore.appendChild(document.createTextNode((typeof entry.score==='number')?String(entry.score):'—'));
-      var sfx = document.createElement('span'); sfx.textContent = ' /100';
-      vScore.appendChild(sfx);
-      verdict.appendChild(vScore);
-      var vMeta = E('div','hist-verdict-meta');
-      vMeta.appendChild(E('div','hist-verdict-risk', riskLabel(rk)));
-      vMeta.appendChild(E('div','hist-verdict-sub', fmtDate(entry.date)));
-      verdict.appendChild(vMeta);
-      report.appendChild(verdict);
-
-      /* Stats */
-      var grid = E('div','hist-detail-grid');
-      function stat(label,value){
-        var s = E('div','hist-stat');
-        s.appendChild(E('div','hist-stat-label',label));
-        s.appendChild(E('div','hist-stat-value',value));
+      /* (Header) Niveau de risque + score, puis jauge segmentée (= #hero live) */
+      var hero = E('div','hlr-hero');
+      var heroRow = E('div','hlr-hero-row');
+      heroRow.appendChild(E('span','hlr-hero-label', tr('rep_lvl_label', 'Niveau de risque')));
+      var scoreBlock = E('div','hlr-hero-score');
+      scoreBlock.appendChild(E('span','hlr-hero-score-val', (typeof entry.score==='number')?String(entry.score):'—'));
+      scoreBlock.appendChild(E('span','hlr-hero-score-sfx', '/100'));
+      heroRow.appendChild(scoreBlock);
+      hero.appendChild(heroRow);
+      var seg = E('div','hlr-seg');
+      function segItem(segKey, label){
+        var s = E('span','hlr-seg-s', label);
+        s.setAttribute('data-seg', segKey);
         return s;
       }
-      grid.appendChild(stat(tr('h_stat_context',  'Contexte'),         sectorLabel(entry.sector)));
-      grid.appendChild(stat(tr('h_stat_zones',    'Zones détectées'),  String(entry.zoneCount||0)));
-      grid.appendChild(stat(tr('h_stat_coverage', 'Couverture'),       (typeof entry.coveragePercent==='number')?entry.coveragePercent.toFixed(1)+' %':'—'));
-      report.appendChild(grid);
+      seg.appendChild(segItem('low',  tr('rep_seg_low',  'Faible')));
+      seg.appendChild(segItem('mid',  tr('rep_seg_mid',  'Modéré')));
+      seg.appendChild(segItem('high', tr('rep_seg_high', 'Élevé')));
+      hero.appendChild(seg);
+      live.appendChild(hero);
 
-      /* Signatures détectées */
-      var probs = consolidateProbs(res.probabilities);
-      if (probs.length){
-        var sSig = E('div','hist-section');
-        sSig.appendChild(E('div','hist-section-title', tr('h_sec_signatures', 'Signatures détectées')));
-        probs.forEach(function(p){
-          var cat = catOf(p.id);
-          var row = E('div','hist-sig-row');
-          var sw = E('div','hist-sig-sw'); sw.style.background = cat.color;
-          row.appendChild(sw);
-          row.appendChild(E('div','hist-sig-name', cat.label));
-          row.appendChild(E('div','hist-sig-pct', p.probability + ' %'));
-          sSig.appendChild(row);
-        });
-        report.appendChild(sSig);
+      /* (Image) photo fluorescente annotée — continue la carte, comme l'écran */
+      if (entry.image){
+        var img = document.createElement('img');
+        img.className = 'hlr-img';
+        img.src = entry.image;
+        img.alt = "Image fluorescente annotée de l'inspection";
+        live.appendChild(img);
       }
 
-      /* Observations */
-      var obs = parseObs(res.observations);
-      if (obs.length){
-        var sObs = E('div','hist-section');
-        sObs.appendChild(E('div','hist-section-title', tr('h_sec_observations', 'Observations')));
-        obs.forEach(function(o){
-          var it = E('div','hist-obs-item');
-          if (o.tag) it.appendChild(E('div','hist-obs-tag', o.tag));
-          it.appendChild(E('div','hist-obs-body', o.body));
-          sObs.appendChild(it);
-        });
-        report.appendChild(sObs);
+      var hasZones = (entry.zoneCount || 0) > 0
+        || (res && Array.isArray(res.zones) && res.zones.length > 0);
+
+      /* (Bloc 1) Origine probable : eyebrow + titre coloré + interprétation (1 phrase) */
+      var rTitle = (res.result && (res.result.title || '').toString().trim()) || '';
+      var rInterp = (res.result && (res.result.interpretation || '').toString().trim()) || '';
+      if (rTitle || rInterp){
+        var c1 = E('div','hlr-card');
+        var ey1 = E('div','hlr-eyebrow');
+        ey1.appendChild(svgIcon(['M11 11m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0','m21 21-4.3-4.3']));
+        ey1.appendChild(document.createTextNode(
+          hasZones ? tr('rep_origine', 'Origine probable') : tr('rep_result_label', 'Résultat')));
+        c1.appendChild(ey1);
+        if (rTitle) c1.appendChild(E('div','hlr-title', rTitle));
+        if (rInterp) c1.appendChild(E('p','hlr-text', rInterp));
+        live.appendChild(c1);
       }
 
-      /* V119 — Aide à la décision retirée (décision_summary jamais peuplée). */
+      /* (Bloc 2) Risque associé : 1 phrase (risk_logic), pathogènes en gras.
+         Même condition que le live : affiché si des zones + une logique existent. */
+      var rLogic = (res.contextual_reasoning && (res.contextual_reasoning.risk_logic || '').toString().trim()) || '';
+      if (hasZones && rLogic){
+        var c2 = E('div','hlr-card hlr-risque');
+        c2.appendChild(E('div','hlr-eyebrow hlr-eyebrow-risque', tr('rep_risque_label', 'Risque associé')));
+        var rtext = E('p','hlr-text');
+        var PATHO = /(Listeria|Salmonelles?|salmonelles?|E\.?\s?coli|Pseudomonas|Staphylocoque|Campylobacter|Legionella|Clostridium|Bacillus)/g;
+        var li = 0;
+        var matches = rLogic.match(PATHO) || [];
+        matches.forEach(function(hit){
+          var at = rLogic.indexOf(hit, li);
+          if (at < 0) return;
+          if (at > li) rtext.appendChild(document.createTextNode(rLogic.slice(li, at)));
+          var bb = document.createElement('b'); bb.textContent = hit; rtext.appendChild(bb);
+          li = at + hit.length;
+        });
+        if (li < rLogic.length) rtext.appendChild(document.createTextNode(rLogic.slice(li)));
+        c2.appendChild(rtext);
+        live.appendChild(c2);
+      }
 
-      /* Actions */
+      /* (Bloc 3) Action recommandée : eyebrow + 1 phrase (primary_action) */
+      var rAction = (res.recommendation && (res.recommendation.primary_action || '').toString().trim()) || '';
+      if (rAction){
+        var c3 = E('div','hlr-card');
+        var actLbl = (res.recommendation && (res.recommendation.title || '').toString().trim())
+          || tr('rep_action_label', 'Action recommandée');
+        c3.appendChild(E('div','hlr-eyebrow hlr-eyebrow-action', actLbl));
+        c3.appendChild(E('p','hlr-text', rAction));
+        live.appendChild(c3);
+      }
+
+      report.appendChild(live);
+
+      /* ── Actions : Télécharger le rapport + Supprimer (identique à l'écran) ── */
       var actions = E('div','hist-actions');
       var pdfBtn = E('button','hist-btn hist-btn-primary');
       pdfBtn.type = 'button';
