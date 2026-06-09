@@ -9605,7 +9605,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v230</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v231</div>
         </div>
       </div>
     </div>
@@ -11801,19 +11801,21 @@ body.lv-open { overflow: hidden; touch-action: none; }
       /* État vide centré dans la carte fixe (au lieu d'une mini-boîte). */
       .home-history-empty { margin: auto !important; }
 
-      /* ═══ V230 — Accueil : inspections en LISTE NORMALE. Erreur V228 corrigée :
-         les lignes étaient ÉTIRÉES (flex:1) pour combler → « espacées comme ça ».
-         Désormais densité NORMALE (lignes non étirées) ; la carte s'agrandit en
-         montrant PLUS d'inspections (jusqu'à 6), pas en gonflant les lignes.
-         Carte groupée juste sous les boutons (pas de grand vide intermédiaire). ═══ */
-      .home { justify-content: center !important; gap: clamp(12px, 2vh, 20px) !important; padding-top: 0 !important; }
-      #homeHistory.home-history { flex: 0 1 auto !important; min-height: 0 !important; max-height: none !important; }
-      /* Carte dimensionnée à son contenu (lignes à densité NORMALE, non étirées),
-         défile au-delà de 6 inspections ; l'ensemble (boutons · liste · savoir+)
-         est CENTRÉ verticalement → respiration égale en haut et en bas. */
-      .home-history-scroll { flex: 0 1 auto !important; min-height: 0 !important; max-height: 460px !important; overflow-y: auto !important; }
-      .home-history-body { display: flex !important; flex-direction: column !important; }
-      .home-hrow { flex: 0 0 auto !important; min-height: 78px !important; }      /* densité NORMALE, non étirée */
+      /* ═══ V231 — Accueil, correctifs figés (demande, définitif) :
+         • « Analyser » non rogné par l'en-tête + un cran plus bas (fini le centrage
+           qui débordait vers le haut) ;
+         • carte « Dernières inspections » GRANDE et de TAILLE FIXE (flex:1 + min
+           280px → jamais réduite, max d'inspections en aperçu) ;
+         • lignes SERRÉES (gap 9px) et chacune une CARTE distincte (fond + ombre +
+           contour) → lisible sur blanc, premium ;
+         • « En savoir plus » ancré EN BAS (poussé par la carte qui remplit). ═══ */
+      .home { justify-content: flex-start !important; gap: 10px !important; padding-top: 12px !important; }
+      .home-actions { flex: 0 0 auto !important; }
+      #homeHistory.home-history { flex: 1 1 auto !important; min-height: 280px !important; max-height: none !important; display: flex !important; flex-direction: column !important; }
+      .home-history-scroll { flex: 1 1 auto !important; min-height: 0 !important; max-height: none !important; overflow-y: auto !important; border: 0 !important; background: transparent !important; padding: 4px 3px !important; }
+      .home-history-body { display: flex !important; flex-direction: column !important; gap: 9px !important; }
+      .home-hrow { flex: 0 0 auto !important; min-height: 60px !important; padding: 9px 12px !important; gap: 12px !important; background: var(--surface-low) !important; border: 1px solid var(--border) !important; border-radius: 14px !important; box-shadow: 0 3px 12px rgba(16,28,40,.10) !important; margin: 0 !important; }
+      .home-hrow-thumb { width: 42px !important; height: 42px !important; border-radius: 11px !important; }
       .home-learn-link { flex: 0 0 auto !important; }
       </style>
       <!-- V187 — bloc .results-hdr (en-tête LUCENS dupliqué + croix ✕) retiré. -->
@@ -28382,7 +28384,7 @@ const Annotator = (() => {
       /* V228 — On montre les 4 inspections les plus récentes (demande : combler
          l'espace vide sous les boutons). La carte s'étire pour les afficher en
          entier (CSS flex). L'historique complet reste accessible via « Tout voir ». */
-      items.slice(0, 6).forEach(function(entry){
+      items.slice(0, 8).forEach(function(entry){
         var row = E('button','home-hrow');
         row.type = 'button';
         if (entry.image){
@@ -28399,10 +28401,13 @@ const Annotator = (() => {
         var sectorStr = hasSector ? sectorLabel(entry.sector) : '';
         var zc = entry.zoneCount || 0;
         var zonesTxt = zonesText(zc);
-        body.appendChild(E('div','home-hrow-date', hz || relTime(entry.date)));
+        /* V231 — Identifiant = ZONE saisie, sinon SECTEUR (ce qui a été inspecté),
+           sinon la date ; sous-ligne = date (+ secteur si un nom de zone est saisi). */
+        var primary = hz || sectorStr || relTime(entry.date);
+        body.appendChild(E('div','home-hrow-date', primary));
         var metaParts = [];
-        if (hz) metaParts.push(relTime(entry.date));
-        if (hasSector) metaParts.push(sectorStr);
+        if (hz || hasSector) metaParts.push(relTime(entry.date));
+        if (hz && hasSector) metaParts.push(sectorStr);
         /* V228 — « n zones » RETIRÉ partout (jugé non pertinent terrain par les
            utilisateurs, demande). Méta = date (lignes nommées) + secteur. On n'ajoute
            la ligne que si elle a du contenu (pas de méta fantôme vide). */
