@@ -9529,7 +9529,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v222</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v223</div>
         </div>
       </div>
     </div>
@@ -11488,7 +11488,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
          « Dernières inspections » + « En savoir plus » à DROITE, pleine largeur.
          Le portrait n'est PAS touché. Grille (pas de wrapper) : la colonne gauche
          (actions) s'étend sur les 2 rangées, la droite empile histo + accordéons. */
-      @media (orientation: landscape) and (max-height: 540px) {
+      @media (orientation: landscape) and (max-height: 820px) {
         /* Le repli « écran court » (@media max-height:560) passe .upload-hub en
            position:static (page scrollable). En PAYSAGE on REFIXE la coque pour
            garder une mise en page 2 colonnes qui tient à l'écran (pas de scroll). */
@@ -11515,7 +11515,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
           column-gap: 24px !important;
           align-content: stretch !important; align-items: stretch !important;
           height: 100% !important; min-height: 0 !important; overflow: hidden !important;
-          max-width: none !important; width: 100% !important;
+          /* Cap la largeur sur grand écran (Chrome bureau) → colonnes pas étirées,
+             centré ; sur téléphone (<940px) ça remplit. */
+          max-width: 940px !important; width: 100% !important; margin: 0 auto !important;
           padding: 8px 12px 12px !important;
         }
         .home-actions {
