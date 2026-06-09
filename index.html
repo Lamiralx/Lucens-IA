@@ -9529,7 +9529,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v221</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v222</div>
         </div>
       </div>
     </div>
@@ -11510,9 +11510,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
         .home {
           display: grid !important;
           grid-template-columns: 45% 1fr !important;
-          grid-template-areas: "actions history" "actions accordions" !important;
-          grid-template-rows: minmax(0, auto) minmax(0, 1fr) !important;
-          column-gap: 24px !important; row-gap: 8px !important;
+          grid-template-areas: "actions history" !important;
+          grid-template-rows: 1fr !important;
+          column-gap: 24px !important;
           align-content: stretch !important; align-items: stretch !important;
           height: 100% !important; min-height: 0 !important; overflow: hidden !important;
           max-width: none !important; width: 100% !important;
@@ -11525,20 +11525,16 @@ body.lv-open { overflow: hidden; touch-action: none; }
           min-width: 0 !important;
         }
         .home-btn { height: 50px !important; font-size: 14.5px !important; }
+        /* Carte inspections AGRANDIE en paysage : les 3 dernières en entier,
+           centrée verticalement dans sa colonne (demande). */
         #homeHistory.home-history {
-          grid-area: history !important; align-self: start !important;
-          min-height: 0 !important; max-height: 150px !important;
+          grid-area: history !important; align-self: center !important;
+          min-height: 0 !important; max-height: 100% !important;
           display: flex !important; flex-direction: column !important; overflow: hidden !important;
         }
-        .home-history-scroll { min-height: 0 !important; max-height: 116px !important; overflow-y: auto !important; flex: 0 1 auto !important; }
-        /* Écart NET avec « En savoir plus » (le row-gap ne suffisait pas → elles
-           se touchaient) + l'accordéon défile dans son cadre, ne déborde plus. */
-        .home-accordions {
-          grid-area: accordions !important; align-self: stretch !important;
-          min-height: 0 !important; overflow-y: auto !important;
-          margin-top: 14px !important; border-top: 1px solid var(--hairline) !important; padding-top: 12px !important;
-        }
-        .home-accordions .home-more-label { margin: 2px 2px 6px !important; }
+        .home-history-scroll { min-height: 0 !important; max-height: 204px !important; overflow-y: auto !important; flex: 0 1 auto !important; }
+        /* « En savoir plus » MASQUÉ en paysage (secondaire) → affichage épuré. */
+        .home-accordions { display: none !important; }
         .home-footer { display: none !important; }
       }
 
