@@ -9678,7 +9678,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v250</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v251</div>
         </div>
       </div>
     </div>
@@ -25632,7 +25632,23 @@ const Annotator = (() => {
     unknown:  { label:'Résidu détecté',      badge:'À analyser',        level:'low',  color:'#64748B' },
   };
   function lvLiveType(sample) {
-    const R = sample.avgR || 0, G = sample.avgG || 0, B = sample.avgB || 0;
+    let R = sample.avgR || 0, G = sample.avgG || 0, B = sample.avgB || 0;
+    /* V251 — CORRECTION DU VOILE UV (cause racine du « toujours détergent ») : la
+       balance des blancs auto du téléphone teinte TOUTE la scène en bleu/violet →
+       la moyenne des pixels brillants vire au bleu → teinte ~200 → bucket 'chemical'
+       systématique. On neutralise ce cast par balance des blancs « gris-monde » sur
+       le FOND (lampe réfléchie) : on divise chaque canal du signal par le canal du
+       fond → le fond redevient neutre et le signal retrouve sa VRAIE dominante
+       (vert organique, rouge pigmenté…) au lieu d'être noyé dans le bleu. */
+    {
+      const bgR = sample.bgR || 0, bgG = sample.bgG || 0, bgB = sample.bgB || 0;
+      const bgMax = Math.max(bgR, bgG, bgB);
+      if (bgMax >= 12 && (sample.nBg || 0) > 8) {
+        R = Math.min(255, R * (bgMax / Math.max(1, bgR)));
+        G = Math.min(255, G * (bgMax / Math.max(1, bgG)));
+        B = Math.min(255, B * (bgMax / Math.max(1, bgB)));
+      }
+    }
     const mx = Math.max(R, G, B), mn = Math.min(R, G, B);
     const lum = R * 0.299 + G * 0.587 + B * 0.114;        /* 0-255 (= luminance moteur) */
     let h = 0, s = 0; const l = (mx + mn) / 2 / 255;
@@ -25649,7 +25665,10 @@ const Annotator = (() => {
     else {
       /* V244 — catégorie "biofilm" (violet 225-330) RETIRÉE : sous 365 nm le violet
          est la LAMPE réfléchie, pas une fluorescence de résidu (correction expert). */
-      const P = [['organic',45,165,0.20],['fatty',15,45,0.22],['pigmented',330,15,0.25],['chemical',165,225,0.25]];
+      /* V251 — 'chemical' (cyan 165-225) exige une saturation FRANCHE (0.45) APRÈS
+         correction du voile : un cyan faible = reste de cast → on n'affirme PAS,
+         on laisse 'unknown' (« Résidu détecté · À analyser ») et l'ANALYSE tranche. */
+      const P = [['organic',45,165,0.20],['fatty',15,45,0.22],['pigmented',330,15,0.25],['chemical',165,225,0.45]];
       for (let k = 0; k < P.length; k++) {
         const a = P[k][1], b = P[k][2], sm = P[k][3];
         if (s < sm) continue;
@@ -25831,6 +25850,12 @@ const Annotator = (() => {
       avgR: nB > 0 ? rSumB / nB : (n > 0 ? rSum / n : 0),
       avgG: nB > 0 ? gSumB / nB : (n > 0 ? gSum / n : 0),
       avgB: nB > 0 ? bSumB / nB : (n > 0 ? bSum / n : 0),
+      /* V251 — Moyenne du FOND (tous − brillants) = teinte de la LAMPE 365 nm
+         réfléchie. Référence de balance des blancs pour neutraliser le voile UV. */
+      bgR: (n - nB) > 0 ? (rSum - rSumB) / (n - nB) : 0,
+      bgG: (n - nB) > 0 ? (gSum - gSumB) / (n - nB) : 0,
+      bgB: (n - nB) > 0 ? (bSum - bSumB) / (n - nB) : 0,
+      nBg: n - nB,
       n,
     };
   }
