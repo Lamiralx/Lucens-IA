@@ -9629,7 +9629,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v237</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v238</div>
         </div>
       </div>
     </div>
@@ -28619,6 +28619,26 @@ const Annotator = (() => {
   if (link) link.addEventListener('click', function(e){ e.preventDefault(); open(); });
   if (back) back.addEventListener('click', close);
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && overlay && !overlay.hidden) close(); });
+})();
+</script>
+
+<!-- V238 — Live View plein écran : status bar NOIRE (continuité du flux caméra,
+     supprime la bande grise/blanche en haut, zone Dynamic Island). On bascule le
+     meta theme-color sur #000 quand le Live View est ouvert, et on restaure la
+     couleur du thème à la fermeture. Observateur de classe = capte tous les
+     chemins d'ouverture/fermeture. -->
+<script>
+(function(){
+  var mc = document.querySelector('meta[name="theme-color"]');
+  if (!mc || typeof MutationObserver === 'undefined') return;
+  function themeCol(){ return document.documentElement.getAttribute('data-theme') === 'dark' ? '#06070A' : '#F4F6F8'; }
+  function lvOpen(){ return document.body.classList.contains('lv-open') || document.documentElement.classList.contains('lv-open'); }
+  var last = null;
+  function sync(){ var o = lvOpen(); if (o === last) return; last = o; mc.setAttribute('content', o ? '#000000' : themeCol()); }
+  var obs = new MutationObserver(sync);
+  obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+  obs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  sync();
 })();
 </script>
 </body>
