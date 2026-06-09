@@ -9678,7 +9678,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v251</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v252</div>
         </div>
       </div>
     </div>
@@ -25644,9 +25644,16 @@ const Annotator = (() => {
       const bgR = sample.bgR || 0, bgG = sample.bgG || 0, bgB = sample.bgB || 0;
       const bgMax = Math.max(bgR, bgG, bgB);
       if (bgMax >= 12 && (sample.nBg || 0) > 8) {
-        R = Math.min(255, R * (bgMax / Math.max(1, bgR)));
-        G = Math.min(255, G * (bgMax / Math.max(1, bgG)));
-        B = Math.min(255, B * (bgMax / Math.max(1, bgB)));
+        /* V252 — correction PARTIELLE (40%) + gains PLAFONNÉS (1.5) : on neutralise
+           le voile bleu SANS sur-roter tout vers le vert (sinon « tout organique »
+           comme en V251). Demi-mesure entre le brut (tout chimique) et la correction
+           totale (tout organique). */
+        const gR = Math.min(1.5, bgMax / Math.max(1, bgR));
+        const gG = Math.min(1.5, bgMax / Math.max(1, bgG));
+        const gB = Math.min(1.5, bgMax / Math.max(1, bgB));
+        R = Math.min(255, R * (0.6 + 0.4 * gR));
+        G = Math.min(255, G * (0.6 + 0.4 * gG));
+        B = Math.min(255, B * (0.6 + 0.4 * gB));
       }
     }
     const mx = Math.max(R, G, B), mn = Math.min(R, G, B);
