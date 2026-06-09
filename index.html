@@ -9537,7 +9537,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v224</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v225</div>
         </div>
       </div>
     </div>
@@ -11546,6 +11546,28 @@ body.lv-open { overflow: hidden; touch-action: none; }
         /* « En savoir plus » MASQUÉ en paysage (secondaire) → affichage épuré. */
         .home-accordions { display: none !important; }
         .home-footer { display: none !important; }
+      }
+
+      /* ═══════════ V225 — POP-UPS en PAYSAGE court (≤540px de haut) ═══════════
+         En paysage téléphone, les pop-ups prenaient la variante « grand écran »
+         (largeur 844>600 → modale centrée haute) dans une fenêtre BASSE → trop
+         hautes, en-tête qui mange la place. On les plafonne + compacte + défile. */
+      @media (orientation: landscape) and (max-height: 540px) {
+        /* CONTEXTE — modale plafonnée, en-tête compacté → plus d'options visibles. */
+        .ctx-modal { height: calc(100dvh - 14px) !important; max-height: calc(100dvh - 14px) !important; min-height: 0 !important; }
+        .ctx-header { padding: 8px 22px 8px !important; }
+        .ctx-overlay .ctx-eyebrow { font-size: 9px !important; }
+        .ctx-overlay .ctx-title { font-size: 15px !important; margin: 2px 0 0 !important; }
+        .ctx-stepnav { padding-bottom: 8px !important; min-height: 0 !important; }
+        .ctx-body { padding: 10px 22px 8px !important; }
+        .ctx-q-label { margin-bottom: 6px !important; }
+        .ctx-footer { padding: 8px 18px !important; }
+        /* RÉGLAGES — sheet plafonnée + défilante (sinon déborde en bas). */
+        .settings-sheet { max-height: calc(100dvh - 10px) !important; overflow-y: auto !important; }
+        .settings-body { gap: 12px !important; }
+        /* HISTORIQUE — en-tête compact, la liste défile déjà. */
+        .hist-bar { height: 48px !important; min-height: 48px !important; }
+        .hist-scroll { padding-top: 8px !important; }
       }
 
       /* ─── V188.2 — Compactage MOBILE (≤500px) : tout doit tenir à l'écran ───
