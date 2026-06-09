@@ -8543,59 +8543,59 @@ html.lv-open, body.lv-open { background: #000 !important; }
    V19.1 (2026-05-24) : responsive — max-width relative au viewport,
    wrap autorisé sur mobile pour éviter le débordement, ellipsis fallback. */
 .lv-status-banner {
-  /* V80 — Largeur FIXE pour que la bannière ne change jamais de taille
-     selon le contenu. Texte tronqué via ellipsis si overflow.
-     Calcul : viewport - 2 icônes (40px chacune) - gaps - paddings. */
+  /* V243 — LECTEUR EN DIRECT : la bannière annonce le TYPE de résidu détecté au
+     viseur (organique / chimique / biofilm / poussière…) AVANT l'analyse, avec sa
+     couleur Lucens. Plus grande, largeur AUTO (s'adapte au type), pastille
+     colorée, typo de l'app (fini le mini-mono en majuscules). */
   display: inline-flex;
   align-items: center;
-  justify-content: center;   /* V152 — texte parfaitement centré (plus de point à gauche) */
-  gap: 0;
-  padding: 7px 12px;
-  width: 185px;  /* V132 — taille FIXE unique, dimensionnée pour le plus long verdict court (toutes langues), petite et stable */
-  max-width: calc(100vw - 120px);
-  background: rgba(8, 10, 14, 0.9);  /* V128 — plus opaque : compense le retrait du blur */
-  color: rgba(245, 247, 250, 0.96);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 14px;
-  font-family: 'IBM Plex Mono', ui-monospace, monospace;
-  font-size: 10.5px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  justify-content: center;
+  gap: 9px;
+  padding: 9px 16px;
+  width: auto;
+  max-width: calc(100vw - 96px);
+  background: rgba(8, 10, 14, 0.82);
+  color: rgba(245, 247, 250, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  text-transform: none;
   pointer-events: none;
-  /* V128 — backdrop-filter blur retiré : flouter en continu le fond vidéo qui
-     bouge = compositing GPU permanent sur iOS → saccades. Fond opaque à la place. */
-  /* V45 — Plus de transition de couleur. Les changements d'état (idle ↔
-     fluo ↔ object) sont des informations INSTANTANÉES pour le user terrain
-     HACCP — ne doivent pas être enrobés d'une animation 200ms qui fait
-     "respirer" le banner constamment et crée une sensation d'instabilité. */
   text-align: center;
   box-sizing: border-box;
-  /* V35 — centre auto dans le flex de la topbar */
   margin: 0 auto;
-  min-width: 0; /* permet l'ellipsis dans flex */
+  min-width: 0;
 }
+/* Pastille = couleur Lucens du type. En fluo, --lv-type-color est fixée EN LIGNE
+   par le JS (couleur du type détecté) ; sinon les couleurs d'état ci-dessous. */
+.lv-status-banner::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--lv-type-color, rgba(255,255,255,0.32));
+  box-shadow: 0 0 8px var(--lv-type-color, transparent);
+}
+.lv-status-banner[data-state="idle"]    { --lv-type-color: rgba(255,255,255,0.30); }
+.lv-status-banner[data-state="pending"] { --lv-type-color: #FFB020; }
+.lv-status-banner[data-state="object"]  { --lv-type-color: #94A3B8; }
 .lv-status-label {
-  /* V152 — Texte centré, sur une seule ligne, JAMAIS tronqué. La taille de police
-     est ajustée par JS (fitLvStatusLabel) pour TOUJOURS tenir dans la largeur fixe,
-     quelle que soit la langue (allemand inclus). overflow:hidden = garde-fou ultime. */
-  width: 100%;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 @media (max-width: 380px) {
   .lv-status-banner {
-    font-size: 9.5px;
-    padding: 6px 10px;
-    width: 180px;
-    max-width: calc(100vw - 110px);
-    gap: 6px;
+    font-size: 12.5px;
+    padding: 8px 14px;
+    max-width: calc(100vw - 80px);
+    gap: 8px;
   }
 }
-/* V152 — Le point d'état (.lv-status-dot) a été RETIRÉ : il décentrait le texte
-   et faisait doublon avec la couleur du réticule central (qui indique déjà
-   l'état). Le libellé du bandeau, centré, suffit. */
 
 /* V26 — Banner statut MASQUÉ pendant les modes calibration (carte +
    zone propre) car il chevauche les boutons des popups. */
@@ -9638,7 +9638,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v242</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v243</div>
         </div>
       </div>
     </div>
@@ -25575,6 +25575,37 @@ const Annotator = (() => {
   let chLastSample = 0;
   let chCurrentVerdict = { state: 'idle', reason: '' };
 
+  /* V243 — Classification EN DIRECT au viseur : couleur moyenne des pixels
+     brillants échantillonnés → type (mêmes plages que PROFILES du moteur) →
+     libellé + couleur Lucens via getCategory. Alimente le lecteur de la bannière. */
+  function lvLiveType(sample) {
+    const R = sample.avgR || 0, G = sample.avgG || 0, B = sample.avgB || 0;
+    const mx = Math.max(R, G, B), mn = Math.min(R, G, B);
+    const lum = R * 0.299 + G * 0.587 + B * 0.114;        /* 0-255 (= luminance moteur) */
+    let h = 0, s = 0; const l = (mx + mn) / 2 / 255;
+    if (mx !== mn) {
+      const d = mx - mn;
+      s = l > 0.5 ? d / (510 - mx - mn) : d / (mx + mn);
+      if (mx === R) h = ((G - B) / d + (G < B ? 6 : 0)) / 6;
+      else if (mx === G) h = ((B - R) / d + 2) / 6;
+      else h = ((R - G) / d + 4) / 6;
+      h *= 360;
+    }
+    let id = 'unknown';
+    if (s <= 0.20 && lum >= 195) id = 'mineral';
+    else {
+      const P = [['organic',45,165,0.20],['fatty',15,45,0.22],['pigmented',330,15,0.25],['chemical',165,225,0.25],['biofilm',225,330,0.22]];
+      for (let k = 0; k < P.length; k++) {
+        const a = P[k][1], b = P[k][2], sm = P[k][3];
+        if (s < sm) continue;
+        const inR = a <= b ? (h >= a && h <= b) : (h >= a || h <= b);
+        if (inR) { id = P[k][0]; break; }
+      }
+    }
+    const cat = (typeof getCategory === 'function') ? getCategory(id) : null;
+    return { id: id, label: cat ? cat.label : '', color: (cat && cat.color) ? cat.color : '#2DD4BF' };
+  }
+
   function setCrosshairState(state, reason) {
     /* V24 — Hysteresis : un verdict fluo/object reste affiché 3s même si
        le signal devient temporairement idle. Évite le clignotement. */
@@ -25608,7 +25639,17 @@ const Annotator = (() => {
         fluo:    tr('lv_status_fluo',    'Résidu détecté'),
         object:  tr('lv_status_object',  'Pas un résidu'),
       };
-      label.textContent = map[state] || tr('lv_status_idle', 'Visez une zone');
+      /* V243 — LECTEUR EN DIRECT : en fluo, on annonce le TYPE détecté au viseur
+         (libellé + couleur Lucens du type) au lieu du générique « Résidu détecté ».
+         Pour les autres états, on laisse les couleurs d'état (CSS data-state). */
+      let txt = map[state] || tr('lv_status_idle', 'Visez une zone');
+      if (state === 'fluo' && lv.liveType && lv.liveType.label) {
+        txt = lv.liveType.label;
+        if (banner) banner.style.setProperty('--lv-type-color', lv.liveType.color || '#2DD4BF');
+      } else if (banner) {
+        banner.style.removeProperty('--lv-type-color');
+      }
+      label.textContent = txt;
       fitLvStatusLabel();
     }
     chCurrentVerdict = { state, reason: reason || '' };
@@ -25833,6 +25874,9 @@ const Annotator = (() => {
            - sensibilité 100 (très sensible)→ ratio ≥ 1.8 % seulement */
         const { ratioMin } = getDetectionThresholds(lv.sensDisplay != null ? lv.sensDisplay : 65);
         const hasSignal = sample.brightRatio >= ratioMin;
+        /* V243 — type EN DIRECT (alimente la bannière), recalculé chaque frame
+           tant qu'il y a du signal coloré au viseur. */
+        lv.liveType = hasSignal ? lvLiveType(sample) : null;
         const now = performance.now();
         const cacheKey = crosshairCacheKey(sample);
         const cachedVerdict = lv.validateCache.get(cacheKey);
