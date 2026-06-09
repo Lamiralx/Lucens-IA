@@ -2,98 +2,89 @@
 <html lang="fr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-  :root{
-    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    --accent:#0F3D4E; --ink:#F5F7FA;
-  }
+  :root{--font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--accent:#0F3D4E;--ink:#F5F7FA}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:var(--font);background:#1b1d22;display:flex;flex-direction:column;align-items:center;gap:22px;padding:26px 0 40px}
-  .cap{color:#aeb4be;font-size:12.5px;letter-spacing:.02em;text-align:center;max-width:380px;line-height:1.5}
+  body{font-family:var(--font);background:#1b1d22;display:flex;flex-direction:column;align-items:center;gap:20px;padding:26px 14px 44px}
+  .cap{color:#aeb4be;font-size:12.5px;letter-spacing:.02em;text-align:center;max-width:760px;line-height:1.5}
   .cap b{color:#fff}
+  .row{display:flex;gap:22px;flex-wrap:wrap;justify-content:center}
+  .col{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .tag{color:#cfd5de;font-size:12px;font-weight:600;letter-spacing:.02em}
+  .tag span{color:#8a9098;font-weight:400}
 
-  /* ===== Live View (caméra sombre) ===== */
-  .lv{position:relative;width:390px;height:760px;background:radial-gradient(120% 80% at 50% 30%,#0b0d10 0%,#000 78%);border-radius:30px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.5)}
-  /* (le gradient ci-dessus = juste le rendu sombre de la caméra réelle, pas un élément d'UI) */
+  .lv{position:relative;width:380px;height:720px;background:radial-gradient(120% 80% at 50% 28%,#0b0d10 0%,#000 78%);border-radius:30px;overflow:hidden;box-shadow:0 22px 54px rgba(0,0,0,.5)}
 
-  /* bouton retour flottant */
   .back{position:absolute;top:18px;left:16px;width:46px;height:46px;border-radius:50%;background:rgba(28,32,38,.78);display:flex;align-items:center;justify-content:center}
   .back svg{width:20px;height:20px;stroke:#fff;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
 
-  /* ===== LECTEUR EN DIRECT (la pièce maîtresse) ===== */
-  .readout{position:absolute;top:18px;left:50%;transform:translateX(-50%);
-    display:inline-flex;align-items:center;gap:11px;
-    padding:10px 16px 11px;max-width:300px;
-    background:rgba(10,12,16,.86);border:1px solid rgba(255,255,255,.14);
-    border-radius:16px;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
-  .dot{flex:0 0 auto;width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 9px var(--c);margin-top:3px;align-self:flex-start}
+  /* ===== LECTEUR : sur sa PROPRE ligne, centré, aéré ===== */
+  .readout{position:absolute;top:78px;left:50%;transform:translateX(-50%);
+    display:inline-flex;align-items:center;gap:11px;padding:11px 18px;max-width:330px;
+    background:rgba(10,12,16,.85);border:1px solid rgba(255,255,255,.15);border-radius:18px}
+  .dot{flex:0 0 auto;width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 9px var(--c)}
   .rt{display:flex;flex-direction:column;min-width:0}
-  .residue{font-size:15px;font-weight:650;color:var(--ink);letter-spacing:.005em;line-height:1.15}
-  .risk{font-size:11.5px;font-weight:500;color:rgba(245,247,250,.62);margin-top:3px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .risk .lvl{font-weight:650}
-  .risk.high  .lvl{color:#F4A8A0}
-  .risk.mid   .lvl{color:#F0C36B}
-  .risk.low   .lvl{color:#9FE6C9}
+  .residue{font-size:15px;font-weight:650;color:var(--ink);line-height:1.15}
+  .risk{font-size:11.5px;font-weight:500;color:rgba(245,247,250,.6);margin-top:3px;line-height:1.25;white-space:nowrap}
+  .lvl{font-weight:650}
+  .high .lvl{color:#F4A8A0}.mid .lvl{color:#F0C36B}.low .lvl{color:#9FE6C9}
+  /* variante 1 ligne */
+  .readout.one .dot{margin:0}
+  .oneline{font-size:14px;font-weight:500;color:rgba(245,247,250,.72);white-space:nowrap}
+  .oneline b{font-weight:650;color:var(--ink)}
 
-  /* réticule centré (croix ambre + point) */
-  .ret{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:62px;height:62px;filter:drop-shadow(0 0 2px rgba(0,0,0,.9))}
-  .ret::before,.ret::after{content:"";position:absolute;background:linear-gradient(var(--d,to bottom),#FFB020 0 30%,transparent 30% 70%,#FFB020 70% 100%)}
-  .ret::before{left:50%;top:0;width:2px;height:100%;transform:translateX(-50%)}
-  .ret::after{top:50%;left:0;height:2px;width:100%;transform:translateY(-50%);background:linear-gradient(to right,#FFB020 0 30%,transparent 30% 70%,#FFB020 70% 100%)}
+  .ret{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60px;height:60px;filter:drop-shadow(0 0 2px rgba(0,0,0,.9))}
+  .ret::before{content:"";position:absolute;left:50%;top:0;width:2px;height:100%;transform:translateX(-50%);background:linear-gradient(to bottom,#FFB020 0 30%,transparent 30% 70%,#FFB020 70% 100%)}
+  .ret::after{content:"";position:absolute;top:50%;left:0;height:2px;width:100%;transform:translateY(-50%);background:linear-gradient(to right,#FFB020 0 30%,transparent 30% 70%,#FFB020 70% 100%)}
   .ret i{position:absolute;top:50%;left:50%;width:5px;height:5px;border-radius:50%;background:#FFB020;transform:translate(-50%,-50%)}
 
-  /* bouton analyser */
-  .shoot{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);display:inline-flex;align-items:center;gap:11px;
-    background:var(--accent);color:#fff;font-weight:650;font-size:16px;letter-spacing:.02em;
-    padding:17px 46px;border-radius:15px}
+  .shoot{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);display:inline-flex;align-items:center;gap:11px;background:var(--accent);color:#fff;font-weight:650;font-size:16px;letter-spacing:.02em;padding:17px 44px;border-radius:15px}
   .shoot svg{width:21px;height:21px;stroke:#fff;stroke-width:1.9;fill:none}
 
-  /* ===== bande comparative des états ===== */
-  .strip{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-width:760px}
-  .mini{background:#0b0d10;border-radius:14px;padding:16px 16px 18px;width:232px}
-  .mini .readout{position:static;transform:none;max-width:none;display:inline-flex}
-  .mini .ml{color:#7b828d;font-size:11px;margin-top:11px;letter-spacing:.03em;text-transform:uppercase}
+  .strip{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-width:780px}
+  .mini{background:#0b0d10;border-radius:14px;padding:15px 16px 17px;width:236px}
+  .mini .readout{position:static;transform:none;max-width:none}
+  .ml{color:#7b828d;font-size:10.5px;margin-top:11px;letter-spacing:.03em;text-transform:uppercase}
 </style></head>
 <body>
 
-  <div class="cap"><b>Lecteur en direct — intégration proposée.</b> Le résidu détecté (titre) + le risque biofilm/bactérien inféré (sous-ligne), en une pastille premium. Zéro gradient d'UI, lisible d'un coup d'œil, n'occulte pas la scène.</div>
+  <div class="cap"><b>Correctif :</b> le lecteur sort de la rangée du bouton retour et se pose sur sa <b>propre ligne, centré et aéré</b>. Deux densités à comparer :</div>
 
-  <!-- HERO : Live View avec lecteur (résidu organique) -->
-  <div class="lv">
-    <div class="back"><svg viewBox="0 0 20 20"><path d="M12 15 L7 10 L12 5"/></svg></div>
-
-    <div class="readout">
-      <span class="dot" style="--c:#A3E635"></span>
-      <div class="rt">
-        <div class="residue">Résidu organique</div>
-        <div class="risk high">Risque biofilm <span class="lvl">élevé</span> · Listeria, Salmonella</div>
+  <div class="row">
+    <!-- A : complète (organismes en direct) -->
+    <div class="col">
+      <div class="lv">
+        <div class="back"><svg viewBox="0 0 20 20"><path d="M12 15 L7 10 L12 5"/></svg></div>
+        <div class="readout high">
+          <span class="dot" style="--c:#A3E635"></span>
+          <div class="rt"><div class="residue">Résidu organique</div><div class="risk high">Risque biofilm <span class="lvl">élevé</span> · Listeria, Salmonella</div></div>
+        </div>
+        <div class="ret"><i></i></div>
+        <div class="shoot"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 L20 20"/><path d="M10.5 7.5 V13.5 M7.5 10.5 H13.5"/></svg> ANALYSER</div>
       </div>
+      <div class="tag">A — Complète <span>· organismes en direct</span></div>
     </div>
 
-    <div class="ret"><i></i></div>
-
-    <div class="shoot"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 L20 20"/><path d="M10.5 7.5 V13.5 M7.5 10.5 H13.5"/></svg> ANALYSER</div>
+    <!-- B : épurée (organismes sur le résultat) -->
+    <div class="col">
+      <div class="lv">
+        <div class="back"><svg viewBox="0 0 20 20"><path d="M12 15 L7 10 L12 5"/></svg></div>
+        <div class="readout one">
+          <span class="dot" style="--c:#A3E635"></span>
+          <span class="oneline"><b>Résidu organique</b> · risque biofilm <span class="lvl high">élevé</span></span>
+        </div>
+        <div class="ret"><i></i></div>
+        <div class="shoot"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 L20 20"/><path d="M10.5 7.5 V13.5 M7.5 10.5 H13.5"/></svg> ANALYSER</div>
+      </div>
+      <div class="tag">B — Épurée <span>· organismes sur le résultat</span></div>
+    </div>
   </div>
 
-  <div class="cap" style="margin-top:4px">Le même lecteur, <b>adaptatif</b> selon le résidu — la couleur suit le résidu, le niveau de risque suit la microbiologie :</div>
-
-  <!-- BANDE : les 4 états -->
+  <div class="cap" style="margin-top:6px">Adaptatif selon le résidu — la pastille suit le résidu, le niveau de risque suit la microbiologie :</div>
   <div class="strip">
-    <div class="mini">
-      <div class="readout"><span class="dot" style="--c:#A3E635"></span><div class="rt"><div class="residue">Résidu organique</div><div class="risk high">Risque biofilm <span class="lvl">élevé</span> · Listeria, Salmonella</div></div></div>
-      <div class="ml">Substrat nutritif n°1</div>
-    </div>
-    <div class="mini">
-      <div class="readout"><span class="dot" style="--c:#94A3B8"></span><div class="rt"><div class="residue">Tartre / calcaire</div><div class="risk high">Risque biofilm <span class="lvl">élevé</span> (eau) · Legionella, Pseudomonas</div></div></div>
-      <div class="ml">Surface poreuse qui abrite</div>
-    </div>
-    <div class="mini">
-      <div class="readout"><span class="dot" style="--c:#FB923C"></span><div class="rt"><div class="residue">Résidu gras</div><div class="risk mid">Risque <span class="lvl">modéré</span> · protège les bactéries</div></div></div>
-      <div class="ml">Bouclier anti-désinfectant</div>
-    </div>
-    <div class="mini">
-      <div class="readout"><span class="dot" style="--c:#38BDF8"></span><div class="rt"><div class="residue">Résidu de détergent</div><div class="risk low">Risque microbio <span class="lvl">faible</span> · rinçage incomplet</div></div></div>
-      <div class="ml">Danger chimique, pas microbien</div>
-    </div>
+    <div class="mini"><div class="readout high"><span class="dot" style="--c:#A3E635"></span><div class="rt"><div class="residue">Résidu organique</div><div class="risk high">Risque biofilm <span class="lvl">élevé</span> · Listeria, Salmonella</div></div></div><div class="ml">Substrat nutritif n°1</div></div>
+    <div class="mini"><div class="readout high"><span class="dot" style="--c:#94A3B8"></span><div class="rt"><div class="residue">Tartre / calcaire</div><div class="risk high">Risque <span class="lvl">élevé</span> (eau) · Legionella, Pseudomonas</div></div></div><div class="ml">Surface poreuse qui abrite</div></div>
+    <div class="mini"><div class="readout mid"><span class="dot" style="--c:#FB923C"></span><div class="rt"><div class="residue">Résidu gras</div><div class="risk mid">Risque <span class="lvl">modéré</span> · protège les bactéries</div></div></div><div class="ml">Bouclier anti-désinfectant</div></div>
+    <div class="mini"><div class="readout low"><span class="dot" style="--c:#38BDF8"></span><div class="rt"><div class="residue">Résidu de détergent</div><div class="risk low">Risque microbio <span class="lvl">faible</span> · rinçage incomplet</div></div></div><div class="ml">Danger chimique, pas microbien</div></div>
   </div>
 
 </body></html>
