@@ -15,9 +15,15 @@
  * Sortie :
  *   {
  *     verdict: "YES_FLUO" | "NO_OBJECT" | "UNCERTAIN",
+ *     type: "organic|chemical|mineral|dust|fatty|pigmented|biofilm|unknown",
  *     reason: "<3-6 mots>",
  *     latencyMs: <number>
  *   }
+ *
+ * V255 — Claude renvoie désormais le TYPE de résidu (classification primaire).
+ * Le classifieur de teinte local du client oscille (cyan↔vert selon la lampe) :
+ * c'est Claude, déjà appelé par point de réticule, qui tranche la nature réelle.
+ * Vocabulaire VOLONTAIREMENT VAGUE/honnête (ne pas sur-spécifier — voir prompt).
  */
 
 import Anthropic from "@anthropic-ai/sdk";
@@ -42,13 +48,24 @@ Tu reçois un PETIT CROP d'image (zone localisée d'une photo sous UV) et tu doi
 
 - **UNCERTAIN** : signal ambigu, ni clairement fluo, ni clairement objet. À utiliser avec parcimonie.
 
+Quand verdict = YES_FLUO, tu CLASSES AUSSI la NATURE du résidu via le champ "type", choisi STRICTEMENT dans ce vocabulaire (reste VOLONTAIREMENT VAGUE — la couleur sous UV n'est qu'un indice, n'invente pas de détail) :
+- **organic** : vert-jaune diffus → matière organique / alimentaire / biologique.
+- **chemical** : bleu-cyan lisse → produit chimique (savon, solvant, nettoyant, azurant). RESTE VAGUE : ne dis PAS "détergent", "rinçage", "produit de rinçage".
+- **mineral** : blanc-bleuté cristallin → tartre / calcaire.
+- **dust** : points épars ternes → poussière.
+- **fatty** : orange-ambre irisé → corps gras / huile.
+- **pigmented** : rouge-rose → sang, porphyrines, pigments.
+- **biofilm** : voile structuré le long des joints / zones humides → biofilm potentiel.
+- **unknown** : fluorescence RÉELLE mais nature indéterminée (à utiliser RAREMENT).
+
 RÈGLES STRICTES :
-1. Réponds UNIQUEMENT au format JSON exact : {"verdict":"YES_FLUO|NO_OBJECT|UNCERTAIN","reason":"3 à 6 mots maximum"}
+1. Réponds UNIQUEMENT au format JSON exact : {"verdict":"YES_FLUO|NO_OBJECT|UNCERTAIN","type":"organic|chemical|mineral|dust|fatty|pigmented|biofilm|unknown","reason":"3 à 6 mots maximum"}
 2. PAS de texte avant ou après le JSON
 3. La raison doit nommer le matériau probable (ex: "grain bois clair", "plastique bleu lisse", "vraie tache cyan glow", "verre reflet bleu")
 4. Si la zone montre principalement du métal nu, plastique uniforme, bois, carton, verre, écran ou LED → NO_OBJECT systématique
 5. Si la zone montre un halo diffus saturé sans texture de matériau → YES_FLUO
 6. En cas de doute réel entre les deux → UNCERTAIN
+7. "type" est OBLIGATOIRE. Si verdict ≠ YES_FLUO → "type":"unknown". Si verdict = YES_FLUO → choisis le type le PLUS plausible (préfère un type concret à "unknown").
 
 Tu DOIS répondre en <800ms. Sois décisif.`;
 
@@ -94,7 +111,8 @@ export default async function handler(req, res) {
   try {
     const resp = await client.messages.create({
       model: MODEL,
-      max_tokens: 80,
+      /* V255 — +40 tokens pour le champ "type" ajouté au JSON. */
+      max_tokens: 120,
       system: SYSTEM_PROMPT,
       messages: [{
         role: 'user',
@@ -120,7 +138,7 @@ export default async function handler(req, res) {
     }
 
     if (!parsed || !parsed.verdict) {
-      res.status(200).json({ verdict: 'UNCERTAIN', reason: 'parse_failed', latencyMs });
+      res.status(200).json({ verdict: 'UNCERTAIN', type: 'unknown', reason: 'parse_failed', latencyMs });
       return;
     }
 
@@ -128,13 +146,25 @@ export default async function handler(req, res) {
       ? parsed.verdict : 'UNCERTAIN';
     const reason = String(parsed.reason || '').slice(0, 60);
 
-    res.status(200).json({ verdict, reason, latencyMs });
+    /* V255 — Whitelist du TYPE renvoyé par Claude. Vocabulaire fixe ; tout hors
+       liste retombe sur 'unknown'. Si verdict ≠ YES_FLUO, le type n'a pas de sens
+       → forcé à 'unknown'. On ne renvoie JAMAIS de type vide (le client compte
+       dessus pour piloter la bannière). */
+    const TYPES = ['organic', 'chemical', 'mineral', 'dust', 'fatty', 'pigmented', 'biofilm', 'unknown'];
+    let type = 'unknown';
+    if (verdict === 'YES_FLUO') {
+      const t = String(parsed.type || '').toLowerCase().trim();
+      type = TYPES.includes(t) ? t : 'unknown';
+    }
+
+    res.status(200).json({ verdict, type, reason, latencyMs });
   } catch (err) {
     const latencyMs = Date.now() - t0;
     /* En cas d'erreur réseau/Anthropic, on retourne UNCERTAIN plutôt que 500
        pour ne pas casser le flow Live View. Le client peut continuer. */
     res.status(200).json({
       verdict: 'UNCERTAIN',
+      type: 'unknown',
       reason: 'api_error',
       latencyMs,
       error: String(err?.message || err).slice(0, 120),

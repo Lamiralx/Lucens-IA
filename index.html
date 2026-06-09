@@ -9678,7 +9678,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v253</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v254</div>
         </div>
       </div>
     </div>
@@ -25623,13 +25623,24 @@ const Annotator = (() => {
      Fondé sur la microbio HACCP : l'organique nourrit les bactéries, le calcaire
      poreux les abrite. Le biofilm n'est JAMAIS une couleur — c'est un risque déduit
      du résidu. Libellé court + risque + niveau (couleur). Organismes → écran résultat. */
+  /* V255 — Le TYPE renvoyé par Claude (par point de réticule) PILOTE ce lecteur.
+     Le classifieur de teinte local ne sert plus que de pré-remplissage instantané ;
+     Claude corrige sous ~250 ms. Libellés VAGUES & HONNÊTES (jamais sur-spécifiés).
+     CORRECTION TERMINOLOGIE (exigée) : chemical = « Résidu chimique » + badge
+     « Risque chimique » (PLUS « Résidu de détergent » / « Rinçage incomplet »).
+     INTERDIT : aucun « À analyser » / « À évaluer » (demande utilisateur). Couleurs =
+     CATEGORIES de l'app (organic A3E635, chemical 38BDF8, mineral 94A3B8, dust 9CA3AF,
+     fatty FB923C, pigmented F43F5E, biofilm C084FC). 8 types : couvre TOUT le
+     vocabulaire de validate-cluster. */
   const LV_READOUT = {
     organic:  { label:'Résidu organique',    badge:'Biofilm élevé',     level:'high', color:'#A3E635' },
-    fatty:    { label:'Résidu gras',         badge:'Risque modéré',     level:'mid',  color:'#FB923C' },
+    chemical: { label:'Résidu chimique',     badge:'Risque chimique',   level:'mid',  color:'#38BDF8' },
     mineral:  { label:'Tartre / calcaire',   badge:'Biofilm élevé',     level:'high', color:'#94A3B8' },
-    chemical: { label:'Résidu de détergent', badge:'Rinçage incomplet', level:'mid',  color:'#38BDF8' },
-    pigmented:{ label:'Résidu pigmenté',     badge:'À analyser',        level:'mid',  color:'#F43F5E' },
-    unknown:  { label:'Résidu détecté',      badge:'À analyser',        level:'low',  color:'#64748B' },
+    dust:     { label:'Poussière',           badge:'Risque faible',     level:'low',  color:'#9CA3AF' },
+    fatty:    { label:'Résidu gras',         badge:'Risque modéré',     level:'mid',  color:'#FB923C' },
+    pigmented:{ label:'Résidu pigmenté',     badge:'Risque modéré',     level:'mid',  color:'#F43F5E' },
+    biofilm:  { label:'Biofilm potentiel',   badge:'Biofilm élevé',     level:'high', color:'#C084FC' },
+    unknown:  { label:'Résidu fluorescent',  badge:'Risque à confirmer',level:'low',  color:'#64748B' },
   };
   function lvLiveType(sample) {
     let R = sample.avgR || 0, G = sample.avgG || 0, B = sample.avgB || 0;
@@ -25672,10 +25683,13 @@ const Annotator = (() => {
     else {
       /* V244 — catégorie "biofilm" (violet 225-330) RETIRÉE : sous 365 nm le violet
          est la LAMPE réfléchie, pas une fluorescence de résidu (correction expert). */
-      /* V251 — 'chemical' (cyan 165-225) exige une saturation FRANCHE (0.45) APRÈS
-         correction du voile : un cyan faible = reste de cast → on n'affirme PAS,
-         on laisse 'unknown' (« Résidu détecté · À analyser ») et l'ANALYSE tranche. */
-      const P = [['organic',45,165,0.20],['fatty',15,45,0.22],['pigmented',330,15,0.25],['chemical',165,225,0.45]];
+      /* V255 — Le local n'est plus qu'un PRÉ-REMPLISSAGE instantané : il DOIT émettre
+         un type concret tout de suite, Claude (type par point) corrige sous ~250 ms.
+         On REBAISSE chemical satMin 0.45→0.25 (le 0.45 + le voile le faisait s'effondrer
+         en 'unknown'). La balance des blancs partielle (40%) reste, mais organic/fatty/
+         pigmented gardent une priorité d'ordre + un seuil ≤ chemical → ils peuvent gagner
+         AVANT le bucket cyan, donc plus de « toujours chimique ». */
+      const P = [['organic',45,165,0.18],['fatty',15,45,0.20],['pigmented',330,15,0.22],['chemical',165,225,0.25]];
       for (let k = 0; k < P.length; k++) {
         const a = P[k][1], b = P[k][2], sm = P[k][3];
         if (s < sm) continue;
@@ -25984,7 +25998,15 @@ const Annotator = (() => {
           }
         } else if (cachedVerdict && (now - cachedVerdict.ts) < 5000) {
           /* Cache hit récent (< 5s) → on garde l'état du verdict cached */
-          if (cachedVerdict.verdict === 'YES_FLUO') setCrosshairState('fluo', cachedVerdict.reason);
+          if (cachedVerdict.verdict === 'YES_FLUO') {
+            /* V255 — Rejoue le TYPE de Claude mis en cache : la bannière garde la
+               classification précise du point au lieu de retomber sur la teinte locale. */
+            if (cachedVerdict.type && cachedVerdict.type !== 'unknown' && LV_READOUT[cachedVerdict.type]) {
+              const r = LV_READOUT[cachedVerdict.type];
+              lv.liveType = { id: cachedVerdict.type, label: r.label, color: r.color, badge: r.badge, level: r.level };
+            }
+            setCrosshairState('fluo', cachedVerdict.reason);
+          }
           else if (cachedVerdict.verdict === 'NO_OBJECT') setCrosshairState('object', cachedVerdict.reason);
           else setCrosshairState('idle');
         } else if ((now - chLastSample) >= CH_SAMPLE_EVERY_MS) {
@@ -25995,8 +26017,12 @@ const Annotator = (() => {
           if (sample.brightRatio >= CH_OBVIOUS_BRIGHT_RATIO
               && sample.avgSat >= CH_OBVIOUS_SAT_AVG) {
             setCrosshairState('fluo', 'signal net');
+            /* V255 — Fast path « signal net » : pas d'appel Claude, donc pas de type
+               affiné → on garde le pré-remplissage de teinte locale (lv.liveType déjà
+               posé) ; type:'unknown' en cache pour une forme cohérente (le rejeu
+               ignore 'unknown' et conserve la teinte locale). */
             lv.validateCache.set(cacheKey, {
-              verdict: 'YES_FLUO', reason: 'signal net', ts: Date.now(),
+              verdict: 'YES_FLUO', type: 'unknown', reason: 'signal net', ts: Date.now(),
             });
             /* Skip le fetch Claude, on garde l'état */
             lv.rafId = requestAnimationFrame(loop);
@@ -26025,8 +26051,20 @@ const Annotator = (() => {
             .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
             .then(res => {
               const v = res.verdict || 'UNCERTAIN';
-              lv.validateCache.set(localKey, { verdict: v, reason: res.reason || '', ts: Date.now() });
-              if (v === 'YES_FLUO') setCrosshairState('fluo', res.reason || '');
+              /* V255 — On met aussi le TYPE de Claude en cache pour que le rejeu
+                 (cache hit) réutilise la même classification. */
+              lv.validateCache.set(localKey, { verdict: v, type: res.type || 'unknown', reason: res.reason || '', ts: Date.now() });
+              if (v === 'YES_FLUO') {
+                /* V255 — Le jugement de Claude sur CE point PILOTE la bannière : si Claude
+                   renvoie un type concret connu, il REMPLACE le pré-remplissage de teinte
+                   locale AVANT l'affichage 'fluo'. C'est le correctif définitif du
+                   « toujours chimique » : la couleur ne décide plus, Claude décide. */
+                if (res.type && res.type !== 'unknown' && LV_READOUT[res.type]) {
+                  const rd = LV_READOUT[res.type];
+                  lv.liveType = { id: res.type, label: rd.label, color: rd.color, badge: rd.badge, level: rd.level };
+                }
+                setCrosshairState('fluo', res.reason || '');
+              }
               else if (v === 'NO_OBJECT') setCrosshairState('object', res.reason || '');
               else setCrosshairState('idle');
             })
