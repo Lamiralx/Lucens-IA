@@ -1394,7 +1394,7 @@ body.has-offline-banner .upload-hub {
   position: fixed;
   top: 0; left: 0; right: 0;
   bottom: var(--bottom-bar-total);
-  z-index: 52;            /* au-dessus du header (50), sous la barre du bas (55) */
+  z-index: 75;            /* V228 — AU-DESSUS de la page « En savoir plus » (#learnOverlay=70) : les sujets (Pourquoi/Comment/Précautions) s'ouvrent PAR-DESSUS et non plus derrière l'overlay (bug navigation corrigé) */
   background: var(--surface-page);
   display: flex;
   flex-direction: column;
@@ -9605,7 +9605,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v227</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v228</div>
         </div>
       </div>
     </div>
@@ -11794,6 +11794,16 @@ body.lv-open { overflow: hidden; touch-action: none; }
       .home-history-body { display: flex !important; flex-direction: column !important; gap: 0 !important; flex: 1 1 auto !important; }
       /* État vide centré dans la carte fixe (au lieu d'une mini-boîte). */
       .home-history-empty { margin: auto !important; }
+
+      /* ═══ V228 — Accueil : la carte « Dernières inspections » REMPLIT l'espace
+         libre sous les boutons (fini le grand vide) et montre 4 inspections, les
+         lignes se répartissant pour combler la hauteur sans chevauchement. ═══ */
+      .home { justify-content: flex-start !important; gap: clamp(12px, 2.2vh, 20px) !important; padding-top: 6px !important; }
+      #homeHistory.home-history { flex: 1 1 auto !important; min-height: 0 !important; max-height: none !important; }
+      .home-history-scroll { flex: 1 1 auto !important; min-height: 0 !important; max-height: none !important; overflow-y: auto !important; }
+      .home-history-body { flex: 1 1 auto !important; display: flex !important; flex-direction: column !important; }
+      .home-hrow { flex: 1 1 auto !important; min-height: 62px !important; }      /* chaque ligne s'étire pour combler */
+      .home-learn-link { flex: 0 0 auto !important; }
       </style>
       <!-- V187 — bloc .results-hdr (en-tête LUCENS dupliqué + croix ✕) retiré. -->
       <!-- HERO SCORE — version épurée -->
@@ -28358,10 +28368,10 @@ const Annotator = (() => {
         requestAnimationFrame(updateHistGauge);
         return;
       }
-      /* V197 — On montre les 3 inspections les plus récentes (demande utilisateur :
-         remplir l'espace libre en bas sans changer le style des lignes).
-         L'historique complet reste accessible via « Tout voir ». */
-      items.slice(0, 3).forEach(function(entry){
+      /* V228 — On montre les 4 inspections les plus récentes (demande : combler
+         l'espace vide sous les boutons). La carte s'étire pour les afficher en
+         entier (CSS flex). L'historique complet reste accessible via « Tout voir ». */
+      items.slice(0, 4).forEach(function(entry){
         var row = E('button','home-hrow');
         row.type = 'button';
         if (entry.image){
@@ -28382,10 +28392,10 @@ const Annotator = (() => {
         var metaParts = [];
         if (hz) metaParts.push(relTime(entry.date));
         if (hasSector) metaParts.push(sectorStr);
-        /* V188 — « n zones » retiré du méta des lignes NOMMÉES (l'accueil montre
-           nom + date + badge, comme la capture). Conservé si pas de nom (sinon méta vide). */
-        if (!hz) metaParts.push(zonesTxt);
-        body.appendChild(E('div','home-hrow-meta', metaParts.join('  ·  ')));
+        /* V228 — « n zones » RETIRÉ partout (jugé non pertinent terrain par les
+           utilisateurs, demande). Méta = date (lignes nommées) + secteur. On n'ajoute
+           la ligne que si elle a du contenu (pas de méta fantôme vide). */
+        if (metaParts.length) body.appendChild(E('div','home-hrow-meta', metaParts.join('  ·  ')));
         row.appendChild(body);
         /* V188 — badge de niveau (FAIBLE/MOYEN/ÉLEVÉ + pastille) au lieu du score
            chiffré, pour coller à la capture d'accueil. riskOf() reste la source. */
@@ -28539,6 +28549,12 @@ const Annotator = (() => {
   if (!overlay || !scroll) return;
   var acc = document.querySelector('.home .home-accordions') || document.querySelector('.home-accordions');
   if (acc) scroll.appendChild(acc);   /* réutilise le contenu + i18n + handlers existants */
+  /* V228 — déplace l'overlay DANS .app (même contexte d'empilement que les
+     .info-page). Sinon l'overlay (enfant <body>, z-index 70) recouvre les
+     info-pages (enfermées dans .app z-index 1) et les sujets s'ouvraient
+     « derrière » l'overlay (bug navigation signalé). */
+  var appEl = document.querySelector('.app');
+  if (appEl && overlay.parentElement !== appEl) appEl.appendChild(overlay);
   function open(){ overlay.hidden = false; overlay.removeAttribute('aria-hidden'); requestAnimationFrame(function(){ overlay.classList.add('visible'); }); }
   function close(){ overlay.classList.remove('visible'); setTimeout(function(){ overlay.hidden = true; overlay.setAttribute('aria-hidden','true'); }, 300); }
   window.__openLearn = open; window.__closeLearn = close;
