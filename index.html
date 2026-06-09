@@ -6732,6 +6732,30 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   .lucens-sw-update { transition: opacity 0.2s ease; transform: translateY(0); }
 }
 
+/* ═══ V235 — Bandeau « Mise à jour » COMPACT & DISCRET (demande : trop gros/mal
+   intégré). Réduit à une fine barre sur UNE ligne : titre + Recharger + croix.
+   Icône / eyebrow / description masqués, ombre allégée, posé au-dessus de la
+   barre du bas (ne la chevauche plus). ═══ */
+.lucens-sw-update {
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 9px !important;
+  max-width: 360px !important;
+  padding: 6px 8px 6px 14px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(8,12,22,.10) !important;
+  box-shadow: 0 6px 22px rgba(8,12,22,.15) !important;
+  bottom: calc(var(--bottom-bar-total, 64px) + 12px) !important;
+}
+.lucens-sw-update-icon, .lucens-sw-update-eyebrow, .lucens-sw-update-desc { display: none !important; }
+.lucens-sw-update-head { display: contents !important; }
+.lucens-sw-update-text { order: 1 !important; flex: 1 1 auto !important; min-width: 0 !important; padding: 0 !important; gap: 0 !important; }
+.lucens-sw-update-title { font-size: 13.5px !important; line-height: 1.2 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+.lucens-sw-update-actions { order: 2 !important; flex: 0 0 auto !important; }
+.lucens-sw-update-btn { height: 34px !important; padding: 0 14px !important; border-radius: 9px !important; font-size: 13px !important; }
+.lucens-sw-update-btn.is-primary { flex: 0 0 auto !important; box-shadow: none !important; }
+.lucens-sw-update-close { position: static !important; order: 3 !important; flex: 0 0 auto !important; width: 28px !important; height: 28px !important; font-size: 17px !important; top: auto !important; right: auto !important; }
+
 /* V47 — Quand la bannière SW update est visible, on RÉSERVE l'espace en
    bas pour éviter qu'elle chevauche le dernier accordéon "Avertissement
    légal" de la home. Hauteur réservée = hauteur estimée de la bannière
@@ -9605,7 +9629,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v234</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v235</div>
         </div>
       </div>
     </div>
