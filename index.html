@@ -9406,8 +9406,16 @@ body.lv-open { overflow: hidden; touch-action: none; }
     left: 50%; right: auto;
     width: min(460px, 78vw);
     transform: translateX(-50%) translateY(8px);
+    /* V226 (#3) — Drawer plafonné + défilant en paysage court : sinon
+       cartographie + sensibilité + calibration débordent sous le bouton
+       ANALYSER / hors écran. */
+    max-height: calc(100dvh - 92px);
+    overflow-y: auto;
   }
   .lv-drawer.lv-open { transform: translateX(-50%) translateY(0); }
+  /* Bandeau coach / instruction calibration ne doivent pas chevaucher la
+     topbar en paysage : on les recentre sous elle. */
+  .lv-cal-instruction { top: auto; bottom: calc(env(safe-area-inset-bottom, 8px) + 76px); }
   /* Réticule un poil plus petit (cadre plus court) */
   .lv-crosshair { width: 46px; height: 46px; }
   .lv-modal.lv-cal-mode .lv-crosshair { width: 70px; height: 70px; }
@@ -9537,7 +9545,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v225</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v226</div>
         </div>
       </div>
     </div>
