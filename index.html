@@ -8898,11 +8898,14 @@ html.lv-open, body.lv-open { background: #000 !important; }
 .lv-modal.lv-cal-mode .lv-crosshair {
   width: 96px; height: 96px;
 }
-/* ════ MOCKUP liveview-fix — SCAN SANS VISEUR ════
-   Le réticule n'apparaît QU'EN CALIBRATION. En scan, c'est le bandeau coach
-   (en haut) qui guide — pas de viseur qui suggère à tort un point de mesure. */
-.lv-crosshair { display: none !important; }
+/* ════ V239 — Live View ULTRA-SIMPLE (demande) : VISER + ANALYSER ════
+   Le VISEUR centré est de nouveau affiché en scan (la cible avait été retirée à
+   tort en V224). On retire le tiroir (Mapping / Sensibilité / Calibration), le
+   bouton réglages et l'overlay (surlignage live + cercle) → écran épuré, on vise
+   au viseur et on Analyse. */
+.lv-crosshair { display: block !important; }
 .lv-modal.lv-cal-mode .lv-crosshair { display: block !important; }
+.lv-drawer, #lvSettingsBtn, .lv-overlay { display: none !important; }
 /* Compteur « 0 zones · 0,0 % » = info debug sans pertinence terrain (demande) :
    masqué. Le décompte de zones n'a de sens qu'APRÈS analyse, pas en visée. */
 .lv-drawer-readout { display: none !important; }
@@ -9629,7 +9632,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v238</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v239</div>
         </div>
       </div>
     </div>
