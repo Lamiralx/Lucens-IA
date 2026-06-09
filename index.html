@@ -137,7 +137,11 @@ if ('serviceWorker' in navigator) {
 <meta name="application-name" content="Lucens IA">
 <meta name="apple-mobile-web-app-title" content="Lucens IA">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<!-- V242 — black-translucent : le contenu (caméra Live View) passe SOUS le status
+     bar / Dynamic Island → plus de barre blanche en haut. La barre du bas reste à
+     bottom:0 + padding-bottom safe-area (viewport-fit=cover) pour ne PAS recréer
+     la bande blanche en bas (saga V207-210). À vérifier haut ET bas sur appareil. -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
 
 <!-- Open Graph / Facebook / LinkedIn / WhatsApp -->
@@ -9634,7 +9638,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v241</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v242</div>
         </div>
       </div>
     </div>
