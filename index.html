@@ -1432,6 +1432,17 @@ body.has-offline-banner .info-page { top: var(--offline-banner-height, 36px); }
 }
 .info-page-back:hover { background: var(--surface-low); border-color: var(--hairline-hi); }
 .info-page-back:active { transform: scale(0.92); }
+/* V249 — UNIFICATION des boutons RETOUR : rond BLEU (couleur logo / Live View)
+   PARTOUT — « En savoir plus » + pages info. Fini le fond carré / transparent :
+   un seul et même bouton sur toute l'app. */
+.info-page-back, .learn-back {
+  width: 40px !important; height: 40px !important;
+  border-radius: 50% !important;
+  background: var(--accent) !important;
+  border: 0 !important;
+  color: #fff !important;
+}
+.info-page-back svg, .learn-back svg { width: 20px !important; height: 20px !important; stroke: #fff !important; color: #fff !important; }
 .info-page-title {
   font-family: var(--font-display);
   font-size: 18px;
@@ -9655,7 +9666,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v248</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v249</div>
         </div>
       </div>
     </div>
