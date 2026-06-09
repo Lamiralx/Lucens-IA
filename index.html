@@ -8401,26 +8401,19 @@ html.lv-open, body.lv-open { background: #000 !important; }
    V35 — 3 enfants : lvClose (gauche), lvStatusBanner (centre auto), lvSettingsBtn (droite).
    Le banner prend l'espace restant via flex:1 + margin:auto pour rester centré. */
 .lv-topbar {
-  /* V245 — Direction C : BARRE HAUTE UNIFIÉE. Back + lecteur dans UNE seule barre
-     dépolie flottante (cohésion) ; matériaux natifs (verre dépoli + hairline),
-     plus de dégradé. */
+  /* V246 — Direction B : haut ÉPURÉ. Plus de barre — juste le bouton retour
+     flottant (couleur ANALYSER) ; le lecteur est descendu au-dessus d'ANALYSER. */
   position: absolute;
-  top: calc(env(safe-area-inset-top, 0px) + 10px);
-  left: 12px; right: 12px;
-  padding: 7px 11px 7px 7px;
-  display: flex; align-items: center; justify-content: flex-start;
-  gap: 10px; pointer-events: none;
-  background: rgba(18, 21, 26, 0.55);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
-  backdrop-filter: blur(20px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 18px;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  left: 14px;
+  display: flex; align-items: center;
+  pointer-events: none;
   z-index: 7;
 }
 .lv-topbar > * { pointer-events: auto; }
-.lv-topbar .lv-icon-btn { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.07); border: 0; }
-.lv-topbar .lv-status-banner { flex: 1 1 auto; min-width: 0; }
-.lv-bar-sep { flex: 0 0 auto; width: 1px; height: 22px; background: rgba(255,255,255,0.13); }
+.lv-topbar .lv-icon-btn { flex: 0 0 auto; width: 42px; height: 42px; border-radius: 50%; background: var(--accent); border: 0; }
+/* V246 — AUCUNE animation ni transition sur le Live View (demande explicite). */
+.lv-modal, .lv-modal * { animation: none !important; transition: none !important; }
 
 .lv-back {
   display: inline-flex; align-items: center; gap: 6px;
@@ -8553,22 +8546,24 @@ html.lv-open, body.lv-open { background: #000 !important; }
    V19.1 (2026-05-24) : responsive — max-width relative au viewport,
    wrap autorisé sur mobile pour éviter le débordement, ellipsis fallback. */
 .lv-status-banner {
-  /* V245 — Direction C : le lecteur est DANS la barre unifiée. Transparent (la
-     barre porte le verre dépoli), aligné à gauche, prend la place restante.
-     Annule la pastille séparée + le positionnement absolu (V244). */
-  display: flex;
+  /* V246 — Direction B : pile COMPACTE au-dessus d'ANALYSER, verre dépoli.
+     Centrée (align-items du bottombar), s'adapte au texte → rien ne déborde,
+     toutes langues (le résidu tronque en ellipsis si extrême, le badge reste). */
+  display: inline-flex;
   align-items: center;
   gap: 9px;
-  flex: 1 1 auto;
+  max-width: calc(100vw - 32px);
   min-width: 0;
-  background: none;
-  border: 0;
-  border-radius: 0;
-  padding: 0;
+  background: rgba(16, 19, 24, 0.62);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 8px 13px;
   margin: 0;
   color: rgba(245, 247, 250, 0.97);
   font-family: var(--font-body);
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.005em;
   pointer-events: none;
@@ -9655,7 +9650,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v245</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v246</div>
         </div>
       </div>
     </div>
@@ -24683,10 +24678,6 @@ const Annotator = (() => {
           <path d="M6 6 L14 14 M14 6 L6 14"/>
         </svg>
       </button>
-      <span class="lv-bar-sep" aria-hidden="true"></span>
-      <div class="lv-status-banner" id="lvStatusBanner" data-state="idle" aria-live="polite">
-        <span class="lv-status-label" id="lvStatusLabel" data-i18n="lv_status_idle">Visez une zone</span>
-      </div>
       <button class="lv-icon-btn" id="lvSettingsBtn" type="button" data-i18n-aria-label="lv_aria_settings" aria-label="Réglages">
         <!-- V124 — Icône soleil (ambiguë : luminosité ?) remplacée par des
              curseurs/réglages, cohérent avec le contenu du tiroir (cartographie,
@@ -24823,6 +24814,11 @@ const Annotator = (() => {
           &nbsp;·&nbsp;
           <span id="lvAreaPct">0,0&nbsp;%</span>
         </div>
+      </div>
+
+      <!-- V246 — Direction B : lecteur EN DIRECT juste au-dessus d'ANALYSER (haut épuré). -->
+      <div class="lv-status-banner" id="lvStatusBanner" data-state="idle" aria-live="polite">
+        <span class="lv-status-label" id="lvStatusLabel" data-i18n="lv_status_idle">Visez une zone</span>
       </div>
 
       <!-- Bouton ANALYSER — long press 400 ms anti-faux-clic, fill teal progressif -->
