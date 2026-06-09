@@ -8906,6 +8906,11 @@ html.lv-open, body.lv-open { background: #000 !important; }
 .lv-crosshair { display: block !important; }
 .lv-modal.lv-cal-mode .lv-crosshair { display: block !important; }
 .lv-drawer, #lvSettingsBtn, .lv-overlay { display: none !important; }
+/* V240 — AUCUNE barre en haut (demande) : bannière de statut SUPPRIMÉE + dégradé
+   du topbar retiré → il ne reste QUE le bouton retour flottant (pour sortir), le
+   viseur et ANALYSER. */
+.lv-status-banner { display: none !important; }
+.lv-topbar { background: none !important; }
 /* Compteur « 0 zones · 0,0 % » = info debug sans pertinence terrain (demande) :
    masqué. Le décompte de zones n'a de sens qu'APRÈS analyse, pas en visée. */
 .lv-drawer-readout { display: none !important; }
@@ -9632,7 +9637,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v239</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v240</div>
         </div>
       </div>
     </div>
