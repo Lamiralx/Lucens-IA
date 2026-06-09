@@ -9605,7 +9605,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v232</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v233</div>
         </div>
       </div>
     </div>
@@ -11814,13 +11814,16 @@ body.lv-open { overflow: hidden; touch-action: none; }
          dans le logo → annulé), « En savoir plus » ancré en bas. */
       .home { justify-content: flex-start !important; gap: 12px !important; padding-top: 14px !important; }
       .home-actions { flex: 0 0 auto !important; margin-top: 0 !important; }
-      #homeHistory.home-history { flex: 0 0 auto !important; min-height: 0 !important; max-height: none !important; display: flex !important; flex-direction: column !important; }
-      .home-history-scroll { flex: 0 0 auto !important; min-height: 0 !important; max-height: none !important; overflow: hidden !important; background: var(--surface-low) !important; border: 1px solid var(--border) !important; border-radius: 16px !important; box-shadow: none !important; padding: 0 12px !important; }
+      /* V233 — bloc GRANDE taille fixe : il REMPLIT la hauteur dispo (flex:1) → « En
+         savoir plus » est poussé tout en bas, et l'éventuel vide (si <5 inspections)
+         est À L'INTÉRIEUR du bloc (assumé, choix utilisateur). Lignes en haut. */
+      #homeHistory.home-history { flex: 1 1 auto !important; min-height: 0 !important; max-height: none !important; display: flex !important; flex-direction: column !important; }
+      .home-history-scroll { flex: 1 1 auto !important; min-height: 0 !important; max-height: none !important; overflow: hidden !important; background: var(--surface-low) !important; border: 1px solid var(--border) !important; border-radius: 16px !important; box-shadow: none !important; padding: 0 12px !important; }
       .home-history-body { display: flex !important; flex-direction: column !important; gap: 0 !important; }
       .home-hrow { flex: 0 0 auto !important; min-height: 62px !important; padding: 11px 2px !important; gap: 12px !important; background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; }
       .home-hrow:not(:last-child) { border-bottom: 1px solid var(--hairline) !important; }
       .home-hrow-thumb { width: 42px !important; height: 42px !important; border-radius: 11px !important; }
-      .home-learn-link { flex: 0 0 auto !important; margin-top: auto !important; }
+      .home-learn-link { flex: 0 0 auto !important; }
       </style>
       <!-- V187 — bloc .results-hdr (en-tête LUCENS dupliqué + croix ✕) retiré. -->
       <!-- HERO SCORE — version épurée -->
