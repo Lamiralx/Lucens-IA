@@ -8551,23 +8551,30 @@ html.lv-open, body.lv-open { background: #000 !important; }
   align-items: center;
   justify-content: center;
   gap: 9px;
-  padding: 9px 16px;
+  padding: 9px 15px;
   width: auto;
-  max-width: calc(100vw - 96px);
+  max-width: calc(100vw - 40px);
   background: rgba(8, 10, 14, 0.82);
   color: rgba(245, 247, 250, 0.97);
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 999px;
   font-family: var(--font-body);
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.005em;
   text-transform: none;
   pointer-events: none;
   text-align: center;
   box-sizing: border-box;
-  margin: 0 auto;
   min-width: 0;
+  /* V244 — sur sa PROPRE ligne, centrée, sous le bouton retour (plus de tassement
+     contre la flèche retour). Sortie du flux flex de la topbar. */
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 72px);
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  z-index: 8;
 }
 /* Pastille = couleur Lucens du type. En fluo, --lv-type-color est fixée EN LIGNE
    par le JS (couleur du type détecté) ; sinon les couleurs d'état ci-dessous. */
@@ -8582,6 +8589,14 @@ html.lv-open, body.lv-open { background: #000 !important; }
 .lv-status-banner[data-state="idle"]    { --lv-type-color: rgba(255,255,255,0.30); }
 .lv-status-banner[data-state="pending"] { --lv-type-color: #FFB020; }
 .lv-status-banner[data-state="object"]  { --lv-type-color: #94A3B8; }
+/* V244 — lecture 1 ligne : résidu en gras (pleine couleur), risque atténué, niveau
+   coloré selon la microbiologie (rouge élevé / ambre modéré / vert faible). */
+.lv-status-banner .lv-res  { font-weight: 650; }
+.lv-status-banner .lv-risk { font-weight: 500; color: rgba(245,247,250,0.6); }
+.lv-status-banner .lv-lvl  { font-weight: 650; }
+.lv-status-banner .lv-lvl-high { color: #F4A8A0; }
+.lv-status-banner .lv-lvl-mid  { color: #F0C36B; }
+.lv-status-banner .lv-lvl-low  { color: #9FE6C9; }
 .lv-status-label {
   text-align: center;
   white-space: nowrap;
@@ -9638,7 +9653,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v243</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v244</div>
         </div>
       </div>
     </div>
@@ -25578,6 +25593,18 @@ const Annotator = (() => {
   /* V243 — Classification EN DIRECT au viseur : couleur moyenne des pixels
      brillants échantillonnés → type (mêmes plages que PROFILES du moteur) →
      libellé + couleur Lucens via getCategory. Alimente le lecteur de la bannière. */
+  /* V244 — Lecteur EN DIRECT : résidu détecté → RISQUE biofilm/bactérien INFÉRÉ.
+     Fondé sur la microbio HACCP : l'organique nourrit les bactéries, le calcaire
+     poreux les abrite. Le biofilm n'est JAMAIS une couleur — c'est un risque déduit
+     du résidu. Libellé court + risque + niveau (couleur). Organismes → écran résultat. */
+  const LV_READOUT = {
+    organic:  { label:'Résidu organique',    pre:'risque biofilm', lvl:'élevé',             level:'high', color:'#A3E635' },
+    fatty:    { label:'Résidu gras',         pre:'risque',          lvl:'modéré',            level:'mid',  color:'#FB923C' },
+    mineral:  { label:'Tartre / calcaire',   pre:'risque biofilm', lvl:'élevé',             level:'high', color:'#94A3B8' },
+    chemical: { label:'Résidu de détergent', pre:'',                lvl:'rinçage incomplet', level:'low',  color:'#38BDF8' },
+    pigmented:{ label:'Résidu pigmenté',     pre:'',                lvl:'à analyser',        level:'mid',  color:'#F43F5E' },
+    unknown:  { label:'Résidu détecté',      pre:'',                lvl:'à analyser',        level:'low',  color:'#64748B' },
+  };
   function lvLiveType(sample) {
     const R = sample.avgR || 0, G = sample.avgG || 0, B = sample.avgB || 0;
     const mx = Math.max(R, G, B), mn = Math.min(R, G, B);
@@ -25594,7 +25621,9 @@ const Annotator = (() => {
     let id = 'unknown';
     if (s <= 0.20 && lum >= 195) id = 'mineral';
     else {
-      const P = [['organic',45,165,0.20],['fatty',15,45,0.22],['pigmented',330,15,0.25],['chemical',165,225,0.25],['biofilm',225,330,0.22]];
+      /* V244 — catégorie "biofilm" (violet 225-330) RETIRÉE : sous 365 nm le violet
+         est la LAMPE réfléchie, pas une fluorescence de résidu (correction expert). */
+      const P = [['organic',45,165,0.20],['fatty',15,45,0.22],['pigmented',330,15,0.25],['chemical',165,225,0.25]];
       for (let k = 0; k < P.length; k++) {
         const a = P[k][1], b = P[k][2], sm = P[k][3];
         if (s < sm) continue;
@@ -25602,8 +25631,8 @@ const Annotator = (() => {
         if (inR) { id = P[k][0]; break; }
       }
     }
-    const cat = (typeof getCategory === 'function') ? getCategory(id) : null;
-    return { id: id, label: cat ? cat.label : '', color: (cat && cat.color) ? cat.color : '#2DD4BF' };
+    const r = LV_READOUT[id] || LV_READOUT.unknown;
+    return { id: id, label: r.label, color: r.color, pre: r.pre, lvl: r.lvl, level: r.level };
   }
 
   function setCrosshairState(state, reason) {
@@ -25639,17 +25668,25 @@ const Annotator = (() => {
         fluo:    tr('lv_status_fluo',    'Résidu détecté'),
         object:  tr('lv_status_object',  'Pas un résidu'),
       };
-      /* V243 — LECTEUR EN DIRECT : en fluo, on annonce le TYPE détecté au viseur
-         (libellé + couleur Lucens du type) au lieu du générique « Résidu détecté ».
-         Pour les autres états, on laisse les couleurs d'état (CSS data-state). */
+      /* V244 — LECTEUR EN DIRECT (épuré, 1 ligne) : en fluo, « Résidu X · risque
+         [niveau] » — résidu en gras, risque atténué, niveau coloré (rouge élevé /
+         ambre modéré / vert faible). Organismes → écran de résultat. Construction
+         par DOM sûr (pas d'innerHTML), valeurs 100% issues de LV_READOUT (statique). */
       let txt = map[state] || tr('lv_status_idle', 'Visez une zone');
       if (state === 'fluo' && lv.liveType && lv.liveType.label) {
-        txt = lv.liveType.label;
-        if (banner) banner.style.setProperty('--lv-type-color', lv.liveType.color || '#2DD4BF');
-      } else if (banner) {
-        banner.style.removeProperty('--lv-type-color');
+        const lt = lv.liveType;
+        if (banner) banner.style.setProperty('--lv-type-color', lt.color || '#2DD4BF');
+        while (label.firstChild) label.removeChild(label.firstChild);
+        const resEl = document.createElement('b'); resEl.className = 'lv-res'; resEl.textContent = lt.label;
+        const riskEl = document.createElement('span'); riskEl.className = 'lv-risk';
+        riskEl.appendChild(document.createTextNode(' · ' + (lt.pre ? lt.pre + ' ' : '')));
+        const lvlEl = document.createElement('span'); lvlEl.className = 'lv-lvl lv-lvl-' + (lt.level || 'low'); lvlEl.textContent = lt.lvl;
+        riskEl.appendChild(lvlEl);
+        label.appendChild(resEl); label.appendChild(riskEl);
+      } else {
+        if (banner) banner.style.removeProperty('--lv-type-color');
+        label.textContent = txt;
       }
-      label.textContent = txt;
       fitLvStatusLabel();
     }
     chCurrentVerdict = { state, reason: reason || '' };
