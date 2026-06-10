@@ -8563,90 +8563,37 @@ html.lv-open, body.lv-open { background: #000 !important; }
   /* V164 — halo lumineux retiré (le brief interdit les glows). */
 }
 .lv-analyze-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
-.lv-analyze-btn:active { transform: scale(0.97); background: var(--accent-hi); }
-.lv-analyze-btn.lv-flash { background: var(--risk-hi); }
+.lv-analyze-btn:active { transform: scale(0.97); }
 
-/* Halo d'état (validation amont) — anneau pulsant autour du bouton.
-   Rouge = scène pas prête (flou, instable, trop sombre) → bouton désactivé.
-   Ambre = un critère limite → cliquable mais avertissement.
-   Vert  = tous critères OK → prêt à analyser. */
+/* V276 — SUPPRESSION TOTALE des « animations révélation » du bouton ANALYSER
+   (demande utilisateur, non négociable) : plus de remplissage progressif, plus
+   de halo d'état pulsant (vert/ambre/rouge), plus de flash rouge, plus de pulse
+   de succès, plus de virage de couleur en « pas prêt ». Le bouton garde EN
+   PERMANENCE sa couleur prévue (accent Lucens). Seul reste un retour tactile
+   neutre (léger scale au doigt). Les classes d'état que le JS peut encore poser
+   (.lv-flash / .lv-ready-* / .lv-not-ready / .lv-pressing) sont neutralisées. */
 .lv-analyze-btn { position: relative; overflow: hidden; touch-action: none; }
-.lv-analyze-btn::before {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border-radius: 20px;
-  border: 2px solid transparent;
-  pointer-events: none;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
-  opacity: 0;
-  z-index: 2;
-}
-/* Fill teal qui se remplit pendant le long press (0 → 100% en 400 ms) */
-.lv-analyze-btn .lv-press-fill {
-  position: absolute;
-  inset: 0;
-  background: var(--accent);
-  opacity: 0.18;
-  transform: scaleX(0);
-  transform-origin: left center;
-  pointer-events: none;
-  border-radius: 16px;
-  z-index: 0;
-  transition: transform 0s linear;
-}
-.lv-analyze-btn.lv-pressing .lv-press-fill {
-  transform: scaleX(1);
-  transition: none !important;   /* V253 — remplissage INSTANTANÉ : plus aucune animation au maintien du bouton ANALYSER (demande). */
-}
-/* Le contenu (icône + texte) reste au-dessus du fill */
+.lv-analyze-btn::before { content: none !important; }
+.lv-analyze-btn .lv-press-fill { display: none !important; }
+.lv-analyze-btn.lv-flash { background: var(--accent) !important; }
 .lv-analyze-btn .lv-analyze-content {
   position: relative; z-index: 1;
   display: inline-flex; align-items: center; gap: 11px;
 }
-/* Pulse final quand le long press est confirmé — feedback visuel de succès */
-.lv-analyze-btn.lv-press-success {
-  animation: none !important;   /* V253 — plus de pulse de succès sur ANALYSER (demande). */
-}
-/* V94 — Fin de keyframe corrigée : ne plus terminer sur blanc pur
-   (créait un flash blanc parasite après le long-press confirmé qui
-    lisait comme une "bande blanche" résiduelle en bas du Live View). */
-@keyframes lvPressSuccess {
-  0%   { transform: scale(1); background: var(--accent); }
-  40%  { transform: scale(1.04); background: var(--accent); }
-  100% { transform: scale(1); background: var(--accent); }
-}
-.lv-analyze-btn.lv-ready-green::before {
-  border-color: rgba(111, 207, 142, 0.85);
-  /* V127 — gros halo 18px retiré : anneau fin et sobre. Un halo qui s'allume/
-     s'éteint au gré des micro-variations de la scène = "animation pas adaptée". */
-  box-shadow: 0 0 0 2px rgba(111, 207, 142, 0.16);
-  opacity: 1;
-}
-.lv-analyze-btn.lv-ready-amber::before {
-  border-color: rgba(232, 193, 106, 0.80);
-  box-shadow: 0 0 0 3px rgba(232, 193, 106, 0.16);
-  opacity: 1;
-}
-.lv-analyze-btn.lv-ready-red::before {
-  border-color: rgba(232, 90, 74, 0.75);
-  box-shadow: 0 0 0 3px rgba(232, 90, 74, 0.14);
-  opacity: 1;
-}
-/* V94 — État "pas prêt" : fond TEAL ASSOMBRI au lieu de blanc translucide.
-   Cause racine de la "bande blanche en bas" rapportée pendant des semaines :
-   V87 a corrigé le bouton actif mais a laissé .lv-not-ready en
-   rgba(255,255,255,0.45). Sur le fond caméra sombre, ce blanc-translucide
-   pill de 170px de large à 52px de haut lisait littéralement comme une
-   bande blanche horizontale. On reste sur la palette teal/sombre cohérente
-   avec le reste du Live View. */
+.lv-analyze-btn.lv-press-success { animation: none !important; }
+.lv-analyze-btn.lv-ready-green::before,
+.lv-analyze-btn.lv-ready-amber::before,
+.lv-analyze-btn.lv-ready-red::before { content: none !important; }
+/* « Pas prêt » : MÊME couleur accent (jamais de virage), juste une opacité
+   réduite STATIQUE comme indice tactile que la capture attend une scène nette. */
 .lv-analyze-btn.lv-not-ready {
-  background: rgba(20, 30, 36, 0.72);
-  color: rgba(245, 247, 250, 0.45);
+  background: var(--accent);
+  color: #FFFFFF;
+  opacity: 0.55;
   cursor: not-allowed;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  box-shadow: none;
 }
-.lv-analyze-btn.lv-not-ready:active { transform: none; background: rgba(20, 30, 36, 0.72); }
+.lv-analyze-btn.lv-not-ready:active { transform: none; }
 
 /* Readout discret DANS le drawer (jamais sur la caméra) */
 .lv-drawer-readout {
@@ -9004,7 +8951,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v275</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v276</div>
         </div>
       </div>
     </div>
@@ -19459,6 +19406,16 @@ const Annotator = (() => {
     return { askThen, consume, peekMoment, getZone };
   })();
 
+  /* V276 — CORRECTIF POPUP LIVE VIEW : le module Live View est une IIFE SÉPARÉE ;
+     son `lvCapture()` appelait `window.LucensMoment.askThen(file, process)` mais
+     `window.LucensMoment` n'avait JAMAIS été exposé (undefined) → le popup
+     « avant/après nettoyage + zone » était SAUTÉ après une capture Live View,
+     l'analyse partait sans contexte. On expose les deux symboles ICI (après la
+     définition de LucensMoment, hors TDZ ; `process` est une fonction hoistée)
+     pour que la capture caméra passe par le MÊME popup que l'import galerie. */
+  window.LucensMoment = LucensMoment;
+  window.__lucensProcess = process;
+
   /* Init immédiat des 3 modules instrument — placé ici APRÈS toutes les
      dépendances (LucensContext + LucensMoment) pour éviter le Temporal
      Dead Zone des const. Les éléments DOM existent déjà dans le markup. */
@@ -24844,6 +24801,42 @@ const Annotator = (() => {
     biofilm:  { label:'Biofilm potentiel',   badge:'Biofilm élevé',     level:'high', color:'#C084FC' },
     unknown:  { label:'Résidu fluorescent',  badge:'Risque à confirmer',level:'low',  color:'#64748B' },
   };
+  /* V276 — SECOND AVIS SPECTROSCOPIQUE LOCAL (autonome dans le module Live View).
+     Bibliothèque des 15 signatures fluorophores (rgb de référence + écart-type
+     chromatique + catégorie d'app), identique à LUCENS_FLUOROPHORES du moteur
+     d'analyse mais EMBARQUÉE ICI car ce module est une IIFE distincte (pas de
+     dépendance de portée). Sert quand le tri HSV n'a pas tranché : on prend la
+     signature la plus proche (distance de Mahalanobis chromatique) pour NE JAMAIS
+     afficher « à confirmer » — le moteur a toujours de quoi nommer la famille la
+     plus probable (exigence utilisateur : déterminer le contaminant, toujours). */
+  const LV_FLUORO_SIG = [
+    { cat: 'organic',  rgb: [110, 140, 230], std: [22, 28, 30] }, /* protéine fraîche NADH */
+    { cat: 'organic',  rgb: [200, 215,  90], std: [25, 25, 25] }, /* riboflavine laitages */
+    { cat: 'pigmented',rgb: [220,  60,  70], std: [28, 22, 25] }, /* sang / porphyrines */
+    { cat: 'organic',  rgb: [230, 200, 100], std: [25, 28, 30] }, /* urine de rongeur */
+    { cat: 'chemical', rgb: [130, 180, 250], std: [25, 28, 18] }, /* détergent / azurants */
+    { cat: 'fatty',    rgb: [130, 175, 195], std: [30, 28, 32] }, /* huile minérale */
+    { cat: 'chemical', rgb: [200, 220, 250], std: [22, 22, 18] }, /* cosmétique / filtres UV */
+    { cat: 'biofilm',  rgb: [150, 200, 130], std: [28, 28, 28] }, /* biofilm Pseudomonas */
+    { cat: 'organic',  rgb: [140, 180, 180], std: [28, 28, 28] }, /* frass d'insectes */
+    { cat: 'pigmented',rgb: [180,  50,  50], std: [30, 20, 20] }, /* chlorophylle végétale */
+    { cat: 'organic',  rgb: [140, 150, 230], std: [22, 22, 25] }, /* aflatoxines */
+    { cat: 'chemical', rgb: [180, 200, 130], std: [25, 25, 28] }, /* résidu antibiotique */
+    { cat: 'mineral',  rgb: [170, 200, 210], std: [30, 30, 30] }, /* eau stagnante / séchage */
+    { cat: 'dust',     rgb: [180, 195, 220], std: [28, 28, 28] }, /* poussière fluorescente */
+    { cat: 'dust',     rgb: [180, 190, 215], std: [25, 25, 25] }, /* fibres textiles */
+  ];
+  function lvNearestCat(R, G, B) {
+    let best = 'organic', bestD = Infinity;
+    for (const s of LV_FLUORO_SIG) {
+      const dr = (R - s.rgb[0]) / s.std[0];
+      const dg = (G - s.rgb[1]) / s.std[1];
+      const db = (B - s.rgb[2]) / s.std[2];
+      const d = dr * dr + dg * dg + db * db;
+      if (d < bestD) { bestD = d; best = s.cat; }
+    }
+    return best;
+  }
   function lvLiveType(sample) {
     let R = sample.avgR || 0, G = sample.avgG || 0, B = sample.avgB || 0;
     /* V251 — CORRECTION DU VOILE UV (cause racine du « toujours détergent ») : la
@@ -24899,7 +24892,14 @@ const Annotator = (() => {
         if (inR) { id = P[k][0]; break; }
       }
     }
-    const r = LV_READOUT[id] || LV_READOUT.unknown;
+    /* V276 — INTERDICTION DU « À CONFIRMER » (demande utilisateur, non négociable) :
+       si les buckets HSV n'ont pas tranché, on NE retombe JAMAIS sur 'unknown'. On
+       interroge la bibliothèque spectroscopique (15 signatures fluorophores, distance
+       de Mahalanobis chromatique) déjà embarquée → la signature la plus proche donne
+       une catégorie CONCRÈTE via FLUORO_TO_CAT. Dernier filet : 'organic' (le résidu
+       le plus à risque en HACCP — ne JAMAIS sous-évaluer). « unknown » est mort. */
+    if (id === 'unknown') { id = lvNearestCat(R, G, B); }
+    const r = LV_READOUT[id] || LV_READOUT.organic;
     return { id: id, label: r.label, color: r.color, badge: r.badge, level: r.level };
   }
 
@@ -25903,12 +25903,18 @@ const Annotator = (() => {
         type: 'image/jpeg', lastModified: Date.now()
       });
       closeLiveView();
-      /* Hook dans le flow existant : modal "moment" puis process() */
-      if (window.LucensMoment && typeof window.LucensMoment.askThen === 'function'
-          && typeof process === 'function') {
-        window.LucensMoment.askThen(file, process);
-      } else if (typeof process === 'function') {
-        process(file);
+      /* Hook dans le flow existant : modal « moment » (avant/après nettoyage +
+         zone) PUIS process(). V276 — on s'appuie sur les symboles exposés en
+         global (window.LucensMoment / window.__lucensProcess) car ce module est
+         une IIFE distincte ; le bare `process` n'y est PAS forcément en portée
+         (c'était la cause du popup sauté). Ordre des fallbacks préservé. */
+      const _proc = (typeof window.__lucensProcess === 'function')
+        ? window.__lucensProcess
+        : (typeof process === 'function' ? process : null);
+      if (window.LucensMoment && typeof window.LucensMoment.askThen === 'function' && _proc) {
+        window.LucensMoment.askThen(file, _proc);
+      } else if (_proc) {
+        _proc(file);
       } else {
         console.warn('[LiveView] process() introuvable, fallback DataTransfer');
         try {
