@@ -9802,7 +9802,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v257</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v256</div>
         </div>
       </div>
     </div>
@@ -16701,171 +16701,6 @@ const Annotator = (() => {
     ctx.restore();
   }
 
-  /* V220 — CONTOUR LISSE RECONSTRUIT PAR DÉTECTION PIXEL CLIENT (style A, fallback).
-     Remplace l'ancien filet « équerres » (strokeBboxContours) qui violait la
-     directive figée V198 (« contour LISSE qui épouse la forme réelle, JAMAIS
-     bbox/cercle/équerre »). Cas d'usage : l'IA a validé des zones (bbox) mais la
-     grille heuristique n'a peint aucune cellule à l'intérieur (grille perdue par
-     sérialisation JSON, bbox désalignée des clusters, ou clusters < 4 cellules).
-     Au lieu de tomber sur des équerres, on RE-DÉTECTE la fluorescence pixel par
-     pixel À L'INTÉRIEUR de la bbox (la précision vient du client, l'API ne fait
-     que valider QUELLES zones tracer), puis on extrait un contour lissé qui épouse
-     la silhouette réelle de la tache — exactement comme smoothCellContour, mais à
-     partir des pixels et non des cellules.
-
-     Détection : un pixel est « fluorescent » s'il est nettement plus clair que le
-     fond local de la boîte (médiane de luminance) ET suffisamment saturé (vraie
-     fluo colorée), OU très clair et peu saturé (azurants optiques bleu-blanc).
-     Seuils alignés sur la philosophie de Engine.testPixel (sans dépendre de son
-     scope IIFE). On échantillonne sur une sous-grille fine (≈ bbox/cellPx) pour la
-     vitesse, puis on chaîne les arêtes frontière en boucles et on lisse. */
-  function _hslOf(r, g, b) {
-    const max = Math.max(r, g, b), min = Math.min(r, g, b);
-    const lum = (r + g + b) / 3;
-    const sat = max === 0 ? 0 : (max - min) / max;
-    let h = 0;
-    if (max !== min) {
-      if (max === r) h = ((g - b) / (max - min)) % 6;
-      else if (max === g) h = (b - r) / (max - min) + 2;
-      else h = (r - g) / (max - min) + 4;
-      h *= 60; if (h < 0) h += 360;
-    }
-    return { h, sat, lum };
-  }
-
-  function smoothPixelContourInBox(ctx, data, W, H, box) {
-    /* box = bbox normalisée {x,y,w,h} (0-1). On borne à l'image. */
-    const bx0 = Math.max(0, Math.floor(box.x * W));
-    const by0 = Math.max(0, Math.floor(box.y * H));
-    const bx1 = Math.min(W, Math.ceil((box.x + box.w) * W));
-    const by1 = Math.min(H, Math.ceil((box.y + box.h) * H));
-    const bw = bx1 - bx0, bh = by1 - by0;
-    if (bw < 6 || bh < 6) return false;
-
-    /* Résolution de la sous-grille : ~1 cellule tous les ~max(2px, plus petit
-       côté/40) → contour fin mais robuste au bruit. Borné pour éviter l'explosion
-       mémoire sur très grandes bbox. */
-    const step = Math.max(2, Math.min(10, Math.round(Math.min(bw, bh) / 40)));
-    const gw = Math.ceil(bw / step), gh = Math.ceil(bh / step);
-    if (gw < 3 || gh < 3) return false;
-
-    /* Fond local = médiane (approx via histogramme) de la luminance dans la boîte,
-       sur un sous-échantillon. Sert de référence pour « nettement plus clair ». */
-    const lumHist = new Float64Array(256);
-    let sampN = 0;
-    const sampStep = Math.max(1, Math.round(step / 2));
-    for (let py = by0; py < by1; py += sampStep) {
-      for (let px = bx0; px < bx1; px += sampStep) {
-        const i = (py * W + px) * 4;
-        const l = (data[i] + data[i + 1] + data[i + 2]) / 3;
-        lumHist[Math.max(0, Math.min(255, l | 0))]++;
-        sampN++;
-      }
-    }
-    if (sampN < 9) return false;
-    let acc = 0, medLum = 128;
-    for (let v = 0; v < 256; v++) { acc += lumHist[v]; if (acc >= sampN * 0.5) { medLum = v; break; } }
-    /* Marge de luminance adaptative : au moins +14, plus haut si le fond est sombre
-       (photos UV très sombres → la fluo ressort fort). */
-    const lumMargin = Math.max(14, Math.min(60, (255 - medLum) * 0.18));
-
-    /* Occupancy : 1 si le bloc (centre échantillonné) est fluorescent. */
-    const occ = new Uint8Array(gw * gh);
-    const isFluorPx = (r, g, b) => {
-      const c = _hslOf(r, g, b);
-      const brighter = c.lum - medLum;
-      /* (a) vraie fluo colorée : plus claire que le fond + saturée */
-      if (brighter >= lumMargin && c.sat >= 0.18 && c.lum >= 90) return true;
-      /* (b) azurant optique bleu-blanc : très claire, peu saturée, nettement > fond */
-      if (c.sat <= 0.30 && c.lum >= 165 && brighter >= Math.max(40, lumMargin)) return true;
-      return false;
-    };
-    let occCount = 0;
-    for (let gy = 0; gy < gh; gy++) {
-      for (let gx = 0; gx < gw; gx++) {
-        const px = Math.min(W - 1, bx0 + gx * step + (step >> 1));
-        const py = Math.min(H - 1, by0 + gy * step + (step >> 1));
-        const i = (py * W + px) * 4;
-        if (isFluorPx(data[i], data[i + 1], data[i + 2])) { occ[gy * gw + gx] = 1; occCount++; }
-      }
-    }
-    /* Trop peu de pixels fluo → la boîte est probablement un faux positif / voile :
-       on ne trace RIEN (mieux qu'une équerre mensongère). Trop = quasi toute la
-       boîte → on laisse (la tache remplit la zone validée par l'IA). */
-    if (occCount < 4) return false;
-
-    /* Nettoyage morphologique léger : retire les pixels isolés (< 2 voisins
-       orthogonaux) pour un contour propre, puis comble les trous d'1 pixel. */
-    const at = (x, y) => (x >= 0 && y >= 0 && x < gw && y < gh) ? occ[y * gw + x] : 0;
-    const cleaned = new Uint8Array(occ);
-    for (let y = 0; y < gh; y++) for (let x = 0; x < gw; x++) {
-      const n = at(x - 1, y) + at(x + 1, y) + at(x, y - 1) + at(x, y + 1);
-      if (occ[y * gw + x] && n === 0) cleaned[y * gw + x] = 0;           /* îlot isolé */
-      else if (!occ[y * gw + x] && n === 4) cleaned[y * gw + x] = 1;      /* trou plein */
-    }
-
-    /* Arêtes frontière (cellule pleine ↔ vide), orientées horaire, comme
-       smoothCellContour. Coordonnées en unités de sous-grille → pixels via step. */
-    const full = (x, y) => (x >= 0 && y >= 0 && x < gw && y < gh) ? cleaned[y * gw + x] : 0;
-    const edges = [];
-    for (let y = 0; y < gh; y++) {
-      for (let x = 0; x < gw; x++) {
-        if (!cleaned[y * gw + x]) continue;
-        if (!full(x, y - 1)) edges.push([[x, y], [x + 1, y]]);
-        if (!full(x + 1, y)) edges.push([[x + 1, y], [x + 1, y + 1]]);
-        if (!full(x, y + 1)) edges.push([[x + 1, y + 1], [x, y + 1]]);
-        if (!full(x - 1, y)) edges.push([[x, y + 1], [x, y]]);
-      }
-    }
-    if (!edges.length) return false;
-
-    const byStart = new Map();
-    for (const e of edges) {
-      const k = e[0][0] + ',' + e[0][1];
-      let a = byStart.get(k); if (!a) { a = []; byStart.set(k, a); }
-      a.push(e);
-    }
-    const used = new Set();
-    const loops = [];
-    for (const e0 of edges) {
-      if (used.has(e0)) continue;
-      const loop = [];
-      let cur = e0, guard = 0;
-      while (cur && !used.has(cur) && guard++ < 200000) {
-        used.add(cur);
-        loop.push(cur[0]);
-        const cands = byStart.get(cur[1][0] + ',' + cur[1][1]);
-        cur = cands ? cands.find(x => !used.has(x)) : null;
-      }
-      if (loop.length >= 3) loops.push(loop);
-    }
-    if (!loops.length) return false;
-
-    ctx.save();
-    ctx.strokeStyle = CARTO_COLOR.stroke;
-    ctx.lineWidth = Math.max(2.5, Math.round(Math.min(W, H) * 0.0042));
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
-    ctx.shadowBlur = Math.max(1.5, Math.round(Math.min(W, H) * 0.003));
-    let drewAny = false;
-    for (const loop of loops) {
-      /* Ignore les micro-boucles (bruit résiduel) : périmètre < ~6 cellules. */
-      if (loop.length < 6) continue;
-      let pts = loop.map(p => [bx0 + p[0] * step, by0 + p[1] * step]);
-      pts = _smoothPoly(pts, Math.max(4, Math.round(pts.length / 10)));
-      pts = _chaikin(pts, 2);
-      ctx.beginPath();
-      ctx.moveTo(pts[0][0], pts[0][1]);
-      for (let k = 1; k < pts.length; k++) ctx.lineTo(pts[k][0], pts[k][1]);
-      ctx.closePath();
-      ctx.stroke();
-      drewAny = true;
-    }
-    ctx.restore();
-    return drewAny;
-  }
-
   function drawGrid(canvas, imageData, grid, W, H) {
     canvas.width = W; canvas.height = H;
     const ctx = canvas.getContext('2d');
@@ -17232,31 +17067,15 @@ const Annotator = (() => {
       }
     }
 
-    /* V187 — FILET DE SÉCURITÉ CARTO : si AUCUNE zone n'a été peinte par la grille
-       (photo uniforme, grille perdue par sérialisation, bbox désalignée des
-       clusters), on évite une carto vide ALORS QUE l'IA a validé des zones.
-       V220 — On ne trace PLUS d'équerres (interdit par la directive figée V198).
-       À la place, on RE-DÉTECTE la fluorescence pixel par pixel À L'INTÉRIEUR de
-       chaque bbox validée et on en trace le CONTOUR LISSE réel (style A). La
-       précision vient du client ; l'IA borne seulement la recherche aux zones
-       qu'elle a jugées réelles. Si une boîte ne contient finalement aucun pixel
-       fluorescent (faux positif / voile), on ne trace rien pour elle — jamais
-       d'équerre mensongère. */
+    /* V187 — FILET DE SÉCURITÉ CARTO : si AUCUNE zone n'a été peinte (photo
+       uniforme, AI vide, grille absente), on tente une dernière passe sur les
+       bbox IA pour ne JAMAIS afficher une carto vide quand des zones existent. */
     if (!_cartoPainted && aiMode) {
       const _fallbackZones = (zones || []).filter(z =>
         z && z.artifact_rejection !== true &&
         typeof z.x === 'number' && typeof z.y === 'number' &&
-        typeof z.w === 'number' && typeof z.h === 'number' &&
-        z.w > 0 && z.h > 0);
-      if (_fallbackZones.length) {
-        const data = imageData.data;
-        /* Fusionne les bbox qui se chevauchent → une seule recherche/contour par
-           tache (évite les doubles tracés quand l'IA renvoie plusieurs boîtes). */
-        const merged = _mergeBoxes(_fallbackZones);
-        for (const b of merged) {
-          if (smoothPixelContourInBox(ctx, data, W, H, b)) _cartoPainted = true;
-        }
-      }
+        typeof z.w === 'number' && typeof z.h === 'number');
+      if (_fallbackZones.length) strokeBboxContours(ctx, _fallbackZones, W, H);
     }
 
     /* AUCUN marker sur l'image — uniquement l'overlay de cellules fluorescentes.
@@ -17406,35 +17225,7 @@ const Annotator = (() => {
     }
   }
 
-  /* V220 — API publique pour le fallback « grille totalement absente » du
-     renderer (render()). Quand res.grid a été perdu (sérialisation IDB / message
-     cross-frame) il n'y a plus de cellules à contourer ; au lieu du halo radial
-     ROUGE (cercles — interdits par la directive V198), on reconstruit le contour
-     LISSE directement depuis les pixels de l'image, à l'intérieur des bbox IA.
-     Retourne true si au moins un contour a été tracé (sinon l'appelant peut
-     retomber sur l'ancien halo en tout dernier recours). */
-  function drawSmoothContours(canvas, imageData, zones, W, H) {
-    if (!canvas || !imageData || !zones || !zones.length) return false;
-    const ctx = canvas.getContext && canvas.getContext('2d');
-    if (!ctx) return false;
-    canvas.width = W; canvas.height = H;
-    ctx.putImageData(imageData, 0, 0);
-    const valid = zones.filter(z =>
-      z && z.artifact_rejection !== true &&
-      typeof z.x === 'number' && typeof z.y === 'number' &&
-      typeof z.w === 'number' && typeof z.h === 'number' &&
-      z.w > 0 && z.h > 0);
-    if (!valid.length) { stamp(ctx, W, H); return false; }
-    const merged = _mergeBoxes(valid);
-    let painted = false;
-    for (const b of merged) {
-      if (smoothPixelContourInBox(ctx, imageData.data, W, H, b)) painted = true;
-    }
-    stamp(ctx, W, H);
-    return painted;
-  }
-
-  return { draw, drawGrid, drawZones, drawZoneMarkers, drawSmoothContours };
+  return { draw, drawGrid, drawZones, drawZoneMarkers };
 })();
 
 
@@ -24355,17 +24146,10 @@ const Annotator = (() => {
               });
             } catch (e) {}
           }
-          /* V188 — titre de l'hypothèse coloré selon le risque (classe sur la carte verdict).
-             V220 — BUG COULEUR FIXÉ : l'ancien test `rl2 === 'high'` / `'mid'|'moyen'|'medium'`
-             ne matchait PAS les valeurs réellement stockées : l'API renvoie
-             risk_level localisé/accentué ("Élevé", "Modéré"…) et le moteur local
-             renvoie "moderate". Résultat : un risque ÉLEVÉ ("Élevé") tombait dans
-             le `else` → classe risk-low → titre/bordure/eyebrow VERTS alors que la
-             jauge (qui utilise déjà le calcul robuste _rk) était ROUGE.
-             On réutilise directement _rk (high/mid/low) calculé plus haut avec la
-             même regex robuste que la jauge → couleur titre == couleur jauge/score
-             pour TOUS les niveaux. */
-          if (card) { card.classList.remove('risk-low','risk-mid','risk-high'); card.classList.add('risk-' + _rk); }
+          /* V188 — titre de l'hypothèse coloré selon le risque (classe sur la carte verdict) */
+          { const rl2 = (res.riskLevel || '').toString().toLowerCase();
+            const rk = rl2 === 'high' ? 'high' : (rl2 === 'mid' || rl2 === 'moyen' || rl2 === 'medium') ? 'mid' : 'low';
+            if (card) { card.classList.remove('risk-low','risk-mid','risk-high'); card.classList.add('risk-' + rk); } }
         } catch (e) {}
         $set('lvVerdictActionText', recommendation.primary_action);
         const actTitle = document.getElementById('lvVerdictActionTitle');
@@ -24469,49 +24253,35 @@ const Annotator = (() => {
        numérotation ni marqueur par tache, lisible quel que soit le nombre de
        taches. Le détail (catégorie, comptage) reste dans le tableau, pas sur
        l'image. (Ancien bloc V120 de badges blancs numérotés supprimé.) */
-    /* V21.1 / V220 — Fallback cartographie quand la grille heuristique est
-       TOTALEMENT absente (res.grid perdu par sérialisation), donc drawZones
-       n'a pas été appelé du tout.
-       V220 — On NE dessine PLUS de halo radial rouge (cercles interdits par la
-       directive figée V198 : « jamais bbox/cercle/équerre »). On reconstruit le
-       CONTOUR LISSE directement depuis les pixels de l'image, borné aux bbox IA
-       (Annotator.drawSmoothContours). Le halo rouge n'est gardé qu'en TOUT dernier
-       recours, si la re-détection pixel ne trouve elle-même rien (image vraiment
-       sans signal exploitable dans les boîtes) — pour ne jamais laisser une carte
-       totalement vide alors que l'IA a listé des zones. */
+    /* V21.1 — Fallback cartographie en ROUGE signature Lucens (216,67,21).
+       Quand la cartographie pixel-précise échoue, on dessine pour chaque
+       zone IA un halo radial doux ROUGE qui couvre TOUTE la bbox de la
+       tache (pas juste son centre). Plus de couleur par catégorie. */
     try {
       const cartoFailed = !(cartoZones.length && grid.length);
-      if (cartoFailed && cartoZones.length && imgData) {
-        let smoothOk = false;
-        try {
-          smoothOk = Annotator.drawSmoothContours(annCanvas, imgData, cartoZones, W, H);
-        } catch (e2) {
-          console.warn('[V220 carto contour pixel] échec, repli halo:', e2?.message || e2);
-        }
-        if (!smoothOk) {
-          const ctxAnn = annCanvas.getContext && annCanvas.getContext('2d');
-          if (ctxAnn) {
-            ctxAnn.save();
-            cartoZones.forEach(z => {
-              if (!z || typeof z.x !== 'number' || typeof z.w !== 'number') return;
-              if (z.artifact_rejection === true) return;
-              const x = z.x * W, y = z.y * H, w = z.w * W, h = z.h * H;
-              /* Halo radial rouge signature couvrant toute la bbox */
-              const cx = x + w / 2, cy = y + h / 2;
-              const radius = Math.max(w, h) * 0.7;
-              const grad = ctxAnn.createRadialGradient(cx, cy, 0, cx, cy, radius);
-              grad.addColorStop(0,   'rgba(216, 67, 21, 0.62)');
-              grad.addColorStop(0.5, 'rgba(216, 67, 21, 0.32)');
-              grad.addColorStop(1,   'rgba(216, 67, 21, 0)');
-              ctxAnn.globalCompositeOperation = 'screen';
-              ctxAnn.fillStyle = grad;
-              ctxAnn.beginPath();
-              ctxAnn.arc(cx, cy, radius, 0, Math.PI * 2);
-              ctxAnn.fill();
-            });
-            ctxAnn.globalCompositeOperation = 'source-over';
-            ctxAnn.restore();
-          }
+      if (cartoFailed && cartoZones.length) {
+        const ctxAnn = annCanvas.getContext && annCanvas.getContext('2d');
+        if (ctxAnn) {
+          ctxAnn.save();
+          cartoZones.forEach(z => {
+            if (!z || typeof z.x !== 'number' || typeof z.w !== 'number') return;
+            if (z.artifact_rejection === true) return;
+            const x = z.x * W, y = z.y * H, w = z.w * W, h = z.h * H;
+            /* Halo radial rouge signature couvrant toute la bbox */
+            const cx = x + w / 2, cy = y + h / 2;
+            const radius = Math.max(w, h) * 0.7;
+            const grad = ctxAnn.createRadialGradient(cx, cy, 0, cx, cy, radius);
+            grad.addColorStop(0,   'rgba(216, 67, 21, 0.62)');
+            grad.addColorStop(0.5, 'rgba(216, 67, 21, 0.32)');
+            grad.addColorStop(1,   'rgba(216, 67, 21, 0)');
+            ctxAnn.globalCompositeOperation = 'screen';
+            ctxAnn.fillStyle = grad;
+            ctxAnn.beginPath();
+            ctxAnn.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctxAnn.fill();
+          });
+          ctxAnn.globalCompositeOperation = 'source-over';
+          ctxAnn.restore();
         }
       }
     } catch (e) {
