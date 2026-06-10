@@ -9845,7 +9845,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v264</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v265</div>
         </div>
       </div>
     </div>
@@ -10484,8 +10484,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
       .hero-seg[data-risk="high"] .hero-seg-s[data-seg="high"] { background:#B42318; border-color:#B42318; color:#fff; }
       /* page analyse : caler sur le mockup (boutons, casse, champ zone, image en haut) */
       .results-zone-top { display:none !important; }
-      .results-toolbar { display:flex !important; }
-      .results-toolbar #exportBtn { order:-1; }
       /* image (viewer) remontée juste après la barre de risque, avant le verdict */
       #results .result-grid { order:-1; }
       #results.visible { display:flex !important; flex-direction:column; }
@@ -10514,19 +10512,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
          eyebrow, couleur du titre, boutons empilés. */
       /* 1 — Score « 45/100 » retiré : la barre segmentée colorée porte le niveau. */
       #results.visible #hero .score-block { display:none !important; }
-      /* 5 — Boutons empilés pleine largeur : Générer le rapport (foncé) puis Nouvelle analyse (contour). */
-      #results.visible .results-toolbar { display:flex !important; flex-direction:column !important;
-        gap:10px !important; max-width:none !important; margin:22px auto 14px !important; padding-top:6px !important; }
-      #results.visible .results-toolbar .btn-export,
-      #results.visible .results-toolbar .btn-back { width:100% !important; height:46px !important;
-        border-radius:12px !important; font-size:14px !important; box-shadow:none !important; }
-      #results.visible .results-toolbar .btn-export { order:-1; background:var(--primary,#0F3D4E) !important;
-        color:#fff !important; border:1px solid var(--primary,#0F3D4E) !important; }
-      #results.visible .results-toolbar .btn-back { background:var(--surface-hi) !important; color:var(--primary) !important;
-        border:1px solid var(--border) !important; }
-      #results.visible .results-toolbar .btn-export > svg,
-      #results.visible .results-toolbar .btn-back > svg { display:none !important; }
-
       /* V188.3 — Filet orange suspendu en haut du rapport SUPPRIMÉ.
          Quand le score chiffré est masqué (V188), ce filet décoratif (vestige
          qui colorait le bord supérieur selon le risque) reste suspendu au-dessus
@@ -10548,14 +10533,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         padding: 0 !important; margin: 0 !important;
         align-items: flex-start !important;
       }
-      /* <main> gère déjà le padding-bas pour la nav (calc bottom-bar-total +
-         space-8). Pas besoin de doubler ici. On se contente de garantir que
-         la toolbar n'ajoute pas elle-même de margin-bottom inutile. */
-      #results.visible .results-toolbar {
-        margin-top: 14px !important;
-        margin-bottom: 0 !important;
-      }
-
       /* ═══════ V188.4 — RAPPORT STRICT MINIMAL (tient en une vue mobile) ═══════
          Demande utilisateur : « hypothèse, niveau de risque, recommandation,
          c'est tout ». Plus d'interprétation, plus de risque associé. Score
@@ -10589,10 +10566,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         main { padding-top: 4px !important; padding-left: 12px !important; padding-right: 12px !important; }
         #results.visible #hero { margin-bottom: 2px !important; }
         #results.visible .hero-risk-label { font-size: 11px !important; }
-        #results.visible .results-toolbar { margin-top: 8px !important; gap: 7px !important; }
-        #results.visible .results-toolbar .btn-export,
-        #results.visible .results-toolbar .btn-back { height: 46px !important; font-size: 14px !important;
-          border-radius: 12px !important; }
         /* Image très compacte (priorité aux blocs texte + boutons accessibles). */
         #results.visible #viewerStage { height: 130px !important; }
         #results.visible .hero-seg { gap: 4px !important; margin-top: 6px !important; }
@@ -10669,20 +10642,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         border-radius: 50% !important; background: transparent !important;
         border: 2px solid var(--risk-color, #B42318) !important; }
 
-      /* === Boutons CÔTE À CÔTE en dessous de la carte === */
-      #results.visible .results-toolbar { display: flex !important; flex-direction: row !important;
-        gap: 10px !important; margin: 14px 0 0 !important; padding: 0 !important; max-width: none !important; }
-      #results.visible .results-toolbar .btn-export,
-      #results.visible .results-toolbar .btn-back { flex: 1 1 50% !important; width: auto !important;
-        height: 46px !important; font-size: 14px !important; border-radius: 12px !important; }
-      #results.visible .results-toolbar .btn-export { background: var(--primary,#0F3D4E) !important;
-        color: #fff !important; border: 1px solid var(--primary,#0F3D4E) !important; box-shadow: none !important; }
-      #results.visible .results-toolbar .btn-back { background: var(--surface-hi) !important;
-        color: var(--primary) !important; border: 1px solid var(--border) !important;
-        box-shadow: none !important; }
-      #results.visible .results-toolbar .btn-export > svg,
-      #results.visible .results-toolbar .btn-back > svg { display: none !important; }
-
       /* === Mobile @media — affinage : tout doit tenir sans scroll. === */
       @media (max-width: 500px) {
         #results.visible #hero { padding: 11px 13px 9px !important; }
@@ -10691,9 +10650,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         #results.visible .result-grid > .card { padding: 9px 13px 2px !important; }
         #results.visible #viewerStage { height: 155px !important; }
         #results.visible .viewer-legend { padding: 7px 0 1px !important; font-size: 10.5px !important; }
-        #results.visible .results-toolbar { margin: 12px 0 0 !important; gap: 8px !important; }
-        #results.visible .results-toolbar .btn-export,
-        #results.visible .results-toolbar .btn-back { height: 46px !important; font-size: 14px !important; }
       }
 
       /* ═══════ V188.6 — RAPPORT : VRAIS BLOCS DISTINCTS, AÉRÉS ═══════
@@ -10728,9 +10684,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         background: var(--surface-hi) !important;
       }
 
-      /* ─── Espacement boutons sous la carte ─── */
-      #results.visible .results-toolbar { margin: 16px 0 0 !important; }
-
       /* ─── Mobile : même structure, tailles ajustées pour tenir sur iPhone ─── */
       @media (max-width: 500px) {
         #results.visible #hero { padding: 12px 13px 12px !important; }
@@ -10739,7 +10692,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         #results.visible .hero-seg-s { padding: 9px 4px !important; font-size: 13px !important; }
         #results.visible #viewerStage { height: 155px !important; }
         #results.visible .viewer-legend { padding: 8px 13px !important; font-size: 11px !important; }
-        #results.visible .results-toolbar { margin: 13px 0 0 !important; }
       }
 
       /* ═══════ V188.7 — CHAQUE SECTION DEVIENT UNE CARTE AUTONOME ═══════
@@ -10873,9 +10825,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         flex-shrink: 0 !important;
       }
 
-      /* Boutons sous la carte */
-      #results.visible .results-toolbar { margin: 12px 0 0 !important; }
-
       /* @media mobile : tout reste mais paddings serrés pour iPhone */
       @media (max-width: 500px) {
         #results.visible #hero .hero-row { padding: 11px 13px !important; }
@@ -10887,7 +10836,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         #results.visible .hero-seg-s { padding: 9px 4px !important; font-size: 12px !important; }
         #results.visible .result-grid > .card:has(#viewerStage) { padding: 10px 10px !important; }
         #results.visible #viewerStage { height: 140px !important; }
-        #results.visible .results-toolbar { margin: 10px 0 0 !important; }
       }
 
       /* ═════════ V188.8 — RAPPORT FINAL : 3 macro-blocs propres ═════════
@@ -11112,6 +11060,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
         border: 1px solid var(--border) !important;
         box-shadow: none !important;
       }
+      /* Icônes des 2 boutons masquées (replié de V188.5 — purge lot 3) */
+      #results.visible .results-toolbar .btn-export > svg,
+      #results.visible .results-toolbar .btn-back > svg { display: none !important; }
 
       /* ─── Pas de tab bar du bas sur la page rapport (focus verdict + 2 actions) ─── */
       body.on-results .bottom-bar { display: none !important; }
@@ -11124,8 +11075,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         #results.visible #hero .score-value { font-size: 23px !important; }
         #results.visible #viewerStage { height: 150px !important; }
         #results.visible .results-toolbar { margin: 12px 0 0 !important; gap: 8px !important; }
-        #results.visible .results-toolbar .btn-export,
-        #results.visible .results-toolbar .btn-back { height: 46px !important; font-size: 14px !important; }
       }
 
       /* ══════════ V190 — Correctifs post-déploiement (audit terrain) ══════════
