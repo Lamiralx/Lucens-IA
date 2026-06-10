@@ -95,12 +95,13 @@ body { min-height: 100dvh; }
   padding: 11px max(16px, env(safe-area-inset-left)) 11px max(16px, env(safe-area-inset-right));
   min-height: 60px;
 }
+/* V272 — lockup unifié : wordmark accent + point cuivre statique (canon app) */
 .wordmark {
   font-family: var(--font-display);
   font-weight: 800;
   font-size: 21px;
-  letter-spacing: -0.022em;
-  color: var(--ink-primary);
+  letter-spacing: -0.01em;
+  color: var(--accent, #0F3D4E);
   text-decoration: none;
   flex-shrink: 0;
 }
@@ -109,9 +110,9 @@ body { min-height: 100dvh; }
   display: inline-block;
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: var(--terra);
+  background: #B54A2A;   /* --lucens-signature */
   margin-left: 5px;
-  vertical-align: 0.14em;
+  vertical-align: 0.16em;
 }
 .header-actions { display: flex; align-items: center; gap: 8px; }
 .theme-toggle {

@@ -65,21 +65,21 @@ body {
   background: var(--surface-low);
 }
 .hdr-brand { display: flex; align-items: baseline; gap: var(--space-3); }
+/* V272 — lockup unifié : point cuivre statique, sans glow (canon app) */
 .hdr-wordmark {
   font-family: var(--font-display);
   font-size: 18px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 .hdr-wordmark::after {
   content: '';
   display: inline-block;
   width: 5px; height: 5px;
   border-radius: 50%;
-  background: #FFF;
+  background: #B54A2A;   /* --lucens-signature */
   margin-left: 4px;
-  vertical-align: 0.18em;
-  box-shadow: 0 0 6px rgba(255,255,255,0.5);
+  vertical-align: 0.16em;
 }
 .hdr-tagline {
   font-family: var(--font-mono);
