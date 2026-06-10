@@ -9845,7 +9845,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v262</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v263</div>
         </div>
       </div>
     </div>
@@ -11893,17 +11893,24 @@ body.lv-open { overflow: hidden; touch-action: none; }
       /* Icône d'action : discrète, alignée. */
       #results.visible .lv-verdict-action-icon { color: #9CA3AF !important; }
 
-      /* 4 — TOGGLE compact, centré, discret (était trop gros, texte sur 2 lignes). */
+      /* 4 — TOGGLE compact, centré, discret — BLOC CANONIQUE du segmented
+         (purge V263 lot 1 : 11 générations précédentes de .viewer-tabs/.viewer-tab
+         supprimées ; les déclarations encore gagnantes des V188.8/V190 y sont
+         fusionnées : border/align/cursor/typo). */
       #results.visible .viewer-tabs {
         display: flex !important; width: fit-content !important; max-width: 100% !important;
         margin: 6px auto 10px !important; padding: 3px !important; gap: 0 !important;
         background: var(--surface-mid) !important; border-radius: 9px !important;
+        border: 0 !important; align-self: center !important; align-items: center !important;
       }
       #results.visible .viewer-tab {
         flex: 0 0 auto !important; min-height: 0 !important; width: auto !important;
         padding: 5px 13px !important; font-size: 12px !important; font-weight: 600 !important;
         line-height: 1.2 !important; white-space: nowrap !important;
         border-radius: 6px !important; color: var(--ink-tertiary) !important;
+        background: transparent !important; border: 0 !important; cursor: pointer !important;
+        letter-spacing: -.005em !important; text-transform: none !important;
+        font-family: var(--font-body) !important;
       }
       #results.visible .viewer-tab.active {
         background: var(--surface-hi) !important; color: var(--ink-primary) !important;
