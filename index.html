@@ -9845,7 +9845,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v263</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v264</div>
         </div>
       </div>
     </div>
@@ -10482,13 +10482,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
       .hero-seg[data-risk="low"]  .hero-seg-s[data-seg="low"]  { background:#2E7D32; border-color:#2E7D32; color:#fff; }
       .hero-seg[data-risk="mid"]  .hero-seg-s[data-seg="mid"]  { background:#B7791F; border-color:#B7791F; color:#fff; }
       .hero-seg[data-risk="high"] .hero-seg-s[data-seg="high"] { background:#B42318; border-color:#B42318; color:#fff; }
-      .lv-risque { margin:14px 0 0; }
-      .lv-risque-label { font-size:12px; font-weight:600; color:var(--text-3,#6B7280); margin-bottom:4px; }
-      .lv-risque-text { font-size:13.5px; line-height:1.45; color:var(--text-2,#4B5563); }
-      .lv-risque-text b { color:var(--ink-primary,#111827); font-weight:700; }
       /* page analyse : caler sur le mockup (boutons, casse, champ zone, image en haut) */
       .results-zone-top { display:none !important; }
-      .lv-verdict-eyebrow { text-transform:none !important; letter-spacing:0 !important; }
       .results-toolbar { display:flex !important; }
       .results-toolbar #exportBtn { order:-1; }
       /* image (viewer) remontée juste après la barre de risque, avant le verdict */
@@ -10496,12 +10491,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results.visible { display:flex !important; flex-direction:column; }
       #hero { order:-2; }
       #results .disclaimer-fold { display:none !important; }
-      /* filets entre sections (Origine / Risque / Action) comme le mockup */
-      .lv-risque { border-top:1px solid var(--border,#E5E7EB) !important; padding-top:13px !important; margin-top:13px !important; }
-      .lv-verdict-action { background:none !important; box-shadow:none !important; border:0 !important; border-top:1px solid var(--border,#E5E7EB) !important; padding:13px 0 0 !important; margin-top:13px !important; display:block !important; }
-      .lv-verdict-action-icon { display:none !important; }
-      .lv-verdict-action-title { font-size:12px !important; font-weight:600 !important; color:var(--text-3,#6B7280) !important; }
-      .lv-verdict-action-text { font-size:14.5px !important; font-weight:600 !important; color:var(--ink-primary,#111827) !important; margin-top:6px !important; }
       /* « Niveau de risque » : label à gauche + score compact à droite, même ligne (comme le mockup) */
       #hero.visible, #results.visible #hero { background:transparent !important; border:0 !important; box-shadow:none !important; border-radius:0 !important; padding:13px 2px !important; }
       #hero .hero-row { display:flex !important; flex-direction:row !important; flex-wrap:nowrap !important; align-items:baseline !important; justify-content:space-between !important; gap:10px !important; margin:0 !important; }
@@ -10512,8 +10501,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #hero .hero-seg { margin-top:10px !important; }
       /* filet rouge en haut (couleur du risque) + retrait de l'accent gauche du verdict + ligne de vérification */
       #results.visible #hero { border-top:3px solid var(--score-color,#B42318) !important; border-radius:14px 14px 0 0 !important; padding-top:14px !important; }
-      .lucens-verdict-card { border-left:0 !important; }
-      .lv-verify { font-size:12px !important; color:var(--text-3,#6B7280) !important; line-height:1.4 !important; margin-top:7px !important; }
       /* V187 — .results-hdr (logo LUCENS + tagline + croix ✕) SUPPRIMÉ : il
          doublonnait l'en-tête global .hdr (qui affiche déjà le logo LUCENS) sur
          l'écran de résultat → deux en-têtes empilés (l'effet « mélangé ») et une
@@ -10527,17 +10514,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
          eyebrow, couleur du titre, boutons empilés. */
       /* 1 — Score « 45/100 » retiré : la barre segmentée colorée porte le niveau. */
       #results.visible #hero .score-block { display:none !important; }
-      /* 2 — Ligne « En cas de doute… (ATP) » retirée de l'ÉCRAN (conservée dans le PDF). */
-      #results.visible .lv-verify { display:none !important; }
-      /* 3 — Eyebrow « Hypothèse principale » : loupe + libellé sobre. */
-      #results.visible .lv-verdict-eyebrow { display:flex !important; align-items:center; gap:6px;
-        font-family:var(--font-body) !important; font-size:12px !important; font-weight:600 !important;
-        text-transform:none !important; letter-spacing:0 !important; color:var(--text-3,#6B7280) !important; }
-      #results.visible .lv-eyebrow-ico { width:14px; height:14px; flex-shrink:0; }
-      /* 4 — Titre de l'hypothèse coloré selon le risque (classe posée en JS). */
-      .lucens-verdict-card.risk-low  .lv-verdict-title { color:var(--risk-low) !important; }
-      .lucens-verdict-card.risk-mid  .lv-verdict-title { color:var(--risk-mid) !important; }
-      .lucens-verdict-card.risk-high .lv-verdict-title { color:var(--risk-hi) !important; }
       /* 5 — Boutons empilés pleine largeur : Générer le rapport (foncé) puis Nouvelle analyse (contour). */
       #results.visible .results-toolbar { display:flex !important; flex-direction:column !important;
         gap:10px !important; max-width:none !important; margin:22px auto 14px !important; padding-top:6px !important; }
@@ -10586,22 +10562,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
          intégré DANS la case active de la barre. Toggle image avec/sans carto
          réactivé. Tout doit tenir sur une vue sans scroll. */
 
-      /* 1) On masque strictement le texte non essentiel sur la carte verdict. */
-      #results.visible .lv-verdict-interpretation { display: none !important; }
-      #results.visible #lvRisque { display: none !important; }
-      #results.visible .lv-verdict-confidence { display: none !important; }
-
-      /* 2) Carte verdict resserrée (moins de padding, moins de marges). */
-      #results.visible .lucens-verdict-card { padding: 12px 14px !important; margin: 8px 0 !important;
-        background: var(--surface-hi) !important; border: 1px solid var(--border,#E5E7EB) !important;
-        border-radius: 14px !important; box-shadow: none !important; }
-      #results.visible .lv-verdict-head { margin-bottom: 6px !important; }
-      #results.visible .lv-verdict-title { font-size: 18px !important; line-height: 1.25 !important; margin-top: 2px !important; }
-      #results.visible .lv-verdict-action { padding: 10px 0 0 !important; margin-top: 10px !important;
-        border-top: 1px solid var(--border,#E5E7EB) !important; }
-      #results.visible .lv-verdict-action-title { font-size: 11.5px !important; margin-bottom: 2px !important; }
-      #results.visible .lv-verdict-action-text { font-size: 14px !important; line-height: 1.35 !important; }
-
       /* 3) Score INTÉGRÉ dans la case active de la barre segmentée
          (élément injecté par render() : .hero-seg-score, classe ajoutée en JS). */
       #results.visible .hero-seg-s { padding: 9px 4px !important; font-size: 12.5px !important;
@@ -10629,12 +10589,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         main { padding-top: 4px !important; padding-left: 12px !important; padding-right: 12px !important; }
         #results.visible #hero { margin-bottom: 2px !important; }
         #results.visible .hero-risk-label { font-size: 11px !important; }
-        #results.visible .lucens-verdict-card { margin: 4px 0 !important; padding: 9px 12px !important; }
-        #results.visible .lv-verdict-eyebrow { font-size: 11px !important; }
-        #results.visible .lv-verdict-title { font-size: 15.5px !important; line-height: 1.2 !important; }
-        #results.visible .lv-verdict-action { padding: 7px 0 0 !important; margin-top: 7px !important; }
-        #results.visible .lv-verdict-action-title { font-size: 10.5px !important; }
-        #results.visible .lv-verdict-action-text { font-size: 13px !important; }
         #results.visible .results-toolbar { margin-top: 8px !important; gap: 7px !important; }
         #results.visible .results-toolbar .btn-export,
         #results.visible .results-toolbar .btn-back { height: 46px !important; font-size: 14px !important;
@@ -10662,20 +10616,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results:has(.lucens-verdict-card.risk-mid)  { --risk-color: #B7791F; }
       #results:has(.lucens-verdict-card.risk-high) { --risk-color: #B42318; }
 
-      /* On RESTITUE le texte essentiel masqué par V188.4 */
-      #results.visible .lv-verdict-interpretation { display: block !important;
-        font-size: 13px !important; color: var(--text-2,#4B5563) !important;
-        margin-top: 4px !important; line-height: 1.4 !important; }
-      #results.visible #lvRisque { display: block !important; }
-      #results.visible .lv-verify { display: block !important;
-        font-size: 11.5px !important; color: var(--text-3,#6B7280) !important;
-        margin-top: 6px !important; line-height: 1.4 !important; }
-
       /* Score retiré de la case active de la barre, va à droite du label "Niveau de risque". */
       #results.visible .hero-seg-score { display: none !important; }
-
-      /* Loupe retirée de l'eyebrow « Origine probable » (cible n'en a pas). */
-      #results.visible .lv-eyebrow-ico { display: none !important; }
 
       /* === Hero : ligne "Niveau de risque" à gauche + score "78/100" gros à droite, sur la même ligne, puis barre segmentée === */
       #results.visible #hero { padding: 13px 15px 11px !important; margin: 0 !important;
@@ -10727,48 +10669,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         border-radius: 50% !important; background: transparent !important;
         border: 2px solid var(--risk-color, #B42318) !important; }
 
-      /* === Carte verdict : continue la carte (dernier bloc), avec coins bas arrondis === */
-      #results.visible .lucens-verdict-card { padding: 0 !important; margin: 0 !important;
-        background: var(--surface-hi) !important;
-        border-left: 1px solid var(--border,#E5E7EB) !important;
-        border-right: 1px solid var(--border,#E5E7EB) !important;
-        border-bottom: 1px solid var(--border,#E5E7EB) !important;
-        border-top: 0 !important;
-        border-bottom-left-radius: 14px !important; border-bottom-right-radius: 14px !important;
-        box-shadow: none !important; }
-      /* Sections internes : padding latéral + filet entre sections (sauf au-dessus de la 1ère) */
-      #results.visible .lv-verdict-head,
-      #results.visible #lvRisque,
-      #results.visible .lv-verdict-action {
-        padding: 13px 15px !important;
-        border-top: 1px solid var(--border,#E5E7EB) !important;
-        margin: 0 !important;
-        background: transparent !important;
-      }
-      #results.visible .lv-verdict-head { border-top: 0 !important; }
-      /* Origine probable : eyebrow sobre + titre gros et coloré + description courte */
-      #results.visible .lv-verdict-eyebrow { display: inline-block !important;
-        font-size: 12px !important; font-weight: 600 !important; color: var(--text-3,#6B7280) !important;
-        text-transform: none !important; letter-spacing: 0 !important; margin: 0 0 3px !important; }
-      #results.visible .lv-verdict-title { font-size: 20px !important; font-weight: 800 !important;
-        line-height: 1.18 !important; letter-spacing: -0.01em !important;
-        color: var(--risk-color, #B42318) !important; margin: 4px 0 0 !important; }
-      /* Risque associé : libellé eyebrow + texte normal sur fond blanc */
-      #results.visible .lv-risque { background: transparent !important; }
-      #results.visible .lv-risque-label { font-size: 12px !important; font-weight: 600 !important;
-        color: var(--text-3,#6B7280) !important; margin-bottom: 4px !important; }
-      #results.visible .lv-risque-text { font-size: 13px !important; line-height: 1.45 !important;
-        color: var(--text-2,#4B5563) !important; }
-      /* Action recommandée : libellé eyebrow + texte action + verify discret */
-      #results.visible .lv-verdict-action { display: block !important; }
-      #results.visible .lv-verdict-action-icon { display: none !important; }
-      #results.visible .lv-verdict-action-body { padding: 0 !important; }
-      #results.visible .lv-verdict-action-title { font-size: 12px !important; font-weight: 600 !important;
-        color: var(--text-3,#6B7280) !important; margin-bottom: 4px !important;
-        text-transform: none !important; letter-spacing: 0 !important; }
-      #results.visible .lv-verdict-action-text { font-size: 14.5px !important; font-weight: 600 !important;
-        color: var(--text,#111827) !important; line-height: 1.35 !important; margin: 0 !important; }
-
       /* === Boutons CÔTE À CÔTE en dessous de la carte === */
       #results.visible .results-toolbar { display: flex !important; flex-direction: row !important;
         gap: 10px !important; margin: 14px 0 0 !important; padding: 0 !important; max-width: none !important; }
@@ -10791,14 +10691,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         #results.visible .result-grid > .card { padding: 9px 13px 2px !important; }
         #results.visible #viewerStage { height: 155px !important; }
         #results.visible .viewer-legend { padding: 7px 0 1px !important; font-size: 10.5px !important; }
-        #results.visible .lv-verdict-head,
-        #results.visible #lvRisque,
-        #results.visible .lv-verdict-action { padding: 10px 13px !important; }
-        #results.visible .lv-verdict-title { font-size: 18px !important; }
-        #results.visible .lv-verdict-interpretation { font-size: 12.5px !important; }
-        #results.visible .lv-risque-text { font-size: 12.5px !important; }
-        #results.visible .lv-verdict-action-text { font-size: 14px !important; }
-        #results.visible .lv-verify { font-size: 11px !important; }
         #results.visible .results-toolbar { margin: 12px 0 0 !important; gap: 8px !important; }
         #results.visible .results-toolbar .btn-export,
         #results.visible .results-toolbar .btn-back { height: 46px !important; font-size: 14px !important; }
@@ -10836,63 +10728,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         background: var(--surface-hi) !important;
       }
 
-      /* ─── 3. Bloc « Origine probable » : head + interprétation UNIFIÉS ─── */
-      #results.visible .lucens-verdict-card { padding: 0 !important; }
-      #results.visible .lv-verdict-head {
-        padding: 14px 15px 6px !important;
-        border-top: 0 !important;
-      }
-      #results.visible .lv-verdict-eyebrow {
-        margin: 0 0 6px !important;
-        display: block !important;
-      }
-      #results.visible .lv-verdict-title {
-        margin: 0 !important;
-        font-size: 22px !important;
-        line-height: 1.2 !important;
-      }
-      #results.visible .lv-verdict-interpretation {
-        padding: 4px 15px 14px !important;
-        margin: 0 !important;
-        font-size: 13.5px !important;
-        line-height: 1.5 !important;
-        color: var(--text-2, #4B5563) !important;
-      }
-
-      /* ─── 4. Bloc « Risque associé » : padding aéré + filet net en haut ─── */
-      #results.visible #lvRisque {
-        padding: 14px 15px !important;
-        border-top: 1px solid var(--border, #E5E7EB) !important;
-        margin: 0 !important;
-      }
-      #results.visible .lv-risque-label {
-        font-size: 12px !important; font-weight: 600 !important;
-        color: var(--text-3, #6B7280) !important;
-        margin: 0 0 6px !important;
-      }
-      #results.visible .lv-risque-text {
-        font-size: 13.5px !important; line-height: 1.5 !important;
-        color: var(--text-2, #4B5563) !important;
-      }
-
-      /* ─── 5. Bloc « Action recommandée » : padding aéré + filet net en haut ─── */
-      #results.visible .lv-verdict-action {
-        padding: 14px 15px !important;
-        border-top: 1px solid var(--border, #E5E7EB) !important;
-        margin: 0 !important;
-      }
-      #results.visible .lv-verdict-action-title {
-        margin: 0 0 6px !important;
-      }
-      #results.visible .lv-verdict-action-text {
-        font-size: 14.5px !important; line-height: 1.4 !important;
-      }
-      #results.visible .lv-verify {
-        margin-top: 8px !important;
-        font-size: 12px !important;
-        line-height: 1.45 !important;
-      }
-
       /* ─── Espacement boutons sous la carte ─── */
       #results.visible .results-toolbar { margin: 16px 0 0 !important; }
 
@@ -10904,14 +10739,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         #results.visible .hero-seg-s { padding: 9px 4px !important; font-size: 13px !important; }
         #results.visible #viewerStage { height: 155px !important; }
         #results.visible .viewer-legend { padding: 8px 13px !important; font-size: 11px !important; }
-        #results.visible .lv-verdict-head { padding: 12px 13px 5px !important; }
-        #results.visible .lv-verdict-interpretation { padding: 3px 13px 12px !important; font-size: 13px !important; }
-        #results.visible #lvRisque { padding: 12px 13px !important; }
-        #results.visible .lv-verdict-action { padding: 12px 13px !important; }
-        #results.visible .lv-verdict-title { font-size: 19px !important; }
-        #results.visible .lv-risque-text { font-size: 13px !important; }
-        #results.visible .lv-verdict-action-text { font-size: 14px !important; }
-        #results.visible .lv-verify { font-size: 11.5px !important; }
         #results.visible .results-toolbar { margin: 13px 0 0 !important; }
       }
 
@@ -10935,23 +10762,13 @@ body.lv-open { overflow: hidden; touch-action: none; }
         padding: 0 !important;
         margin: 0 0 9px !important;
       }
-      #results.visible .lucens-verdict-card {
-        background: transparent !important;
-        border: 0 !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        box-shadow: none !important;
-      }
-
       /* Style commun de CARTE AUTONOME pour les blocs simples.
          IMPORTANT : on cible UNIQUEMENT la 1ère .card (viewer) — pas les autres
          (Synthèse des zones, Verdict détaillé par zone) qui doivent rester
          cachées par le metier-spine CSS. */
       #results.visible #hero .hero-row,
       #results.visible #hero .hero-seg,
-      #results.visible .result-grid > .card:has(#viewerStage),
-      #results.visible #lvRisque,
-      #results.visible .lv-verdict-action {
+      #results.visible .result-grid > .card:has(#viewerStage) {
         background: var(--surface-hi) !important;
         border: 1px solid var(--border) !important;
         border-radius: 12px !important;
@@ -11056,87 +10873,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         flex-shrink: 0 !important;
       }
 
-      /* Bloc 4 — Origine probable (head + description UNIFIÉS en une carte) */
-      #results.visible .lv-verdict-head {
-        background: var(--surface-hi) !important;
-        border-top: 1px solid var(--border, #E5E7EB) !important;
-        border-left: 1px solid var(--border, #E5E7EB) !important;
-        border-right: 1px solid var(--border, #E5E7EB) !important;
-        border-bottom: 0 !important;
-        border-top-left-radius: 13px !important;
-        border-top-right-radius: 13px !important;
-        border-bottom-left-radius: 0 !important;
-        border-bottom-right-radius: 0 !important;
-        padding: 12px 14px 5px !important;
-        margin: 0 !important;
-      }
-      #results.visible .lv-verdict-eyebrow {
-        font-size: 12px !important; font-weight: 600 !important;
-        color: var(--text-3, #6B7280) !important;
-        text-transform: none !important; letter-spacing: 0 !important;
-        margin: 0 0 4px !important;
-        display: block !important;
-      }
-      #results.visible .lv-verdict-title {
-        font-size: 20px !important; font-weight: 800 !important;
-        line-height: 1.2 !important;
-        color: var(--risk-color, #B42318) !important;
-        margin: 0 !important;
-      }
-      #results.visible .lv-verdict-interpretation {
-        background: var(--surface-hi) !important;
-        border-left: 1px solid var(--border, #E5E7EB) !important;
-        border-right: 1px solid var(--border, #E5E7EB) !important;
-        border-bottom: 1px solid var(--border, #E5E7EB) !important;
-        border-top: 0 !important;
-        border-bottom-left-radius: 13px !important;
-        border-bottom-right-radius: 13px !important;
-        padding: 2px 14px 12px !important;
-        margin: 0 0 9px !important;
-        display: block !important;
-        font-size: 13px !important;
-        line-height: 1.45 !important;
-        color: var(--text-2, #4B5563) !important;
-      }
-
-      /* Bloc 5 — Risque associé */
-      #results.visible #lvRisque {
-        display: block !important;
-      }
-      #results.visible .lv-risque-label {
-        font-size: 12px !important; font-weight: 600 !important;
-        color: var(--text-3, #6B7280) !important;
-        margin: 0 0 5px !important;
-      }
-      #results.visible .lv-risque-text {
-        font-size: 13px !important; line-height: 1.45 !important;
-        color: var(--text-2, #4B5563) !important;
-      }
-
-      /* Bloc 6 — Action recommandée + ligne ATP */
-      #results.visible .lv-verdict-action {
-        display: block !important;
-        margin: 0 !important;
-      }
-      #results.visible .lv-verdict-action-title {
-        font-size: 12px !important; font-weight: 600 !important;
-        color: var(--text-3, #6B7280) !important;
-        text-transform: none !important;
-        margin: 0 0 5px !important;
-      }
-      #results.visible .lv-verdict-action-text {
-        font-size: 14px !important; font-weight: 600 !important;
-        color: var(--text, #111827) !important;
-        line-height: 1.4 !important;
-        margin: 0 !important;
-      }
-      #results.visible .lv-verify {
-        font-size: 11.5px !important;
-        color: var(--text-3, #6B7280) !important;
-        line-height: 1.4 !important;
-        margin-top: 7px !important;
-      }
-
       /* Boutons sous la carte */
       #results.visible .results-toolbar { margin: 12px 0 0 !important; }
 
@@ -11145,22 +10881,12 @@ body.lv-open { overflow: hidden; touch-action: none; }
         #results.visible #hero .hero-row { padding: 11px 13px !important; }
         #results.visible #hero .hero-row,
         #results.visible #hero .hero-seg,
-        #results.visible .result-grid > .card:has(#viewerStage),
-        #results.visible #lvRisque,
-        #results.visible .lv-verdict-action { margin-bottom: 8px !important; }
+        #results.visible .result-grid > .card:has(#viewerStage) { margin-bottom: 8px !important; }
         #results.visible #hero .score-value { font-size: 22px !important; }
         #results.visible #hero .hero-seg { padding: 9px 10px !important; gap: 6px !important; }
         #results.visible .hero-seg-s { padding: 9px 4px !important; font-size: 12px !important; }
         #results.visible .result-grid > .card:has(#viewerStage) { padding: 10px 10px !important; }
         #results.visible #viewerStage { height: 140px !important; }
-        #results.visible .lv-verdict-head { padding: 11px 13px 4px !important; }
-        #results.visible .lv-verdict-interpretation { padding: 2px 13px 11px !important; margin-bottom: 8px !important; font-size: 12.5px !important; }
-        #results.visible .lv-verdict-title { font-size: 18px !important; }
-        #results.visible #lvRisque,
-        #results.visible .lv-verdict-action { padding: 11px 13px !important; }
-        #results.visible .lv-risque-text,
-        #results.visible .lv-verdict-action-text { font-size: 13px !important; }
-        #results.visible .lv-verify { font-size: 11px !important; }
         #results.visible .results-toolbar { margin: 10px 0 0 !important; }
       }
 
@@ -11310,31 +11036,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results.visible .viewer-meta { display: none !important; }
 
       /* ─── BLOC 3 — ANALYSE : 3 sections séparées par filets ─── */
-      #results.visible .lucens-verdict-card {
-        background: var(--surface-hi) !important;
-        border: 1px solid var(--border) !important;
-        border-radius: 12px !important;
-        padding: 0 !important; margin: 0 !important;
-        box-shadow: none !important;
-        order: 0 !important;
-        display: block !important;
-      }
-      /* Section 1 (Origine probable) : head + interprétation regroupés */
-      #results.visible .lv-verdict-head {
-        padding: 14px 16px 0 !important;
-        margin: 0 !important;
-        border: 0 !important;
-        border-radius: 0 !important;
-        background: transparent !important;
-      }
-      #results.visible .lv-verdict-eyebrow {
-        display: flex !important; align-items: center !important; gap: 7px !important;
-        font-size: 12px !important; font-weight: 700 !important;
-        letter-spacing: .04em !important; text-transform: uppercase !important;
-        color: var(--ink-secondary, #4B5563) !important;
-        margin: 0 0 7px !important;
-        font-family: var(--font-body) !important;
-      }
       /* Icône loupe (Origine probable) — colorée primary navy */
       #results.visible .lv-verdict-eyebrow .lv-eyebrow-ico {
         display: inline-block !important;
@@ -11342,47 +11043,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         color: var(--primary, #0F3D4E) !important;
         flex-shrink: 0 !important;
       }
-      #results.visible .lv-verdict-title {
-        font-size: 22px !important; font-weight: 800 !important;
-        line-height: 1.2 !important; letter-spacing: -0.01em !important;
-        color: var(--risk-color, #B42318) !important;
-        margin: 0 !important;
-      }
-      #results.visible .lv-verdict-interpretation {
-        padding: 5px 16px 14px !important;
-        margin: 0 !important;
-        font-size: 13.5px !important; line-height: 1.45 !important;
-        color: var(--ink-secondary, #4B5563) !important;
-        background: transparent !important;
-        border: 0 !important;
-        display: block !important;
-      }
-
-      /* Section 2 (Risque associé) : icône triangle rouge + accent rouge vertical */
-      #results.visible #lvRisque {
-        position: relative !important;
-        padding: 14px 16px 14px 19px !important;
-        margin: 0 !important;
-        border-top: 1px solid var(--hairline, rgba(12,14,19,0.07)) !important;
-        background: transparent !important;
-        display: block !important;
-      }
-      #results.visible #lvRisque::before {
-        content: '';
-        position: absolute;
-        left: 0; top: 14px; bottom: 14px;
-        width: 3px;
-        background: var(--risk-color, #B42318);
-        border-radius: 2px;
-      }
-      #results.visible .lv-risque-label {
-        display: flex !important; align-items: center !important; gap: 7px !important;
-        font-size: 12px !important; font-weight: 700 !important;
-        letter-spacing: .04em !important; text-transform: uppercase !important;
-        color: var(--ink-secondary, #4B5563) !important;
-        margin: 0 0 6px !important;
-        font-family: var(--font-body) !important;
-      }
+      /* Section 2 (Risque associé) */
       /* Icône triangle ⚠️ injectée via pseudo-element (couleur risque) */
       #results.visible .lv-risque-label::before {
         content: '';
@@ -11395,30 +11056,10 @@ body.lv-open { overflow: hidden; touch-action: none; }
         mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat;
         flex-shrink: 0;
       }
-      #results.visible .lv-risque-text {
-        font-size: 13px !important; line-height: 1.45 !important;
-        color: var(--ink-secondary, #4B5563) !important;
-        background: transparent !important; border: 0 !important;
-      }
       #results.visible .lv-risque-text b { color: var(--ink-primary, #0C0E13) !important; font-weight: 700 !important; }
 
       /* Section 3 (Action recommandée) : icône flèche → navy primary */
-      #results.visible .lv-verdict-action {
-        padding: 14px 16px !important;
-        margin: 0 !important;
-        border-top: 1px solid var(--hairline, rgba(12,14,19,0.07)) !important;
-        background: transparent !important;
-        display: block !important;
-      }
       #results.visible .lv-verdict-action-icon { display: none !important; }
-      #results.visible .lv-verdict-action-title {
-        display: flex !important; align-items: center !important; gap: 7px !important;
-        font-size: 12px !important; font-weight: 700 !important;
-        letter-spacing: .04em !important; text-transform: uppercase !important;
-        color: var(--ink-secondary, #4B5563) !important;
-        margin: 0 0 7px !important;
-        font-family: var(--font-body) !important;
-      }
       #results.visible .lv-verdict-action-title::before {
         content: '';
         display: inline-block;
@@ -11429,12 +11070,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         mask-size: contain; -webkit-mask-size: contain;
         mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat;
         flex-shrink: 0;
-      }
-      #results.visible .lv-verdict-action-text {
-        font-size: 15px !important; font-weight: 700 !important;
-        color: var(--ink-primary, #0C0E13) !important;
-        line-height: 1.35 !important;
-        margin: 0 !important;
       }
       /* V195 — Ligne « En cas de doute… (ATP/labo) » RETIRÉE de l'écran : strict
          1 phrase par bloc (demande utilisateur). L'élément reste dans le DOM et
@@ -11488,14 +11123,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         #results.visible #hero .hero-row { margin-bottom: 11px !important; }
         #results.visible #hero .score-value { font-size: 23px !important; }
         #results.visible #viewerStage { height: 150px !important; }
-        #results.visible .lv-verdict-head { padding: 12px 14px 0 !important; }
-        #results.visible .lv-verdict-title { font-size: 19px !important; }
-        #results.visible .lv-verdict-interpretation { padding: 4px 14px 12px !important; font-size: 13px !important; }
-        #results.visible #lvRisque { padding: 12px 14px 12px 17px !important; }
-        #results.visible .lv-verdict-action { padding: 12px 14px !important; }
-        #results.visible .lv-verdict-action-text { font-size: 14.5px !important; }
-        #results.visible .lv-risque-text { font-size: 12.5px !important; }
-        #results.visible .lv-verify { font-size: 11px !important; }
         #results.visible .results-toolbar { margin: 12px 0 0 !important; gap: 8px !important; }
         #results.visible .results-toolbar .btn-export,
         #results.visible .results-toolbar .btn-back { height: 46px !important; font-size: 14px !important; }
@@ -11555,6 +11182,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
         display: flex !important;
         flex-direction: column !important;
         gap: 8px !important;
+        padding: 0 !important;   /* replié de V188.8 (purge lot 2) */
+        margin: 0 !important;
       }
       /* Bloc 1 — Origine probable : head + interpretation regroupés visuellement
          dans une seule carte autonome. */
@@ -11586,10 +11215,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         border-radius: 12px !important;
         padding: 13px 15px 13px 18px !important;
         margin: 0 !important;
-      }
-      #results.visible #lvRisque::before {
-        top: 13px !important;
-        bottom: 13px !important;
+        position: relative !important;   /* replié de V188.8 (purge lot 2) */
       }
       /* Bloc 3 — Action recommandée : carte indépendante. */
       #results.visible .lv-verdict-action {
@@ -11598,6 +11224,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         border-radius: 12px !important;
         padding: 13px 15px !important;
         margin: 0 !important;
+        display: block !important;   /* replié de V188.8 (le défaut app est flex) */
       }
 
       /* (b) JAUGE PLUS VIVE : 45% au lieu de 22%. Le code couleur saute aux yeux. */
@@ -11867,6 +11494,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
         font-size: 12px !important; font-weight: 700 !important;
         text-transform: uppercase !important; letter-spacing: .04em !important;
         color: var(--ink-secondary) !important; margin: 0 0 6px !important;
+        display: flex !important; align-items: center !important; gap: 7px !important;
+        /* ↑ structure repliée de V188.8 (icônes loupe/triangle/flèche alignées) */
       }
       /* Titre Origine : unique ligne mise en avant. V199 — sa COULEUR = le niveau
          de risque (demande utilisateur) : vert faible / ambre modéré / rouge élevé,
@@ -11875,11 +11504,11 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results.visible .lv-verdict-title {
         color: var(--ink-primary) !important; font-weight: 700 !important;
         font-size: 18px !important; line-height: 1.3 !important; margin: 0 0 5px !important;
+        letter-spacing: -0.01em !important;   /* replié de V188.8 (purge lot 2) */
       }
       #results.visible .lucens-verdict-card.risk-low  .lv-verdict-title { color: var(--risk-low) !important; }
       #results.visible .lucens-verdict-card.risk-mid  .lv-verdict-title { color: var(--risk-mid) !important; }
       #results.visible .lucens-verdict-card.risk-high .lv-verdict-title { color: var(--risk-hi) !important; }
-      #results.visible .lv-verdict-confidence { display: none !important; }
       /* Les 3 PHRASES de contenu : STRICTEMENT identiques, encre foncée lisible. */
       #results.visible .lv-verdict-interpretation,
       #results.visible .lv-risque-text,
@@ -11889,9 +11518,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
       }
       /* Bloc Risque : accent gauche à la couleur (vive) du risque, sans ::before. */
       #results.visible #lvRisque { border-left: 3px solid var(--risk-color, #E5E7EB) !important; padding-left: 15px !important; }
-      #results.visible #lvRisque::before { display: none !important; }
-      /* Icône d'action : discrète, alignée. */
-      #results.visible .lv-verdict-action-icon { color: #9CA3AF !important; }
 
       /* 4 — TOGGLE compact, centré, discret — BLOC CANONIQUE du segmented
          (purge V263 lot 1 : 11 générations précédentes de .viewer-tabs/.viewer-tab
