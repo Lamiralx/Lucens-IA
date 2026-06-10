@@ -8951,7 +8951,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v276</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v277</div>
         </div>
       </div>
     </div>
@@ -10384,6 +10384,92 @@ body.lv-open { overflow: hidden; touch-action: none; }
         #results.visible .lv-risque-label,
         #results.visible .lv-verdict-action-title { margin: 0 0 4px !important; }
         #results.visible .lv-verdict-title { font-size: 16px !important; margin: 0 0 4px !important; }
+      }
+
+      /* ═══════════ V277-PORTRAIT — RAPPORT PORTRAIT : VERROU VIEWPORT RÉEL iOS ═══════════
+         CORRECTION DE FOND (l'utilisateur avait raison) : mes vérifs « zéro scroll »
+         passaient dans un simulateur SANS Dynamic Island NI safe-area → sur le vrai
+         iPhone, l'en-tête + l'île + la barre du bas mangent ~150 px → ça DÉFILAIT.
+         Ici on verrouille l'écran rapport à la hauteur DYNAMIQUE réelle (100dvh)
+         moins l'en-tête réel (66 + safe-top) et la safe-area du bas. L'IMAGE est
+         l'AMORTISSEUR (flex) : elle se réduit pour que VERDICT + IMAGE + 3 BLOCS +
+         2 BOUTONS tiennent TOUJOURS, sans défilement, sans jamais rogner les boutons
+         (la carte analyse peut, en ultime recours sur texte anormalement long,
+         défiler en interne — jamais la page). En-tête recalé sur var(--sa-t) pour
+         passer SOUS l'île, et testable en injectant de vraies safe-areas. */
+      @media (orientation: portrait) {
+        body.on-results { height: 100dvh !important; overflow: hidden !important; }
+        body.on-results .hdr {
+          min-height: calc(66px + var(--sa-t)) !important;
+          padding-top: var(--sa-t) !important;
+        }
+        body.on-results main {
+          height: calc(100dvh - 66px - var(--sa-t)) !important;
+          min-height: 0 !important;
+          overflow: hidden !important;
+          display: flex !important; flex-direction: column !important;
+          padding: 6px 12px calc(6px + var(--sa-b)) !important;
+        }
+        main > #results.visible {
+          height: 100% !important; min-height: 0 !important;
+          display: flex !important; flex-direction: column !important;
+          gap: 8px !important; margin: 0 !important; padding: 0 !important;
+        }
+        #results.visible > .quality-panel,
+        #results.visible > .translate-banner { flex: 0 0 auto !important; margin: 0 !important; }
+        /* VERDICT (score + jauge) : compact, fixe. Layout (flex/margin) propre au
+           live ; le PADDING (style) est jumelé avec l'historique (parité V275). */
+        #results.visible > #hero { flex: 0 0 auto !important; margin: 0 !important; }
+        #results.visible #hero,
+        .hist-live-result .hero { padding: 11px 15px !important; }
+        #results.visible #hero .hero-row,
+        .hist-live-result .hero .hero-row { margin-bottom: 9px !important; }
+        /* IMAGE : amortisseur — base 0 + grow 1 → elle ne prend QUE l'espace
+           restant APRÈS hero + 3 blocs + boutons (ne « gonfle » pas en mangeant
+           la place du verdict). Les 3 blocs s'affichent donc en ENTIER sans
+           défiler ; l'image se contente du reste (jamais < 48 px). */
+        #results.visible > .result-grid {
+          flex: 1 1 0 !important; min-height: 48px !important;
+          margin: 0 !important; display: flex !important; flex-direction: column !important;
+        }
+        #results.visible .result-grid > .card:has(#viewerStage) { flex: 1 1 auto !important; min-height: 48px !important; }
+        #results.visible #viewerStage { height: auto !important; flex: 1 1 auto !important; min-height: 48px !important; }
+        /* 3 BLOCS d'analyse COMPACTÉS (1 phrase/bloc = la loi) pour tenir en entier
+           sans défilement ; en ultime recours sur texte IA anormalement long ils
+           défilent EN INTERNE, jamais la page, pour ne JAMAIS rogner les 2 boutons. */
+        #results.visible > .lucens-verdict-card {
+          flex: 0 1 auto !important; min-height: 0 !important;
+          overflow-y: auto !important; gap: 6px !important;
+        }
+        /* Compaction des 3 blocs : règles de STYLE (padding/marges/interligne).
+           Jumelées avec .hist-live-result pour préserver « historique = analyse »
+           (loi des jumeaux V275). Les règles de LAYOUT viewport ci-dessus (flex,
+           body.on-results, main…) restent propres au live (le détail historique a
+           son propre conteneur défilant). */
+        #results.visible .lv-verdict-head,
+        .hist-live-result .lv-verdict-head { padding: 10px 14px 0 !important; }
+        #results.visible .lv-verdict-interpretation,
+        .hist-live-result .lv-verdict-interpretation { padding: 2px 14px 10px !important; line-height: 1.4 !important; }
+        #results.visible #lvRisque,
+        .hist-live-result .lv-risque { padding: 9px 14px 9px 15px !important; }
+        #results.visible .lv-verdict-action,
+        .hist-live-result .lv-verdict-action { padding: 9px 14px !important; }
+        #results.visible .lv-verdict-eyebrow,
+        #results.visible .lv-risque-label,
+        #results.visible .lv-verdict-action-title,
+        .hist-live-result .lv-verdict-eyebrow,
+        .hist-live-result .lv-risque-label,
+        .hist-live-result .lv-verdict-action-title { margin: 0 0 3px !important; }
+        #results.visible .lv-verdict-title,
+        .hist-live-result .lv-verdict-title { font-size: 16px !important; margin: 0 0 3px !important; }
+        #results.visible .lv-verdict-interpretation,
+        #results.visible .lv-risque-text,
+        #results.visible .lv-verdict-action-text,
+        .hist-live-result .lv-verdict-interpretation,
+        .hist-live-result .lv-risque-text,
+        .hist-live-result .lv-verdict-action-text { line-height: 1.4 !important; }
+        /* 2 BOUTONS : toujours entièrement visibles, épinglés en bas de la pile */
+        #results.visible > .results-toolbar { flex: 0 0 auto !important; margin: 8px 0 0 !important; }
       }
       </style>
       <!-- V187 — bloc .results-hdr (en-tête LUCENS dupliqué + croix ✕) retiré. -->
@@ -20178,7 +20264,10 @@ const Annotator = (() => {
         if (_domType === 'unknown') {
           const _alt = Object.keys(_typeArea).filter(k => k !== 'unknown')
             .sort((a, b) => _typeArea[b] - _typeArea[a])[0];
-          if (_alt) _domType = _alt;
+          /* V277 — INTERDICTION DU « à confirmer » AUSSI sur l'écran résultats :
+             si toutes les zones sont indéterminées, on tranche vers 'organic'
+             (résidu le plus à risque — ne jamais sous-évaluer), jamais 'unknown'. */
+          _domType = _alt || 'organic';
         }
         const _domCat = getCategory(_domType);            /* label + hint localisés */
         const _domLabel = _domCat.label || '';
