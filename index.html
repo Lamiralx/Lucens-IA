@@ -9845,7 +9845,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v268</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v269</div>
         </div>
       </div>
     </div>
@@ -10734,13 +10734,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
       }
 
       /* ══════════ V190 — Correctifs post-déploiement (audit terrain) ══════════
-         Bugs visuels remontés par l'utilisateur sur prod V189 avec une vraie photo :
-         (1) Labels FAIBLE/MODÉRÉ/ÉLEVÉ pas colorés
-         (2) Barre orange parasite sous "Zones détectées" (ancien indicateur)
-         (3) Segmented control trop gros (44px min-height des viewer-tab)
-         (4) Jauge trop terne (gradient pastel quasi blanc)
-         (5) Section "Risque associé" affichée vide → écrasée par display:block !important
-         Corrections additives, en dernier dans la cascade. */
+         Résidu vivant après purge V269 : (2) kill de l'underline du tab actif et
+         (5) respect du [hidden] / texte vide sur « Risque associé ». Les autres
+         correctifs V190 ont été absorbés par V196 (labels, jauge, segmented). */
 
       /* (2) Kill l'indicateur ::after orange-terra (était l'underline sous le tab actif). */
       #results.visible .viewer-tab.active::after,
@@ -10755,10 +10751,10 @@ body.lv-open { overflow: hidden; touch-action: none; }
          mais le texte est vide (Claude renvoie un risk_logic blanc), on cache. */
       #results.visible #lvRisque:has(.lv-risque-text:empty) { display: none !important; }
 
-      /* ══════════ V192 — Suite des correctifs (terrain V190/V191) ══════════
-         Demande utilisateur : (a) blocs unifiés visuellement, à séparer en
-         3 vraies cartes ; (b) jauge à coder couleur clairement (vert/ambre/
-         rouge plus vifs) ; (c) segmented control encore trop gros. */
+      /* ══════════ V192 — 3 cartes de la section ANALYSE + marqueur jauge ══════════
+         Résidu vivant après purge V269 : les cartes Origine/Risque/Action (a) et
+         le marqueur rond agrandi de la jauge. La couleur de jauge (b) et le
+         segmented (c) sont absorbés par V196. */
 
       /* (a) 3 BLOCS SÉPARÉS — la carte verdict (.lucens-verdict-card) ne porte
             plus son propre border. Chacune des 3 sections internes devient une
@@ -11095,14 +11091,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
       /* État vide centré dans la carte fixe (au lieu d'une mini-boîte). */
       .home-history-empty { margin: auto !important; }
 
-      /* ═══ V231 — Accueil, correctifs figés (demande, définitif) :
-         • « Analyser » non rogné par l'en-tête + un cran plus bas (fini le centrage
-           qui débordait vers le haut) ;
-         • carte « Dernières inspections » GRANDE et de TAILLE FIXE (flex:1 + min
-           280px → jamais réduite, max d'inspections en aperçu) ;
-         • lignes SERRÉES (gap 9px) et chacune une CARTE distincte (fond + ombre +
-           contour) → lisible sur blanc, premium ;
-         • « En savoir plus » ancré EN BAS (poussé par la carte qui remplit). ═══ */
+      /* ═══ V231→V236 — ACCUEIL FINAL (layout figé, demande utilisateur) ═══ */
       /* V232 — corrections : UN SEUL bloc (plus de cartes/ombres par ligne), AUCUN
          scroll, bouton qui NE CHEVAUCHE PLUS l'en-tête (le -18px de V218 le remontait
          dans le logo → annulé), « En savoir plus » ancré en bas. */

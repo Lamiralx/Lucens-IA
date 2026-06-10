@@ -176,15 +176,29 @@ Une seule croix ✕ et un seul chevron ‹ canoniques (V250) réutilisés partou
 2. Toute nouvelle valeur passe par un token existant ; sinon on discute le token, pas l'exception.
 3. Avant commit UI : `node .claude/tests/audit-design-full.mjs` → vérifier les écrans touchés
    (clair + sombre) + le dump `styles-dump.json` (eyebrows/boutons/rayons conformes).
-4. Vérifier `node --check` sur les scripts inline extraits (7 blocs).
+4. Vérifier `node --check` sur les scripts inline extraits (7 blocs) —
+   extraction : `node .claude/tests/check-inline-scripts.mjs`.
 5. Les 4 critères (§0) sur chaque texte ajouté.
+6. Refactor CSS « zéro diff » (purge, déplacement de règles) : prouver l'identité
+   pixel avec `node .claude/tests/audit-viewports.mjs <nom>` (375×568, 375×550
+   écran court, 667×375 paysage, 768×1024 sans media ; états risque + toggle) puis
+   `node .claude/tests/compare-baseline.mjs <baseline> <run>` (captures
+   byte-identiques + styles calculés des éléments visibles identiques).
 
 ---
 
 ## 10. Dette connue (à purger, sans urgence)
 
-- Générations mortes de règles `!important` dans le bloc `metier-spine-css` (perdantes au cascade,
-  zéro impact pixel) — à supprimer par lots avec re-vérification visuelle à chaque lot.
+- ~~Générations mortes de règles `!important` dans le bloc `metier-spine-css`~~ —
+  **PURGÉ V263→V269** (lots 1-7) : le bloc est passé de ~1600 à ~660 lignes (−58 %),
+  une seule génération gagnante par composant (12→1 pour `.viewer-tab`, 8→1 pour
+  `.lv-verdict-eyebrow`, etc.), zéro différence de pixel prouvée à chaque lot
+  (captures byte-identiques clair+sombre sur 5 viewports + dumps de styles calculés,
+  états risque high/mid/low et toggle inclus). Strates restantes, toutes VIVANTES :
+  base metier (hides) · V195 (5 blocs) · V188.8 (layout rapport) · V190 résiduel
+  (::after tab + [hidden] risque) · V192 (3 cartes analyse + marqueur jauge) ·
+  V188-accueil (libellés/accordéons) · V217/V225/V236b (paysage) · V188.2 (≤500) ·
+  V196 (AUTORITÉ typo/couleurs/toggle) · V205 résiduel · V231-236 (accueil final).
 - Drapeaux emoji du sélecteur de langue → SVG.
 - `--t-display/headline/title-*` (48/28/20) : tokens théoriques non utilisés par l'app réelle —
   l'échelle réelle est §2 ; rapprocher les tokens un jour.
