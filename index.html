@@ -260,7 +260,7 @@ if ('serviceWorker' in navigator) {
   --t-eyebrow-size:     10px;
   --t-eyebrow-line:     1.0;
   --t-eyebrow-weight:   600;
-  --t-eyebrow-tracking: 0.110em;      /* Plex Mono uppercase déjà bien spacé naturellement */
+  --t-eyebrow-tracking: 0.10em;       /* V260 — canon eyebrow unique */
 
   /* ─── SURFACES (5 niveaux) ─────────────────────────────────── */
   --surface-page:    #06070A;
@@ -341,8 +341,8 @@ if ('serviceWorker' in navigator) {
   --space-24:  96px;
 
   /* ─── RADIUS (3 valeurs strictes) ──────────────────────────── */
-  --radius-sm:    2px;     /* badges, inputs, dense UI */
-  --radius-md:    6px;     /* cards, buttons, panels */
+  --radius-sm:    6px;     /* V260 — inputs denses, chips, onglet interne segmented */
+  --radius-md:    12px;    /* V260 — boutons, cartes standard, options */
   --radius-pill:  999px;   /* pills, ronds parfaits */
 
   /* ─── SHADOWS (3 élévations) ───────────────────────────────── */
@@ -379,9 +379,23 @@ if ('serviceWorker' in navigator) {
   --text-2:       var(--ink-tertiary);
   --text-dim:     var(--ink-tertiary);
   --accent-line:  var(--accent-edge);
+  /* V260 — tokens fantômes (étaient utilisés sans définition → fallbacks hors palette) */
+  --text-3:       var(--ink-tertiary);
+  --primary:      var(--accent);
+  --terra:        var(--lucens-signature);
+  --detect:       #D84315;              /* teinte détection GELÉE avec la carto V198 (dette : migrer vers signature) */
+  --lv-accent:    #5AA6BC;              /* actions des overlays HUD Live View (toujours sombres) */
+  --radius-xl:    24px;                 /* sheets / modaux */
+  /* V260 — variantes douces des états de risque (fonds + cerclages), thème sombre */
+  --risk-low-soft: rgba(111,207,142,0.16);
+  --risk-low-edge: rgba(111,207,142,0.55);
+  --risk-mid-soft: rgba(232,193,106,0.16);
+  --risk-mid-edge: rgba(232,193,106,0.55);
+  --risk-hi-soft:  rgba(232,90,74,0.16);
+  --risk-hi-edge:  rgba(232,90,74,0.55);
   --r-sm:         var(--radius-sm);
   --r-md:         var(--radius-md);
-  --r-lg:         var(--radius-md);
+  --r-lg:         16px;    /* V260 — grandes cartes, items de liste */
   --space-xs:     var(--space-1);
   --space-sm:     var(--space-2);
   --space-md:     var(--space-4);
@@ -451,6 +465,13 @@ if ('serviceWorker' in navigator) {
   --risk-low:     #2E7D32;
   --risk-mid:     #B7791F;
   --risk-hi:      #B42318;
+  /* V260 — variantes douces clair */
+  --risk-low-soft: rgba(46,125,50,0.12);
+  --risk-low-edge: rgba(46,125,50,0.55);
+  --risk-mid-soft: rgba(183,121,31,0.14);
+  --risk-mid-edge: rgba(183,121,31,0.55);
+  --risk-hi-soft:  rgba(180,35,24,0.12);
+  --risk-hi-edge:  rgba(180,35,24,0.55);
 
   /* Ombres MINIMALES (pas d'ombre forte — interdiction du brief) */
   --shadow-sm:  0 1px 2px rgba(17, 24, 39, 0.05);
@@ -558,7 +579,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; bo
   padding: 6px 14px 8px;
   background: var(--accent, #0E8C84);
   color: #FFFFFF;
-  font-family: 'IBM Plex Sans', sans-serif;
+  font-family: var(--font-body);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -758,7 +779,7 @@ body.has-offline-banner .upload-hub {
 }
 .learn-back { position: absolute; left: max(8px, env(safe-area-inset-left)); bottom: 10px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: transparent; border: 0; color: var(--ink-secondary); cursor: pointer; }
 .learn-back svg { width: 22px; height: 22px; }
-.learn-title { font-family: var(--font-display); font-size: 17px; font-weight: 800; color: var(--ink-primary); align-self: flex-end; padding-bottom: 14px; }
+.learn-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--ink-primary); align-self: flex-end; padding-bottom: 14px; }
 .learn-scroll { flex: 1; overflow-y: auto; padding: 16px 16px calc(28px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 12px; }
 .learn-scroll .home-more-label { display: none !important; }   /* titre déjà dans la nav */
 /* Chaque sujet = une CARTE dédiée (zones dédiées, maquette). */
@@ -870,19 +891,19 @@ body.has-offline-banner .upload-hub {
 .hdr-hist-btn {
   display: inline-flex; align-items: center; justify-content: center;
   gap: 7px; height: 40px; padding: 0 13px;
-  background: rgba(45, 212, 191, 0.12);
-  border: 1px solid rgba(45, 212, 191, 0.40);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-edge);
   border-radius: var(--r-sm);
-  color: var(--accent, #2DD4BF);
+  color: var(--accent);
   cursor: pointer; -webkit-tap-highlight-color: transparent;
   transition: background .15s ease, border-color .15s ease, transform .12s ease;
 }
-.hdr-hist-btn:hover { background: rgba(45, 212, 191, 0.18); border-color: rgba(45, 212, 191, 0.55); }
+.hdr-hist-btn:hover { background: var(--accent-soft); border-color: var(--accent-edge); }
 .hdr-hist-btn:active { transform: scale(0.92); }
 .hdr-hist-btn svg { flex-shrink: 0; width: 17px; height: 17px; }
 .hdr-hist-text {
   font-family: var(--font-mono); font-size: 11px; font-weight: 600;
-  letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent, #2DD4BF);
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent);
 }
 /* Mobile étroit : icône teintée seule (déjà distincte), label masqué. */
 @media (max-width: 560px) {
@@ -1319,7 +1340,7 @@ body.has-offline-banner .upload-hub {
   border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   transition: transform .18s ease;
 }
-:root[data-theme="dark"] .settings-theme-switch { background: var(--accent, #2DD4BF); }
+:root[data-theme="dark"] .settings-theme-switch { background: var(--accent); }
 :root[data-theme="dark"] .settings-theme-knob { transform: translateX(18px); }
 .settings-theme-row:active { transform: scale(0.99); }
 
@@ -1329,7 +1350,7 @@ body.has-offline-banner .upload-hub {
    • Langue : grille 2×2 de boutons (drapeau + nom + coche), sélection cerclée teal.
    • Thème : titre + sous-titre (au lieu du seul état Clair/Sombre). */
 .settings-sheet .settings-title {
-  font-family: var(--font-display); font-size: 18px; font-weight: 800;
+  font-family: var(--font-display); font-size: 18px; font-weight: 700;
   letter-spacing: -0.01em; text-transform: none; color: var(--ink-primary);
 }
 .settings-lang-grid { display: grid !important; grid-template-columns: 1fr 1fr; gap: 9px; }
@@ -2777,7 +2798,7 @@ input[type="file"] { display: none; }
   margin-left: 0; margin-right: 0;
   justify-content: center;
   padding: 12px 16px;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 /* Btn-back (Vague 5A.3) : refondu en bouton secondary saillant.
@@ -2795,7 +2816,7 @@ input[type="file"] { display: none; }
   padding: 0 var(--space-4);
   border-radius: var(--radius-md);
   font-family: var(--font-display);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: -0.005em;
   color: var(--ink-secondary);
@@ -2830,13 +2851,13 @@ input[type="file"] { display: none; }
   padding: 0 var(--space-4);
   border-radius: var(--radius-md);
   font-family: var(--font-display);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: -0.005em;
   background: var(--accent);
   color: var(--surface-page, #06070A);
   border: 1px solid var(--accent);
-  box-shadow: 0 4px 16px rgba(45, 212, 191, 0.32), 0 1px 3px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow-md);
   cursor: pointer;
   transition:
     background var(--motion-fast) var(--ease-out),
@@ -3470,7 +3491,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   left: 16px; right: 16px;
   bottom: 0;
   height: 2px;
-  background: #D84315;
+  background: var(--lucens-signature);
   z-index: 2;
   animation: viewerTabIn .35s var(--ease-out);
 }
@@ -3512,7 +3533,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   margin-bottom: var(--space-3);
 }
 .lv-verdict-eyebrow {
-  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 10.5px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -3547,8 +3568,8 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   gap: var(--space-3);
   align-items: flex-start;
   padding: var(--space-3) var(--space-4);
-  background: var(--accent-soft, rgba(45,212,191,0.08));
-  border: 1px solid var(--accent-edge, rgba(45,212,191,0.32));
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-edge);
   border-radius: var(--radius-sm, 6px);
   margin-bottom: var(--space-3);
 }
@@ -3603,7 +3624,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   margin-top: 6px;
   margin-bottom: var(--space-3);
   padding: 0 14px;
-  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.04em;
@@ -3617,7 +3638,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 }
 .lv-verdict-details summary {
   cursor: pointer;
-  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -3792,7 +3813,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   letter-spacing: -0.01em;
 }
 .zone-verdict-num {
-  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
   color: var(--ink-tertiary);
@@ -3801,7 +3822,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   margin-right: 8px;
 }
 .zone-verdict-conf {
-  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
@@ -3825,7 +3846,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   align-items: center;
   gap: 4px;
   padding: 3px 9px;
-  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 500;
   color: var(--ink-secondary);
@@ -3860,7 +3881,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 14px;
-  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 10.5px;
   color: var(--ink-tertiary);
   text-transform: uppercase;
@@ -3954,9 +3975,9 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   letter-spacing: 0.04em; text-transform: uppercase;
   font-family: var(--font-mono);
 }
-.results-table .int-pill.faible { background: rgba(34,197,94,.10); color: #22C55E; }
-.results-table .int-pill.moyenne { background: rgba(245,158,11,.10); color: #F59E0B; }
-.results-table .int-pill.forte { background: rgba(239,68,68,.10); color: #EF4444; }
+.results-table .int-pill.faible { background: var(--risk-low-soft); color: var(--risk-low); }
+.results-table .int-pill.moyenne { background: var(--risk-mid-soft); color: var(--risk-mid); }
+.results-table .int-pill.forte { background: var(--risk-hi-soft); color: var(--risk-hi); }
 @media (max-width: 480px) {
   .results-table { font-size: 12px; }
   .results-table tbody td { padding: 10px 6px; }
@@ -4024,7 +4045,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   display: flex; align-items: center; justify-content: center;
   background: var(--zone-color, var(--accent));
   color: #fff; font-weight: 700; font-size: 12px;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   border: 2px solid #fff;
   box-shadow: 0 0 0 1px var(--zone-color, var(--accent));
 }
@@ -4195,7 +4216,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   display: flex; flex-direction: column; gap: 2px; min-width: 0;
 }
 .legend-name-label {
-  font-family: 'Inter Tight', sans-serif; font-size: 13.5px; font-weight: 600;
+  font-family: var(--font-display); font-size: 13px; font-weight: 600;
   color: var(--text-strong); letter-spacing: -0.01em;
 }
 .legend-name-hint {
@@ -4262,9 +4283,9 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 .verif-item-hint {
   font-size: 11px; color: var(--text-2); line-height: 1.4;
 }
-.verif-item.ok .verif-item-val { color: #22C55E; }
-.verif-item.warn .verif-item-val { color: #F59E0B; }
-.verif-item.bad .verif-item-val { color: #EF4444; }
+.verif-item.ok .verif-item-val { color: var(--risk-low); }
+.verif-item.warn .verif-item-val { color: var(--risk-mid); }
+.verif-item.bad .verif-item-val { color: var(--risk-hi); }
 .guide-toggle {
   width: 100%; display: flex; align-items: center; justify-content: space-between;
   padding: 14px 18px; background: var(--bg-2); border-bottom: 1px solid var(--border);
@@ -4703,7 +4724,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 .toast.success { color: var(--risk-low); border-left-color: var(--risk-low); }
 /* V51 — variantes info/warning pour les notifications non-bloquantes (ex. fallback
    analyse locale, sync en cours). info = accent teal Lucens, warning = ambre. */
-.toast.info { color: var(--accent, #2DD4BF); border-left-color: var(--accent, #2DD4BF); }
+.toast.info { color: var(--accent); border-left-color: var(--accent); }
 .toast.warning { color: #E8C16A; border-left-color: #E8C16A; }
 .toast.warning { color: var(--risk-mid); border-left-color: var(--risk-mid); }
 .toast svg { flex-shrink: 0; }
@@ -4752,7 +4773,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
 .lucens-err-close { background: transparent; border: 1px solid var(--border-hi, rgba(255,255,255,0.22)); color: var(--ink-secondary); }
-.lucens-err-retry { background: var(--accent, #2DD4BF); border: 0; color: var(--surface-low, #0e1117); }
+.lucens-err-retry { background: var(--accent); border: 0; color: var(--surface-low, #0e1117); }
 .lucens-err-retry:active, .lucens-err-close:active { transform: scale(0.97); }
 
 /* ─── RESULTS REVEAL ANIMATION ─── */
@@ -4903,9 +4924,9 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 .ctx-close:hover,
 .mo-close:hover,
 .fb-close:hover {
-  background: rgba(216, 67, 21, 0.12);
-  border-color: var(--terra, #D84315);
-  color: var(--terra, #D84315);
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 .modal-close-x:active,
 .intake-help-close:active,
@@ -5292,14 +5313,15 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 .fb-title-wrap { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .fb-eyebrow {
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
+  font-size: var(--t-eyebrow-size);
+  font-weight: var(--t-eyebrow-weight);
+  letter-spacing: var(--t-eyebrow-tracking);
   text-transform: uppercase;
-  color: var(--text-dim);
+  color: var(--ink-tertiary);
 }
 .fb-title {
-  font-size: 17px; font-weight: 600;
-  color: var(--text); margin: 0;
+  font-size: 18px; font-weight: 700;
+  color: var(--ink-primary); margin: 0;
   line-height: 1.3;
 }
 .fb-sub {
@@ -5369,21 +5391,21 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 .fb-opt input[value="all_seen"] + .fb-opt-pill .fb-opt-emoji,
 .fb-opt input[value="correct"] + .fb-opt-pill .fb-opt-emoji,
 .fb-opt input[value="yes"] + .fb-opt-pill .fb-opt-emoji {
-  background: rgba(34,197,94,0.20);
-  box-shadow: inset 0 0 0 1px rgba(34,197,94,0.55);
+  background: var(--risk-low-soft);
+  box-shadow: inset 0 0 0 1px var(--risk-low-edge);
 }
 .fb-opt input[value="missed_zones"] + .fb-opt-pill .fb-opt-emoji,
-.fb-opt input[value="false_positives"] + .fb-opt-pill .fb-opt-emoji,
 .fb-opt input[value="partial"] + .fb-opt-pill .fb-opt-emoji,
 .fb-opt input[value="off"] + .fb-opt-pill .fb-opt-emoji {
-  background: rgba(245,158,11,0.20);
-  box-shadow: inset 0 0 0 1px rgba(245,158,11,0.55);
+  background: var(--risk-mid-soft);
+  box-shadow: inset 0 0 0 1px var(--risk-mid-edge);
 }
 .fb-opt input[value="incorrect"] + .fb-opt-pill .fb-opt-emoji,
+.fb-opt input[value="false_positives"] + .fb-opt-pill .fb-opt-emoji,
 .fb-opt input[value="wrong"] + .fb-opt-pill .fb-opt-emoji,
 .fb-opt input[value="no"] + .fb-opt-pill .fb-opt-emoji {
-  background: rgba(239,68,68,0.20);
-  box-shadow: inset 0 0 0 1px rgba(239,68,68,0.55);
+  background: var(--risk-hi-soft);
+  box-shadow: inset 0 0 0 1px var(--risk-hi-edge);
 }
 /* État coché : dot devient plein avec glow */
 .fb-opt input:checked + .fb-opt-pill .fb-opt-emoji {
@@ -5392,27 +5414,27 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 .fb-opt input[value="all_seen"]:checked + .fb-opt-pill .fb-opt-emoji,
 .fb-opt input[value="correct"]:checked + .fb-opt-pill .fb-opt-emoji,
 .fb-opt input[value="yes"]:checked + .fb-opt-pill .fb-opt-emoji {
-  background: #22C55E;
-  box-shadow: 0 0 0 4px rgba(34,197,94,0.18), inset 0 0 0 1px rgba(34,197,94,0.75);
+  background: var(--risk-low);
+  box-shadow: 0 0 0 4px var(--risk-low-soft), inset 0 0 0 1px var(--risk-low-edge);
 }
 .fb-opt input[value="missed_zones"]:checked + .fb-opt-pill .fb-opt-emoji,
-.fb-opt input[value="false_positives"]:checked + .fb-opt-pill .fb-opt-emoji,
 .fb-opt input[value="partial"]:checked + .fb-opt-pill .fb-opt-emoji,
 .fb-opt input[value="off"]:checked + .fb-opt-pill .fb-opt-emoji {
-  background: #F59E0B;
-  box-shadow: 0 0 0 4px rgba(245,158,11,0.18), inset 0 0 0 1px rgba(245,158,11,0.75);
+  background: var(--risk-mid);
+  box-shadow: 0 0 0 4px var(--risk-mid-soft), inset 0 0 0 1px var(--risk-mid-edge);
 }
 .fb-opt input[value="incorrect"]:checked + .fb-opt-pill .fb-opt-emoji,
+.fb-opt input[value="false_positives"]:checked + .fb-opt-pill .fb-opt-emoji,
 .fb-opt input[value="wrong"]:checked + .fb-opt-pill .fb-opt-emoji,
 .fb-opt input[value="no"]:checked + .fb-opt-pill .fb-opt-emoji {
-  background: #EF4444;
-  box-shadow: 0 0 0 4px rgba(239,68,68,0.18), inset 0 0 0 1px rgba(239,68,68,0.75);
+  background: var(--risk-hi);
+  box-shadow: 0 0 0 4px var(--risk-hi-soft), inset 0 0 0 1px var(--risk-hi-edge);
 }
 .fb-opt-label {
   font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-size: var(--t-eyebrow-size);
+  font-weight: var(--t-eyebrow-weight);
+  letter-spacing: var(--t-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--text-2);
   line-height: 1;
@@ -5423,19 +5445,20 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 .fb-opt input[value="all_seen"]:checked + .fb-opt-pill,
 .fb-opt input[value="correct"]:checked + .fb-opt-pill,
 .fb-opt input[value="yes"]:checked + .fb-opt-pill {
-  box-shadow: inset 0 0 0 1px rgba(34,197,94,0.55);
-  border-color: rgba(34,197,94,0.55);
+  box-shadow: inset 0 0 0 1px var(--risk-low-edge);
+  border-color: var(--risk-low-edge);
 }
 .fb-opt input[value="missed_zones"]:checked + .fb-opt-pill,
-.fb-opt input[value="false_positives"]:checked + .fb-opt-pill,
 .fb-opt input[value="partial"]:checked + .fb-opt-pill {
-  box-shadow: inset 0 0 0 1px rgba(245,158,11,0.55);
-  border-color: rgba(245,158,11,0.55);
+  box-shadow: inset 0 0 0 1px var(--risk-mid-edge);
+  border-color: var(--risk-mid-edge);
 }
 .fb-opt input[value="incorrect"]:checked + .fb-opt-pill,
+.fb-opt input[value="false_positives"]:checked + .fb-opt-pill,
+.fb-opt input[value="wrong"]:checked + .fb-opt-pill,
 .fb-opt input[value="no"]:checked + .fb-opt-pill {
-  box-shadow: inset 0 0 0 1px rgba(239,68,68,0.55);
-  border-color: rgba(239,68,68,0.55);
+  box-shadow: inset 0 0 0 1px var(--risk-hi-edge);
+  border-color: var(--risk-hi-edge);
 }
 @media (max-width: 480px) {
   .fb-options-emoji { gap: 6px; }
@@ -5599,13 +5622,13 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   font-weight: var(--t-eyebrow-weight);
   letter-spacing: var(--t-eyebrow-tracking);
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--ink-tertiary);
 }
 /* Sélecteur de langue du popup : réutilise le composant .lang-dropdown du header */
 .ctx-title {
   font-family: var(--font-display);
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--ink-primary);
   margin: 6px 0 4px;
@@ -5655,7 +5678,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--t-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--ink-tertiary);
   margin-bottom: 10px;
@@ -5722,14 +5745,14 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   border: 1.5px solid var(--border);
   color: var(--ink-tertiary);
   cursor: pointer;
-  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 700;
   transition: all 0.16s ease;
 }
 .ctx-dot:hover { border-color: var(--border-hi); color: var(--ink-secondary); }
 .ctx-dot[data-state="current"] {
-  background: var(--accent-soft, rgba(45,212,191,0.16));
+  background: var(--accent-soft);
   border-color: var(--accent);
   color: var(--accent);
   transform: scale(1.08);
@@ -5826,7 +5849,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
    les boutons Précédent/Suivant du bandeau d'étapes (épuré comme le mockup). */
 .ctx-overlay .ctx-back, .ctx-overlay .ctx-next { display: none !important; }
 .ctx-overlay .ctx-eyebrow { color: var(--ink-tertiary) !important; }
-.ctx-overlay .ctx-title { font-weight: 800 !important; }
+.ctx-overlay .ctx-title { font-weight: 700 !important; }
 
 /* Stepper numéroté + libellés + barre de liaison. */
 .ctx-overlay .ctx-dots { display: flex; align-items: center; gap: 9px; width: 100%; }
@@ -5987,8 +6010,9 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 }
 .ctx-skip, .ctx-submit {
   font-family: inherit;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
+  min-height: 46px;
   padding: 12px 16px;
   border-radius: var(--r-md);
   cursor: pointer;
@@ -6009,13 +6033,13 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   background: var(--accent);
   border: 1px solid var(--accent);
   color: var(--surface-low);
-  min-height: 44px;
+  min-height: 46px;
   transition: background .15s var(--ease-out), transform .12s var(--ease-out);
 }
 .ctx-submit:hover { background: var(--accent-hi); border-color: var(--accent-hi); }
 .ctx-submit:active { transform: scale(0.98); }
 .ctx-submit:disabled { opacity: 0.45; cursor: not-allowed; }
-.ctx-skip { min-height: 44px; }
+.ctx-skip { min-height: 46px; }
 
 /* ═══ MODAL MOMENT DU CLICHÉ ═══
    Apparaît juste après sélection d'une photo, avant le lancement de l'analyse.
@@ -6064,12 +6088,12 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   font-weight: var(--t-eyebrow-weight);
   letter-spacing: var(--t-eyebrow-tracking);
   text-transform: uppercase;
-  color: #D84315;
+  color: var(--ink-tertiary);
   margin-bottom: 8px;
 }
 .mo-title {
   font-family: var(--font-display);
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 700;
   line-height: 1.25;
   letter-spacing: -0.012em;
@@ -6158,14 +6182,15 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 }
 .mo-noask-label input[type="checkbox"] {
   width: 15px; height: 15px;
-  accent-color: var(--accent, #2DD4BF);
+  accent-color: var(--accent);
   cursor: pointer;
 }
 .mo-noask-label:hover { color: var(--ink-secondary); }
 .mo-skip, .mo-submit {
   font-family: inherit;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
+  min-height: 46px;
   padding: 12px 16px;
   border-radius: var(--r-md);
   cursor: pointer;
@@ -6361,8 +6386,9 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   flex: 1;
   padding: 12px 16px;
   border-radius: var(--r-md);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
+  min-height: 46px;
   cursor: pointer;
   transition: all .15s ease;
   font-family: inherit;
@@ -6376,9 +6402,9 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 }
 .fb-skip:hover { background: var(--surface-2); color: var(--text); }
 .fb-submit {
-  background: var(--text);
-  border: 1px solid var(--text);
-  color: var(--bg);
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #fff;
 }
 .fb-submit:hover { opacity: 0.92; }
 .fb-submit:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -6387,7 +6413,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   content: ''; position: absolute;
   top: 50%; left: 50%; width: 14px; height: 14px;
   margin-left: -7px; margin-top: -7px;
-  border: 2px solid var(--bg);
+  border: 2px solid #fff;
   border-top-color: transparent;
   border-radius: 50%;
   animation: fbspin 0.7s linear infinite;
@@ -6434,7 +6460,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   .results-toolbar .btn-back,
   .results-toolbar .btn-export {
     padding: 12px 12px;
-    font-size: 12.5px;
+    font-size: 14px;
     min-height: 46px;
   }
 
@@ -6596,12 +6622,12 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
      UNIQUEMENT quand aucun modal n'est ouvert. */
   z-index: 9999;
   background: #FFFFFF;
-  border: 1px solid rgba(45, 212, 191, 0.55);  /* accent teal subtle */
+  border: 1px solid var(--accent-edge);
   border-radius: 16px;
   padding: 16px 44px 14px 18px;                /* +30px right pour le × */
   box-shadow:
     0 24px 64px rgba(8, 12, 22, 0.28),
-    0 6px 18px rgba(45, 212, 191, 0.18),
+    0 6px 18px var(--accent-soft),
     0 1px 0 rgba(0, 0, 0, 0.04) inset;
   display: flex;
   flex-direction: column;
@@ -6661,8 +6687,8 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(45, 212, 191, 0.16);
-  border: 1px solid rgba(45, 212, 191, 0.45);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-edge);
   color: #0E8C84;                /* teal foncé pour contraste sur fond clair */
 }
 .lucens-sw-update-icon svg {
@@ -6678,7 +6704,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   padding-top: 1px;
 }
 .lucens-sw-update-eyebrow {
-  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.16em;
@@ -6688,7 +6714,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 }
 .lucens-sw-update-title {
   margin: 0;
-  font-family: 'IBM Plex Sans', sans-serif;
+  font-family: var(--font-body);
   font-size: 15px;
   font-weight: 600;
   letter-spacing: -0.005em;
@@ -6697,7 +6723,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 }
 .lucens-sw-update-desc {
   margin: 2px 0 0;
-  font-family: 'IBM Plex Sans', sans-serif;
+  font-family: var(--font-body);
   font-size: 12.5px;
   font-weight: 400;
   line-height: 1.45;
@@ -6713,7 +6739,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   padding: 0 18px;
   border-radius: 10px;
   border: 0;
-  font-family: 'IBM Plex Sans', sans-serif;
+  font-family: var(--font-body);
   font-size: 13.5px;
   font-weight: 600;
   letter-spacing: 0.005em;
@@ -6917,7 +6943,7 @@ body.has-sw-update .home {
   padding: 0 8px 0 10px;
   background: var(--surface-mid, var(--surface-low));
   border: 1px solid var(--hairline);
-  border-left: 2px solid var(--terra, #D84315);
+  border-left: 2px solid var(--lucens-signature);
   border-radius: var(--radius-sm);
   font-family: var(--font-mono);
   font-size: 11px;
@@ -7275,8 +7301,8 @@ body.has-sw-update .home {
   justify-content: center;
   gap: 9px;
   width: 100%;
-  height: 60px;
-  border-radius: 14px;
+  height: 52px;
+  border-radius: var(--r-md);
   border: 1px solid transparent;
   box-shadow: none;
   font-family: var(--font-display);
@@ -7632,7 +7658,7 @@ body.has-sw-update .home {
   content: '';
   width: 5px; height: 5px;
   border-radius: 50%;
-  background: var(--accent, #2DD4BF);
+  background: var(--accent);
   margin-left: 2px;
 }
 
@@ -8092,8 +8118,8 @@ body.has-sw-update .home {
 .translate-banner {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   margin: 0 0 16px; padding: 11px 14px;
-  background: rgba(45, 212, 191, 0.10);
-  border: 1px solid rgba(45, 212, 191, 0.32);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-edge);
   border-radius: var(--radius-md, 10px);
 }
 .translate-banner-text { font-size: 12.5px; line-height: 1.4; color: var(--ink-secondary); }
@@ -8250,13 +8276,13 @@ body.has-sw-update .home {
 
 /* V23 — Carte verdict V21 dans le détail historique */
 .hist-verdict-v21 {
-  border-left: 4px solid var(--accent, #2DD4BF);
+  border-left: 4px solid var(--accent);
   padding-left: 14px;
 }
 .hist-section-eyebrow {
-  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--accent, #2DD4BF); margin-bottom: 6px;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 6px;
 }
 .hist-v21-title {
   font-family: var(--font-display, var(--font-body));
@@ -8264,7 +8290,7 @@ body.has-sw-update .home {
   color: var(--ink-primary); letter-spacing: -0.015em; margin-bottom: 4px;
 }
 .hist-v21-conf {
-  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 10.5px; color: var(--ink-tertiary);
   text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 12px;
 }
@@ -8273,15 +8299,15 @@ body.has-sw-update .home {
 }
 .hist-v21-action {
   padding: 10px 14px;
-  background: var(--accent-soft, rgba(45,212,191,0.08));
-  border-left: 3px solid var(--accent, #2DD4BF);
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
   border-radius: 3px;
   margin-bottom: 12px;
 }
 .hist-v21-action-eyebrow {
-  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 9.5px; font-weight: 600; text-transform: uppercase;
-  letter-spacing: 0.07em; color: var(--accent, #2DD4BF); margin-bottom: 4px;
+  letter-spacing: 0.07em; color: var(--accent); margin-bottom: 4px;
 }
 .hist-v21-action-text {
   font-size: 14px; font-weight: 500; line-height: 1.45; color: var(--ink-primary);
@@ -8298,7 +8324,7 @@ body.has-sw-update .home {
 }
 .hist-ref-chip {
   display: inline-block; padding: 3px 9px;
-  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 10.5px; color: var(--ink-secondary);
   background: var(--surface-mid); border: 1px solid var(--border); border-radius: 12px;
 }
@@ -8393,10 +8419,10 @@ body.has-sw-update .home {
    .hist-live-result → identique visuellement sans dépendre de #results
    ni casser l'écran de résultat. Couleur de risque pilotée par
    .r-low/.r-mid/.r-high (--risk-color), comme la carte verdict live. */
-.hist-live-result { display: flex; flex-direction: column; gap: 8px; --risk-color: #B42318; }
-.hist-live-result.r-low  { --risk-color: #2E7D32; }
-.hist-live-result.r-mid  { --risk-color: #B7791F; }
-.hist-live-result.r-high { --risk-color: #B42318; }
+.hist-live-result { display: flex; flex-direction: column; gap: 8px; --risk-color: var(--risk-hi); }
+.hist-live-result.r-low  { --risk-color: var(--risk-low); }
+.hist-live-result.r-mid  { --risk-color: var(--risk-mid); }
+.hist-live-result.r-high { --risk-color: var(--risk-hi); }
 
 /* ── En-tête : « Niveau de risque » + score, puis jauge segmentée (= #hero) ── */
 .hlr-hero {
@@ -8423,9 +8449,9 @@ body.has-sw-update .home {
   border: 1px solid #E5E7EB;
   color: #6B7280;
 }
-.hist-live-result.r-low  .hlr-seg-s[data-seg="low"]  { background: #2E7D32; border-color: #2E7D32; color: #fff; }
-.hist-live-result.r-mid  .hlr-seg-s[data-seg="mid"]  { background: #B7791F; border-color: #B7791F; color: #fff; }
-.hist-live-result.r-high .hlr-seg-s[data-seg="high"] { background: #B42318; border-color: #B42318; color: #fff; }
+.hist-live-result.r-low  .hlr-seg-s[data-seg="low"]  { background: var(--risk-low); border-color: var(--risk-low); color: #fff; }
+.hist-live-result.r-mid  .hlr-seg-s[data-seg="mid"]  { background: var(--risk-mid); border-color: var(--risk-mid); color: #fff; }
+.hist-live-result.r-high .hlr-seg-s[data-seg="high"] { background: var(--risk-hi); border-color: var(--risk-hi); color: #fff; }
 
 /* ── Image fluorescente annotée (continue la fiche, comme l'écran) ── */
 .hlr-img {
@@ -8436,10 +8462,10 @@ body.has-sw-update .home {
 
 /* ── 3 blocs verdict : 3 cartes blanches séparées (= V192/V199) ── */
 .hlr-card {
-  background: #fff;
-  border: 1px solid #E5E7EB;
-  border-radius: 13px;
-  padding: 13px 15px;
+  background: var(--surface-hi);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
 }
 .hlr-card.hlr-risque { border-left: 3px solid var(--risk-color, #E5E7EB); padding-left: 15px; }
 .hlr-eyebrow {
@@ -8475,9 +8501,9 @@ body.has-sw-update .home {
   font-size: 17px; font-weight: 700; line-height: 1.3;
   color: #14171C;
 }
-.hist-live-result.r-low  .hlr-title { color: #15803D; }
-.hist-live-result.r-mid  .hlr-title { color: #C2710C; }
-.hist-live-result.r-high .hlr-title { color: #D92D20; }
+.hist-live-result.r-low  .hlr-title { color: var(--risk-low); }
+.hist-live-result.r-mid  .hlr-title { color: var(--risk-mid); }
+.hist-live-result.r-high .hlr-title { color: var(--risk-hi); }
 /* Les 3 phrases de contenu : strictement identiques, encre foncée lisible */
 .hlr-text {
   margin: 0;
@@ -8551,7 +8577,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   z-index: 7;
 }
 .lv-topbar > * { pointer-events: auto; }
-.lv-topbar .lv-icon-btn { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 50%; background: var(--accent); border: 0; }
+.lv-topbar .lv-icon-btn { flex: 0 0 auto; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); border: 0; }
 .lv-topbar .lv-status-banner { flex: 1 1 auto; min-width: 0; }
 .lv-bar-sep { flex: 0 0 auto; width: 1px; height: 22px; background: rgba(255,255,255,0.13); }
 /* V250 — PAYSAGE : la barre unifiée NE DOIT PAS s'étirer sur toute la largeur.
@@ -8564,7 +8590,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
     width: auto !important; max-width: 440px !important;
   }
   .lv-topbar .lv-status-banner { flex: 0 1 auto !important; }
-  .lv-topbar .lv-icon-btn { width: 38px !important; height: 38px !important; }
+  .lv-topbar .lv-icon-btn { width: 40px !important; height: 40px !important; }
 }
 /* AUCUNE animation ni transition sur le Live View (demande explicite). */
 .lv-modal, .lv-modal * { animation: none !important; transition: none !important; }
@@ -8575,7 +8601,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.08);
   color: #FFFFFF;
-  font: 500 13px/1 'IBM Plex Sans', sans-serif;
+  font: 500 13px/1 var(--font-body);
   letter-spacing: -0.005em;
   padding: 9px 14px 9px 11px;
   border-radius: 8px;
@@ -8591,7 +8617,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   border: 1px solid rgba(255,255,255,0.08);
   padding: 8px 12px;
   border-radius: 8px;
-  font: 600 10px/1 'IBM Plex Mono', ui-monospace, monospace;
+  font: 600 10px/1 var(--font-mono);
   letter-spacing: 0.11em;
   text-transform: uppercase;
   color: #C2C8D4;
@@ -8666,16 +8692,16 @@ html.lv-open, body.lv-open { background: #000 !important; }
 .lv-crosshair[data-state="fluo"]::before,
 .lv-crosshair[data-state="fluo"]::after {
   background: linear-gradient(to bottom,
-    #2DD4BF 0%, #2DD4BF 30%, transparent 30%, transparent 70%, #2DD4BF 70%, #2DD4BF 100%);
+    var(--detect) 0%, var(--detect) 30%, transparent 30%, transparent 70%, var(--detect) 70%, var(--detect) 100%);
 }
 .lv-crosshair[data-state="fluo"]::after {
   background: linear-gradient(to right,
-    #2DD4BF 0%, #2DD4BF 30%, transparent 30%, transparent 70%, #2DD4BF 70%, #2DD4BF 100%);
+    var(--detect) 0%, var(--detect) 30%, transparent 30%, transparent 70%, var(--detect) 70%, var(--detect) 100%);
 }
 .lv-crosshair[data-state="fluo"] .lv-crosshair-dot {
-  background: #2DD4BF;
-  box-shadow: 0 0 0 4px rgba(45,212,191,0.22),
-              0 0 22px 6px rgba(45,212,191,0.55);
+  background: var(--detect);
+  box-shadow: 0 0 0 4px rgba(216,67,21,0.25),
+              0 0 18px 4px rgba(216,67,21,0.45);
 }
 /* V124 — État "object" (= pas une fluo) : passé du ROUGE alarme (#d04848)
    au SLATE neutre (#94A3B8). "Pas une fluo" est un résultat neutre/rassurant
@@ -8777,7 +8803,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   right: 10px;
   z-index: 7;
   padding: 2px 7px;
-  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 9px;
   font-weight: 500;
   letter-spacing: 0.05em;
@@ -8807,7 +8833,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   color: #06070A;
   border: 0;
   border-radius: 14px;
-  font: 600 15px/1 'IBM Plex Sans', sans-serif;
+  font: 600 15px/1 var(--font-body);
   letter-spacing: -0.005em;
   cursor: pointer;
   padding: 0 20px;
@@ -8836,7 +8862,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   padding: 0 4px;
 }
 .lv-stats {
-  font: 400 11px/1.3 'IBM Plex Mono', monospace;
+  font: 400 11px/1.3 var(--font-mono);
   color: #969CAB;
   letter-spacing: 0.005em;
 }
@@ -8896,12 +8922,12 @@ html.lv-open, body.lv-open { background: #000 !important; }
   gap: 14px; min-height: 24px;
 }
 .lv-drawer-label {
-  font: 500 12px/1.2 'IBM Plex Sans', sans-serif;
+  font: 500 12px/1.2 var(--font-body);
   color: #C2C8D4;
 }
 .lv-drawer-sub {
   display: block;
-  font: 400 10px/1.3 'IBM Plex Sans', sans-serif;
+  font: 400 10px/1.3 var(--font-body);
   color: #6B7280;
   margin-top: 2px;
 }
@@ -8955,7 +8981,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   border: 0;
 }
 .lv-slider-val {
-  font: 600 11px/1 'IBM Plex Mono', monospace;
+  font: 600 11px/1 var(--font-mono);
   color: #C2C8D4;
   min-width: 24px;
   text-align: right;
@@ -8977,7 +9003,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   background: transparent;
   border: 0;
   color: #FFFFFF;
-  font: 600 24px/1 'IBM Plex Sans', sans-serif;
+  font: 600 24px/1 var(--font-body);
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   -webkit-tap-highlight-color: transparent;
@@ -8991,7 +9017,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   border-left: 1px solid rgba(255,255,255,0.12);
   border-right: 1px solid rgba(255,255,255,0.12);
   color: #FFFFFF;
-  font: 600 18px/1 'IBM Plex Mono', monospace;
+  font: 600 18px/1 var(--font-mono);
   text-align: center;
   -moz-appearance: textfield;
   appearance: textfield;
@@ -9007,7 +9033,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
 
 /* Hint descriptif sous le stepper — donne du sens au chiffre */
 .lv-drawer-hint {
-  font: 400 11px/1.35 'IBM Plex Sans', sans-serif;
+  font: 400 11px/1.35 var(--font-body);
   color: #969CAB;
   margin-top: -4px;
   letter-spacing: 0.002em;
@@ -9020,7 +9046,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   background: rgba(255,255,255,0.10);
   border: 1px solid rgba(255,255,255,0.18);
   color: #FFFFFF;
-  font: 500 13px/1 'IBM Plex Sans', sans-serif;
+  font: 500 13px/1 var(--font-body);
   padding: 12px 18px;
   border-radius: 10px;
   cursor: pointer;
@@ -9047,7 +9073,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   background: transparent;
   border: 0;
   color: rgba(255,255,255,0.45);
-  font: 500 11.5px/1 'IBM Plex Sans', sans-serif;
+  font: 500 11.5px/1 var(--font-body);
   padding: 4px 0 2px;
   cursor: pointer;
   text-align: center;
@@ -9081,8 +9107,8 @@ html.lv-open, body.lv-open { background: #000 !important; }
 .lv-modal.lv-cal-mode .lv-crosshair-dot {
   width: 36px; height: 36px;
   background: transparent;
-  border: 2.5px solid var(--accent, #2DD4BF);
-  box-shadow: 0 0 18px var(--accent-soft, rgba(45,212,191,0.30));
+  border: 2.5px solid var(--accent);
+  box-shadow: 0 0 18px var(--accent-soft);
 }
 /* Pulse teal de l'anneau pour signaler le mode actif */
 .lv-modal.lv-cal-mode .lv-crosshair {
@@ -9098,11 +9124,11 @@ html.lv-open, body.lv-open { background: #000 !important; }
   position: absolute;
   top: calc(100% + 8px); left: 50%;
   transform: translateX(-50%);
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.18em;
-  color: var(--accent, #2DD4BF);
+  color: var(--accent);
   text-shadow: 0 0 8px rgba(0,0,0,0.65);
   padding: 2px 8px;
   background: rgba(0,0,0,0.45);
@@ -9129,7 +9155,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   color: rgba(245, 247, 250, 0.82);
   border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: 999px;
-  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 10.5px;
   font-weight: 500;
   letter-spacing: 0.03em;
@@ -9164,7 +9190,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   background: rgba(14, 140, 132, 0.92);    /* accent teal avec opacité */
   color: #FFFFFF;
   border-radius: 999px;
-  font-family: 'IBM Plex Sans', sans-serif;
+  font-family: var(--font-body);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -9210,7 +9236,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, calc(50% + 84px));
-  font-family: 'IBM Plex Sans', sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   font-weight: 500;
   color: #FFFFFF;
@@ -9242,7 +9268,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   background: rgba(14, 140, 132, 0.96);
   color: #FFFFFF;
   border-radius: 16px;
-  font-family: 'IBM Plex Sans', sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   font-weight: 600;
   z-index: 40;
@@ -9284,7 +9310,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
   padding: 8px 14px;
   border-radius: 8px;
-  font: 500 12px/1.2 'IBM Plex Sans', sans-serif;
+  font: 500 12px/1.2 var(--font-body);
   color: #C2C8D4;
   border: 1px solid rgba(255,255,255,0.08);
   opacity: 0;
@@ -9339,7 +9365,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   color: #FFFFFF;
   border: 0;
   border-radius: 12px;          /* V164 — coin sobre (plus de pill) */
-  font: 600 15px/1 var(--font-body);   /* V164 — typo système */
+  font: 700 16px/1 var(--font-body);   /* V260 — héro 16/700 */
   letter-spacing: 0.01em;
   cursor: pointer;
   flex-shrink: 0;
@@ -9401,10 +9427,10 @@ html.lv-open, body.lv-open { background: #000 !important; }
   100% { transform: scale(1); background: var(--accent); }
 }
 .lv-analyze-btn.lv-ready-green::before {
-  border-color: rgba(45, 212, 191, 0.85);
+  border-color: rgba(111, 207, 142, 0.85);
   /* V127 — gros halo 18px retiré : anneau fin et sobre. Un halo qui s'allume/
      s'éteint au gré des micro-variations de la scène = "animation pas adaptée". */
-  box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.16);
+  box-shadow: 0 0 0 2px rgba(111, 207, 142, 0.16);
   opacity: 1;
 }
 .lv-analyze-btn.lv-ready-amber::before {
@@ -9434,7 +9460,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
 
 /* Readout discret DANS le drawer (jamais sur la caméra) */
 .lv-drawer-readout {
-  font: 500 11px/1.3 'IBM Plex Mono', monospace;
+  font: 500 11px/1.3 var(--font-mono);
   color: #969CAB;
   letter-spacing: 0.01em;
   padding-top: 8px;
@@ -9476,7 +9502,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
 /* Carte stable détectée → les coins passent au vert (verrouillage) */
 .lv-cardguide.is-locking .lv-cardcorner { border-color: #6FCF8E; }
 .lv-cardguide-hint {
-  font: 500 12px/1.4 'IBM Plex Sans', sans-serif;
+  font: 500 12px/1.4 var(--font-body);
   color: #FFFFFF;
   background: rgba(20,23,30,0.9);
   -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
@@ -9499,7 +9525,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   background: rgba(208, 72, 72, 0.18);
   border: 1.5px solid #d04848;
   color: #ff8a8a;
-  font: 600 14px/1 'IBM Plex Sans', sans-serif;
+  font: 600 14px/1 var(--font-body);
   border-radius: 12px; cursor: pointer;
   transition: background 0.18s ease;
 }
@@ -9511,7 +9537,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   background: #FFB020;
   border: 0;
   color: #06070A;
-  font: 600 14px/1 'IBM Plex Sans', sans-serif;
+  font: 600 14px/1 var(--font-body);
   border-radius: 12px; cursor: pointer;
 }
 .lv-cardbar-validate svg { width: 18px; height: 18px; }
@@ -9525,7 +9551,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   background: rgba(255, 255, 255, 0.10);
   border: 1.5px solid rgba(255, 255, 255, 0.24);
   color: #FFFFFF;
-  font: 600 13px/1 'IBM Plex Sans', sans-serif;
+  font: 600 13px/1 var(--font-body);
   border-radius: 12px;
   cursor: pointer;
   transition: background 0.18s ease;
@@ -9554,7 +9580,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   border-radius: 16px;
   padding: 22px 22px 18px;
   color: #F5F7FA;
-  font-family: 'IBM Plex Sans', sans-serif;
+  font-family: var(--font-body);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 .lv-codepad-close {
@@ -9585,7 +9611,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   border: 1.5px solid rgba(255, 255, 255, 0.14);
   border-radius: 10px;
   color: #FFFFFF;
-  font: 600 22px/1 'IBM Plex Mono', ui-monospace, monospace;
+  font: 600 22px/1 var(--font-mono);
   letter-spacing: 0.18em;
   text-transform: uppercase;
   text-align: center;
@@ -9595,7 +9621,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   box-sizing: border-box;
   transition: border-color 0.15s ease;
 }
-.lv-codepad-input:focus { border-color: #2DD4BF; }
+.lv-codepad-input:focus { border-color: var(--lv-accent); }
 .lv-codepad-input.is-invalid { border-color: #d04848; }
 .lv-codepad-feedback {
   min-height: 18px;
@@ -9614,7 +9640,7 @@ html.lv-open, body.lv-open { background: #000 !important; }
   flex: 1;
   height: 48px;
   border-radius: 10px;
-  font: 600 14px/1 'IBM Plex Sans', sans-serif;
+  font: 600 14px/1 var(--font-body);
   cursor: pointer;
   border: 0;
 }
@@ -9625,10 +9651,10 @@ html.lv-open, body.lv-open { background: #000 !important; }
 }
 .lv-codepad-cancel:hover { background: rgba(255, 255, 255, 0.14); }
 .lv-codepad-submit {
-  background: #2DD4BF;
+  background: var(--lv-accent);
   color: #06070A;
 }
-.lv-codepad-submit:hover { background: #1FB8A4; }
+.lv-codepad-submit:hover { background: #7DC0D3; }
 .lv-codepad-submit:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* En mode carte : on masque le bottombar normal */
@@ -9653,7 +9679,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
     gap: 8px;
   }
   /* Bouton analyser un peu plus compact en hauteur */
-  .lv-analyze-btn { height: 54px; }
+  .lv-analyze-btn { height: 52px; }
   /* Icônes légèrement réduites */
   .lv-icon-btn { width: 50px; height: 50px; }
   .lv-icon-btn svg { width: 21px; height: 21px; }
@@ -9802,7 +9828,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v259</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v260</div>
         </div>
       </div>
     </div>
@@ -10493,19 +10519,19 @@ body.lv-open { overflow: hidden; touch-action: none; }
         text-transform:none !important; letter-spacing:0 !important; color:var(--text-3,#6B7280) !important; }
       #results.visible .lv-eyebrow-ico { width:14px; height:14px; flex-shrink:0; }
       /* 4 — Titre de l'hypothèse coloré selon le risque (classe posée en JS). */
-      .lucens-verdict-card.risk-low  .lv-verdict-title { color:#2E7D32 !important; }
-      .lucens-verdict-card.risk-mid  .lv-verdict-title { color:#B7791F !important; }
-      .lucens-verdict-card.risk-high .lv-verdict-title { color:#B42318 !important; }
+      .lucens-verdict-card.risk-low  .lv-verdict-title { color:var(--risk-low) !important; }
+      .lucens-verdict-card.risk-mid  .lv-verdict-title { color:var(--risk-mid) !important; }
+      .lucens-verdict-card.risk-high .lv-verdict-title { color:var(--risk-hi) !important; }
       /* 5 — Boutons empilés pleine largeur : Générer le rapport (foncé) puis Nouvelle analyse (contour). */
       #results.visible .results-toolbar { display:flex !important; flex-direction:column !important;
         gap:10px !important; max-width:none !important; margin:22px auto 14px !important; padding-top:6px !important; }
       #results.visible .results-toolbar .btn-export,
-      #results.visible .results-toolbar .btn-back { width:100% !important; height:50px !important;
-        border-radius:13px !important; font-size:15px !important; box-shadow:none !important; }
+      #results.visible .results-toolbar .btn-back { width:100% !important; height:46px !important;
+        border-radius:12px !important; font-size:14px !important; box-shadow:none !important; }
       #results.visible .results-toolbar .btn-export { order:-1; background:var(--primary,#0F3D4E) !important;
         color:#fff !important; border:1px solid var(--primary,#0F3D4E) !important; }
-      #results.visible .results-toolbar .btn-back { background:#fff !important; color:var(--primary,#0F3D4E) !important;
-        border:1px solid var(--border,#CBD5E1) !important; }
+      #results.visible .results-toolbar .btn-back { background:var(--surface-hi) !important; color:var(--primary) !important;
+        border:1px solid var(--border) !important; }
       #results.visible .results-toolbar .btn-export > svg,
       #results.visible .results-toolbar .btn-back > svg { display:none !important; }
 
@@ -10551,7 +10577,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
 
       /* 2) Carte verdict resserrée (moins de padding, moins de marges). */
       #results.visible .lucens-verdict-card { padding: 12px 14px !important; margin: 8px 0 !important;
-        background: #fff !important; border: 1px solid var(--border,#E5E7EB) !important;
+        background: var(--surface-hi) !important; border: 1px solid var(--border,#E5E7EB) !important;
         border-radius: 14px !important; box-shadow: none !important; }
       #results.visible .lv-verdict-head { margin-bottom: 6px !important; }
       #results.visible .lv-verdict-title { font-size: 18px !important; line-height: 1.25 !important; margin-top: 2px !important; }
@@ -10607,8 +10633,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
         #results.visible .lv-verdict-action-text { font-size: 13px !important; }
         #results.visible .results-toolbar { margin-top: 8px !important; gap: 7px !important; }
         #results.visible .results-toolbar .btn-export,
-        #results.visible .results-toolbar .btn-back { height: 42px !important; font-size: 13.5px !important;
-          border-radius: 10px !important; }
+        #results.visible .results-toolbar .btn-back { height: 46px !important; font-size: 14px !important;
+          border-radius: 12px !important; }
         /* Image très compacte (priorité aux blocs texte + boutons accessibles). */
         #results.visible #viewerStage { height: 130px !important; }
         #results.visible .viewer-tabs { margin: 0 0 4px 0 !important; gap: 6px !important; }
@@ -10659,7 +10685,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         border-left: 1px solid var(--border,#E5E7EB) !important;
         border-right: 1px solid var(--border,#E5E7EB) !important;
         border-top-left-radius: 14px !important; border-top-right-radius: 14px !important;
-        background: #fff !important; }
+        background: var(--surface-hi) !important; }
       #results.visible #hero .hero-row { display: flex !important; align-items: baseline !important;
         justify-content: space-between !important; gap: 10px !important; margin-bottom: 9px !important; }
       #results.visible #hero .hero-risk-label { font-size: 12px !important; font-weight: 600 !important;
@@ -10682,7 +10708,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
 
       /* === Bloc image : continue la carte (gauche/droite border, pas de coins, pas de fond externe) === */
       #results.visible .result-grid { padding: 0 !important; margin: 0 !important; gap: 0 !important;
-        background: #fff !important;
+        background: var(--surface-hi) !important;
         border-left: 1px solid var(--border,#E5E7EB) !important;
         border-right: 1px solid var(--border,#E5E7EB) !important; }
       #results.visible .result-grid > .card { background: transparent !important; border: 0 !important;
@@ -10705,7 +10731,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
 
       /* === Carte verdict : continue la carte (dernier bloc), avec coins bas arrondis === */
       #results.visible .lucens-verdict-card { padding: 0 !important; margin: 0 !important;
-        background: #fff !important;
+        background: var(--surface-hi) !important;
         border-left: 1px solid var(--border,#E5E7EB) !important;
         border-right: 1px solid var(--border,#E5E7EB) !important;
         border-bottom: 1px solid var(--border,#E5E7EB) !important;
@@ -10750,11 +10776,11 @@ body.lv-open { overflow: hidden; touch-action: none; }
         gap: 10px !important; margin: 14px 0 0 !important; padding: 0 !important; max-width: none !important; }
       #results.visible .results-toolbar .btn-export,
       #results.visible .results-toolbar .btn-back { flex: 1 1 50% !important; width: auto !important;
-        height: 46px !important; font-size: 14px !important; border-radius: 11px !important; }
+        height: 46px !important; font-size: 14px !important; border-radius: 12px !important; }
       #results.visible .results-toolbar .btn-export { background: var(--primary,#0F3D4E) !important;
         color: #fff !important; border: 1px solid var(--primary,#0F3D4E) !important; box-shadow: none !important; }
-      #results.visible .results-toolbar .btn-back { background: #fff !important;
-        color: var(--primary,#0F3D4E) !important; border: 1px solid var(--border,#CBD5E1) !important;
+      #results.visible .results-toolbar .btn-back { background: var(--surface-hi) !important;
+        color: var(--primary) !important; border: 1px solid var(--border) !important;
         box-shadow: none !important; }
       #results.visible .results-toolbar .btn-export > svg,
       #results.visible .results-toolbar .btn-back > svg { display: none !important; }
@@ -10777,7 +10803,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         #results.visible .lv-verify { font-size: 11px !important; }
         #results.visible .results-toolbar { margin: 12px 0 0 !important; gap: 8px !important; }
         #results.visible .results-toolbar .btn-export,
-        #results.visible .results-toolbar .btn-back { height: 44px !important; font-size: 13.5px !important; }
+        #results.visible .results-toolbar .btn-back { height: 46px !important; font-size: 14px !important; }
       }
 
       /* ═══════ V188.6 — RAPPORT : VRAIS BLOCS DISTINCTS, AÉRÉS ═══════
@@ -10809,7 +10835,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results.visible .viewer-legend {
         padding: 10px 15px 10px !important;
         border-bottom: 1px solid var(--border, #E5E7EB) !important;
-        background: #fff !important;
+        background: var(--surface-hi) !important;
       }
 
       /* ─── 3. Bloc « Origine probable » : head + interprétation UNIFIÉS ─── */
@@ -10928,9 +10954,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results.visible .result-grid > .card:has(#viewerStage),
       #results.visible #lvRisque,
       #results.visible .lv-verdict-action {
-        background: #fff !important;
-        border: 1px solid var(--border, #E5E7EB) !important;
-        border-radius: 13px !important;
+        background: var(--surface-hi) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 12px !important;
         padding: 12px 14px !important;
         margin: 0 0 9px !important;
         box-shadow: none !important;
@@ -11058,7 +11084,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
 
       /* Bloc 4 — Origine probable (head + description UNIFIÉS en une carte) */
       #results.visible .lv-verdict-head {
-        background: #fff !important;
+        background: var(--surface-hi) !important;
         border-top: 1px solid var(--border, #E5E7EB) !important;
         border-left: 1px solid var(--border, #E5E7EB) !important;
         border-right: 1px solid var(--border, #E5E7EB) !important;
@@ -11084,7 +11110,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         margin: 0 !important;
       }
       #results.visible .lv-verdict-interpretation {
-        background: #fff !important;
+        background: var(--surface-hi) !important;
         border-left: 1px solid var(--border, #E5E7EB) !important;
         border-right: 1px solid var(--border, #E5E7EB) !important;
         border-bottom: 1px solid var(--border, #E5E7EB) !important;
@@ -11193,9 +11219,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
       /* On RESTITUE .hero-gauge (cachée par metier-spine V136), on l'utilise
          comme jauge slim Apple Health. On hide .hero-seg (pilules bouton). */
       #results.visible #hero {
-        background: #fff !important;
-        border: 1px solid var(--border, #E5E7EB) !important;
-        border-radius: 13px !important;
+        background: var(--surface-hi) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 12px !important;
         padding: 13px 16px 14px !important;
         margin: 0 0 9px !important;
         box-shadow: none !important;
@@ -11259,7 +11285,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         display: flex !important;
         justify-content: space-between !important;
         padding: 0 2px !important;
-        font-size: 10.5px !important;
+        font-size: 10px !important;
         font-weight: 600 !important;
         color: var(--ink-tertiary, #6B7280) !important;
       }
@@ -11280,9 +11306,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
         order: -2 !important;
       }
       #results.visible .result-grid > .card:has(#viewerStage) {
-        background: #fff !important;
-        border: 1px solid var(--border, #E5E7EB) !important;
-        border-radius: 13px !important;
+        background: var(--surface-hi) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 12px !important;
         padding: 0 !important; margin: 0 !important;
         box-shadow: none !important;
         overflow: hidden !important;
@@ -11293,7 +11319,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results.visible .viewer-tabs {
         display: inline-flex !important;
         align-self: center !important;
-        background: #EFF0F3 !important;
+        background: var(--surface-mid) !important;
         border-radius: 9px !important;
         padding: 2px !important;
         gap: 0 !important;
@@ -11314,7 +11340,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         font-family: var(--font-body) !important;
       }
       #results.visible .viewer-tab.active {
-        background: #fff !important;
+        background: var(--surface-hi) !important;
         color: var(--ink-primary, #0C0E13) !important;
         font-weight: 600 !important;
         box-shadow: 0 1px 2px rgba(0,0,0,.07), 0 0 0 .5px rgba(0,0,0,.04) !important;
@@ -11342,9 +11368,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
 
       /* ─── BLOC 3 — ANALYSE : 3 sections séparées par filets ─── */
       #results.visible .lucens-verdict-card {
-        background: #fff !important;
-        border: 1px solid var(--border, #E5E7EB) !important;
-        border-radius: 13px !important;
+        background: var(--surface-hi) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 12px !important;
         padding: 0 !important; margin: 0 !important;
         box-shadow: none !important;
         order: 0 !important;
@@ -11493,7 +11519,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         width: auto !important;
         height: 46px !important;
         font-size: 14px !important;
-        border-radius: 11px !important;
+        border-radius: 12px !important;
       }
       #results.visible .results-toolbar .btn-export {
         background: var(--primary, #0F3D4E) !important;
@@ -11503,9 +11529,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
         order: -1 !important;
       }
       #results.visible .results-toolbar .btn-back {
-        background: #fff !important;
-        color: var(--primary, #0F3D4E) !important;
-        border: 1px solid var(--border, #CBD5E1) !important;
+        background: var(--surface-hi) !important;
+        color: var(--primary) !important;
+        border: 1px solid var(--border) !important;
         box-shadow: none !important;
       }
 
@@ -11531,7 +11557,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         #results.visible .lv-verify { font-size: 11px !important; }
         #results.visible .results-toolbar { margin: 12px 0 0 !important; gap: 8px !important; }
         #results.visible .results-toolbar .btn-export,
-        #results.visible .results-toolbar .btn-back { height: 44px !important; font-size: 13.5px !important; }
+        #results.visible .results-toolbar .btn-back { height: 46px !important; font-size: 14px !important; }
       }
 
       /* ══════════ V190 — Correctifs post-déploiement (audit terrain) ══════════
@@ -11607,9 +11633,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
       /* Bloc 1 — Origine probable : head + interpretation regroupés visuellement
          dans une seule carte autonome. */
       #results.visible .lv-verdict-head {
-        background: #fff !important;
-        border: 1px solid var(--border, #E5E7EB) !important;
-        border-radius: 13px !important;
+        background: var(--surface-hi) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 12px !important;
         border-bottom: 0 !important;
         border-bottom-left-radius: 0 !important;
         border-bottom-right-radius: 0 !important;
@@ -11617,7 +11643,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         margin: 0 !important;
       }
       #results.visible .lv-verdict-interpretation {
-        background: #fff !important;
+        background: var(--surface-hi) !important;
         border-left: 1px solid var(--border, #E5E7EB) !important;
         border-right: 1px solid var(--border, #E5E7EB) !important;
         border-bottom: 1px solid var(--border, #E5E7EB) !important;
@@ -11629,9 +11655,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
       }
       /* Bloc 2 — Risque associé : carte indépendante. */
       #results.visible #lvRisque {
-        background: #fff !important;
-        border: 1px solid var(--border, #E5E7EB) !important;
-        border-radius: 13px !important;
+        background: var(--surface-hi) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 12px !important;
         padding: 13px 15px 13px 18px !important;
         margin: 0 !important;
       }
@@ -11641,9 +11667,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
       }
       /* Bloc 3 — Action recommandée : carte indépendante. */
       #results.visible .lv-verdict-action {
-        background: #fff !important;
-        border: 1px solid var(--border, #E5E7EB) !important;
-        border-radius: 13px !important;
+        background: var(--surface-hi) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 12px !important;
         padding: 13px 15px !important;
         margin: 0 !important;
       }
@@ -11813,7 +11839,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
           padding-right: 24px !important;
           min-width: 0 !important;
         }
-        .home-btn { height: 50px !important; font-size: 14.5px !important; }
+        .home-btn { height: 52px !important; font-size: 16px !important; }
         /* Carte inspections AGRANDIE en paysage : les 3 dernières en entier,
            centrée verticalement dans sa colonne (demande). */
         #homeHistory.home-history {
@@ -11867,7 +11893,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
            sans casser la répartition (cartes fixes + écran occupé). */
         .home-actions { margin-top: -18px !important; }
         /* V200 — boutons élargis aussi sur mobile (étaient 48px, trop discrets). */
-        .home-btn { height: 56px !important; font-size: 15.5px !important; }
+        .home-btn { height: 52px !important; font-size: 16px !important; }
         .home-benefits { font-size: 11.5px !important; margin: 4px 0 6px !important; }
         .home-history-title, .home-more-label { font-size: 12.5px !important; }
         .home-more-label { margin: 10px 2px 6px !important; }
@@ -11899,31 +11925,31 @@ body.lv-open { overflow: hidden; touch-action: none; }
       /* Couleur de risque VIVE, disponible dans tout #results (token redéfini). */
       #results.visible:has(.lucens-verdict-card.risk-low)  { --risk-color: #1BA84C !important; }
       #results.visible:has(.lucens-verdict-card.risk-mid)  { --risk-color: #F39A0E !important; }
-      #results.visible:has(.lucens-verdict-card.risk-high) { --risk-color: #EF4444 !important; }
+      #results.visible:has(.lucens-verdict-card.risk-high) { --risk-color: var(--risk-hi) !important; }
 
       /* 1 — SCORE : couleur du risque, gras (était délavé). */
       #results.visible #hero .score-value { font-weight: 800 !important; }
-      #results.visible #hero[data-risk="low"]  .score-value { color: #15803D !important; }
-      #results.visible #hero[data-risk="mid"]  .score-value { color: #C2710C !important; }
-      #results.visible #hero[data-risk="high"] .score-value { color: #D92D20 !important; }
+      #results.visible #hero[data-risk="low"]  .score-value { color: var(--risk-low) !important; }
+      #results.visible #hero[data-risk="mid"]  .score-value { color: var(--risk-mid) !important; }
+      #results.visible #hero[data-risk="high"] .score-value { color: var(--risk-hi) !important; }
       #results.visible #hero .score-suffix { color: #9CA3AF !important; font-weight: 600 !important; }
 
       /* 2 — JAUGE : 3 segments PLEINS et vifs (fini le pastel quasi blanc). */
       #results.visible #hero .hero-gauge {
         background: linear-gradient(90deg,
-          #34A853 0%, #34A853 33.33%,
-          #F6A609 33.33%, #F6A609 66.66%,
-          #E5392B 66.66%, #E5392B 100%) !important;
+          var(--risk-low) 0%, var(--risk-low) 33.33%,
+          var(--risk-mid) 33.33%, var(--risk-mid) 66.66%,
+          var(--risk-hi) 66.66%, var(--risk-hi) 100%) !important;
         height: 10px !important; border-radius: 5px !important;
       }
       /* Labels sous la jauge : gris, sauf l'actif → couleur du risque, gras. */
       #results.visible #hero .hero-gauge-labels > span {
-        color: #9CA3AF !important; font-weight: 600 !important;
-        font-size: 11px !important; letter-spacing: .02em !important;
+        color: var(--ink-dim) !important; font-weight: 600 !important;
+        font-size: 10px !important; letter-spacing: .10em !important;
       }
-      #results.visible #hero[data-risk="low"]  .hero-gauge-labels > span:nth-child(1) { color: #15803D !important; font-weight: 800 !important; }
-      #results.visible #hero[data-risk="mid"]  .hero-gauge-labels > span:nth-child(2) { color: #C2710C !important; font-weight: 800 !important; }
-      #results.visible #hero[data-risk="high"] .hero-gauge-labels > span:nth-child(3) { color: #D92D20 !important; font-weight: 800 !important; }
+      #results.visible #hero[data-risk="low"]  .hero-gauge-labels > span:nth-child(1) { color: var(--risk-low) !important; font-weight: 700 !important; }
+      #results.visible #hero[data-risk="mid"]  .hero-gauge-labels > span:nth-child(2) { color: var(--risk-mid) !important; font-weight: 700 !important; }
+      #results.visible #hero[data-risk="high"] .hero-gauge-labels > span:nth-child(3) { color: var(--risk-hi) !important; font-weight: 700 !important; }
 
       /* 3 — TYPOGRAPHIE UNIFORME sur les 3 blocs (la correction clé) ─────────── */
       /* Eyebrows : identiques partout (libellé de section, jamais le contenu). */
@@ -11931,28 +11957,28 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results.visible .lv-risque-label,
       #results.visible .lv-verdict-action-title {
         font-family: var(--font-body) !important;
-        font-size: 11px !important; font-weight: 600 !important;
-        text-transform: uppercase !important; letter-spacing: .055em !important;
-        color: #6B7280 !important; margin: 0 0 6px !important;
+        font-size: 12px !important; font-weight: 700 !important;
+        text-transform: uppercase !important; letter-spacing: .04em !important;
+        color: var(--ink-secondary) !important; margin: 0 0 6px !important;
       }
       /* Titre Origine : unique ligne mise en avant. V199 — sa COULEUR = le niveau
          de risque (demande utilisateur) : vert faible / ambre modéré / rouge élevé,
          EXACTEMENT les teintes du score et de la jauge → code couleur cohérent et
          lisible d'un coup d'œil. Encre par défaut tant que le risque n'est pas posé. */
       #results.visible .lv-verdict-title {
-        color: #14171C !important; font-weight: 700 !important;
-        font-size: 17px !important; line-height: 1.3 !important; margin: 0 0 5px !important;
+        color: var(--ink-primary) !important; font-weight: 700 !important;
+        font-size: 18px !important; line-height: 1.3 !important; margin: 0 0 5px !important;
       }
-      #results.visible .lucens-verdict-card.risk-low  .lv-verdict-title { color: #15803D !important; }
-      #results.visible .lucens-verdict-card.risk-mid  .lv-verdict-title { color: #C2710C !important; }
-      #results.visible .lucens-verdict-card.risk-high .lv-verdict-title { color: #D92D20 !important; }
+      #results.visible .lucens-verdict-card.risk-low  .lv-verdict-title { color: var(--risk-low) !important; }
+      #results.visible .lucens-verdict-card.risk-mid  .lv-verdict-title { color: var(--risk-mid) !important; }
+      #results.visible .lucens-verdict-card.risk-high .lv-verdict-title { color: var(--risk-hi) !important; }
       #results.visible .lv-verdict-confidence { display: none !important; }
       /* Les 3 PHRASES de contenu : STRICTEMENT identiques, encre foncée lisible. */
       #results.visible .lv-verdict-interpretation,
       #results.visible .lv-risque-text,
       #results.visible .lv-verdict-action-text {
-        color: #23272F !important; font-weight: 500 !important;
-        font-size: 14.5px !important; line-height: 1.5 !important; margin: 0 !important;
+        color: var(--ink-primary) !important; font-weight: 500 !important;
+        font-size: 14px !important; line-height: 1.5 !important; margin: 0 !important;
       }
       /* Bloc Risque : accent gauche à la couleur (vive) du risque, sans ::before. */
       #results.visible #lvRisque { border-left: 3px solid var(--risk-color, #E5E7EB) !important; padding-left: 15px !important; }
@@ -11964,16 +11990,16 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results.visible .viewer-tabs {
         display: flex !important; width: fit-content !important; max-width: 100% !important;
         margin: 6px auto 10px !important; padding: 3px !important; gap: 0 !important;
-        background: #EEF0F2 !important; border-radius: 9px !important;
+        background: var(--surface-mid) !important; border-radius: 9px !important;
       }
       #results.visible .viewer-tab {
         flex: 0 0 auto !important; min-height: 0 !important; width: auto !important;
         padding: 5px 13px !important; font-size: 12px !important; font-weight: 600 !important;
         line-height: 1.2 !important; white-space: nowrap !important;
-        border-radius: 7px !important; color: #6B7280 !important;
+        border-radius: 6px !important; color: var(--ink-tertiary) !important;
       }
       #results.visible .viewer-tab.active {
-        background: #fff !important; color: #14171C !important;
+        background: var(--surface-hi) !important; color: var(--ink-primary) !important;
         box-shadow: 0 1px 2px rgba(0,0,0,.10) !important;
       }
 
@@ -12428,9 +12454,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
       <div class="fb-q">
         <div class="fb-q-key" data-i18n="fb_q1">Toutes les taches sont repérées ?</div>
         <div class="fb-options fb-options-emoji">
-          <label class="fb-opt"><input type="radio" name="fb_detection" value="all_seen"><span class="fb-opt-pill"><span class="fb-opt-emoji">ðŸŸ¢</span><span class="fb-opt-label" data-i18n="fb_lbl_ok">OK</span></span></label>
-          <label class="fb-opt"><input type="radio" name="fb_detection" value="missed_zones"><span class="fb-opt-pill"><span class="fb-opt-emoji">ðŸŸ¡</span><span class="fb-opt-label" data-i18n="fb_lbl_mid">Moyen</span></span></label>
-          <label class="fb-opt"><input type="radio" name="fb_detection" value="false_positives"><span class="fb-opt-pill"><span class="fb-opt-emoji">🔴</span><span class="fb-opt-label" data-i18n="fb_lbl_bad">À revoir</span></span></label>
+          <label class="fb-opt"><input type="radio" name="fb_detection" value="all_seen"><span class="fb-opt-pill"><span class="fb-opt-emoji"></span><span class="fb-opt-label" data-i18n="fb_lbl_ok">OK</span></span></label>
+          <label class="fb-opt"><input type="radio" name="fb_detection" value="missed_zones"><span class="fb-opt-pill"><span class="fb-opt-emoji"></span><span class="fb-opt-label" data-i18n="fb_lbl_mid">Moyen</span></span></label>
+          <label class="fb-opt"><input type="radio" name="fb_detection" value="false_positives"><span class="fb-opt-pill"><span class="fb-opt-emoji"></span><span class="fb-opt-label" data-i18n="fb_lbl_bad">À revoir</span></span></label>
         </div>
       </div>
 
@@ -12438,9 +12464,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
       <div class="fb-q">
         <div class="fb-q-key" data-i18n="fb_q2">Le diagnostic des résidus est-il bon ?</div>
         <div class="fb-options fb-options-emoji">
-          <label class="fb-opt"><input type="radio" name="fb_identification" value="correct"><span class="fb-opt-pill"><span class="fb-opt-emoji">ðŸŸ¢</span><span class="fb-opt-label" data-i18n="fb_lbl_ok">OK</span></span></label>
-          <label class="fb-opt"><input type="radio" name="fb_identification" value="partial"><span class="fb-opt-pill"><span class="fb-opt-emoji">ðŸŸ¡</span><span class="fb-opt-label" data-i18n="fb_lbl_mid">Moyen</span></span></label>
-          <label class="fb-opt"><input type="radio" name="fb_identification" value="incorrect"><span class="fb-opt-pill"><span class="fb-opt-emoji">🔴</span><span class="fb-opt-label" data-i18n="fb_lbl_bad">À revoir</span></span></label>
+          <label class="fb-opt"><input type="radio" name="fb_identification" value="correct"><span class="fb-opt-pill"><span class="fb-opt-emoji"></span><span class="fb-opt-label" data-i18n="fb_lbl_ok">OK</span></span></label>
+          <label class="fb-opt"><input type="radio" name="fb_identification" value="partial"><span class="fb-opt-pill"><span class="fb-opt-emoji"></span><span class="fb-opt-label" data-i18n="fb_lbl_mid">Moyen</span></span></label>
+          <label class="fb-opt"><input type="radio" name="fb_identification" value="incorrect"><span class="fb-opt-pill"><span class="fb-opt-emoji"></span><span class="fb-opt-label" data-i18n="fb_lbl_bad">À revoir</span></span></label>
         </div>
       </div>
 
@@ -12448,9 +12474,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
       <div class="fb-q">
         <div class="fb-q-key" data-i18n="fb_q3">Le score de risque vous semble-t-il juste ?</div>
         <div class="fb-options fb-options-emoji">
-          <label class="fb-opt"><input type="radio" name="fb_score" value="correct"><span class="fb-opt-pill"><span class="fb-opt-emoji">ðŸŸ¢</span><span class="fb-opt-label" data-i18n="fb_score_a1">Juste</span></span></label>
-          <label class="fb-opt"><input type="radio" name="fb_score" value="off"><span class="fb-opt-pill"><span class="fb-opt-emoji">🟡</span><span class="fb-opt-label" data-i18n="fb_score_a2">Décalé</span></span></label>
-          <label class="fb-opt"><input type="radio" name="fb_score" value="wrong"><span class="fb-opt-pill"><span class="fb-opt-emoji">ðŸ”´</span><span class="fb-opt-label" data-i18n="fb_score_a3">Faux</span></span></label>
+          <label class="fb-opt"><input type="radio" name="fb_score" value="correct"><span class="fb-opt-pill"><span class="fb-opt-emoji"></span><span class="fb-opt-label" data-i18n="fb_score_a1">Juste</span></span></label>
+          <label class="fb-opt"><input type="radio" name="fb_score" value="off"><span class="fb-opt-pill"><span class="fb-opt-emoji"></span><span class="fb-opt-label" data-i18n="fb_score_a2">Décalé</span></span></label>
+          <label class="fb-opt"><input type="radio" name="fb_score" value="wrong"><span class="fb-opt-pill"><span class="fb-opt-emoji"></span><span class="fb-opt-label" data-i18n="fb_score_a3">Faux</span></span></label>
         </div>
       </div>
 
@@ -12552,7 +12578,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
     <!-- V28.1 — Option "ne plus me demander" : skip définitif du popup -->
     <div class="mo-noask-row">
       <label class="mo-noask-label">
-        <input type="checkbox" id="moNoAskCheckbox">
+        <input type="checkbox" id="moNoAskCheckbox" style="width:16px;height:16px;accent-color:var(--accent);">
         <span data-i18n="mo_no_ask">Ne plus me demander</span>
       </label>
     </div>
@@ -17197,14 +17223,14 @@ const Annotator = (() => {
     ctx.stroke();
 
     /* Titre — registre eyebrow Lucens (IBM Plex Mono uppercase) */
-    ctx.font = `bold ${titleFs}px 'IBM Plex Mono', ui-monospace, monospace`;
+    ctx.font = `bold ${titleFs}px 'Inter', -apple-system, system-ui, sans-serif`;
     ctx.fillStyle = 'rgba(200, 205, 214, 0.85)';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
     ctx.fillText('ZONES IDENTIFIÉES', x + pad, y + pad);
 
     /* Lignes : numéro + catégorie + % + intensité */
-    ctx.font = `600 ${fs}px 'IBM Plex Sans', system-ui, sans-serif`;
+    ctx.font = `600 ${fs}px 'Inter', -apple-system, system-ui, sans-serif`;
     rows.forEach((row, i) => {
       const ly = y + pad + titleFs * 1.6 + i * lh;
       const lx = x + pad;
@@ -25948,7 +25974,7 @@ const Annotator = (() => {
       let txt = map[state] || tr('lv_status_idle', 'Visez une zone');
       if (state === 'fluo' && lv.liveType && lv.liveType.label) {
         const lt = lv.liveType;
-        if (banner) banner.style.setProperty('--lv-type-color', lt.color || '#2DD4BF');
+        if (banner) banner.style.setProperty('--lv-type-color', lt.color || '#D84315');
         /* V245 — Direction C : « Résidu X » + BADGE de risque tinté (vrai marqueur).
            DOM sûr, valeurs 100% issues de LV_READOUT (statique). */
         while (label.firstChild) label.removeChild(label.firstChild);
@@ -26293,7 +26319,7 @@ const Annotator = (() => {
         /* Couleur de l'anneau selon état */
         let ringStroke, ringDash, ringWidth;
         if (chCurrentVerdict.state === 'fluo') {
-          ringStroke = 'rgba(45, 212, 191, 0.85)';
+          ringStroke = 'rgba(216, 67, 21, 0.90)';
           ringDash = [];
           ringWidth = 2.5;
         } else if (chCurrentVerdict.state === 'object') {
