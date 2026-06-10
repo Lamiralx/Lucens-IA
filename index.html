@@ -9845,7 +9845,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v265</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v266</div>
         </div>
       </div>
     </div>
@@ -10467,38 +10467,15 @@ body.lv-open { overflow: hidden; touch-action: none; }
 
       <style id="metier-spine-css">
       /* ── Refonte écran « application métier » : spine page analyse (mockup-ex-analyse) ── */
-      #hero .hero-gauge, #hero .hero-gauge-labels, #hero .hero-stats,
-      #hero #riskPill, #hero .hero-confidence { display:none !important; }
+      /* (purge lot 4 : .hero-gauge/.hero-gauge-labels retirés du hide — ré-affichés par V188.8) */
+      #hero .hero-stats, #hero #riskPill, #hero .hero-confidence { display:none !important; }
       /* SEUL le niveau de confiance reste masqué (ta demande). TOUTE la profondeur d'analyse
          — raisonnement complet, zones, tableau, référentiels HACCP, vérification, guide —
          est RESTAURÉE : elle était seulement cachée en CSS, jamais supprimée du code. */
       .lv-verdict-confidence { display:none !important; }
-      #hero .hero-row { display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
-      .hero-risk-label { font-size:13px; font-weight:600; color:var(--text-3,#6B7280); }
-      .hero-seg { display:flex; gap:6px; margin-top:12px; }
-      .hero-seg-s { flex:1; text-align:center; font-size:13px; font-weight:700; padding:10px 4px;
-        border-radius:9px; background:rgba(120,130,145,.10); border:1px solid rgba(120,130,145,.28);
-        color:rgba(120,130,145,1); }
-      .hero-seg[data-risk="low"]  .hero-seg-s[data-seg="low"]  { background:#2E7D32; border-color:#2E7D32; color:#fff; }
-      .hero-seg[data-risk="mid"]  .hero-seg-s[data-seg="mid"]  { background:#B7791F; border-color:#B7791F; color:#fff; }
-      .hero-seg[data-risk="high"] .hero-seg-s[data-seg="high"] { background:#B42318; border-color:#B42318; color:#fff; }
       /* page analyse : caler sur le mockup (boutons, casse, champ zone, image en haut) */
       .results-zone-top { display:none !important; }
-      /* image (viewer) remontée juste après la barre de risque, avant le verdict */
-      #results .result-grid { order:-1; }
-      #results.visible { display:flex !important; flex-direction:column; }
-      #hero { order:-2; }
       #results .disclaimer-fold { display:none !important; }
-      /* « Niveau de risque » : label à gauche + score compact à droite, même ligne (comme le mockup) */
-      #hero.visible, #results.visible #hero { background:transparent !important; border:0 !important; box-shadow:none !important; border-radius:0 !important; padding:13px 2px !important; }
-      #hero .hero-row { display:flex !important; flex-direction:row !important; flex-wrap:nowrap !important; align-items:baseline !important; justify-content:space-between !important; gap:10px !important; margin:0 !important; }
-      .hero-risk-label { font-size:11.5px !important; font-weight:600 !important; color:var(--text-3,#6B7280) !important; }
-      #hero .score-block { flex:0 0 auto !important; display:inline-flex !important; align-items:baseline !important; gap:2px !important; margin:0 !important; }
-      #hero .score-value { font-size:20px !important; font-weight:800 !important; line-height:1 !important; }
-      #hero .score-suffix { font-size:13px !important; color:var(--text-3,#6B7280) !important; }
-      #hero .hero-seg { margin-top:10px !important; }
-      /* filet rouge en haut (couleur du risque) + retrait de l'accent gauche du verdict + ligne de vérification */
-      #results.visible #hero { border-top:3px solid var(--score-color,#B42318) !important; border-radius:14px 14px 0 0 !important; padding-top:14px !important; }
       /* V187 — .results-hdr (logo LUCENS + tagline + croix ✕) SUPPRIMÉ : il
          doublonnait l'en-tête global .hdr (qui affiche déjà le logo LUCENS) sur
          l'écran de résultat → deux en-têtes empilés (l'effet « mélangé ») et une
@@ -10510,42 +10487,11 @@ body.lv-open { overflow: hidden; touch-action: none; }
          principale (+ risque associé) → action → 2 boutons. Le reste (déjà masqué
          par metier-spine) ne bouge pas. Deltas restants : score chiffré, ligne ATP,
          eyebrow, couleur du titre, boutons empilés. */
-      /* 1 — Score « 45/100 » retiré : la barre segmentée colorée porte le niveau. */
-      #results.visible #hero .score-block { display:none !important; }
-      /* V188.3 — Filet orange suspendu en haut du rapport SUPPRIMÉ.
-         Quand le score chiffré est masqué (V188), ce filet décoratif (vestige
-         qui colorait le bord supérieur selon le risque) reste suspendu au-dessus
-         d'un cadre vide « Niveau de risque » → pollue le coup d'œil. La barre
-         segmentée colorée (Faible/Modéré/Élevé) porte déjà la couleur du risque.
-         On efface aussi le « cadre vide » du hero ET du .hero-row (dont le
-         background/bord/ombre simulait un champ de saisie vide une fois le score
-         masqué). */
-      #results.visible #hero,
-      #results.visible #hero.visible {
-        border: 0 !important; border-top: 0 !important;
-        border-radius: 0 !important;
-        background: transparent !important; box-shadow: none !important;
-        padding: 0 2px !important; margin-bottom: 6px !important;
-      }
-      #results.visible #hero .hero-row {
-        background: transparent !important; border: 0 !important;
-        border-radius: 0 !important; box-shadow: none !important;
-        padding: 0 !important; margin: 0 !important;
-        align-items: flex-start !important;
-      }
       /* ═══════ V188.4 — RAPPORT STRICT MINIMAL (tient en une vue mobile) ═══════
          Demande utilisateur : « hypothèse, niveau de risque, recommandation,
          c'est tout ». Plus d'interprétation, plus de risque associé. Score
          intégré DANS la case active de la barre. Toggle image avec/sans carto
          réactivé. Tout doit tenir sur une vue sans scroll. */
-
-      /* 3) Score INTÉGRÉ dans la case active de la barre segmentée
-         (élément injecté par render() : .hero-seg-score, classe ajoutée en JS). */
-      #results.visible .hero-seg-s { padding: 9px 4px !important; font-size: 12.5px !important;
-        display: flex !important; align-items: baseline !important; justify-content: center !important; gap: 5px !important; }
-      #results.visible .hero-seg-s .hero-seg-score { font-size: 11px !important; font-weight: 500 !important; opacity: .92 !important; }
-      /* Le score est ajouté en JS uniquement sur la case active, donc les autres
-         cases n'ont jamais de .hero-seg-score à masquer. Style direct, rien à cacher. */
 
       /* 5) Image : hauteur compacte + remplit toute la largeur (le canvas suit). */
       #results.visible #viewerStage { height: 220px !important; min-height: 0 !important;
@@ -10564,14 +10510,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
          + verdict (titre+action) + boutons + nav = ~720-780px, tient sur iPhone. */
       @media (max-width: 500px) {
         main { padding-top: 4px !important; padding-left: 12px !important; padding-right: 12px !important; }
-        #results.visible #hero { margin-bottom: 2px !important; }
-        #results.visible .hero-risk-label { font-size: 11px !important; }
         /* Image très compacte (priorité aux blocs texte + boutons accessibles). */
         #results.visible #viewerStage { height: 130px !important; }
-        #results.visible .hero-seg { gap: 4px !important; margin-top: 6px !important; }
-        #results.visible .hero-seg-s { padding: 6px 3px !important; font-size: 12px !important;
-          border-radius: 7px !important; }
-        #results.visible .hero-seg-s .hero-seg-score { font-size: 10.5px !important; }
       }
 
       /* ═══════ V188.5 — RAPPORT MAQUETTE EX-FULL (cible utilisateur) ═══════
@@ -10582,42 +10522,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
          analyse » CÔTE À CÔTE en dessous de la carte. Score retiré de la case
          active de la barre (était dans la pillule, va à droite du label).
          Toggle image avec/sans carto retiré (cible n'en montre pas). */
-
-      /* Couleur de risque héritée par toute la carte via #results.has(.risk-*).
-         La classe .risk-low/mid/high est déjà posée sur .lucens-verdict-card. */
-      #results:has(.lucens-verdict-card.risk-low)  { --risk-color: #2E7D32; }
-      #results:has(.lucens-verdict-card.risk-mid)  { --risk-color: #B7791F; }
-      #results:has(.lucens-verdict-card.risk-high) { --risk-color: #B42318; }
-
-      /* Score retiré de la case active de la barre, va à droite du label "Niveau de risque". */
-      #results.visible .hero-seg-score { display: none !important; }
-
-      /* === Hero : ligne "Niveau de risque" à gauche + score "78/100" gros à droite, sur la même ligne, puis barre segmentée === */
-      #results.visible #hero { padding: 13px 15px 11px !important; margin: 0 !important;
-        border-top: 3px solid var(--risk-color, #B42318) !important;
-        border-left: 1px solid var(--border,#E5E7EB) !important;
-        border-right: 1px solid var(--border,#E5E7EB) !important;
-        border-top-left-radius: 14px !important; border-top-right-radius: 14px !important;
-        background: var(--surface-hi) !important; }
-      #results.visible #hero .hero-row { display: flex !important; align-items: baseline !important;
-        justify-content: space-between !important; gap: 10px !important; margin-bottom: 9px !important; }
-      #results.visible #hero .hero-risk-label { font-size: 12px !important; font-weight: 600 !important;
-        color: var(--text-3,#6B7280) !important; }
-      #results.visible #hero .score-block { display: inline-flex !important; align-items: baseline !important;
-        gap: 3px !important; margin: 0 !important; }
-      #results.visible #hero .score-value { font-size: 22px !important; font-weight: 800 !important;
-        color: var(--risk-color, #B42318) !important; line-height: 1 !important; }
-      #results.visible #hero .score-suffix { font-size: 12.5px !important;
-        color: var(--text-3,#6B7280) !important; font-weight: 600 !important; }
-      #results.visible .hero-seg { margin-top: 0 !important; gap: 6px !important; }
-      #results.visible .hero-seg-s { padding: 10px 6px !important; font-size: 13px !important;
-        border-radius: 9px !important; background: var(--surface-low,#FAFBFC) !important;
-        border: 1px solid var(--border,#E5E7EB) !important; color: var(--text-3,#6B7280) !important;
-        display: block !important; text-align: center !important; }
-      /* Active pill remplie en couleur de risque */
-      #results.visible .hero-seg[data-risk="low"]  .hero-seg-s[data-seg="low"]  { background: #2E7D32 !important; border-color: #2E7D32 !important; color: #fff !important; }
-      #results.visible .hero-seg[data-risk="mid"]  .hero-seg-s[data-seg="mid"]  { background: #B7791F !important; border-color: #B7791F !important; color: #fff !important; }
-      #results.visible .hero-seg[data-risk="high"] .hero-seg-s[data-seg="high"] { background: #B42318 !important; border-color: #B42318 !important; color: #fff !important; }
 
       /* === Bloc image : continue la carte (gauche/droite border, pas de coins, pas de fond externe) === */
       #results.visible .result-grid { padding: 0 !important; margin: 0 !important; gap: 0 !important;
@@ -10658,15 +10562,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
          aérée. On force des filets de séparation explicites entre chaque bloc
          et on aère le padding interne. */
 
-      /* ─── 1. Bloc « Niveau de risque » (#hero) : aéré + filet de séparation en bas ─── */
-      #results.visible #hero {
-        padding: 14px 15px 14px !important;
-        border-bottom: 1px solid var(--border, #E5E7EB) !important;
-      }
-      #results.visible #hero .hero-row { margin-bottom: 12px !important; }
-      #results.visible #hero .score-value { font-size: 24px !important; }
-      #results.visible .hero-seg { gap: 7px !important; }
-
       /* ─── 2. Bloc IMAGE : rectangle plein largeur, filet bas net ─── */
       #results.visible .result-grid { padding: 0 !important; }
       #results.visible .result-grid > .card { padding: 0 !important; background: transparent !important; }
@@ -10686,10 +10581,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
 
       /* ─── Mobile : même structure, tailles ajustées pour tenir sur iPhone ─── */
       @media (max-width: 500px) {
-        #results.visible #hero { padding: 12px 13px 12px !important; }
-        #results.visible #hero .hero-row { margin-bottom: 10px !important; }
-        #results.visible #hero .score-value { font-size: 22px !important; }
-        #results.visible .hero-seg-s { padding: 9px 4px !important; font-size: 13px !important; }
         #results.visible #viewerStage { height: 155px !important; }
         #results.visible .viewer-legend { padding: 8px 13px !important; font-size: 11px !important; }
       }
@@ -10701,13 +10592,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
          Le toggle « avec / sans cartographie » est réactivé sur le bloc image. */
 
       /* Containers parents redeviennent transparents (n'ont plus de carte). */
-      #results.visible #hero {
-        display: block !important;
-        background: transparent !important;
-        border: 0 !important; border-top: 0 !important;
-        padding: 0 !important;
-        margin: 0 !important;
-      }
       #results.visible .result-grid {
         background: transparent !important;
         border: 0 !important;
@@ -10718,8 +10602,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
          IMPORTANT : on cible UNIQUEMENT la 1ère .card (viewer) — pas les autres
          (Synthèse des zones, Verdict détaillé par zone) qui doivent rester
          cachées par le metier-spine CSS. */
-      #results.visible #hero .hero-row,
-      #results.visible #hero .hero-seg,
       #results.visible .result-grid > .card:has(#viewerStage) {
         background: var(--surface-hi) !important;
         border: 1px solid var(--border) !important;
@@ -10739,52 +10621,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results.visible details.zones-verdict-card,
       #results.visible #verifCard,
       #results.visible #guideCard { display: none !important; }
-
-      /* Bloc 1 — Niveau de risque (filet de risque en haut + ligne label/score) */
-      #results.visible #hero .hero-row {
-        border-top: 3px solid var(--risk-color, #B42318) !important;
-        display: flex !important;
-        align-items: baseline !important;
-        justify-content: space-between !important;
-        padding: 13px 14px !important;
-      }
-      #results.visible #hero .hero-risk-label {
-        font-size: 12.5px !important; font-weight: 600 !important;
-        color: var(--text-3, #6B7280) !important;
-      }
-      #results.visible #hero .score-block {
-        display: inline-flex !important; align-items: baseline !important; gap: 3px !important;
-      }
-      #results.visible #hero .score-value {
-        font-size: 23px !important; font-weight: 800 !important;
-        color: var(--risk-color, #B42318) !important; line-height: 1 !important;
-      }
-
-      /* Bloc 2 — Notation segmentée (3 pilules horizontales) */
-      #results.visible #hero .hero-seg {
-        display: flex !important;
-        flex-direction: row !important;
-        gap: 7px !important;
-        padding: 10px 12px !important;
-        align-items: stretch !important;
-        margin: 0 0 9px !important;
-      }
-      #results.visible .hero-seg-s {
-        flex: 1 !important;
-        padding: 10px 6px !important;
-        background: var(--surface-low, #FAFBFC) !important;
-        border: 1px solid var(--border, #E5E7EB) !important;
-        border-radius: 8px !important;
-        color: var(--text-3, #6B7280) !important;
-        font-size: 12.5px !important;
-        font-weight: 700 !important;
-        text-align: center !important;
-        display: block !important;
-      }
-      /* Pilule active colorée selon le risque */
-      #results.visible .hero-seg[data-risk="low"]  .hero-seg-s[data-seg="low"]  { background: #2E7D32 !important; border-color: #2E7D32 !important; color: #fff !important; }
-      #results.visible .hero-seg[data-risk="mid"]  .hero-seg-s[data-seg="mid"]  { background: #B7791F !important; border-color: #B7791F !important; color: #fff !important; }
-      #results.visible .hero-seg[data-risk="high"] .hero-seg-s[data-seg="high"] { background: #B42318 !important; border-color: #B42318 !important; color: #fff !important; }
 
       /* Bloc 3 — Image avec toggle « Zones détectées » / « Image source » */
       #results.visible .result-grid > .card:has(#viewerStage) {
@@ -10825,19 +10661,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         flex-shrink: 0 !important;
       }
 
-      /* @media mobile : tout reste mais paddings serrés pour iPhone */
-      @media (max-width: 500px) {
-        #results.visible #hero .hero-row { padding: 11px 13px !important; }
-        #results.visible #hero .hero-row,
-        #results.visible #hero .hero-seg,
-        #results.visible .result-grid > .card:has(#viewerStage) { margin-bottom: 8px !important; }
-        #results.visible #hero .score-value { font-size: 22px !important; }
-        #results.visible #hero .hero-seg { padding: 9px 10px !important; gap: 6px !important; }
-        #results.visible .hero-seg-s { padding: 9px 4px !important; font-size: 12px !important; }
-        #results.visible .result-grid > .card:has(#viewerStage) { padding: 10px 10px !important; }
-        #results.visible #viewerStage { height: 140px !important; }
-      }
-
       /* ═════════ V188.8 — RAPPORT FINAL : 3 macro-blocs propres ═════════
          Maquette validée mockup-rapport-v188-8.html. Override final des
          V188.x précédents. Pattern best-in-class :
@@ -10876,9 +10699,10 @@ body.lv-open { overflow: hidden; touch-action: none; }
       }
       #results.visible #hero .hero-row {
         display: flex !important;
+        flex-direction: row !important;   /* replié de la base metier (le défaut app est column) */
         align-items: baseline !important;
         justify-content: space-between !important;
-        margin-bottom: 12px !important;
+        margin: 0 0 12px !important;      /* replié : top/côtés à 0 (défaut app non nul) */
         padding: 0 !important;
         background: transparent !important;
         border: 0 !important;
@@ -10889,6 +10713,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results.visible #hero .score-block {
         display: inline-flex !important; align-items: baseline !important; gap: 3px !important;
         margin: 0 !important;
+        flex: 0 0 auto !important;        /* replié de la base metier (sinon shrink par défaut) */
       }
       #results.visible #hero .score-value {
         font-size: 26px !important; font-weight: 800 !important;
@@ -10905,12 +10730,10 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results.visible #hero .hero-gauge {
         display: block !important;
         position: relative !important;
-        height: 8px !important;
-        border-radius: 6px !important;
-        background: linear-gradient(90deg, #DCEAD9 0%, #DCEAD9 33.33%, #F0E0C2 33.33%, #F0E0C2 66.66%, #F0D0CB 66.66%, #F0D0CB 100%) !important;
         margin: 0 0 9px !important;
         overflow: visible !important;
         box-shadow: none !important;
+        /* (height/radius/background : V196 fait autorité plus bas) */
       }
       /* Le fill bar original est remplacé par un MARQUEUR rond à la position du score */
       #results.visible #hero .hero-gauge .hero-gauge-fill { display: none !important; }
@@ -10935,11 +10758,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         font-size: 10px !important;
         font-weight: 600 !important;
         color: var(--ink-tertiary, #6B7280) !important;
-      }
-      #results.visible #hero[data-risk="low"]  .hero-gauge-labels span:nth-child(1),
-      #results.visible #hero[data-risk="mid"]  .hero-gauge-labels span:nth-child(2),
-      #results.visible #hero[data-risk="high"] .hero-gauge-labels span:nth-child(3) {
-        color: var(--risk-color) !important;
       }
       /* Hide .hero-seg (pilules) — on utilise .hero-gauge à la place */
       #results.visible #hero .hero-seg { display: none !important; }
@@ -11086,26 +10904,10 @@ body.lv-open { overflow: hidden; touch-action: none; }
          (5) Section "Risque associé" affichée vide → écrasée par display:block !important
          Corrections additives, en dernier dans la cascade. */
 
-      /* (1) Force la couleur d'accent sur le label actif — spécificité haute pour
-            battre le défaut grey et fonctionner aussi sur les viewports élargis. */
-      #results.visible #hero[data-risk="low"]  .hero-gauge-labels > span:nth-child(1) { color: #2E7D32 !important; font-weight: 700 !important; }
-      #results.visible #hero[data-risk="mid"]  .hero-gauge-labels > span:nth-child(2) { color: #B7791F !important; font-weight: 700 !important; }
-      #results.visible #hero[data-risk="high"] .hero-gauge-labels > span:nth-child(3) { color: #B42318 !important; font-weight: 700 !important; }
-
       /* (2) Kill l'indicateur ::after orange-terra (était l'underline sous le tab actif). */
       #results.visible .viewer-tab.active::after,
       #results.visible .viewer-tab::after { content: none !important; display: none !important;
         background: transparent !important; animation: none !important; }
-
-      /* (4) Saturation du gradient de la jauge : on remplace les pastels quasi
-            invisibles par des tints 18% au-dessus du fond blanc. Les 3 zones sont
-            désormais clairement distinguables d'un coup d'œil. */
-      #results.visible #hero .hero-gauge {
-        background: linear-gradient(90deg,
-          rgba(46,125,50,0.22) 0%, rgba(46,125,50,0.22) 33.33%,
-          rgba(183,121,31,0.22) 33.33%, rgba(183,121,31,0.22) 66.66%,
-          rgba(180,35,24,0.22) 66.66%, rgba(180,35,24,0.22) 100%) !important;
-      }
 
       /* (5) Section Risque associé : si #lvRisque[hidden] est posé par render()
             (parce que risk_logic est vide), on doit RESPECTER le hidden. V188.8
@@ -11176,15 +10978,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         display: block !important;   /* replié de V188.8 (le défaut app est flex) */
       }
 
-      /* (b) JAUGE PLUS VIVE : 45% au lieu de 22%. Le code couleur saute aux yeux. */
-      #results.visible #hero .hero-gauge {
-        background: linear-gradient(90deg,
-          rgba(46,125,50,0.45) 0%, rgba(46,125,50,0.45) 33.33%,
-          rgba(232,165,69,0.55) 33.33%, rgba(232,165,69,0.55) 66.66%,
-          rgba(180,35,24,0.50) 66.66%, rgba(180,35,24,0.50) 100%) !important;
-        height: 9px !important;
-        border-radius: 5px !important;
-      }
       /* Marqueur encore plus visible : bordure blanche épaisse + ombre. */
       #results.visible #hero .hero-gauge::after {
         width: 20px !important; height: 20px !important;
