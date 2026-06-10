@@ -516,6 +516,23 @@ body {
   width: 100%;
   position: relative;
 }
+/* V261 — FIX bande blanche Dynamic Island (Live View).
+   Bug WebKit silencieux : avec viewport-fit=cover + black-translucent,
+   height:100% sur html/body fait RETOMBER Safari en layout NON-cover →
+   la zone status-bar n'appartient plus à la page, iOS la peint lui-même
+   (blanche en thème clair) AU-DESSUS de la caméra, et tous les
+   env(safe-area-inset-*) valent 0. height:100vh est la seule valeur qui
+   active réellement cover au lancement à froid (100dvh est buggé là).
+   Scopé à la PWA installée (display-mode: standalone) pour ne pas dégrader
+   l'usage en onglet Safari, où le 100% gère la barre d'URL dynamique.
+   Tous les paddings env(safe-area-*) nécessaires existent déjà partout
+   (header, overlays, bottom-bar, lv-topbar) : ils prennent simplement
+   leur vraie valeur. */
+@media all and (display-mode: standalone) {
+  html, body { height: 100vh; }
+}
+/* Même garantie pendant le Live View hors standalone (modal plein écran). */
+html.lv-open, body.lv-open { height: 100vh; }
 
 /* ─── Hiérarchie typographique stricte ─────────────────────────── */
 h1 {
@@ -9828,7 +9845,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v260</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v261</div>
         </div>
       </div>
     </div>
