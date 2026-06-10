@@ -9845,7 +9845,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v270</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v271</div>
         </div>
       </div>
     </div>
@@ -15850,7 +15850,14 @@ const Annotator = (() => {
 
 
   /* ═══════════════════════════════════════════════════════════════════
-     V270 — CONTOUR SOUS-PIXEL PILOTÉ PAR LES ZONES (marching squares interpolé)
+     V270/V271 — CONTOUR SOUS-PIXEL PILOTÉ PAR LES ZONES (marching squares interpolé)
+     V271 — NIVEAU ABSOLU « S1 CONTRASTE » (choix utilisateur, galerie 9 cas) :
+     l'Otsu relatif de V270 « inventait » des contours dans le voile (entourages
+     aléatoires partout, signalés terrain). Remplacé par : champ de contraste
+     local Ec = E − médiane_large(E) à SEUILS ABSOLUS calibrés (0.10 / 0.045)
+     + anti-reflet chromatique (même teinte que l'anneau → spéculaire → rejet).
+     Pas de signal franc → AUCUN contour (abstention). Mesuré : Dice 0.43 vs
+     0.33, FP fond 5 % vs ~25 %, cas D (plastique bleu à reflets) 0 contour.
      Direction validée (banc .claude/tests/uvbench, 2026-06-10) :
        · le « OÙ » fait autorité côté zones validées (IA en ligne / clusters
          heuristiques hors-ligne) — le CV mono-frame plein-cadre plafonne
@@ -15865,93 +15872,191 @@ const Annotator = (() => {
      boucles max, files typées, zéro récursion), enveloppé en try/catch côté
      appelant, et le pipeline V198/V259/équerres reste intact en repli.
      ═══════════════════════════════════════════════════════════════════ */
+  /* médiane glissante 2-D (Huang, histogramme 256 classes, bords répliqués)
+     sur un Float32Array 0..1 de taille w×h, fenêtre carrée rayon r. */
+  function _medianField(src, w, h, r) {
+    var out = new Float32Array(w * h);
+    var hist = new Int32Array(256);
+    var half, x, y, i, j, xx, yy, v, cnt, acc, med;
+    half = ((2 * r + 1) * (2 * r + 1)) >> 1;
+    for (y = 0; y < h; y++) {
+      hist.fill(0);
+      /* histogramme initial de la fenêtre x=0 */
+      for (j = -r; j <= r; j++) {
+        yy = y + j; if (yy < 0) yy = 0; else if (yy >= h) yy = h - 1;
+        for (i = -r; i <= r; i++) {
+          xx = i; if (xx < 0) xx = 0; else if (xx >= w) xx = w - 1;
+          v = (src[yy * w + xx] * 255) | 0; if (v > 255) v = 255;
+          hist[v]++;
+        }
+      }
+      for (x = 0; x < w; x++) {
+        acc = 0; med = 0;
+        for (cnt = 0; cnt < 256; cnt++) { acc += hist[cnt]; if (acc > half) { med = cnt; break; } }
+        out[y * w + x] = med / 255;
+        /* glisse : retire la colonne x-r, ajoute la colonne x+r+1 (répliquées) */
+        if (x + 1 < w) {
+          for (j = -r; j <= r; j++) {
+            yy = y + j; if (yy < 0) yy = 0; else if (yy >= h) yy = h - 1;
+            xx = x - r; if (xx < 0) xx = 0; else if (xx >= w) xx = w - 1;
+            v = (src[yy * w + xx] * 255) | 0; if (v > 255) v = 255;
+            hist[v]--;
+            xx = x + r + 1; if (xx < 0) xx = 0; else if (xx >= w) xx = w - 1;
+            v = (src[yy * w + xx] * 255) | 0; if (v > 255) v = 255;
+            hist[v]++;
+          }
+        }
+      }
+    }
+    return out;
+  }
+
+  /* flou gaussien séparable σ≈1.5 (noyau 7) sur Float32Array w×h, bords répliqués */
+  function _blur15(src, w, h) {
+    var K = [0.03046, 0.10497, 0.22184, 0.28546, 0.22184, 0.10497, 0.03046];
+    var tmp = new Float32Array(w * h), out = new Float32Array(w * h);
+    var x, y, k, xx, yy, s;
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+      s = 0;
+      for (k = -3; k <= 3; k++) { xx = x + k; if (xx < 0) xx = 0; else if (xx >= w) xx = w - 1; s += src[y * w + xx] * K[k + 3]; }
+      tmp[y * w + x] = s;
+    }
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+      s = 0;
+      for (k = -3; k <= 3; k++) { yy = y + k; if (yy < 0) yy = 0; else if (yy >= h) yy = h - 1; s += tmp[yy * w + x] * K[k + 3]; }
+      out[y * w + x] = s;
+    }
+    return out;
+  }
+
+  /* teinte (degrés 0-360) d'un pixel RGB — pour l'anti-reflet */
+  function _hueOf(r, g, b) {
+    var mx = r > g ? (r > b ? r : b) : (g > b ? g : b);
+    var mn = r < g ? (r < b ? r : b) : (g < b ? g : b);
+    var d = mx - mn;
+    if (d === 0) return -1;                 /* gris pur : pas de teinte */
+    var hh;
+    if (mx === r) hh = ((g - b) / d) % 6;
+    else if (mx === g) hh = (b - r) / d + 2;
+    else hh = (r - g) / d + 4;
+    hh *= 60; if (hh < 0) hh += 360;
+    return hh;
+  }
+
   function _spxLoops(data, IW, IH, boxesPx, opts) {
     opts = opts || {};
-    var TH_FLOOR  = opts.thFloor  != null ? opts.thFloor  : 0.05;
+    var T_HI      = opts.tHi      != null ? opts.tHi      : 0.10;  /* seuil ABSOLU haut (calibré) */
+    var T_LO      = opts.tLo      != null ? opts.tLo      : 0.045; /* seuil ABSOLU bas (0.45·T_HI) */
+    var DH_MIN    = opts.dhMin    != null ? opts.dhMin    : 18;    /* anti-reflet : Δhue min (°) */
+    var DSAT_MIN  = opts.dsatMin  != null ? opts.dsatMin  : 0.08;  /* anti-reflet : Δsat min */
     var MAX_FIELD = opts.maxFieldPx || 1500000;
     var MAX_LOOPS = opts.maxLoops   || 24;
     var loopsOut = [];
     var maskAreaImg = 0;
 
+    /* ════ CHAMP GLOBAL (une fois par appel) : E puis Ec = E − médiane ════
+       Échelle de calibration : grand côté ≤ 1024 (stride sG). */
+    var longEdge = IW > IH ? IW : IH;
+    var sG = Math.max(1, Math.ceil(longEdge / 1024));
+    var gw = Math.max(8, Math.floor(IW / sG)), gh = Math.max(8, Math.floor(IH / sG));
+    var gn = gw * gh;
+    var E = new Float32Array(gn);
+    var gx, gy, gi, p, r, g, bl, mx, mn, val, sat, ev, es;
+    for (gy = 0; gy < gh; gy++) {
+      var rowOff = (gy * sG * IW) * 4;
+      gi = gy * gw;
+      for (gx = 0; gx < gw; gx++, gi++) {
+        p = rowOff + gx * sG * 4;
+        r = data[p]; g = data[p + 1]; bl = data[p + 2];
+        mx = r > g ? (r > bl ? r : bl) : (g > bl ? g : bl);
+        mn = r < g ? (r < bl ? r : bl) : (g < bl ? g : bl);
+        /* spéculaire = ACHROMATIQUE brillant (tous canaux hauts -> min haut),
+           PAS un seul canal saturé : un bleu azurant vif (B=255, R/G bas) n'est
+           PAS un reflet. min>=235 = quasi-blanc cramé -> rejet. (corrige le
+           « cœur de tache bleue effacé » : ancien test mx>=250 trop agressif). */
+        if (mn >= 235) { E[gi] = 0; continue; }
+        val = mx / 255;
+        sat = mx > 0 ? (mx - mn) / mx : 0;
+        ev = (val - 0.32) / 0.68; if (ev < 0) ev = 0; else if (ev > 1) ev = 1;
+        es = sat / 0.5; if (es > 1) es = 1;
+        E[gi] = ev * es;
+      }
+    }
+    E = _blur15(E, gw, gh);
+    /* médiane large sur basse résolution ≤256 (fenêtre 12 % du grand côté) */
+    var dsM = Math.max(1, Math.ceil((gw > gh ? gw : gh) / 256));
+    var mw = Math.max(8, Math.floor(gw / dsM)), mh = Math.max(8, Math.floor(gh / dsM));
+    var Esm = new Float32Array(mw * mh);
+    var myy, mxx, sum2, c2, oy, ox;
+    for (myy = 0; myy < mh; myy++) for (mxx = 0; mxx < mw; mxx++) {
+      sum2 = 0; c2 = 0;
+      for (oy = 0; oy < dsM; oy++) for (ox = 0; ox < dsM; ox++) {
+        var yy3 = myy * dsM + oy, xx3 = mxx * dsM + ox;
+        if (yy3 < gh && xx3 < gw) { sum2 += E[yy3 * gw + xx3]; c2++; }
+      }
+      Esm[myy * mw + mxx] = c2 ? sum2 / c2 : 0;
+    }
+    var rMed = Math.max(2, Math.round(0.14 * (mw > mh ? mw : mh)));   /* fenêtre ~28 % : laisse vivre les grandes taches lisses ; le voile est tué par seuil absolu + anti-reflet */
+    var Med = _medianField(Esm, mw, mh, rMed);
+    /* Ec global = E − médiane (upsample plus proche voisin, suffisant pour un fond lisse) */
+    var Ec = new Float32Array(gn);
+    for (gy = 0; gy < gh; gy++) {
+      var sy2 = (gy / dsM) | 0; if (sy2 >= mh) sy2 = mh - 1;
+      for (gx = 0; gx < gw; gx++) {
+        var sx2 = (gx / dsM) | 0; if (sx2 >= mw) sx2 = mw - 1;
+        var d2 = E[gy * gw + gx] - Med[sy2 * mw + sx2];
+        Ec[gy * gw + gx] = d2 > 0 ? d2 : 0;
+      }
+    }
+
+    /* ════ PAR BOÎTE : seuils absolus → masque → anti-reflet → MS ════ */
     for (var bi = 0; bi < boxesPx.length; bi++) {
       if (loopsOut.length >= MAX_LOOPS) break;
       var bx = boxesPx[bi];
-      var x0 = Math.max(0, Math.floor(bx.x0)), y0 = Math.max(0, Math.floor(bx.y0));
-      var x1 = Math.min(IW, Math.ceil(bx.x1)), y1 = Math.min(IH, Math.ceil(bx.y1));
-      var bw = x1 - x0, bh = y1 - y0;
-      if (bw < 12 || bh < 12) continue;
-      var s = Math.max(1, Math.ceil(Math.sqrt((bw * bh) / MAX_FIELD)));
-      var fw = Math.max(2, Math.floor(bw / s)), fh = Math.max(2, Math.floor(bh / s));
+      /* coords boîte → grille globale (stride sG) */
+      var x0 = Math.max(0, Math.floor(bx.x0 / sG)), y0 = Math.max(0, Math.floor(bx.y0 / sG));
+      var x1 = Math.min(gw, Math.ceil(bx.x1 / sG)), y1 = Math.min(gh, Math.ceil(bx.y1 / sG));
+      var fw = x1 - x0, fh = y1 - y0;
+      if (fw < 8 || fh < 8) continue;
+      if (fw * fh > MAX_FIELD) { /* boîte démesurée : on échantillonne 1/2 */ }
       var n = fw * fh;
+      var F = new Float32Array(n);
+      var fy2, fx2;
+      for (fy2 = 0; fy2 < fh; fy2++)
+        for (fx2 = 0; fx2 < fw; fx2++)
+          F[fy2 * fw + fx2] = Ec[(y0 + fy2) * gw + (x0 + fx2)];
 
-      /* ── champ d'émission (brillance × saturation, spéculaire écrêté → 0) ── */
-      var E = new Float32Array(n);
-      var fy, fx, fi, p, r, g, bl, mx, mn, val, sat, ev, es;
-      for (fy = 0; fy < fh; fy++) {
-        var rowOff = ((y0 + fy * s) * IW + x0) * 4;
-        fi = fy * fw;
-        for (fx = 0; fx < fw; fx++, fi++) {
-          p = rowOff + fx * s * 4;
-          r = data[p]; g = data[p + 1]; bl = data[p + 2];
-          mx = r > g ? (r > bl ? r : bl) : (g > bl ? g : bl);
-          if (mx >= 250) { E[fi] = 0; continue; }
-          mn = r < g ? (r < bl ? r : bl) : (g < bl ? g : bl);
-          val = mx / 255;
-          sat = mx > 0 ? (mx - mn) / mx : 0;
-          ev = (val - 0.32) / 0.68; if (ev < 0) ev = 0; else if (ev > 1) ev = 1;
-          es = sat / 0.5; if (es > 1) es = 1;
-          E[fi] = ev * es;
-        }
-      }
+      var th = T_HI, tlo = T_LO;
 
-      /* ── Otsu 64 classes ── */
-      var BINS = 64, hist = new Int32Array(BINS), i, k;
-      var maxv = 0;
-      for (i = 0; i < n; i++) if (E[i] > maxv) maxv = E[i];
-      if (maxv <= TH_FLOOR) continue;
-      for (i = 0; i < n; i++) { k = (E[i] / maxv * (BINS - 1)) | 0; hist[k]++; }
-      var sumAll = 0; for (k = 0; k < BINS; k++) sumAll += k * hist[k];
-      var wB = 0, sumB = 0, bestVar = 0, bestK = 0;
-      for (k = 0; k < BINS; k++) {
-        wB += hist[k]; if (!wB) continue;
-        var wF = n - wB; if (!wF) break;
-        sumB += k * hist[k];
-        var mB = sumB / wB, mF = (sumAll - sumB) / wF;
-        var vb = wB * wF * (mB - mF) * (mB - mF);
-        if (vb > bestVar) { bestVar = vb; bestK = k; }
-      }
-      var th = Math.max(TH_FLOOR, bestK / (BINS - 1) * maxv);
-      var tlo = 0.5 * th;
-
-      /* ── hystérésis : composantes de (E≥tlo) contenant un pixel ≥th ── */
-      var mask = new Uint8Array(n);          /* 1 = retenu */
+      /* ── hystérésis : composantes de (F≥tlo) contenant un pixel ≥th ── */
+      var mask = new Uint8Array(n);
       var queue = new Int32Array(n);
-      var qh = 0, qt = 0, hiCount = 0;
+      var qh = 0, qt = 0, hiCount = 0, i, k;
       for (i = 0; i < n; i++) {
-        if (E[i] >= th) { hiCount++; if (!mask[i]) { mask[i] = 1; queue[qt++] = i; } }
+        if (F[i] >= th) { hiCount++; if (!mask[i]) { mask[i] = 1; queue[qt++] = i; } }
       }
-      if (hiCount < 12) continue;
+      if (hiCount < 6) continue;            /* rien d'assez franc → AUCUN contour */
       while (qh < qt) {
         i = queue[qh++];
         var cx = i % fw, cy = (i / fw) | 0;
-        if (cx > 0      && !mask[i - 1]  && E[i - 1]  >= tlo) { mask[i - 1]  = 1; queue[qt++] = i - 1; }
-        if (cx < fw - 1 && !mask[i + 1]  && E[i + 1]  >= tlo) { mask[i + 1]  = 1; queue[qt++] = i + 1; }
-        if (cy > 0      && !mask[i - fw] && E[i - fw] >= tlo) { mask[i - fw] = 1; queue[qt++] = i - fw; }
-        if (cy < fh - 1 && !mask[i + fw] && E[i + fw] >= tlo) { mask[i + fw] = 1; queue[qt++] = i + fw; }
+        if (cx > 0      && !mask[i - 1]  && F[i - 1]  >= tlo) { mask[i - 1]  = 1; queue[qt++] = i - 1; }
+        if (cx < fw - 1 && !mask[i + 1]  && F[i + 1]  >= tlo) { mask[i + 1]  = 1; queue[qt++] = i + 1; }
+        if (cy > 0      && !mask[i - fw] && F[i - fw] >= tlo) { mask[i - fw] = 1; queue[qt++] = i - fw; }
+        if (cy < fh - 1 && !mask[i + fw] && F[i + fw] >= tlo) { mask[i + fw] = 1; queue[qt++] = i + fw; }
       }
 
-      /* ── remplissage des trous : fond accessible depuis le bord ── */
+      /* ── remplissage des trous ── */
       var bg = new Uint8Array(n);
       qh = 0; qt = 0;
-      for (fx = 0; fx < fw; fx++) {
-        if (!mask[fx] && !bg[fx]) { bg[fx] = 1; queue[qt++] = fx; }
-        i = (fh - 1) * fw + fx;
+      for (fx2 = 0; fx2 < fw; fx2++) {
+        if (!mask[fx2] && !bg[fx2]) { bg[fx2] = 1; queue[qt++] = fx2; }
+        i = (fh - 1) * fw + fx2;
         if (!mask[i] && !bg[i]) { bg[i] = 1; queue[qt++] = i; }
       }
-      for (fy = 0; fy < fh; fy++) {
-        i = fy * fw;
+      for (fy2 = 0; fy2 < fh; fy2++) {
+        i = fy2 * fw;
         if (!mask[i] && !bg[i]) { bg[i] = 1; queue[qt++] = i; }
-        i = fy * fw + fw - 1;
+        i = fy2 * fw + fw - 1;
         if (!mask[i] && !bg[i]) { bg[i] = 1; queue[qt++] = i; }
       }
       while (qh < qt) {
@@ -15962,11 +16067,11 @@ const Annotator = (() => {
         if (byy > 0      && !mask[i - fw] && !bg[i - fw]) { bg[i - fw] = 1; queue[qt++] = i - fw; }
         if (byy < fh - 1 && !mask[i + fw] && !bg[i + fw]) { bg[i + fw] = 1; queue[qt++] = i + fw; }
       }
-      for (i = 0; i < n; i++) if (!mask[i] && !bg[i]) mask[i] = 1;   /* trou → rempli */
+      for (i = 0; i < n; i++) if (!mask[i] && !bg[i]) mask[i] = 1;
 
-      /* ── composantes connexes du masque : minA + top 6 ── */
-      var labels = new Int32Array(n);        /* 0 = aucun */
-      var areas = [0];                       /* index = label */
+      /* ── composantes : minA + top 6 ── */
+      var labels = new Int32Array(n);
+      var areas = [0];
       var lab = 0;
       for (i = 0; i < n; i++) {
         if (!mask[i] || labels[i]) continue;
@@ -15987,15 +16092,88 @@ const Annotator = (() => {
       var order = [];
       for (k = 1; k < areas.length; k++) if (areas[k] >= minA) order.push(k);
       order.sort(function (a, b) { return areas[b] - areas[a]; });
+
+      /* ── ANTI-REFLET CHROMATIQUE par composante (top 6) ──
+         teinte pondérée Ec à l'intérieur vs anneau (BFS 8 pas hors composante) :
+         même teinte (Δhue<18°) ET à peine plus saturé (Δsat<0.08) → spéculaire. */
       var keepLab = new Uint8Array(areas.length);
-      for (k = 0; k < Math.min(6, order.length); k++) keepLab[order[k]] = 1;
+      var ringDist = new Int16Array(n);
+      for (k = 0; k < Math.min(6, order.length); k++) {
+        var L = order[k];
+        /* intérieur : moyenne circulaire de hue pondérée par Ec + sat moyenne */
+        var sumCos = 0, sumSin = 0, wSum = 0, satIn = 0, satInW = 0;
+        qh = 0; qt = 0;
+        ringDist.fill(0);
+        for (i = 0; i < n; i++) {
+          if (labels[i] !== L) continue;
+          var ixp = ((y0 + ((i / fw) | 0)) * sG * IW + (x0 + (i % fw)) * sG) * 4;
+          var rr = data[ixp], gg = data[ixp + 1], bb = data[ixp + 2];
+          var hu = _hueOf(rr, gg, bb);
+          var mx2 = rr > gg ? (rr > bb ? rr : bb) : (gg > bb ? gg : bb);
+          var mn2 = rr < gg ? (rr < bb ? rr : bb) : (gg < bb ? gg : bb);
+          var st2 = mx2 > 0 ? (mx2 - mn2) / mx2 : 0;
+          var w2 = F[i] + 0.001;
+          if (hu >= 0) { var ra = hu * 0.0174533; sumCos += Math.cos(ra) * w2; sumSin += Math.sin(ra) * w2; wSum += w2; }
+          satIn += st2 * w2; satInW += w2;
+          ringDist[i] = -1;                 /* marque intérieur */
+          queue[qt++] = i;
+        }
+        if (!wSum) { keepLab[L] = 1; continue; }
+        var hueIn = Math.atan2(sumSin / wSum, sumCos / wSum) * 57.29578; if (hueIn < 0) hueIn += 360;
+        satIn = satInW ? satIn / satInW : 0;
+        /* anneau : BFS jusqu'à 20 pas hors composante ; les statistiques ne
+           comptent QUE les pixels de distance ≥8 (au-delà de la JUPE de la
+           tache — sinon on compare la tache à son propre dégradé et Δhue≈0
+           rejette tout), hors signal résiduel (F ≥ 0.8·tlo) et hors
+           quasi-noir (canal max < 30 : teinte/sat non significatives). */
+        var rc = 0, rs = 0, rw = 0, satOut = 0, satOutN = 0, valSum = 0;
+        while (qh < qt) {
+          i = queue[qh++];
+          var dCur = ringDist[i] < 0 ? 0 : ringDist[i];
+          if (dCur >= 20) continue;
+          var nx4 = [i - 1, i + 1, i - fw, i + fw];
+          var px4 = i % fw, py4 = (i / fw) | 0;
+          var okn = [px4 > 0, px4 < fw - 1, py4 > 0, py4 < fh - 1];
+          for (var q4 = 0; q4 < 4; q4++) {
+            if (!okn[q4]) continue;
+            var j4 = nx4[q4];
+            if (ringDist[j4] !== 0 || labels[j4] === L) continue;
+            ringDist[j4] = dCur + 1;
+            queue[qt++] = j4;
+            if (dCur + 1 < 8) continue;               /* trop près : jupe de la tache */
+            if (F[j4] >= tlo * 0.8) continue;          /* porte encore du signal */
+            var jp = ((y0 + ((j4 / fw) | 0)) * sG * IW + (x0 + (j4 % fw)) * sG) * 4;
+            var rj = data[jp], gj = data[jp + 1], bj = data[jp + 2];
+            var mxj = rj > gj ? (rj > bj ? rj : bj) : (gj > bj ? gj : bj);
+            if (mxj < 30) continue;                    /* quasi-noir : stats non fiables */
+            var hj = _hueOf(rj, gj, bj);
+            var mnj = rj < gj ? (rj < bj ? rj : bj) : (gj < bj ? gj : bj);
+            satOut += (mxj - mnj) / mxj; valSum += mxj / 255; satOutN++;
+            if (hj >= 0) { var rb = hj * 0.0174533; rc += Math.cos(rb); rs += Math.sin(rb); rw++; }
+          }
+        }
+        if (rw < 20) { keepLab[L] = 1; continue; }   /* entourage injugeable : on garde */
+        var hueOut = Math.atan2(rs / rw, rc / rw) * 57.29578; if (hueOut < 0) hueOut += 360;
+        satOut = satOutN ? satOut / satOutN : 0;
+        var dh = Math.abs(hueIn - hueOut) % 360; if (dh > 180) dh = 360 - dh;
+        var valOut = satOutN ? valSum / satOutN : 0;
+        /* REJET conservateur (rater un résidu = pire erreur HACCP) : reflet
+           SEULEMENT si même teinte que l'anneau ET pas plus saturé ET l'anneau
+           est lui-même BRILLANT (= voile/plastique autour, signature d'un reflet
+           sur surface éclairée). Un blob isolé sur fond sombre (anneau peu
+           lumineux) = vraie émission → GARDÉ même si le halo est de même teinte. */
+        var isReflet = (dh < DH_MIN) && ((satIn - satOut) < DSAT_MIN) && (valOut > 0.45);
+        if (isReflet) continue;   /* reflet sur surface éclairée → rejet */
+        keepLab[L] = 1;
+      }
+
       var K = new Uint8Array(n);
       var keptArea = 0;
       for (i = 0; i < n; i++) if (mask[i] && keepLab[labels[i]]) { K[i] = 1; keptArea++; }
       if (!keptArea) continue;
-      maskAreaImg += keptArea * s * s;
+      maskAreaImg += keptArea * sG * sG;
 
-      /* ── frontière des composantes retenues (bord de tableau inclus) ── */
+      /* ── frontière des composantes retenues ── */
       var Bnd = new Uint8Array(n);
       for (i = 0; i < n; i++) {
         if (!K[i]) continue;
@@ -16004,40 +16182,37 @@ const Annotator = (() => {
             !K[i - 1] || !K[i + 1] || !K[i - fw] || !K[i + fw]) Bnd[i] = 1;
       }
 
-      /* ── marching squares interpolé au niveau tlo ──
-         Arêtes identifiées par entier : H(x,y) = (y·fw+x)·2 ; V(x,y) = (y·fw+x)·2+1.
-         Chaque segment relie 2 arêtes ; chaînage par adjacence d'arêtes. */
-      var ptsX = {}, ptsY = {};              /* edgeId -> coord sous-pixel (champ) */
-      var segA = [], segB = [];              /* segments (paires d'edgeIds) */
-      function edgePoint(eid) {
+      /* ── marching squares interpolé au niveau tlo (sur F, gate K) ── */
+      var ptsX = {}, ptsY = {};
+      var segA = [], segB = [];
+      var edgePoint = function (eid) {
         if (ptsX[eid] !== undefined) return;
         var horiz = (eid & 1) === 0;
         var cell = eid >> 1;
         var ex = cell % fw, ey = (cell / fw) | 0;
         var vA, vBv, t;
-        if (horiz) { vA = E[ey * fw + ex]; vBv = E[ey * fw + ex + 1]; }
-        else       { vA = E[ey * fw + ex]; vBv = E[(ey + 1) * fw + ex]; }
+        if (horiz) { vA = F[ey * fw + ex]; vBv = F[ey * fw + ex + 1]; }
+        else       { vA = F[ey * fw + ex]; vBv = F[(ey + 1) * fw + ex]; }
         t = (vBv === vA) ? 0.5 : (tlo - vA) / (vBv - vA);
         if (t < 0) t = 0; else if (t > 1) t = 1;
         if (horiz) { ptsX[eid] = ex + t; ptsY[eid] = ey; }
         else       { ptsX[eid] = ex;     ptsY[eid] = ey + t; }
-      }
-      function addSeg(e1, e2) { edgePoint(e1); edgePoint(e2); segA.push(e1); segB.push(e2); }
-      for (fy = 0; fy < fh - 1; fy++) {
-        for (fx = 0; fx < fw - 1; fx++) {
-          var i00 = fy * fw + fx;
-          var b0 = E[i00] >= tlo ? 1 : 0;            /* tl */
-          var b1 = E[i00 + 1] >= tlo ? 1 : 0;        /* tr */
-          var b2 = E[i00 + fw + 1] >= tlo ? 1 : 0;   /* br */
-          var b3 = E[i00 + fw] >= tlo ? 1 : 0;       /* bl */
+      };
+      var addSeg = function (e1, e2) { edgePoint(e1); edgePoint(e2); segA.push(e1); segB.push(e2); };
+      for (fy2 = 0; fy2 < fh - 1; fy2++) {
+        for (fx2 = 0; fx2 < fw - 1; fx2++) {
+          var i00 = fy2 * fw + fx2;
+          var b0 = F[i00] >= tlo ? 1 : 0;
+          var b1 = F[i00 + 1] >= tlo ? 1 : 0;
+          var b2 = F[i00 + fw + 1] >= tlo ? 1 : 0;
+          var b3 = F[i00 + fw] >= tlo ? 1 : 0;
           var cse = b0 | (b1 << 1) | (b2 << 2) | (b3 << 3);
           if (cse === 0 || cse === 15) continue;
-          /* gate : au moins un coin dans une composante retenue (évite le bruit) */
           if (!K[i00] && !K[i00 + 1] && !K[i00 + fw + 1] && !K[i00 + fw]) continue;
-          var eT = (fy * fw + fx) * 2;               /* H(x,y) */
-          var eB = ((fy + 1) * fw + fx) * 2;         /* H(x,y+1) */
-          var eL = (fy * fw + fx) * 2 + 1;           /* V(x,y) */
-          var eR = (fy * fw + fx + 1) * 2 + 1;       /* V(x+1,y) */
+          var eT = (fy2 * fw + fx2) * 2;
+          var eB = ((fy2 + 1) * fw + fx2) * 2;
+          var eL = (fy2 * fw + fx2) * 2 + 1;
+          var eR = (fy2 * fw + fx2 + 1) * 2 + 1;
           switch (cse) {
             case 1:  addSeg(eL, eT); break;
             case 2:  addSeg(eT, eR); break;
@@ -16051,12 +16226,12 @@ const Annotator = (() => {
             case 12: addSeg(eR, eL); break;
             case 13: addSeg(eT, eR); break;
             case 14: addSeg(eL, eT); break;
-            case 5:                                   /* selle tl+br */
-              if ((E[i00] + E[i00 + 1] + E[i00 + fw] + E[i00 + fw + 1]) / 4 >= tlo) { addSeg(eT, eR); addSeg(eB, eL); }
+            case 5:
+              if ((F[i00] + F[i00 + 1] + F[i00 + fw] + F[i00 + fw + 1]) / 4 >= tlo) { addSeg(eT, eR); addSeg(eB, eL); }
               else { addSeg(eL, eT); addSeg(eR, eB); }
               break;
-            case 10:                                  /* selle tr+bl */
-              if ((E[i00] + E[i00 + 1] + E[i00 + fw] + E[i00 + fw + 1]) / 4 >= tlo) { addSeg(eL, eT); addSeg(eR, eB); }
+            case 10:
+              if ((F[i00] + F[i00 + 1] + F[i00 + fw] + F[i00 + fw + 1]) / 4 >= tlo) { addSeg(eL, eT); addSeg(eR, eB); }
               else { addSeg(eT, eR); addSeg(eB, eL); }
               break;
           }
@@ -16064,7 +16239,6 @@ const Annotator = (() => {
       }
       if (!segA.length) continue;
 
-      /* adjacence arête → segments (≤2 par arête) */
       var adj = {};
       for (k = 0; k < segA.length; k++) {
         (adj[segA[k]] = adj[segA[k]] || []).push(k);
@@ -16072,17 +16246,15 @@ const Annotator = (() => {
       }
       var usedSeg = new Uint8Array(segA.length);
 
-      /* chaînage en polylignes (fermées ou ouvertes au bord de boîte) */
       for (k = 0; k < segA.length && loopsOut.length < MAX_LOOPS; k++) {
         if (usedSeg[k]) continue;
         usedSeg[k] = 1;
         var chain = [segA[k], segB[k]];
         var guard = 0;
-        /* avant */
         var cur = segB[k];
         while (guard++ < 200000) {
           var cands = adj[cur], nxt = -1;
-          if (cands) for (var c2 = 0; c2 < cands.length; c2++) if (!usedSeg[cands[c2]]) { nxt = cands[c2]; break; }
+          if (cands) for (var c5 = 0; c5 < cands.length; c5++) if (!usedSeg[cands[c5]]) { nxt = cands[c5]; break; }
           if (nxt < 0) break;
           usedSeg[nxt] = 1;
           cur = (segA[nxt] === cur) ? segB[nxt] : segA[nxt];
@@ -16091,11 +16263,10 @@ const Annotator = (() => {
         }
         var closed = chain.length > 2 && chain[chain.length - 1] === chain[0];
         if (!closed) {
-          /* arrière */
           cur = chain[0];
           while (guard++ < 200000) {
             var cands2 = adj[cur], nxt2 = -1;
-            if (cands2) for (var c3 = 0; c3 < cands2.length; c3++) if (!usedSeg[cands2[c3]]) { nxt2 = cands2[c3]; break; }
+            if (cands2) for (var c6 = 0; c6 < cands2.length; c6++) if (!usedSeg[cands2[c6]]) { nxt2 = cands2[c6]; break; }
             if (nxt2 < 0) break;
             usedSeg[nxt2] = 1;
             cur = (segA[nxt2] === cur) ? segB[nxt2] : segA[nxt2];
@@ -16104,7 +16275,6 @@ const Annotator = (() => {
         } else chain.pop();
         if (chain.length < 8) continue;
 
-        /* filtre : proximité à la frontière des composantes retenues */
         var near = 0;
         for (i = 0; i < chain.length; i++) {
           var vx = ptsX[chain[i]], vy = ptsY[chain[i]];
@@ -16121,10 +16291,9 @@ const Annotator = (() => {
         }
         if (near / chain.length < 0.55) continue;
 
-        /* coords champ → image (sous-pixel conservé) */
         var pts = new Array(chain.length);
         for (i = 0; i < chain.length; i++) {
-          pts[i] = [x0 + ptsX[chain[i]] * s, y0 + ptsY[chain[i]] * s];
+          pts[i] = [(x0 + ptsX[chain[i]]) * sG, (y0 + ptsY[chain[i]]) * sG];
         }
         loopsOut.push({ pts: pts, closed: closed });
       }
@@ -16219,7 +16388,7 @@ const Annotator = (() => {
     try {
       _cartoPainted = subpixelZoneContours(ctx, imageData, zones, W, H);
     } catch (e) {
-      console.warn('[V270 carto] sous-pixel KO → pipeline legacy:', e);
+      console.warn('[V271 carto] sous-pixel KO → pipeline legacy:', e);
       _cartoPainted = false;
     }
 
