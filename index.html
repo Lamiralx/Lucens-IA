@@ -2024,6 +2024,10 @@ input[type="file"] { display: none; }
     grid-template-areas: "instr brand" "instr brief" "instr cancel";
     column-gap: 16px;
     padding-top: calc(env(safe-area-inset-top, 0px) + 14px);
+    /* V275 — Dynamic Island sur le CÔTÉ en paysage : le logo et la carte
+       instrument ne doivent jamais passer dessous. */
+    padding-left: max(16px, var(--sa-l, env(safe-area-inset-left, 0px)));
+    padding-right: max(16px, var(--sa-r, env(safe-area-inset-right, 0px)));
   }
   .loader-brand { grid-area: brand; padding-bottom: 12px; }
   .loader-instr { grid-area: instr; height: 100%; min-height: 0; }
@@ -7687,104 +7691,17 @@ body.has-sw-update .home {
      • Risque associé (1 phrase)
      • Action recommandée (1 phrase)
      • 2 actions : Télécharger le rapport + Supprimer
-   Ce bloc reproduit le RENDU FINAL de #results.visible (après tous les
-   overrides V188/V190/V192/V199), mais en autonome, scoped sur
-   .hist-live-result → identique visuellement sans dépendre de #results
-   ni casser l'écran de résultat. Couleur de risque pilotée par
-   .r-low/.r-mid/.r-high (--risk-color), comme la carte verdict live. */
-.hist-live-result { display: flex; flex-direction: column; gap: 8px; --risk-color: var(--risk-hi); }
+   V275 — Ce bloc ne porte PLUS le style des éléments : le détail est un
+   CLONE DOM de l'écran d'analyse (mêmes classes .hero / .card>.viewer-stage /
+   .lucens-verdict-card), et CHAQUE règle de la spine (#metier-spine-css)
+   existe en double (#results.visible …, .hist-live-result …) → une seule
+   source de vérité visuelle. Ici : uniquement le conteneur + le repli
+   --risk-color (fiches anciennes sans carte verdict, où le :has() vif
+   de la spine ne s'applique pas). */
+.hist-live-result { display: flex; flex-direction: column; gap: 0; --risk-color: var(--risk-hi); }
 .hist-live-result.r-low  { --risk-color: var(--risk-low); }
 .hist-live-result.r-mid  { --risk-color: var(--risk-mid); }
 .hist-live-result.r-high { --risk-color: var(--risk-hi); }
-
-/* ── En-tête : « Niveau de risque » + score, puis jauge segmentée (= #hero) ── */
-.hlr-hero {
-  padding: 13px 15px 11px;
-  background: #fff;
-  border: 1px solid #E5E7EB;
-  border-top: 3px solid var(--risk-color, #B42318);
-  border-radius: 14px;
-}
-.hlr-hero-row {
-  display: flex; align-items: baseline; justify-content: space-between;
-  gap: 10px; margin-bottom: 9px;
-}
-.hlr-hero-label { font-size: 12px; font-weight: 600; color: #6B7280; }
-.hlr-hero-score { display: inline-flex; align-items: baseline; gap: 3px; }
-.hlr-hero-score-val { font-size: 22px; font-weight: 800; line-height: 1; color: var(--risk-color, #B42318); }
-.hlr-hero-score-sfx { font-size: 12.5px; font-weight: 600; color: #6B7280; }
-.hlr-seg { display: flex; gap: 6px; }
-.hlr-seg-s {
-  flex: 1; text-align: center; display: block;
-  padding: 10px 6px; font-size: 13px; font-weight: 600;
-  border-radius: 9px;
-  background: #FAFBFC;
-  border: 1px solid #E5E7EB;
-  color: #6B7280;
-}
-.hist-live-result.r-low  .hlr-seg-s[data-seg="low"]  { background: var(--risk-low); border-color: var(--risk-low); color: #fff; }
-.hist-live-result.r-mid  .hlr-seg-s[data-seg="mid"]  { background: var(--risk-mid); border-color: var(--risk-mid); color: #fff; }
-.hist-live-result.r-high .hlr-seg-s[data-seg="high"] { background: var(--risk-hi); border-color: var(--risk-hi); color: #fff; }
-
-/* ── Image fluorescente annotée (continue la fiche, comme l'écran) ── */
-.hlr-img {
-  width: 100%; height: 175px; object-fit: cover; display: block;
-  border-radius: 8px;
-  background: #0a1119;
-}
-
-/* ── 3 blocs verdict : 3 cartes blanches séparées (= V192/V199) ── */
-.hlr-card {
-  background: var(--surface-hi);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  padding: 14px 16px;
-}
-.hlr-card.hlr-risque { border-left: 3px solid var(--risk-color, #E5E7EB); padding-left: 15px; }
-.hlr-eyebrow {
-  display: flex; align-items: center; gap: 7px;
-  font-family: var(--font-body);
-  font-size: 12px; font-weight: 700;
-  letter-spacing: .04em; text-transform: uppercase;
-  color: #4B5563;
-  margin: 0 0 7px;
-}
-.hlr-eyebrow svg { width: 14px; height: 14px; flex-shrink: 0; color: #0F3D4E; stroke: #0F3D4E; }
-/* Icône triangle (risque) + flèche (action) injectées en pseudo-element, couleur cohérente */
-.hlr-eyebrow.hlr-eyebrow-risque::before,
-.hlr-eyebrow.hlr-eyebrow-action::before {
-  content: ''; display: inline-block; width: 14px; height: 14px; flex-shrink: 0;
-  mask-size: contain; -webkit-mask-size: contain;
-  mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat;
-}
-.hlr-eyebrow.hlr-eyebrow-risque::before {
-  background-color: var(--risk-color, #B42318);
-  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'/><line x1='12' y1='9' x2='12' y2='13'/><line x1='12' y1='17' x2='12.01' y2='17'/></svg>");
-  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'/><line x1='12' y1='9' x2='12' y2='13'/><line x1='12' y1='17' x2='12.01' y2='17'/></svg>");
-}
-.hlr-eyebrow.hlr-eyebrow-action::before {
-  background-color: #0F3D4E;
-  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M5 12h14'/><path d='m13 6 6 6-6 6'/></svg>");
-  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M5 12h14'/><path d='m13 6 6 6-6 6'/></svg>");
-}
-/* Titre Origine = couleur du niveau de risque (= V199) */
-.hlr-title {
-  margin: 0 0 5px;
-  font-family: var(--font-body);
-  font-size: 17px; font-weight: 700; line-height: 1.3;
-  color: #14171C;
-}
-.hist-live-result.r-low  .hlr-title { color: var(--risk-low); }
-.hist-live-result.r-mid  .hlr-title { color: var(--risk-mid); }
-.hist-live-result.r-high .hlr-title { color: var(--risk-hi); }
-/* Les 3 phrases de contenu : strictement identiques, encre foncée lisible */
-.hlr-text {
-  margin: 0;
-  font-family: var(--font-body);
-  font-size: 14.5px; font-weight: 500; line-height: 1.5;
-  color: #23272F;
-}
-.hlr-text b { color: #0C0E13; font-weight: 700; }
 
 /* ═══════════════════════════════════════════════════════════════════
    LIVE VIEW MODAL — Inspection UV temps réel (v2 sobre)
@@ -9087,7 +9004,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v274</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v275</div>
         </div>
       </div>
     </div>
@@ -9736,7 +9653,12 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results.visible #zonesVerdictCard,
       #results.visible details.zones-verdict-card,
       #results.visible #verifCard,
-      #results.visible #guideCard { display: none !important; }
+      #results.visible #guideCard,
+      .hist-live-result .card:not(:has(.viewer-stage)),
+      .hist-live-result #zonesVerdictCard,
+      .hist-live-result details.zones-verdict-card,
+      .hist-live-result #verifCard,
+      .hist-live-result #guideCard { display: none !important; }
 
       /* ═════════ V188.8 — RAPPORT FINAL : 3 macro-blocs propres ═════════
          Maquette validée mockup-rapport-v188-8.html. Override final des
@@ -9754,18 +9676,24 @@ body.lv-open { overflow: hidden; touch-action: none; }
 
       /* ─── Empêche le shrink des sections du rapport (sinon overflow:hidden des
             cards rognerait le texte sur petit écran avec contenu IA long). */
-      main > #results.visible { display: flex !important; flex-direction: column; }
-      #results.visible > * { flex-shrink: 0; }
+      main > #results.visible,
+      main > .hist-live-result { display: flex !important; flex-direction: column; }
+      #results.visible > *,
+      .hist-live-result > * { flex-shrink: 0; }
 
       /* ─── Couleur de risque héritée via data-risk sur #hero ─── */
-      #results.visible #hero[data-risk="low"]  { --risk-color: #2E7D32; }
-      #results.visible #hero[data-risk="mid"]  { --risk-color: #B7791F; }
-      #results.visible #hero[data-risk="high"] { --risk-color: #B42318; }
+      #results.visible #hero[data-risk="low"],
+      .hist-live-result .hero[data-risk="low"] { --risk-color: #2E7D32; }
+      #results.visible #hero[data-risk="mid"],
+      .hist-live-result .hero[data-risk="mid"] { --risk-color: #B7791F; }
+      #results.visible #hero[data-risk="high"],
+      .hist-live-result .hero[data-risk="high"] { --risk-color: #B42318; }
 
       /* ─── BLOC 1 — VERDICT : score à droite + jauge slim ─── */
       /* On RESTITUE .hero-gauge (cachée par metier-spine V136), on l'utilise
          comme jauge slim Apple Health. On hide .hero-seg (pilules bouton). */
-      #results.visible #hero {
+      #results.visible #hero,
+      .hist-live-result .hero {
         background: var(--surface-hi) !important;
         border: 1px solid var(--border) !important;
         border-radius: 12px !important;
@@ -9774,7 +9702,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
         box-shadow: none !important;
         order: -3 !important;
       }
-      #results.visible #hero .hero-row {
+      #results.visible #hero .hero-row,
+      .hist-live-result .hero .hero-row {
         display: flex !important;
         flex-direction: row !important;   /* replié de la base metier (le défaut app est column) */
         align-items: baseline !important;
@@ -9787,24 +9716,29 @@ body.lv-open { overflow: hidden; touch-action: none; }
         box-shadow: none !important;
         gap: 10px !important;
       }
-      #results.visible #hero .score-block {
+      #results.visible #hero .score-block,
+      .hist-live-result .hero .score-block {
         display: inline-flex !important; align-items: baseline !important; gap: 3px !important;
         margin: 0 !important;
         flex: 0 0 auto !important;        /* replié de la base metier (sinon shrink par défaut) */
       }
-      #results.visible #hero .score-value {
+      #results.visible #hero .score-value,
+      .hist-live-result .hero .score-value {
         font-size: 26px !important; font-weight: 800 !important;
         color: var(--risk-color, #B42318) !important; line-height: 1 !important;
       }
-      #results.visible #hero .score-suffix {
+      #results.visible #hero .score-suffix,
+      .hist-live-result .hero .score-suffix {
         font-size: 13px !important; color: var(--ink-tertiary,#6B7280) !important; font-weight: 600 !important;
       }
-      #results.visible #hero .hero-risk-label {
+      #results.visible #hero .hero-risk-label,
+      .hist-live-result .hero .hero-risk-label {
         font-size: 12px !important; font-weight: 600 !important;
         color: var(--ink-tertiary, #6B7280) !important;
       }
       /* La jauge slim — RE-AFFICHÉE et restylée façon Apple Health */
-      #results.visible #hero .hero-gauge {
+      #results.visible #hero .hero-gauge,
+      .hist-live-result .hero .hero-gauge {
         display: block !important;
         position: relative !important;
         margin: 0 0 9px !important;
@@ -9813,8 +9747,10 @@ body.lv-open { overflow: hidden; touch-action: none; }
         /* (height/radius/background : V196 fait autorité plus bas) */
       }
       /* Le fill bar original est remplacé par un MARQUEUR rond à la position du score */
-      #results.visible #hero .hero-gauge .hero-gauge-fill { display: none !important; }
-      #results.visible #hero .hero-gauge::after {
+      #results.visible #hero .hero-gauge .hero-gauge-fill,
+      .hist-live-result .hero .hero-gauge .hero-gauge-fill { display: none !important; }
+      #results.visible #hero .hero-gauge::after,
+      .hist-live-result .hero .hero-gauge::after {
         content: '';
         position: absolute;
         top: 50%;
@@ -9828,7 +9764,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
         z-index: 2;
       }
       /* Labels Faible / Modéré / Élevé sous la jauge */
-      #results.visible #hero .hero-gauge-labels {
+      #results.visible #hero .hero-gauge-labels,
+      .hist-live-result .hero .hero-gauge-labels {
         display: flex !important;
         justify-content: space-between !important;
         padding: 0 2px !important;
@@ -9837,18 +9774,21 @@ body.lv-open { overflow: hidden; touch-action: none; }
         color: var(--ink-tertiary, #6B7280) !important;
       }
       /* Hide .hero-seg (pilules) — on utilise .hero-gauge à la place */
-      #results.visible #hero .hero-seg { display: none !important; }
+      #results.visible #hero .hero-seg,
+      .hist-live-result .hero .hero-seg { display: none !important; }
       /* Reste hidden : confidence + stats déjà OK par metier-spine */
 
       /* ─── BLOC 2 — IMAGE : segmented control iOS + image edge-to-edge ─── */
-      #results.visible .result-grid {
+      #results.visible .result-grid,
+      .hist-live-result .result-grid {
         background: transparent !important;
         border: 0 !important; padding: 0 !important;
         margin: 0 0 9px !important;
         order: -2 !important;
         gap: 0 !important;   /* replié de V188.5 (la grille de base a un gap) */
       }
-      #results.visible .result-grid > .card:has(#viewerStage) {
+      #results.visible .result-grid > .card:has(#viewerStage),
+      .hist-live-result .card:has(.viewer-stage) {
         background: var(--surface-hi) !important;
         border: 1px solid var(--border) !important;
         border-radius: 12px !important;
@@ -9859,7 +9799,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
         flex-direction: column !important;
       }
       /* Image elle-même : edge-to-edge dans la carte, pas de border-radius */
-      #results.visible #viewerStage {
+      #results.visible #viewerStage,
+      .hist-live-result .viewer-stage {
         height: 175px !important; min-height: 0 !important;
         width: 100% !important;
         margin: 0 !important;
@@ -9870,18 +9811,23 @@ body.lv-open { overflow: hidden; touch-action: none; }
         display: block !important;
       }
       #results.visible #viewerStage canvas,
-      #results.visible #viewerStage img.original {
+      #results.visible #viewerStage img.original,
+      .hist-live-result .viewer-stage canvas,
+      .hist-live-result .viewer-stage img.original {
         position: absolute !important; inset: 0 !important;
         width: 100% !important; height: 100% !important;
         object-fit: cover !important; max-width: none !important;
       }
       /* Pas de légende ni de pastille sur l'image (l'image parle d'elle-même). */
-      #results.visible .viewer-legend { display: none !important; }
-      #results.visible .viewer-meta { display: none !important; }
+      #results.visible .viewer-legend,
+      .hist-live-result .viewer-legend { display: none !important; }
+      #results.visible .viewer-meta,
+      .hist-live-result .viewer-meta { display: none !important; }
 
       /* ─── BLOC 3 — ANALYSE : 3 sections séparées par filets ─── */
       /* Icône loupe (Origine probable) — colorée primary navy */
-      #results.visible .lv-verdict-eyebrow .lv-eyebrow-ico {
+      #results.visible .lv-verdict-eyebrow .lv-eyebrow-ico,
+      .hist-live-result .lv-verdict-eyebrow .lv-eyebrow-ico {
         display: inline-block !important;
         width: 14px !important; height: 14px !important;
         color: var(--primary, #0F3D4E) !important;
@@ -9889,7 +9835,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
       }
       /* Section 2 (Risque associé) */
       /* Icône triangle ⚠️ injectée via pseudo-element (couleur risque) */
-      #results.visible .lv-risque-label::before {
+      #results.visible .lv-risque-label::before,
+      .hist-live-result .lv-risque-label::before {
         content: '';
         display: inline-block;
         width: 14px; height: 14px;
@@ -9900,11 +9847,14 @@ body.lv-open { overflow: hidden; touch-action: none; }
         mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat;
         flex-shrink: 0;
       }
-      #results.visible .lv-risque-text b { color: var(--ink-primary, #0C0E13) !important; font-weight: 700 !important; }
+      #results.visible .lv-risque-text b,
+      .hist-live-result .lv-risque-text b { color: var(--ink-primary, #0C0E13) !important; font-weight: 700 !important; }
 
       /* Section 3 (Action recommandée) : icône flèche → navy primary */
-      #results.visible .lv-verdict-action-icon { display: none !important; }
-      #results.visible .lv-verdict-action-title::before {
+      #results.visible .lv-verdict-action-icon,
+      .hist-live-result .lv-verdict-action-icon { display: none !important; }
+      #results.visible .lv-verdict-action-title::before,
+      .hist-live-result .lv-verdict-action-title::before {
         content: '';
         display: inline-block;
         width: 14px; height: 14px;
@@ -9918,15 +9868,20 @@ body.lv-open { overflow: hidden; touch-action: none; }
       /* V195 — Ligne « En cas de doute… (ATP/labo) » RETIRÉE de l'écran : strict
          1 phrase par bloc (demande utilisateur). L'élément reste dans le DOM et
          dans les données → conservé tel quel dans le PDF rapport. */
-      #results.visible .lv-verify { display: none !important; }
+      #results.visible .lv-verify,
+      .hist-live-result .lv-verify { display: none !important; }
       /* V195 — ÉCRAN = 5 blocs : on masque le raisonnement complet, le point de
          vigilance et les référentiels HACCP. Ils restent dans les données (PDF). */
       #results.visible .lv-verdict-details,
       #results.visible #lvVerdictVigilance,
-      #results.visible #lvVerdictFrameworks { display: none !important; }
+      #results.visible #lvVerdictFrameworks,
+      .hist-live-result .lv-verdict-details,
+      .hist-live-result #lvVerdictVigilance,
+      .hist-live-result #lvVerdictFrameworks { display: none !important; }
 
       /* ─── Boutons : CÔTE À CÔTE, sans icône svg ─── */
-      #results.visible .results-toolbar {
+      #results.visible .results-toolbar,
+      .hist-live-result .results-toolbar {
         display: flex !important;
         flex-direction: row !important;
         gap: 10px !important;
@@ -9936,21 +9891,25 @@ body.lv-open { overflow: hidden; touch-action: none; }
         order: 10 !important;
       }
       #results.visible .results-toolbar .btn-export,
-      #results.visible .results-toolbar .btn-back {
+      #results.visible .results-toolbar .btn-back,
+      .hist-live-result .results-toolbar .btn-export,
+      .hist-live-result .results-toolbar .btn-back {
         flex: 1 1 50% !important;
         width: auto !important;
         height: 46px !important;
         font-size: 14px !important;
         border-radius: 12px !important;
       }
-      #results.visible .results-toolbar .btn-export {
+      #results.visible .results-toolbar .btn-export,
+      .hist-live-result .results-toolbar .btn-export {
         background: var(--primary, #0F3D4E) !important;
         color: #fff !important;
         border: 1px solid var(--primary, #0F3D4E) !important;
         box-shadow: none !important;
         order: -1 !important;
       }
-      #results.visible .results-toolbar .btn-back {
+      #results.visible .results-toolbar .btn-back,
+      .hist-live-result .results-toolbar .btn-back {
         background: var(--surface-hi) !important;
         color: var(--primary) !important;
         border: 1px solid var(--border) !important;
@@ -9958,7 +9917,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
       }
       /* Icônes des 2 boutons masquées (replié de V188.5 — purge lot 3) */
       #results.visible .results-toolbar .btn-export > svg,
-      #results.visible .results-toolbar .btn-back > svg { display: none !important; }
+      #results.visible .results-toolbar .btn-back > svg,
+      .hist-live-result .results-toolbar .btn-export > svg,
+      .hist-live-result .results-toolbar .btn-back > svg { display: none !important; }
 
       /* ─── Pas de tab bar du bas sur la page rapport (focus verdict + 2 actions) ─── */
       body.on-results .bottom-bar { display: none !important; }
@@ -9966,11 +9927,16 @@ body.lv-open { overflow: hidden; touch-action: none; }
 
       /* ─── Mobile @media : compactage pour iPhone (testé jusqu'en DE) ─── */
       @media (max-width: 480px) {
-        #results.visible #hero { padding: 12px 14px 13px !important; margin-bottom: 8px !important; }
-        #results.visible #hero .hero-row { margin-bottom: 11px !important; }
-        #results.visible #hero .score-value { font-size: 23px !important; }
-        #results.visible #viewerStage { height: 150px !important; }
-        #results.visible .results-toolbar { margin: 12px 0 0 !important; gap: 8px !important; }
+        #results.visible #hero,
+      .hist-live-result .hero { padding: 12px 14px 13px !important; margin-bottom: 8px !important; }
+        #results.visible #hero .hero-row,
+      .hist-live-result .hero .hero-row { margin-bottom: 11px !important; }
+        #results.visible #hero .score-value,
+      .hist-live-result .hero .score-value { font-size: 23px !important; }
+        #results.visible #viewerStage,
+      .hist-live-result .viewer-stage { height: 150px !important; }
+        #results.visible .results-toolbar,
+      .hist-live-result .results-toolbar { margin: 12px 0 0 !important; gap: 8px !important; }
       }
 
       /* ══════════ V190 — Correctifs post-déploiement (audit terrain) ══════════
@@ -9980,16 +9946,20 @@ body.lv-open { overflow: hidden; touch-action: none; }
 
       /* (2) Kill l'indicateur ::after orange-terra (était l'underline sous le tab actif). */
       #results.visible .viewer-tab.active::after,
-      #results.visible .viewer-tab::after { content: none !important; display: none !important;
+      #results.visible .viewer-tab::after,
+      .hist-live-result .viewer-tab.active::after,
+      .hist-live-result .viewer-tab::after { content: none !important; display: none !important;
         background: transparent !important; animation: none !important; }
 
       /* (5) Section Risque associé : si #lvRisque[hidden] est posé par render()
             (parce que risk_logic est vide), on doit RESPECTER le hidden. V188.8
             forçait display:block — on l'annule via :not([hidden]). */
-      #results.visible #lvRisque[hidden] { display: none !important; }
+      #results.visible #lvRisque[hidden],
+      .hist-live-result .lv-risque[hidden] { display: none !important; }
       /* Sécurité supplémentaire : si pour une raison X la section est visible
          mais le texte est vide (Claude renvoie un risk_logic blanc), on cache. */
-      #results.visible #lvRisque:has(.lv-risque-text:empty) { display: none !important; }
+      #results.visible #lvRisque:has(.lv-risque-text:empty),
+      .hist-live-result .lv-risque:has(.lv-risque-text:empty) { display: none !important; }
 
       /* ══════════ V192 — 3 cartes de la section ANALYSE + marqueur jauge ══════════
          Résidu vivant après purge V269 : les cartes Origine/Risque/Action (a) et
@@ -9999,7 +9969,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
       /* (a) 3 BLOCS SÉPARÉS — la carte verdict (.lucens-verdict-card) ne porte
             plus son propre border. Chacune des 3 sections internes devient une
             vraie carte avec son propre fond/bord/radius, séparées par un GAP. */
-      #results.visible .lucens-verdict-card {
+      #results.visible .lucens-verdict-card,
+      .hist-live-result .lucens-verdict-card {
         background: transparent !important;
         border: 0 !important;
         border-radius: 0 !important;
@@ -10012,7 +9983,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
       }
       /* Bloc 1 — Origine probable : head + interpretation regroupés visuellement
          dans une seule carte autonome. */
-      #results.visible .lv-verdict-head {
+      #results.visible .lv-verdict-head,
+      .hist-live-result .lv-verdict-head {
         background: var(--surface-hi) !important;
         border: 1px solid var(--border) !important;
         border-radius: 12px !important;
@@ -10022,7 +9994,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
         padding: 13px 15px 0 !important;
         margin: 0 !important;
       }
-      #results.visible .lv-verdict-interpretation {
+      #results.visible .lv-verdict-interpretation,
+      .hist-live-result .lv-verdict-interpretation {
         background: var(--surface-hi) !important;
         border-left: 1px solid var(--border, #E5E7EB) !important;
         border-right: 1px solid var(--border, #E5E7EB) !important;
@@ -10034,7 +10007,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
         margin: 0 !important;
       }
       /* Bloc 2 — Risque associé : carte indépendante. */
-      #results.visible #lvRisque {
+      #results.visible #lvRisque,
+      .hist-live-result .lv-risque {
         background: var(--surface-hi) !important;
         border: 1px solid var(--border) !important;
         border-radius: 12px !important;
@@ -10043,7 +10017,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
         position: relative !important;   /* replié de V188.8 (purge lot 2) */
       }
       /* Bloc 3 — Action recommandée : carte indépendante. */
-      #results.visible .lv-verdict-action {
+      #results.visible .lv-verdict-action,
+      .hist-live-result .lv-verdict-action {
         background: var(--surface-hi) !important;
         border: 1px solid var(--border) !important;
         border-radius: 12px !important;
@@ -10053,7 +10028,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
       }
 
       /* Marqueur encore plus visible : bordure blanche épaisse + ombre. */
-      #results.visible #hero .hero-gauge::after {
+      #results.visible #hero .hero-gauge::after,
+      .hist-live-result .hero .hero-gauge::after {
         width: 20px !important; height: 20px !important;
         border-width: 4px !important;
         box-shadow: 0 2px 5px rgba(0,0,0,.3) !important;
@@ -10238,19 +10214,28 @@ body.lv-open { overflow: hidden; touch-action: none; }
            (vifs). Le titre n'est plus coloré (source de confusion signalée).        */
 
       /* Couleur de risque VIVE, disponible dans tout #results (token redéfini). */
-      #results.visible:has(.lucens-verdict-card.risk-low)  { --risk-color: #1BA84C !important; }
-      #results.visible:has(.lucens-verdict-card.risk-mid)  { --risk-color: #F39A0E !important; }
-      #results.visible:has(.lucens-verdict-card.risk-high) { --risk-color: var(--risk-hi) !important; }
+      #results.visible:has(.lucens-verdict-card.risk-low),
+      .hist-live-result:has(.lucens-verdict-card.risk-low) { --risk-color: #1BA84C !important; }
+      #results.visible:has(.lucens-verdict-card.risk-mid),
+      .hist-live-result:has(.lucens-verdict-card.risk-mid) { --risk-color: #F39A0E !important; }
+      #results.visible:has(.lucens-verdict-card.risk-high),
+      .hist-live-result:has(.lucens-verdict-card.risk-high) { --risk-color: var(--risk-hi) !important; }
 
       /* 1 — SCORE : couleur du risque, gras (était délavé). */
-      #results.visible #hero .score-value { font-weight: 800 !important; }
-      #results.visible #hero[data-risk="low"]  .score-value { color: var(--risk-low) !important; }
-      #results.visible #hero[data-risk="mid"]  .score-value { color: var(--risk-mid) !important; }
-      #results.visible #hero[data-risk="high"] .score-value { color: var(--risk-hi) !important; }
-      #results.visible #hero .score-suffix { color: #9CA3AF !important; font-weight: 600 !important; }
+      #results.visible #hero .score-value,
+      .hist-live-result .hero .score-value { font-weight: 800 !important; }
+      #results.visible #hero[data-risk="low"]  .score-value,
+      .hist-live-result .hero[data-risk="low"] .score-value { color: var(--risk-low) !important; }
+      #results.visible #hero[data-risk="mid"]  .score-value,
+      .hist-live-result .hero[data-risk="mid"] .score-value { color: var(--risk-mid) !important; }
+      #results.visible #hero[data-risk="high"] .score-value,
+      .hist-live-result .hero[data-risk="high"] .score-value { color: var(--risk-hi) !important; }
+      #results.visible #hero .score-suffix,
+      .hist-live-result .hero .score-suffix { color: #9CA3AF !important; font-weight: 600 !important; }
 
       /* 2 — JAUGE : 3 segments PLEINS et vifs (fini le pastel quasi blanc). */
-      #results.visible #hero .hero-gauge {
+      #results.visible #hero .hero-gauge,
+      .hist-live-result .hero .hero-gauge {
         background: linear-gradient(90deg,
           var(--risk-low) 0%, var(--risk-low) 33.33%,
           var(--risk-mid) 33.33%, var(--risk-mid) 66.66%,
@@ -10258,19 +10243,26 @@ body.lv-open { overflow: hidden; touch-action: none; }
         height: 10px !important; border-radius: 5px !important;
       }
       /* Labels sous la jauge : gris, sauf l'actif → couleur du risque, gras. */
-      #results.visible #hero .hero-gauge-labels > span {
+      #results.visible #hero .hero-gauge-labels > span,
+      .hist-live-result .hero .hero-gauge-labels > span {
         color: var(--ink-dim) !important; font-weight: 600 !important;
         font-size: 10px !important; letter-spacing: .10em !important;
       }
-      #results.visible #hero[data-risk="low"]  .hero-gauge-labels > span:nth-child(1) { color: var(--risk-low) !important; font-weight: 700 !important; }
-      #results.visible #hero[data-risk="mid"]  .hero-gauge-labels > span:nth-child(2) { color: var(--risk-mid) !important; font-weight: 700 !important; }
-      #results.visible #hero[data-risk="high"] .hero-gauge-labels > span:nth-child(3) { color: var(--risk-hi) !important; font-weight: 700 !important; }
+      #results.visible #hero[data-risk="low"]  .hero-gauge-labels > span:nth-child(1),
+      .hist-live-result .hero[data-risk="low"] .hero-gauge-labels > span:nth-child(1) { color: var(--risk-low) !important; font-weight: 700 !important; }
+      #results.visible #hero[data-risk="mid"]  .hero-gauge-labels > span:nth-child(2),
+      .hist-live-result .hero[data-risk="mid"] .hero-gauge-labels > span:nth-child(2) { color: var(--risk-mid) !important; font-weight: 700 !important; }
+      #results.visible #hero[data-risk="high"] .hero-gauge-labels > span:nth-child(3),
+      .hist-live-result .hero[data-risk="high"] .hero-gauge-labels > span:nth-child(3) { color: var(--risk-hi) !important; font-weight: 700 !important; }
 
       /* 3 — TYPOGRAPHIE UNIFORME sur les 3 blocs (la correction clé) ─────────── */
       /* Eyebrows : identiques partout (libellé de section, jamais le contenu). */
       #results.visible .lv-verdict-eyebrow,
       #results.visible .lv-risque-label,
-      #results.visible .lv-verdict-action-title {
+      #results.visible .lv-verdict-action-title,
+      .hist-live-result .lv-verdict-eyebrow,
+      .hist-live-result .lv-risque-label,
+      .hist-live-result .lv-verdict-action-title {
         font-family: var(--font-body) !important;
         font-size: 12px !important; font-weight: 700 !important;
         text-transform: uppercase !important; letter-spacing: .04em !important;
@@ -10282,35 +10274,45 @@ body.lv-open { overflow: hidden; touch-action: none; }
          de risque (demande utilisateur) : vert faible / ambre modéré / rouge élevé,
          EXACTEMENT les teintes du score et de la jauge → code couleur cohérent et
          lisible d'un coup d'œil. Encre par défaut tant que le risque n'est pas posé. */
-      #results.visible .lv-verdict-title {
+      #results.visible .lv-verdict-title,
+      .hist-live-result .lv-verdict-title {
         color: var(--ink-primary) !important; font-weight: 700 !important;
         font-size: 18px !important; line-height: 1.3 !important; margin: 0 0 5px !important;
         letter-spacing: -0.01em !important;   /* replié de V188.8 (purge lot 2) */
       }
-      #results.visible .lucens-verdict-card.risk-low  .lv-verdict-title { color: var(--risk-low) !important; }
-      #results.visible .lucens-verdict-card.risk-mid  .lv-verdict-title { color: var(--risk-mid) !important; }
-      #results.visible .lucens-verdict-card.risk-high .lv-verdict-title { color: var(--risk-hi) !important; }
+      #results.visible .lucens-verdict-card.risk-low  .lv-verdict-title,
+      .hist-live-result .lucens-verdict-card.risk-low .lv-verdict-title { color: var(--risk-low) !important; }
+      #results.visible .lucens-verdict-card.risk-mid  .lv-verdict-title,
+      .hist-live-result .lucens-verdict-card.risk-mid .lv-verdict-title { color: var(--risk-mid) !important; }
+      #results.visible .lucens-verdict-card.risk-high .lv-verdict-title,
+      .hist-live-result .lucens-verdict-card.risk-high .lv-verdict-title { color: var(--risk-hi) !important; }
       /* Les 3 PHRASES de contenu : STRICTEMENT identiques, encre foncée lisible. */
       #results.visible .lv-verdict-interpretation,
       #results.visible .lv-risque-text,
-      #results.visible .lv-verdict-action-text {
+      #results.visible .lv-verdict-action-text,
+      .hist-live-result .lv-verdict-interpretation,
+      .hist-live-result .lv-risque-text,
+      .hist-live-result .lv-verdict-action-text {
         color: var(--ink-primary) !important; font-weight: 500 !important;
         font-size: 14px !important; line-height: 1.5 !important; margin: 0 !important;
       }
       /* Bloc Risque : accent gauche à la couleur (vive) du risque, sans ::before. */
-      #results.visible #lvRisque { border-left: 3px solid var(--risk-color, #E5E7EB) !important; padding-left: 15px !important; }
+      #results.visible #lvRisque,
+      .hist-live-result .lv-risque { border-left: 3px solid var(--risk-color, #E5E7EB) !important; padding-left: 15px !important; }
 
       /* 4 — TOGGLE compact, centré, discret — BLOC CANONIQUE du segmented
          (purge V263 lot 1 : 11 générations précédentes de .viewer-tabs/.viewer-tab
          supprimées ; les déclarations encore gagnantes des V188.8/V190 y sont
          fusionnées : border/align/cursor/typo). */
-      #results.visible .viewer-tabs {
+      #results.visible .viewer-tabs,
+      .hist-live-result .viewer-tabs {
         display: flex !important; width: fit-content !important; max-width: 100% !important;
         margin: 6px auto 10px !important; padding: 3px !important; gap: 0 !important;
         background: var(--surface-mid) !important; border-radius: 9px !important;
         border: 0 !important; align-self: center !important; align-items: center !important;
       }
-      #results.visible .viewer-tab {
+      #results.visible .viewer-tab,
+      .hist-live-result .viewer-tab {
         flex: 0 0 auto !important; min-height: 0 !important; width: auto !important;
         padding: 5px 13px !important; font-size: 12px !important; font-weight: 600 !important;
         line-height: 1.2 !important; white-space: nowrap !important;
@@ -10319,7 +10321,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
         letter-spacing: -.005em !important; text-transform: none !important;
         font-family: var(--font-body) !important;
       }
-      #results.visible .viewer-tab.active {
+      #results.visible .viewer-tab.active,
+      .hist-live-result .viewer-tab.active {
         background: var(--surface-hi) !important; color: var(--ink-primary) !important;
         box-shadow: 0 1px 2px rgba(0,0,0,.10) !important;
       }
@@ -10359,6 +10362,81 @@ body.lv-open { overflow: hidden; touch-action: none; }
       @media (orientation: landscape) and (max-height: 600px) {
         #homeHistory.home-history { align-self: stretch !important; min-height: 0 !important; max-height: 100% !important; }
         .home-history-scroll { flex: 1 1 auto !important; min-height: 0 !important; max-height: none !important; overflow-y: auto !important; }
+      }
+      
+      /* ─── V275 — HISTORIQUE = CLONE : espacement du clone. Les règles
+            visuelles sont les sélecteurs jumeaux « .hist-live-result … »
+            générés sur CHAQUE règle ci-dessus (une seule source de vérité :
+            toute évolution de l'écran d'analyse s'applique aussi à la fiche). ── */
+      .hist-live-result > .card:has(.viewer-stage) { margin: 0 0 9px !important; }
+
+      /* ═══════════ V275-LANDSCAPE — RAPPORT EN PAYSAGE : 2 colonnes, ZÉRO SCROLL ═══════════
+         Demande utilisateur explicite : « en aucun cas nous devons scroller » ;
+         le logo restait invisible car la page défilait (2,18 écrans en V274).
+         Téléphone paysage uniquement (≤620px de haut) — le PORTRAIT est INTACT.
+         Grille : image + 2 actions à GAUCHE, verdict + 3 blocs à DROITE.
+         Safe-areas latérales : la Dynamic Island vit sur le CÔTÉ en paysage. */
+      @media (orientation: landscape) and (max-height: 620px) {
+        body.on-results { height: 100dvh !important; overflow: hidden !important; }
+        body.on-results .hdr {
+          min-height: calc(44px + var(--sa-t)) !important;
+          padding-top: var(--sa-t) !important;
+          padding-left: max(16px, var(--sa-l)) !important;
+          padding-right: max(16px, var(--sa-r)) !important;
+        }
+        body.on-results .hdr-wordmark { font-size: 21px; }
+        body.on-results main {
+          height: calc(100dvh - 44px - var(--sa-t)) !important;
+          min-height: 0 !important;
+          overflow: hidden !important;
+          padding: 8px max(12px, var(--sa-r)) max(8px, env(safe-area-inset-bottom, 0px)) max(12px, var(--sa-l)) !important;
+        }
+        main > #results.visible {
+          display: grid !important;
+          grid-template-columns: minmax(0, 2fr) minmax(0, 3fr) !important;
+          grid-template-rows: auto auto auto minmax(0, 1fr) auto !important;
+          column-gap: 12px !important; row-gap: 0 !important;
+          height: 100% !important; min-height: 0 !important;
+          margin: 0 !important; padding: 0 !important;
+        }
+        /* rangées 1-2 : bannières (qualité / traduction), pleine largeur, rares */
+        #results.visible > .quality-panel    { grid-column: 1 / -1 !important; grid-row: 1 !important; margin: 0 0 8px !important; }
+        #results.visible > .translate-banner { grid-column: 1 / -1 !important; grid-row: 2 !important; margin: 0 0 8px !important; }
+        /* GAUCHE : verdict (hero), image (remplit), puis les 2 actions — la
+           colonne « coup d'œil » ; les 3 blocs d'explication occupent TOUTE la
+           colonne droite, sans défilement interne (zéro scroll strict). */
+        #results.visible > .result-grid {
+          grid-column: 1 !important; grid-row: 4 !important;
+          margin: 0 !important; min-height: 0 !important;
+          display: flex !important; flex-direction: column !important;
+        }
+        #results.visible .result-grid > .card:has(#viewerStage) { flex: 1 1 auto !important; min-height: 0 !important; }
+        #results.visible #viewerStage { height: auto !important; flex: 1 1 auto !important; min-height: 0 !important; }
+        /* le rapport sert l'inspection : photo ENTIÈRE visible (contain, pas de crop) */
+        #results.visible #viewerStage canvas,
+        #results.visible #viewerStage img.original { object-fit: contain !important; }
+        #results.visible .result-grid .card-body { flex: 0 0 auto !important; }
+        #results.visible > .results-toolbar { grid-column: 1 !important; grid-row: 5 !important; margin: 8px 0 0 !important; }
+        /* Verdict (hero) en HAUT-GAUCHE : le score frappe en premier (sens de
+           lecture), l'image dessous, les explications à droite. */
+        #results.visible > #hero { grid-column: 1 !important; grid-row: 3 !important; margin: 0 0 8px !important; padding: 10px 14px !important; }
+        #results.visible #hero .hero-row { margin-bottom: 8px !important; }
+        #results.visible #hero .score-value { font-size: 22px !important; }
+        #results.visible #hero .hero-gauge { margin-bottom: 6px !important; }
+        #results.visible > .lucens-verdict-card {
+          grid-column: 2 !important; grid-row: 3 / 6 !important;
+          min-height: 0 !important; overflow-y: auto !important;
+          gap: 6px !important;
+        }
+        /* compactage des 3 sections (l'échelle typo reste la loi) */
+        #results.visible .lv-verdict-head { padding: 10px 14px 0 !important; }
+        #results.visible .lv-verdict-interpretation { padding: 3px 14px 10px !important; }
+        #results.visible #lvRisque { padding: 10px 14px 10px 15px !important; }
+        #results.visible .lv-verdict-action { padding: 10px 14px !important; }
+        #results.visible .lv-verdict-eyebrow,
+        #results.visible .lv-risque-label,
+        #results.visible .lv-verdict-action-title { margin: 0 0 4px !important; }
+        #results.visible .lv-verdict-title { font-size: 16px !important; margin: 0 0 4px !important; }
       }
       </style>
       <!-- V187 — bloc .results-hdr (en-tête LUCENS dupliqué + croix ✕) retiré. -->
@@ -27457,94 +27535,104 @@ const Annotator = (() => {
       });
 
       /* ══════════════════════════════════════════════════════════════════
-         V251 — BLOC RÉSULTAT À L'IDENTIQUE DE L'ÉCRAN D'ANALYSE
+         V275 — LE DÉTAIL HISTORIQUE EST UN CLONE EXACT DE L'ÉCRAN D'ANALYSE
          ══════════════════════════════════════════════════════════════════
-         Exactement les mêmes blocs qu'une analyse fraîche (« écran = 5 blocs »),
-         rien de plus : niveau de risque (libellé + couleur) → image → origine
-         probable → risque associé → action recommandée. Le contenu vient du même
-         objet `res` que le rendu live (res.result / res.contextual_reasoning /
-         res.recommendation). Aucun texte verbeux. */
+         Fin des styles parallèles « hlr-* » (V251) : ils avaient dérivé de
+         l'écran d'analyse (pilules vs jauge à curseur — signalé utilisateur).
+         On construit désormais la MÊME structure DOM que l'écran d'analyse
+         (mêmes classes : .hero/.hero-gauge, .card > .viewer-stage,
+         .lucens-verdict-card / .lv-*) et chaque règle de la spine metier
+         (#metier-spine-css) porte un sélecteur jumeau .hist-live-result →
+         une seule source de vérité visuelle, la fiche ne peut plus diverger. */
       var live = E('div','hist-live-result r-'+rkClass);
-
-      /* (Header) Niveau de risque + score, puis jauge segmentée (= #hero live) */
-      var hero = E('div','hlr-hero');
-      var heroRow = E('div','hlr-hero-row');
-      heroRow.appendChild(E('span','hlr-hero-label', tr('rep_lvl_label', 'Niveau de risque')));
-      var scoreBlock = E('div','hlr-hero-score');
-      scoreBlock.appendChild(E('span','hlr-hero-score-val', (typeof entry.score==='number')?String(entry.score):'—'));
-      scoreBlock.appendChild(E('span','hlr-hero-score-sfx', '/100'));
-      heroRow.appendChild(scoreBlock);
-      hero.appendChild(heroRow);
-      var seg = E('div','hlr-seg');
-      function segItem(segKey, label){
-        var s = E('span','hlr-seg-s', label);
-        s.setAttribute('data-seg', segKey);
-        return s;
-      }
-      seg.appendChild(segItem('low',  tr('rep_seg_low',  'Faible')));
-      seg.appendChild(segItem('mid',  tr('rep_seg_mid',  'Modéré')));
-      seg.appendChild(segItem('high', tr('rep_seg_high', 'Élevé')));
-      hero.appendChild(seg);
-      live.appendChild(hero);
-
-      /* (Image) photo fluorescente annotée — continue la carte, comme l'écran */
-      if (entry.image){
-        var img = document.createElement('img');
-        img.className = 'hlr-img';
-        img.src = entry.image;
-        img.alt = "Image fluorescente annotée de l'inspection";
-        live.appendChild(img);
-      }
 
       var hasZones = (entry.zoneCount || 0) > 0
         || (res && Array.isArray(res.zones) && res.zones.length > 0);
-
-      /* (Bloc 1) Origine probable : eyebrow + titre coloré + interprétation (1 phrase) */
       var rTitle = (res.result && (res.result.title || '').toString().trim()) || '';
       var rInterp = (res.result && (res.result.interpretation || '').toString().trim()) || '';
-      if (rTitle || rInterp){
-        var c1 = E('div','hlr-card');
-        var ey1 = E('div','hlr-eyebrow');
-        ey1.appendChild(svgIcon(['M11 11m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0','m21 21-4.3-4.3']));
-        ey1.appendChild(document.createTextNode(
-          hasZones ? tr('rep_origine', 'Origine probable') : tr('rep_result_label', 'Résultat')));
-        c1.appendChild(ey1);
-        if (rTitle) c1.appendChild(E('div','hlr-title', rTitle));
-        if (rInterp) c1.appendChild(E('p','hlr-text', rInterp));
-        live.appendChild(c1);
-      }
-
-      /* (Bloc 2) Risque associé : 1 phrase (risk_logic), pathogènes en gras.
-         Même condition que le live : affiché si des zones + une logique existent. */
       var rLogic = (res.contextual_reasoning && (res.contextual_reasoning.risk_logic || '').toString().trim()) || '';
-      if (hasZones && rLogic){
-        var c2 = E('div','hlr-card hlr-risque');
-        c2.appendChild(E('div','hlr-eyebrow hlr-eyebrow-risque', tr('rep_risque_label', 'Risque associé')));
-        var rtext = E('p','hlr-text');
-        var PATHO = /(Listeria|Salmonelles?|salmonelles?|E\.?\s?coli|Pseudomonas|Staphylocoque|Campylobacter|Legionella|Clostridium|Bacillus)/g;
-        var li = 0;
-        var matches = rLogic.match(PATHO) || [];
-        matches.forEach(function(hit){
-          var at = rLogic.indexOf(hit, li);
-          if (at < 0) return;
-          if (at > li) rtext.appendChild(document.createTextNode(rLogic.slice(li, at)));
-          var bb = document.createElement('b'); bb.textContent = hit; rtext.appendChild(bb);
-          li = at + hit.length;
-        });
-        if (li < rLogic.length) rtext.appendChild(document.createTextNode(rLogic.slice(li)));
-        c2.appendChild(rtext);
-        live.appendChild(c2);
+      var rAction = (res.recommendation && (res.recommendation.primary_action || '').toString().trim()) || '';
+
+      /* (Bloc VERDICT) — clone de #hero : libellé + score + jauge à curseur */
+      var hero = E('div','hero');
+      hero.setAttribute('data-risk', rkClass);
+      var scPos = (typeof entry.score === 'number') ? Math.max(0, Math.min(100, Math.round(entry.score))) : 50;
+      hero.style.setProperty('--score-pos', scPos + '%');
+      var heroRow = E('div','hero-row');
+      heroRow.appendChild(E('span','hero-risk-label', tr('rep_lvl_label', 'Niveau de risque')));
+      var scoreBlock = E('div','score-block');
+      scoreBlock.appendChild(E('span','score-value', (typeof entry.score==='number')?String(Math.round(entry.score)):'—'));
+      scoreBlock.appendChild(E('span','score-suffix', '/100'));
+      heroRow.appendChild(scoreBlock);
+      hero.appendChild(heroRow);
+      hero.appendChild(E('div','hero-gauge'));
+      var gl = E('div','hero-gauge-labels');
+      gl.appendChild(E('span','', tr('rep_seg_low',  'Faible')));
+      gl.appendChild(E('span','', tr('rep_seg_mid',  'Modéré')));
+      gl.appendChild(E('span','', tr('rep_seg_high', 'Élevé')));
+      hero.appendChild(gl);
+      live.appendChild(hero);
+
+      /* (Bloc IMAGE) — clone de la carte viewer (image annotée dans la carte) */
+      if (entry.image){
+        var imgCard = E('div','card');
+        var stage = E('div','viewer-stage show-original');
+        var img = document.createElement('img');
+        img.className = 'original';
+        img.src = entry.image;
+        img.alt = "Image fluorescente annotée de l'inspection";
+        stage.appendChild(img);
+        imgCard.appendChild(stage);
+        live.appendChild(imgCard);
       }
 
-      /* (Bloc 3) Action recommandée : eyebrow + 1 phrase (primary_action) */
-      var rAction = (res.recommendation && (res.recommendation.primary_action || '').toString().trim()) || '';
-      if (rAction){
-        var c3 = E('div','hlr-card');
-        var actLbl = (res.recommendation && (res.recommendation.title || '').toString().trim())
-          || tr('rep_action_label', 'Action recommandée');
-        c3.appendChild(E('div','hlr-eyebrow hlr-eyebrow-action', actLbl));
-        c3.appendChild(E('p','hlr-text', rAction));
-        live.appendChild(c3);
+      /* (Bloc ANALYSE) — clone de .lucens-verdict-card : 3 sections lv-* */
+      if (rTitle || rInterp || (hasZones && rLogic) || rAction){
+        var vCard = E('div','lucens-verdict-card risk-'+rkClass);
+        if (rTitle || rInterp){
+          var head = E('div','lv-verdict-head');
+          var ey1 = E('div','lv-verdict-eyebrow');
+          var ico = svgIcon(['M11 11m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0','m21 21-4.3-4.3']);
+          ico.classList.add('lv-eyebrow-ico');
+          ey1.appendChild(ico);
+          ey1.appendChild(document.createTextNode(
+            hasZones ? tr('rep_origine', 'Origine probable') : tr('rep_result_label', 'Résultat')));
+          head.appendChild(ey1);
+          if (rTitle) head.appendChild(E('h2','lv-verdict-title', rTitle));
+          vCard.appendChild(head);
+          /* l'interprétation porte la fermeture visuelle de la carte (bords bas) :
+             on l'ajoute même vide pour ne jamais laisser la tête « ouverte ». */
+          vCard.appendChild(E('p','lv-verdict-interpretation', rInterp));
+        }
+        if (hasZones && rLogic){
+          var rq = E('div','lv-risque');
+          rq.appendChild(E('div','lv-risque-label', tr('rep_risque_label', 'Risque associé')));
+          var rtext = E('p','lv-risque-text');
+          var PATHO = /(Listeria|Salmonelles?|salmonelles?|E\.?\s?coli|Pseudomonas|Staphylocoque|Campylobacter|Legionella|Clostridium|Bacillus)/g;
+          var li = 0;
+          var matches = rLogic.match(PATHO) || [];
+          matches.forEach(function(hit){
+            var at = rLogic.indexOf(hit, li);
+            if (at < 0) return;
+            if (at > li) rtext.appendChild(document.createTextNode(rLogic.slice(li, at)));
+            var bb = document.createElement('b'); bb.textContent = hit; rtext.appendChild(bb);
+            li = at + hit.length;
+          });
+          if (li < rLogic.length) rtext.appendChild(document.createTextNode(rLogic.slice(li)));
+          rq.appendChild(rtext);
+          vCard.appendChild(rq);
+        }
+        if (rAction){
+          var actLbl = (res.recommendation && (res.recommendation.title || '').toString().trim())
+            || tr('rep_action_label', 'Action recommandée');
+          var act = E('div','lv-verdict-action');
+          var actBody = E('div','lv-verdict-action-body');
+          actBody.appendChild(E('div','lv-verdict-action-title', actLbl));
+          actBody.appendChild(E('div','lv-verdict-action-text', rAction));
+          act.appendChild(actBody);
+          vCard.appendChild(act);
+        }
+        live.appendChild(vCard);
       }
 
       report.appendChild(live);
