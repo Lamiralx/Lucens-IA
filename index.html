@@ -9845,7 +9845,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v266</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v267</div>
         </div>
       </div>
     </div>
@@ -10482,135 +10482,11 @@ body.lv-open { overflow: hidden; touch-action: none; }
          croix de fermeture non désirée. On garde l'en-tête global de l'app ; pour
          quitter l'analyse il y a déjà « Nouvelle analyse ». CSS .results-* retiré. */
 
-      /* ═══════ V188 — RAPPORT ÉPURÉ « identique à la capture » (demande utilisateur) ═══════
-         L'écran de résultat ne montre QUE : barre de risque → carto → hypothèse
-         principale (+ risque associé) → action → 2 boutons. Le reste (déjà masqué
-         par metier-spine) ne bouge pas. Deltas restants : score chiffré, ligne ATP,
-         eyebrow, couleur du titre, boutons empilés. */
-      /* ═══════ V188.4 — RAPPORT STRICT MINIMAL (tient en une vue mobile) ═══════
-         Demande utilisateur : « hypothèse, niveau de risque, recommandation,
-         c'est tout ». Plus d'interprétation, plus de risque associé. Score
-         intégré DANS la case active de la barre. Toggle image avec/sans carto
-         réactivé. Tout doit tenir sur une vue sans scroll. */
-
-      /* 5) Image : hauteur compacte + remplit toute la largeur (le canvas suit). */
-      #results.visible #viewerStage { height: 220px !important; min-height: 0 !important;
-        width: 100% !important; border-radius: 12px !important; overflow: hidden !important;
-        position: relative !important; background: #0a1119 !important; }
-      #results.visible #viewerStage canvas,
-      #results.visible #viewerStage img.original {
-        position: absolute !important; inset: 0 !important;
-        width: 100% !important; height: 100% !important;
-        object-fit: contain !important; max-width: none !important; }
-      /* Légende positionnée correctement par-dessus le canvas. */
-      #results.visible #viewerStage .viewer-legend,
-      #results.visible #viewerStage .viewer-meta { z-index: 2 !important; }
-
-      /* 6) Hauteur stricte mobile : on garde header + (label+barre) + image
-         + verdict (titre+action) + boutons + nav = ~720-780px, tient sur iPhone. */
+      /* Mobile ≤500px : marges écran réduites (vaut pour toutes les pages). */
       @media (max-width: 500px) {
         main { padding-top: 4px !important; padding-left: 12px !important; padding-right: 12px !important; }
-        /* Image très compacte (priorité aux blocs texte + boutons accessibles). */
-        #results.visible #viewerStage { height: 130px !important; }
       }
 
-      /* ═══════ V188.5 — RAPPORT MAQUETTE EX-FULL (cible utilisateur) ═══════
-         Une seule grande carte blanche avec filet de risque en haut, contenant
-         dans l'ordre : ligne « Niveau de risque » + score gros coloré · barre
-         segmentée · image avec carto · légende · sections Origine / Risque /
-         Action séparées par filets. Boutons « Générer le rapport » + « Nouvelle
-         analyse » CÔTE À CÔTE en dessous de la carte. Score retiré de la case
-         active de la barre (était dans la pillule, va à droite du label).
-         Toggle image avec/sans carto retiré (cible n'en montre pas). */
-
-      /* === Bloc image : continue la carte (gauche/droite border, pas de coins, pas de fond externe) === */
-      #results.visible .result-grid { padding: 0 !important; margin: 0 !important; gap: 0 !important;
-        background: var(--surface-hi) !important;
-        border-left: 1px solid var(--border,#E5E7EB) !important;
-        border-right: 1px solid var(--border,#E5E7EB) !important; }
-      #results.visible .result-grid > .card { background: transparent !important; border: 0 !important;
-        border-radius: 0 !important; padding: 11px 15px 4px !important; margin: 0 !important; box-shadow: none !important; }
-      #results.visible #viewerStage { height: 175px !important; min-height: 0 !important;
-        width: 100% !important; border-radius: 8px !important; overflow: hidden !important;
-        position: relative !important; background: #0a1119 !important; }
-      #results.visible #viewerStage canvas,
-      #results.visible #viewerStage img.original {
-        position: absolute !important; inset: 0 !important;
-        width: 100% !important; height: 100% !important; object-fit: cover !important; max-width: none !important; }
-      /* Légende "○ Zone détectée par Lucens" sous l'image, sobre */
-      #results.visible .viewer-legend { position: static !important; display: flex !important;
-        align-items: center !important; gap: 7px !important; padding: 9px 0 2px !important;
-        background: transparent !important; color: var(--text-3,#6B7280) !important;
-        font-size: 11px !important; font-weight: 500 !important; }
-      #results.visible .viewer-legend-swatch { width: 11px !important; height: 11px !important;
-        border-radius: 50% !important; background: transparent !important;
-        border: 2px solid var(--risk-color, #B42318) !important; }
-
-      /* === Mobile @media — affinage : tout doit tenir sans scroll. === */
-      @media (max-width: 500px) {
-        #results.visible #hero { padding: 11px 13px 9px !important; }
-        #results.visible #hero .score-value { font-size: 21px !important; }
-        #results.visible .hero-seg-s { padding: 8px 4px !important; font-size: 12.5px !important; }
-        #results.visible .result-grid > .card { padding: 9px 13px 2px !important; }
-        #results.visible #viewerStage { height: 155px !important; }
-        #results.visible .viewer-legend { padding: 7px 0 1px !important; font-size: 10.5px !important; }
-      }
-
-      /* ═══════ V188.6 — RAPPORT : VRAIS BLOCS DISTINCTS, AÉRÉS ═══════
-         Demande utilisateur : la fenêtre « Niveau de risque » doit être un BLOC
-         clair, ne pas chevaucher « Origine probable », chaque section nette,
-         aérée. On force des filets de séparation explicites entre chaque bloc
-         et on aère le padding interne. */
-
-      /* ─── 2. Bloc IMAGE : rectangle plein largeur, filet bas net ─── */
-      #results.visible .result-grid { padding: 0 !important; }
-      #results.visible .result-grid > .card { padding: 0 !important; background: transparent !important; }
-      #results.visible #viewerStage {
-        border-radius: 0 !important;
-        margin: 0 !important;
-        width: 100% !important;
-        height: 180px !important;
-      }
-      /* La légende est sa propre LIGNE distincte sous l'image, avec un filet en bas
-         pour bien la séparer du bloc « Origine probable ». */
-      #results.visible .viewer-legend {
-        padding: 10px 15px 10px !important;
-        border-bottom: 1px solid var(--border, #E5E7EB) !important;
-        background: var(--surface-hi) !important;
-      }
-
-      /* ─── Mobile : même structure, tailles ajustées pour tenir sur iPhone ─── */
-      @media (max-width: 500px) {
-        #results.visible #viewerStage { height: 155px !important; }
-        #results.visible .viewer-legend { padding: 8px 13px !important; font-size: 11px !important; }
-      }
-
-      /* ═══════ V188.7 — CHAQUE SECTION DEVIENT UNE CARTE AUTONOME ═══════
-         Demande utilisateur : 6 blocs distincts (Niveau de risque, Notation
-         segmentée, Image+toggle, Origine probable, Risque associé, Action
-         recommandée), chacun dans sa propre carte avec gap entre. Aéré, lisible.
-         Le toggle « avec / sans cartographie » est réactivé sur le bloc image. */
-
-      /* Containers parents redeviennent transparents (n'ont plus de carte). */
-      #results.visible .result-grid {
-        background: transparent !important;
-        border: 0 !important;
-        padding: 0 !important;
-        margin: 0 0 9px !important;
-      }
-      /* Style commun de CARTE AUTONOME pour les blocs simples.
-         IMPORTANT : on cible UNIQUEMENT la 1ère .card (viewer) — pas les autres
-         (Synthèse des zones, Verdict détaillé par zone) qui doivent rester
-         cachées par le metier-spine CSS. */
-      #results.visible .result-grid > .card:has(#viewerStage) {
-        background: var(--surface-hi) !important;
-        border: 1px solid var(--border) !important;
-        border-radius: 12px !important;
-        padding: 12px 14px !important;
-        margin: 0 0 9px !important;
-        box-shadow: none !important;
-        display: block !important;
-      }
       /* V195 — ÉCRAN = 5 BLOCS ESSENTIELS (décision utilisateur explicite).
          L'inspecteur terrain veut en 3 secondes : c'est grave ? · c'est quoi ? ·
          je fais quoi ?. La profondeur (tableau zones, verdict par zone, contrôle
@@ -10621,45 +10497,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results.visible details.zones-verdict-card,
       #results.visible #verifCard,
       #results.visible #guideCard { display: none !important; }
-
-      /* Bloc 3 — Image avec toggle « Zones détectées » / « Image source » */
-      #results.visible .result-grid > .card:has(#viewerStage) {
-        padding: 11px 11px 11px !important;
-      }
-      #results.visible #viewerStage {
-        border-radius: 8px !important;
-        height: 160px !important;
-        margin: 0 !important;
-        width: 100% !important;
-        position: relative !important;
-        background: #0a1119 !important;
-        overflow: hidden !important;
-      }
-      #results.visible #viewerStage canvas,
-      #results.visible #viewerStage img.original {
-        position: absolute !important; inset: 0 !important;
-        width: 100% !important; height: 100% !important;
-        object-fit: cover !important; max-width: none !important;
-      }
-      #results.visible .viewer-legend {
-        padding: 9px 2px 0 !important;
-        margin: 0 !important;
-        background: transparent !important;
-        border: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 7px !important;
-        color: var(--text-3, #6B7280) !important;
-        font-size: 11px !important;
-      }
-      #results.visible .viewer-legend-swatch {
-        width: 10px !important; height: 10px !important;
-        border-radius: 50% !important;
-        background: transparent !important;
-        border: 2px solid var(--risk-color, #B42318) !important;
-        display: inline-block !important;
-        flex-shrink: 0 !important;
-      }
 
       /* ═════════ V188.8 — RAPPORT FINAL : 3 macro-blocs propres ═════════
          Maquette validée mockup-rapport-v188-8.html. Override final des
@@ -10769,6 +10606,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         border: 0 !important; padding: 0 !important;
         margin: 0 0 9px !important;
         order: -2 !important;
+        gap: 0 !important;   /* replié de V188.5 (la grille de base a un gap) */
       }
       #results.visible .result-grid > .card:has(#viewerStage) {
         background: var(--surface-hi) !important;
