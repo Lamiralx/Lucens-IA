@@ -9845,7 +9845,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v269</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v270</div>
         </div>
       </div>
     </div>
@@ -15848,6 +15848,338 @@ const Annotator = (() => {
     return cells;
   }
 
+
+  /* ═══════════════════════════════════════════════════════════════════
+     V270 — CONTOUR SOUS-PIXEL PILOTÉ PAR LES ZONES (marching squares interpolé)
+     Direction validée (banc .claude/tests/uvbench, 2026-06-10) :
+       · le « OÙ » fait autorité côté zones validées (IA en ligne / clusters
+         heuristiques hors-ligne) — le CV mono-frame plein-cadre plafonne
+         (mur mesuré ~0,3 IoU sur scènes réelles encombrées) ;
+       · le « TRACÉ » est raffiné en pleine résolution DANS chaque bbox :
+         champ brillance×saturation → Otsu+hystérésis → trous remplis →
+         marching squares INTERPOLÉ → frontière sous-pixel (0,006 px d'écart
+         radial moyen sur cercle analytique ; 99 ms WebKit sur photo 1024px).
+       · Dice réel ≈ parité avec la grille 128 (0,577 vs 0,587 sur les 9 cas
+         annotés) mais frontière 0,39 px au lieu de 5,7–17 px de crénelage.
+     SÛRETÉ (la carto a déjà cassé 2 analyses) : tout est borné (stride,
+     boucles max, files typées, zéro récursion), enveloppé en try/catch côté
+     appelant, et le pipeline V198/V259/équerres reste intact en repli.
+     ═══════════════════════════════════════════════════════════════════ */
+  function _spxLoops(data, IW, IH, boxesPx, opts) {
+    opts = opts || {};
+    var TH_FLOOR  = opts.thFloor  != null ? opts.thFloor  : 0.05;
+    var MAX_FIELD = opts.maxFieldPx || 1500000;
+    var MAX_LOOPS = opts.maxLoops   || 24;
+    var loopsOut = [];
+    var maskAreaImg = 0;
+
+    for (var bi = 0; bi < boxesPx.length; bi++) {
+      if (loopsOut.length >= MAX_LOOPS) break;
+      var bx = boxesPx[bi];
+      var x0 = Math.max(0, Math.floor(bx.x0)), y0 = Math.max(0, Math.floor(bx.y0));
+      var x1 = Math.min(IW, Math.ceil(bx.x1)), y1 = Math.min(IH, Math.ceil(bx.y1));
+      var bw = x1 - x0, bh = y1 - y0;
+      if (bw < 12 || bh < 12) continue;
+      var s = Math.max(1, Math.ceil(Math.sqrt((bw * bh) / MAX_FIELD)));
+      var fw = Math.max(2, Math.floor(bw / s)), fh = Math.max(2, Math.floor(bh / s));
+      var n = fw * fh;
+
+      /* ── champ d'émission (brillance × saturation, spéculaire écrêté → 0) ── */
+      var E = new Float32Array(n);
+      var fy, fx, fi, p, r, g, bl, mx, mn, val, sat, ev, es;
+      for (fy = 0; fy < fh; fy++) {
+        var rowOff = ((y0 + fy * s) * IW + x0) * 4;
+        fi = fy * fw;
+        for (fx = 0; fx < fw; fx++, fi++) {
+          p = rowOff + fx * s * 4;
+          r = data[p]; g = data[p + 1]; bl = data[p + 2];
+          mx = r > g ? (r > bl ? r : bl) : (g > bl ? g : bl);
+          if (mx >= 250) { E[fi] = 0; continue; }
+          mn = r < g ? (r < bl ? r : bl) : (g < bl ? g : bl);
+          val = mx / 255;
+          sat = mx > 0 ? (mx - mn) / mx : 0;
+          ev = (val - 0.32) / 0.68; if (ev < 0) ev = 0; else if (ev > 1) ev = 1;
+          es = sat / 0.5; if (es > 1) es = 1;
+          E[fi] = ev * es;
+        }
+      }
+
+      /* ── Otsu 64 classes ── */
+      var BINS = 64, hist = new Int32Array(BINS), i, k;
+      var maxv = 0;
+      for (i = 0; i < n; i++) if (E[i] > maxv) maxv = E[i];
+      if (maxv <= TH_FLOOR) continue;
+      for (i = 0; i < n; i++) { k = (E[i] / maxv * (BINS - 1)) | 0; hist[k]++; }
+      var sumAll = 0; for (k = 0; k < BINS; k++) sumAll += k * hist[k];
+      var wB = 0, sumB = 0, bestVar = 0, bestK = 0;
+      for (k = 0; k < BINS; k++) {
+        wB += hist[k]; if (!wB) continue;
+        var wF = n - wB; if (!wF) break;
+        sumB += k * hist[k];
+        var mB = sumB / wB, mF = (sumAll - sumB) / wF;
+        var vb = wB * wF * (mB - mF) * (mB - mF);
+        if (vb > bestVar) { bestVar = vb; bestK = k; }
+      }
+      var th = Math.max(TH_FLOOR, bestK / (BINS - 1) * maxv);
+      var tlo = 0.5 * th;
+
+      /* ── hystérésis : composantes de (E≥tlo) contenant un pixel ≥th ── */
+      var mask = new Uint8Array(n);          /* 1 = retenu */
+      var queue = new Int32Array(n);
+      var qh = 0, qt = 0, hiCount = 0;
+      for (i = 0; i < n; i++) {
+        if (E[i] >= th) { hiCount++; if (!mask[i]) { mask[i] = 1; queue[qt++] = i; } }
+      }
+      if (hiCount < 12) continue;
+      while (qh < qt) {
+        i = queue[qh++];
+        var cx = i % fw, cy = (i / fw) | 0;
+        if (cx > 0      && !mask[i - 1]  && E[i - 1]  >= tlo) { mask[i - 1]  = 1; queue[qt++] = i - 1; }
+        if (cx < fw - 1 && !mask[i + 1]  && E[i + 1]  >= tlo) { mask[i + 1]  = 1; queue[qt++] = i + 1; }
+        if (cy > 0      && !mask[i - fw] && E[i - fw] >= tlo) { mask[i - fw] = 1; queue[qt++] = i - fw; }
+        if (cy < fh - 1 && !mask[i + fw] && E[i + fw] >= tlo) { mask[i + fw] = 1; queue[qt++] = i + fw; }
+      }
+
+      /* ── remplissage des trous : fond accessible depuis le bord ── */
+      var bg = new Uint8Array(n);
+      qh = 0; qt = 0;
+      for (fx = 0; fx < fw; fx++) {
+        if (!mask[fx] && !bg[fx]) { bg[fx] = 1; queue[qt++] = fx; }
+        i = (fh - 1) * fw + fx;
+        if (!mask[i] && !bg[i]) { bg[i] = 1; queue[qt++] = i; }
+      }
+      for (fy = 0; fy < fh; fy++) {
+        i = fy * fw;
+        if (!mask[i] && !bg[i]) { bg[i] = 1; queue[qt++] = i; }
+        i = fy * fw + fw - 1;
+        if (!mask[i] && !bg[i]) { bg[i] = 1; queue[qt++] = i; }
+      }
+      while (qh < qt) {
+        i = queue[qh++];
+        var bxx = i % fw, byy = (i / fw) | 0;
+        if (bxx > 0      && !mask[i - 1]  && !bg[i - 1])  { bg[i - 1]  = 1; queue[qt++] = i - 1; }
+        if (bxx < fw - 1 && !mask[i + 1]  && !bg[i + 1])  { bg[i + 1]  = 1; queue[qt++] = i + 1; }
+        if (byy > 0      && !mask[i - fw] && !bg[i - fw]) { bg[i - fw] = 1; queue[qt++] = i - fw; }
+        if (byy < fh - 1 && !mask[i + fw] && !bg[i + fw]) { bg[i + fw] = 1; queue[qt++] = i + fw; }
+      }
+      for (i = 0; i < n; i++) if (!mask[i] && !bg[i]) mask[i] = 1;   /* trou → rempli */
+
+      /* ── composantes connexes du masque : minA + top 6 ── */
+      var labels = new Int32Array(n);        /* 0 = aucun */
+      var areas = [0];                       /* index = label */
+      var lab = 0;
+      for (i = 0; i < n; i++) {
+        if (!mask[i] || labels[i]) continue;
+        lab++;
+        var area = 0;
+        qh = 0; qt = 0; queue[qt++] = i; labels[i] = lab;
+        while (qh < qt) {
+          var ci = queue[qh++]; area++;
+          var ccx = ci % fw, ccy = (ci / fw) | 0;
+          if (ccx > 0      && mask[ci - 1]  && !labels[ci - 1])  { labels[ci - 1]  = lab; queue[qt++] = ci - 1; }
+          if (ccx < fw - 1 && mask[ci + 1]  && !labels[ci + 1])  { labels[ci + 1]  = lab; queue[qt++] = ci + 1; }
+          if (ccy > 0      && mask[ci - fw] && !labels[ci - fw]) { labels[ci - fw] = lab; queue[qt++] = ci - fw; }
+          if (ccy < fh - 1 && mask[ci + fw] && !labels[ci + fw]) { labels[ci + fw] = lab; queue[qt++] = ci + fw; }
+        }
+        areas.push(area);
+      }
+      var minA = Math.max(24, Math.round(0.0008 * n));
+      var order = [];
+      for (k = 1; k < areas.length; k++) if (areas[k] >= minA) order.push(k);
+      order.sort(function (a, b) { return areas[b] - areas[a]; });
+      var keepLab = new Uint8Array(areas.length);
+      for (k = 0; k < Math.min(6, order.length); k++) keepLab[order[k]] = 1;
+      var K = new Uint8Array(n);
+      var keptArea = 0;
+      for (i = 0; i < n; i++) if (mask[i] && keepLab[labels[i]]) { K[i] = 1; keptArea++; }
+      if (!keptArea) continue;
+      maskAreaImg += keptArea * s * s;
+
+      /* ── frontière des composantes retenues (bord de tableau inclus) ── */
+      var Bnd = new Uint8Array(n);
+      for (i = 0; i < n; i++) {
+        if (!K[i]) continue;
+        var px2 = i % fw, py2 = (i / fw) | 0;
+        if (px2 === 0 || px2 === fw - 1 || py2 === 0 || py2 === fh - 1 ||
+            !K[i - 1] || !K[i + 1] || !K[i - fw] || !K[i + fw]) Bnd[i] = 1;
+      }
+
+      /* ── marching squares interpolé au niveau tlo ──
+         Arêtes identifiées par entier : H(x,y) = (y·fw+x)·2 ; V(x,y) = (y·fw+x)·2+1.
+         Chaque segment relie 2 arêtes ; chaînage par adjacence d'arêtes. */
+      var ptsX = {}, ptsY = {};              /* edgeId -> coord sous-pixel (champ) */
+      var segA = [], segB = [];              /* segments (paires d'edgeIds) */
+      function edgePoint(eid) {
+        if (ptsX[eid] !== undefined) return;
+        var horiz = (eid & 1) === 0;
+        var cell = eid >> 1;
+        var ex = cell % fw, ey = (cell / fw) | 0;
+        var vA, vBv, t;
+        if (horiz) { vA = E[ey * fw + ex]; vBv = E[ey * fw + ex + 1]; }
+        else       { vA = E[ey * fw + ex]; vBv = E[(ey + 1) * fw + ex]; }
+        t = (vBv === vA) ? 0.5 : (tlo - vA) / (vBv - vA);
+        if (t < 0) t = 0; else if (t > 1) t = 1;
+        if (horiz) { ptsX[eid] = ex + t; ptsY[eid] = ey; }
+        else       { ptsX[eid] = ex;     ptsY[eid] = ey + t; }
+      }
+      function addSeg(e1, e2) { edgePoint(e1); edgePoint(e2); segA.push(e1); segB.push(e2); }
+      for (fy = 0; fy < fh - 1; fy++) {
+        for (fx = 0; fx < fw - 1; fx++) {
+          var i00 = fy * fw + fx;
+          var b0 = E[i00] >= tlo ? 1 : 0;            /* tl */
+          var b1 = E[i00 + 1] >= tlo ? 1 : 0;        /* tr */
+          var b2 = E[i00 + fw + 1] >= tlo ? 1 : 0;   /* br */
+          var b3 = E[i00 + fw] >= tlo ? 1 : 0;       /* bl */
+          var cse = b0 | (b1 << 1) | (b2 << 2) | (b3 << 3);
+          if (cse === 0 || cse === 15) continue;
+          /* gate : au moins un coin dans une composante retenue (évite le bruit) */
+          if (!K[i00] && !K[i00 + 1] && !K[i00 + fw + 1] && !K[i00 + fw]) continue;
+          var eT = (fy * fw + fx) * 2;               /* H(x,y) */
+          var eB = ((fy + 1) * fw + fx) * 2;         /* H(x,y+1) */
+          var eL = (fy * fw + fx) * 2 + 1;           /* V(x,y) */
+          var eR = (fy * fw + fx + 1) * 2 + 1;       /* V(x+1,y) */
+          switch (cse) {
+            case 1:  addSeg(eL, eT); break;
+            case 2:  addSeg(eT, eR); break;
+            case 3:  addSeg(eL, eR); break;
+            case 4:  addSeg(eR, eB); break;
+            case 6:  addSeg(eT, eB); break;
+            case 7:  addSeg(eL, eB); break;
+            case 8:  addSeg(eB, eL); break;
+            case 9:  addSeg(eT, eB); break;
+            case 11: addSeg(eR, eB); break;
+            case 12: addSeg(eR, eL); break;
+            case 13: addSeg(eT, eR); break;
+            case 14: addSeg(eL, eT); break;
+            case 5:                                   /* selle tl+br */
+              if ((E[i00] + E[i00 + 1] + E[i00 + fw] + E[i00 + fw + 1]) / 4 >= tlo) { addSeg(eT, eR); addSeg(eB, eL); }
+              else { addSeg(eL, eT); addSeg(eR, eB); }
+              break;
+            case 10:                                  /* selle tr+bl */
+              if ((E[i00] + E[i00 + 1] + E[i00 + fw] + E[i00 + fw + 1]) / 4 >= tlo) { addSeg(eL, eT); addSeg(eR, eB); }
+              else { addSeg(eT, eR); addSeg(eB, eL); }
+              break;
+          }
+        }
+      }
+      if (!segA.length) continue;
+
+      /* adjacence arête → segments (≤2 par arête) */
+      var adj = {};
+      for (k = 0; k < segA.length; k++) {
+        (adj[segA[k]] = adj[segA[k]] || []).push(k);
+        (adj[segB[k]] = adj[segB[k]] || []).push(k);
+      }
+      var usedSeg = new Uint8Array(segA.length);
+
+      /* chaînage en polylignes (fermées ou ouvertes au bord de boîte) */
+      for (k = 0; k < segA.length && loopsOut.length < MAX_LOOPS; k++) {
+        if (usedSeg[k]) continue;
+        usedSeg[k] = 1;
+        var chain = [segA[k], segB[k]];
+        var guard = 0;
+        /* avant */
+        var cur = segB[k];
+        while (guard++ < 200000) {
+          var cands = adj[cur], nxt = -1;
+          if (cands) for (var c2 = 0; c2 < cands.length; c2++) if (!usedSeg[cands[c2]]) { nxt = cands[c2]; break; }
+          if (nxt < 0) break;
+          usedSeg[nxt] = 1;
+          cur = (segA[nxt] === cur) ? segB[nxt] : segA[nxt];
+          chain.push(cur);
+          if (cur === chain[0]) break;
+        }
+        var closed = chain.length > 2 && chain[chain.length - 1] === chain[0];
+        if (!closed) {
+          /* arrière */
+          cur = chain[0];
+          while (guard++ < 200000) {
+            var cands2 = adj[cur], nxt2 = -1;
+            if (cands2) for (var c3 = 0; c3 < cands2.length; c3++) if (!usedSeg[cands2[c3]]) { nxt2 = cands2[c3]; break; }
+            if (nxt2 < 0) break;
+            usedSeg[nxt2] = 1;
+            cur = (segA[nxt2] === cur) ? segB[nxt2] : segA[nxt2];
+            chain.unshift(cur);
+          }
+        } else chain.pop();
+        if (chain.length < 8) continue;
+
+        /* filtre : proximité à la frontière des composantes retenues */
+        var near = 0;
+        for (i = 0; i < chain.length; i++) {
+          var vx = ptsX[chain[i]], vy = ptsY[chain[i]];
+          var rx = Math.round(vx), ry = Math.round(vy);
+          var hit = 0;
+          for (var dy2 = -1; dy2 <= 1 && !hit; dy2++) {
+            var yy2 = ry + dy2; if (yy2 < 0 || yy2 >= fh) continue;
+            for (var dx2 = -1; dx2 <= 1; dx2++) {
+              var xx2 = rx + dx2; if (xx2 < 0 || xx2 >= fw) continue;
+              if (Bnd[yy2 * fw + xx2]) { hit = 1; break; }
+            }
+          }
+          if (hit) near++;
+        }
+        if (near / chain.length < 0.55) continue;
+
+        /* coords champ → image (sous-pixel conservé) */
+        var pts = new Array(chain.length);
+        for (i = 0; i < chain.length; i++) {
+          pts[i] = [x0 + ptsX[chain[i]] * s, y0 + ptsY[chain[i]] * s];
+        }
+        loopsOut.push({ pts: pts, closed: closed });
+      }
+    }
+    return { loops: loopsOut, maskFrac: maskAreaImg / (IW * IH) };
+  }
+
+  /* V270 — wrapper : zones normalisées → boîtes px image (fusion V197 + marge),
+     appel du cœur borné, garde anti-voile, tracé style carto figé (CARTO_COLOR).
+     Retourne true si au moins une boucle a été tracée. */
+  function subpixelZoneContours(ctx, imageData, zones, W, H) {
+    if (!ctx || !imageData || !imageData.data || !zones || !zones.length) return false;
+    const IW = imageData.width || W, IH = imageData.height || H;
+    if (!IW || !IH) return false;
+    const valid = zones.filter(z => z && z.artifact_rejection !== true &&
+      typeof z.x === 'number' && typeof z.y === 'number' &&
+      typeof z.w === 'number' && typeof z.h === 'number' &&
+      z.w > 0 && z.h > 0 && (z.w * z.h) <= 0.60);   /* zone quasi plein-cadre → voile probable → legacy */
+    if (!valid.length) return false;
+    const merged = _mergeBoxes(valid);
+    const boxesPx = [];
+    for (const b of merged) {
+      const padX = 0.06 * b.w * IW + 4, padY = 0.06 * b.h * IH + 4;
+      boxesPx.push({
+        x0: b.x * IW - padX, y0: b.y * IH - padY,
+        x1: (b.x + b.w) * IW + padX, y1: (b.y + b.h) * IH + padY,
+      });
+    }
+    const res = _spxLoops(imageData.data, IW, IH, boxesPx, {});
+    if (!res || !res.loops || !res.loops.length) return false;
+    if (res.maskFrac > 0.50) return false;          /* garde-fou voile (cousin V155) */
+    const sx = W / IW, sy = H / IH;
+    ctx.save();
+    ctx.strokeStyle = CARTO_COLOR.stroke;
+    ctx.lineWidth = Math.max(2.5, Math.round(Math.min(W, H) * 0.0042));
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+    ctx.shadowBlur = Math.max(1.5, Math.round(Math.min(W, H) * 0.003));
+    let drawn = 0;
+    for (const L of res.loops) {
+      const pts = L.closed ? _chaikin(L.pts.map(p => [p[0] * sx, p[1] * sy]), 1)
+                           : L.pts.map(p => [p[0] * sx, p[1] * sy]);
+      if (pts.length < 4) continue;
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (let k = 1; k < pts.length; k++) ctx.lineTo(pts[k][0], pts[k][1]);
+      if (L.closed) ctx.closePath();
+      ctx.stroke();
+      drawn++;
+    }
+    ctx.restore();
+    return drawn > 0;
+  }
+
   function drawGrid(canvas, imageData, grid, W, H) {
     canvas.width = W; canvas.height = H;
     const ctx = canvas.getContext('2d');
@@ -15882,7 +16214,16 @@ const Annotator = (() => {
        (contour cellulaire local). Sinon → filet de sécurité bbox plus bas. */
     let _cartoPainted = false;
 
-    if (grid && Array.isArray(grid)) {
+    /* V270 — CHEMIN PRIMAIRE : contour sous-pixel dans les zones validées.
+       En échec ou sans zone exploitable → pipeline V198/V259/équerres intact. */
+    try {
+      _cartoPainted = subpixelZoneContours(ctx, imageData, zones, W, H);
+    } catch (e) {
+      console.warn('[V270 carto] sous-pixel KO → pipeline legacy:', e);
+      _cartoPainted = false;
+    }
+
+    if (!_cartoPainted && grid && Array.isArray(grid)) {
       const activeCellsByType = new Map();
 
       /* Index rapide des cellules actives par coord */
