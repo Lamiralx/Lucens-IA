@@ -9845,7 +9845,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v267</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v268</div>
         </div>
       </div>
     </div>
@@ -10846,36 +10846,10 @@ body.lv-open { overflow: hidden; touch-action: none; }
          V188 — On lève AUSSI le max-height de .home-history (était clamp 140-280px)
          qui coupait la 2ᵉ ligne. La liste est limitée à 2 entrées en JS, donc la
          carte s'auto-dimensionne et ne coupera jamais une ligne. */
-      .home-history { border-top: 0 !important; padding-top: 4px !important;
-        max-height: none !important; min-height: 0 !important; flex: 0 0 auto !important; }
+      .home-history { border-top: 0 !important; padding-top: 4px !important; }
       .home-accordions { border-top: 0 !important; }
-
-      /* — Carte 1 : Dernières inspections — */
-      .home-history-scroll {
-        background: var(--surface-low,#fff) !important;
-        border: 1px solid var(--border,#E5E7EB) !important;
-        border-radius: 14px !important;
-        overflow: hidden !important;
-        padding: 0 !important;
-      }
-      .home-history-body { padding: 0 !important; gap: 0 !important; overflow: visible !important; }
-      /* Les lignes deviennent FLAT à l'intérieur de la carte (la carte les contient).
-         V188 — Aucun trait de séparation entre lignes (demande utilisateur).
-         Padding intérieur généreux pour ne pas chevaucher les bords (12px V/14px H)
-         + gap pour respirer entre vignette / texte / badge. */
-      .home-hrow {
-        background: transparent !important;
-        border: 0 !important;
-        border-radius: 0 !important;
-        padding: 12px 14px !important;
-        gap: 12px !important;
-        box-shadow: none !important;
-      }
       .home-hrow-body { min-width: 0 !important; padding-right: 4px !important; }
       .home-hrow-badge { margin-left: 4px !important; }
-      /* Plus de cap de hauteur : la liste est limitée à 2 entrées max en JS,
-         donc la carte s'auto-dimensionne (jamais de ligne coupée). */
-      .home-history-scroll { max-height: none !important; }
       /* Indicateur de scroll teal collé au bord droit : MASQUÉ. */
       .home-history-scroll .home-hscroll { display: none !important; }
 
@@ -10968,7 +10942,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         /* « En savoir plus » MASQUÉ en paysage (secondaire) → affichage épuré. */
         .home-accordions { display: none !important; }
         .home-learn-link { display: none !important; }
-        .home-footer { display: none !important; }
       }
 
       /* ═══════════ V225 — POP-UPS en PAYSAGE court (≤540px de haut) ═══════════
@@ -10998,23 +10971,15 @@ body.lv-open { overflow: hidden; touch-action: none; }
          le bouton d'analyse et la barre du bas, sans que les cartes ne touchent
          la nav Historique/Contexte/Réglages. Resserrement vertical scopé .home. */
       @media (max-width: 500px) {
-        .home { gap: 8px !important; padding-top: 4px !important; }
         .home-hero { gap: 6px !important; }
         .home-title, .home-tagline { font-size: 14px !important; line-height: 1.35 !important; }
         .home-actions { gap: 9px !important; }
-        /* V218 — Boutons « un tout petit peu trop bas » : on les remonte d'un cran
-           (réduit l'espace au-dessus que space-evenly plaçait sous l'en-tête),
-           sans casser la répartition (cartes fixes + écran occupé). */
-        .home-actions { margin-top: -18px !important; }
         /* V200 — boutons élargis aussi sur mobile (étaient 48px, trop discrets). */
         .home-btn { height: 52px !important; font-size: 16px !important; }
         .home-benefits { font-size: 11.5px !important; margin: 4px 0 6px !important; }
         .home-history-title, .home-more-label { font-size: 12.5px !important; }
         .home-more-label { margin: 10px 2px 6px !important; }
         .home-history { padding-top: 2px !important; }
-        /* Lignes d'inspection compactes : vignette plus petite, padding réduit. */
-        .home-hrow { padding: 8px 12px !important; gap: 10px !important; }
-        .home-hrow-thumb { width: 32px !important; height: 32px !important; }
         .home-hrow-date { font-size: 13px !important; }
         .home-hrow-meta { font-size: 11px !important; }
         .home-hrow-badge { padding: 4px 9px !important; font-size: 10.5px !important; }
@@ -11123,27 +11088,10 @@ body.lv-open { overflow: hidden; touch-action: none; }
         box-shadow: 0 1px 2px rgba(0,0,0,.10) !important;
       }
 
-      /* ════════════ V205 — ACCUEIL : cartes À TAILLE FIXE + blocs répartis ════════════
-         Demande utilisateur (enfin comprise) :
-         • La carte « Dernières inspections » a une TAILLE FIXE = la place pour 3
-           lignes, et garde CETTE taille même VIDE (« Aucune inspection »). Les
-           fenêtres ne changent JAMAIS de taille. (Mon erreur : je la laissais
-           rétrécir à vide → écran sparse → je bagarrais les écarts.)
-         • Les blocs (boutons, inspections, en savoir plus), TOUS à taille fixe,
-           sont RÉPARTIS sur tout l'écran → les boutons descendent, l'écran est
-           occupé, les écarts restent raisonnables car les cartes sont pleines. */
-      .home { justify-content: space-evenly !important; gap: 0 !important; }
-      .home-actions, .home-accordions { flex: 0 0 auto !important; }
+      /* ── V205 (résidu vivant) : accordéons à taille fixe, footer masqué,
+            état vide centré — le layout taille-fixe est repris par V231-236. ── */
+      .home-accordions { flex: 0 0 auto !important; }
       .home-footer { display: none !important; }   /* version : seulement dans Réglages */
-      /* Carte inspections = hauteur FIXE (3 lignes), identique pleine ou vide. */
-      #homeHistory.home-history { flex: 0 0 auto !important; min-height: 0 !important; }
-      .home-history-scroll {
-        flex: 0 0 auto !important;
-        min-height: 176px !important;            /* place pour 3 inspections */
-        max-height: none !important;
-        display: flex !important; flex-direction: column !important;
-      }
-      .home-history-body { display: flex !important; flex-direction: column !important; gap: 0 !important; flex: 1 1 auto !important; }
       /* État vide centré dans la carte fixe (au lieu d'une mini-boîte). */
       .home-history-empty { margin: auto !important; }
 
@@ -11167,8 +11115,10 @@ body.lv-open { overflow: hidden; touch-action: none; }
       /* V236 — bloc TAILLE FIXE même VIDE : min-height 326px (≈5 lignes). Avec 0
          inspection (« Aucune inspection ») le bloc ne rétrécit plus. « En savoir
          plus » reste centré dans la zone restante. */
-      .home-history-scroll { flex: 0 0 auto !important; min-height: 326px !important; max-height: none !important; overflow: hidden !important; background: var(--surface-low) !important; border: 1px solid var(--border) !important; border-radius: 16px !important; box-shadow: none !important; padding: 0 12px !important; }
-      .home-history-body { display: flex !important; flex-direction: column !important; gap: 0 !important; }
+      .home-history-scroll { flex: 0 0 auto !important; min-height: 326px !important; max-height: none !important; overflow: hidden !important; background: var(--surface-low) !important; border: 1px solid var(--border) !important; border-radius: 16px !important; box-shadow: none !important; padding: 0 12px !important;
+        display: flex !important; flex-direction: column !important; /* replié de V205 */ }
+      .home-history-body { display: flex !important; flex-direction: column !important; gap: 0 !important;
+        flex: 1 1 auto !important; padding: 0 !important; overflow: visible !important; /* replié de V205/V188 */ }
       .home-hrow { flex: 0 0 auto !important; min-height: 62px !important; padding: 11px 2px !important; gap: 12px !important; background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; }
       .home-hrow:not(:last-child) { border-bottom: 1px solid var(--hairline) !important; }
       .home-hrow-thumb { width: 42px !important; height: 42px !important; border-radius: 11px !important; }
