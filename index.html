@@ -9802,7 +9802,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v258</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v259</div>
         </div>
       </div>
     </div>
@@ -16701,6 +16701,68 @@ const Annotator = (() => {
     ctx.restore();
   }
 
+  /* V259 — FILET DE SÉCURITÉ EN CONTOUR LISSE (plus jamais d'équerres).
+     Quand la détection pixel CLIENT n'a produit aucune cellule (_cells vide :
+     fluorescence faible/diffuse ou substrat sur-supprimé) mais que l'IA a validé
+     des zones, on traçait des équerres (style « web », incohérent avec le contour
+     lisse des autres analyses → effet « aléatoire » signalé). Ici on détecte les
+     pixels clairs DANS chaque bbox IA (boucle BORNÉE, aucune trame récursive) et
+     on en fabrique des cellules grille qu'on passe au MÊME smoothCellContour déjà
+     éprouvé (avec son garde anti-boucle). Si une bbox est trop diffuse (< 3
+     cellules claires) on la remplit → contour arrondi lisse, jamais vide, jamais
+     d'équerre. Tout l'appel est enveloppé côté appelant : à la moindre erreur on
+     revient aux équerres — l'analyse ne peut donc PAS casser.
+     Coords : cellules en pixels CANVAS (W×H) ; on échantillonne imageData à ses
+     propres dimensions (robuste si le buffer de détection ≠ taille canvas). */
+  function _bboxBrightCells(imageData, zones, W, H) {
+    if (!imageData || !imageData.data || !zones || !zones.length) return [];
+    const data = imageData.data;
+    const IW = imageData.width || W, IH = imageData.height || H;
+    const boxes = _mergeBoxes(zones);
+    const step = Math.max(3, Math.round(Math.min(W, H) / 120));   /* cellule (px canvas) */
+    const gridW = Math.ceil(W / step);
+    const seen = new Set();
+    const cells = [];
+    for (const b of boxes) {
+      const gx0 = Math.max(0, Math.floor(b.x * W / step));
+      const gy0 = Math.max(0, Math.floor(b.y * H / step));
+      const gx1 = Math.min(gridW, Math.ceil((b.x + b.w) * W / step));
+      const gy1 = Math.min(Math.ceil(H / step), Math.ceil((b.y + b.h) * H / step));
+      let bright = 0;
+      for (let gy = gy0; gy < gy1; gy++) {
+        for (let gx = gx0; gx < gx1; gx++) {
+          const key = gx + ',' + gy;
+          if (seen.has(key)) continue;
+          const cxp = gx * step + (step >> 1), cyp = gy * step + (step >> 1);
+          const sx = Math.min(IW - 1, (cxp * IW / W) | 0);
+          const sy = Math.min(IH - 1, (cyp * IH / H) | 0);
+          const idx = (sy * IW + sx) * 4;
+          const r = data[idx], g = data[idx + 1], bl = data[idx + 2];
+          const lum = (r + g + bl) / 3;
+          const mx = Math.max(r, g, bl), mn = Math.min(r, g, bl);
+          const sat = mx ? (mx - mn) / mx : 0;
+          if (lum > 55 && (sat > 0.10 || lum > 125)) {
+            seen.add(key);
+            bright++;
+            cells.push({ x: gx * step, y: gy * step, w: step, h: step, cx: gx, cy: gy });
+          }
+        }
+      }
+      /* bbox trop diffuse → on la remplit (contour arrondi lisse, jamais d'équerre). */
+      if (bright < 3) {
+        for (let gy = gy0; gy < gy1; gy++) {
+          for (let gx = gx0; gx < gx1; gx++) {
+            const key = gx + ',' + gy;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            cells.push({ x: gx * step, y: gy * step, w: step, h: step, cx: gx, cy: gy });
+          }
+        }
+      }
+    }
+    return cells;
+  }
+
   function drawGrid(canvas, imageData, grid, W, H) {
     canvas.width = W; canvas.height = H;
     const ctx = canvas.getContext('2d');
@@ -17075,7 +17137,19 @@ const Annotator = (() => {
         z && z.artifact_rejection !== true &&
         typeof z.x === 'number' && typeof z.y === 'number' &&
         typeof z.w === 'number' && typeof z.h === 'number');
-      if (_fallbackZones.length) strokeBboxContours(ctx, _fallbackZones, W, H);
+      if (_fallbackZones.length) {
+        /* V259 — on tente d'abord le CONTOUR LISSE (style A cohérent) reconstruit
+           depuis les pixels clairs des bbox IA ; équerres seulement en dernier
+           recours (erreur). Enveloppé : ne peut jamais casser l'analyse. */
+        try {
+          const _fbCells = _bboxBrightCells(imageData, _fallbackZones, W, H);
+          if (_fbCells.length) { smoothCellContour(ctx, _fbCells, W, H); _cartoPainted = true; }
+          else strokeBboxContours(ctx, _fallbackZones, W, H);
+        } catch (e) {
+          console.warn('[V259 carto fallback] contour lisse impossible → équerres:', e);
+          try { strokeBboxContours(ctx, _fallbackZones, W, H); } catch (e2) {}
+        }
+      }
     }
 
     /* AUCUN marker sur l'image — uniquement l'overlay de cellules fluorescentes.
@@ -24146,10 +24220,11 @@ const Annotator = (() => {
               });
             } catch (e) {}
           }
-          /* V188 — titre de l'hypothèse coloré selon le risque (classe sur la carte verdict) */
-          { const rl2 = (res.riskLevel || '').toString().toLowerCase();
-            const rk = rl2 === 'high' ? 'high' : (rl2 === 'mid' || rl2 === 'moyen' || rl2 === 'medium') ? 'mid' : 'low';
-            if (card) { card.classList.remove('risk-low','risk-mid','risk-high'); card.classList.add('risk-' + rk); } }
+          /* V259 — titre de l'hypothèse coloré selon le risque : on RÉUTILISE _rk (robuste,
+             identique à la jauge : regex high/haut/élev + moder/moyen + fallback score) au lieu
+             d'un re-calcul étroit sur res.riskLevel ('Élevé'/'moderate' ne matchaient pas →
+             tombait toujours sur 'low' = titre vert même en risque élevé). */
+          { if (card) { card.classList.remove('risk-low','risk-mid','risk-high'); card.classList.add('risk-' + _rk); } }
         } catch (e) {}
         $set('lvVerdictActionText', recommendation.primary_action);
         const actTitle = document.getElementById('lvVerdictActionTitle');
