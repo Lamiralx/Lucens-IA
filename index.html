@@ -5332,39 +5332,39 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
    change la sévérité du score (variable per-analyse). */
 .mo-overlay {
   position: fixed; inset: 0;
-  background: rgba(6, 7, 10, 0.82);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  display: flex; align-items: center; justify-content: center;
-  padding: max(16px, env(safe-area-inset-top, 0px)) 16px max(16px, env(safe-area-inset-bottom, 0px));
+  background: rgba(6, 7, 10, 0.45);
+  display: flex; align-items: flex-end; justify-content: center;
   z-index: 10000;
   opacity: 0;
   transition: opacity .25s ease;
 }
 .mo-overlay.visible { opacity: 1; }
 .mo-overlay[hidden] { display: none; }
+/* V275 — BOTTOM SHEET canon (rayon 24 haut, hauteur = contenu, safe-area).
+   2 questions : zone inspectée + moment (avant/après nettoyage). */
 .mo-modal {
   position: relative;
-  background: var(--surface);
+  background: var(--surface-hi);
   border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+  border-bottom: 0;
+  border-radius: 24px 24px 0 0;
   width: 100%;
-  max-width: 580px;                  /* V37 : 560 → 580 */
-  height: calc(100dvh - 32px);       /* V37 : occupe toute la hauteur */
-  max-height: calc(100dvh - 32px);
-  min-height: min(85dvh, 700px);
+  max-width: 600px;
+  max-height: calc(100dvh - 24px);
   display: flex; flex-direction: column;
-  transform: translateY(12px) scale(0.97);
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  transform: translateY(24px);
   opacity: 0;
   transition: transform .3s cubic-bezier(.16, 1, .3, 1), opacity .22s ease;
   overflow: hidden;
 }
-.mo-overlay.visible .mo-modal { transform: translateY(0) scale(1); opacity: 1; }
+.mo-overlay.visible .mo-modal { transform: translateY(0); opacity: 1; }
+@media (min-width: 640px) {
+  .mo-overlay { align-items: center; padding: 24px 16px; }
+  .mo-modal { border-radius: 24px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+}
 .mo-header {
-  padding: 18px 26px 14px;
-  border-bottom: 1px solid var(--hairline);
-  background: linear-gradient(180deg, rgba(216,67,21,0.04) 0%, transparent 100%);
+  padding: 18px 16px 2px;
 }
 .mo-eyebrow {
   display: block;
@@ -5385,20 +5385,31 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   color: var(--ink-primary);
   margin: 0 0 6px;
 }
-.mo-sub {
-  font-family: var(--font-body);
-  font-size: 12.5px;
-  line-height: 1.5;
-  color: var(--ink-tertiary);
-  margin: 0;
-}
 .mo-body {
-  flex: 1 1 auto;       /* V37 : prend toute la hauteur disponible */
+  flex: 1 1 auto;
   min-height: 0;
-  padding: 16px 26px 8px;
+  padding: 4px 16px 8px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
+/* V275 — champ « Zone inspectée » : label eyebrow + input canon 46/r12.
+   16px = pas de zoom forcé iOS au focus. Pas de placeholder (rien à effacer). */
+.mo-field-label {
+  font-family: var(--font-body);
+  font-size: 10px; font-weight: 600; letter-spacing: 0.10em;
+  text-transform: uppercase; color: var(--ink-tertiary);
+  margin: 14px 0 8px;
+}
+.mo-zone-input {
+  width: 100%; height: 46px;
+  border-radius: var(--radius-md, 12px);
+  border: 1px solid var(--border);
+  background: var(--surface-mid);
+  padding: 0 14px;
+  font-family: var(--font-body); font-size: 16px; font-weight: 500;
+  color: var(--ink-primary);
+}
+.mo-zone-input:focus { outline: none; border-color: var(--accent); background: var(--surface-hi); }
 .mo-options {
   display: grid;
   grid-template-columns: 1fr;
@@ -5445,32 +5456,9 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 .mo-footer {
   display: flex;
   gap: 10px;
-  padding: 14px 26px 14px;
-  border-top: 1px solid var(--hairline);
+  padding: 16px 16px 14px;
   align-items: center;
 }
-/* V28.1 — Rangée checkbox "Ne plus me demander" sous les boutons */
-.mo-noask-row {
-  padding: 0 26px 16px;
-  display: flex;
-  justify-content: center;
-}
-.mo-noask-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-body);
-  font-size: 12px;
-  color: var(--ink-tertiary);
-  cursor: pointer;
-  user-select: none;
-}
-.mo-noask-label input[type="checkbox"] {
-  width: 15px; height: 15px;
-  accent-color: var(--accent);
-  cursor: pointer;
-}
-.mo-noask-label:hover { color: var(--ink-secondary); }
 .mo-skip, .mo-submit {
   font-family: inherit;
   font-size: 14px;
@@ -9099,7 +9087,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v273</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v274</div>
         </div>
       </div>
     </div>
@@ -9594,7 +9582,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <img class="loader-photo" id="loaderPhoto" alt="">
         <div class="loader-ctx">
           <span class="loader-ctx-sector" id="loaderCtxSector">&nbsp;</span>
-          <span class="loader-ctx-spec">UV-A · 365 nm</span>
+          <span class="loader-ctx-spec" id="loaderCtxSpec">UV-A · 365 nm</span>
         </div>
         <div class="loader-prog">
           <div class="loader-bar">
@@ -10835,22 +10823,29 @@ body.lv-open { overflow: hidden; touch-action: none; }
      incident) car ce contexte change radicalement la sévérité du score.
      Variable per-analyse : jamais persisté en localStorage.
      ═══════════════════════════════════════════════════════════ -->
+<!-- V275 — POPUP « Contexte du cliché » réactivé (décision utilisateur) en
+     BOTTOM SHEET canon : 2 questions — zone inspectée (texte libre) + moment
+     (avant/après nettoyage). Ignorer = analyse directe sans contexte ;
+     ✕ = annuler (V140). La zone remonte dans la carte instrument du loader
+     puis dans le rapport/historique ; le moment calibre la sévérité IA. -->
 <div class="mo-overlay" id="momentOverlay" hidden>
   <div class="mo-modal" role="dialog" aria-modal="true" aria-labelledby="moTitle">
     <div class="mo-header">
       <div class="mo-header-top">
-        <span class="mo-eyebrow" data-i18n="mo_eyebrow">Contexte du cliché</span>
-        <button type="button" class="mo-close" id="moCloseBtn" data-i18n-aria-label="mo_close_aria" aria-label="Fermer">
+        <span class="mo-eyebrow" data-i18n="mo_eyebrow">Avant l'analyse</span>
+        <button type="button" class="mo-close" id="moCloseBtn" data-i18n-aria-label="mo_close_aria" aria-label="Annuler">
           <!-- V250 — croix CANONIQUE (identique partout) -->
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M18 6 6 18M6 6l12 12"/>
           </svg>
         </button>
       </div>
-      <h3 class="mo-title" id="moTitle" data-i18n="mo_title">Cette photo a été prise…</h3>
-      <p class="mo-sub" data-i18n="mo_sub">Calibre la sévérité du score</p>
+      <h3 class="mo-title" id="moTitle" data-i18n="mo_title">Contexte du cliché</h3>
     </div>
     <div class="mo-body">
+      <div class="mo-field-label" data-i18n="rep_zone">Zone inspectée</div>
+      <input type="text" class="mo-zone-input" id="moZoneInput" autocomplete="off" enterkeyhint="done" maxlength="60">
+      <div class="mo-field-label" data-i18n="moment_label">Moment du cliché</div>
       <div class="mo-options" role="radiogroup">
         <label class="mo-opt">
           <input type="radio" name="mo_moment" value="before_cleaning">
@@ -10866,32 +10861,11 @@ body.lv-open { overflow: hidden; touch-action: none; }
             <span class="mo-opt-hint" data-i18n="mo_after_hint">Validation · toute trace = défaut protocole</span>
           </span>
         </label>
-        <label class="mo-opt">
-          <input type="radio" name="mo_moment" value="routine_check">
-          <span class="mo-opt-card">
-            <span class="mo-opt-key" data-i18n="mo_routine_key">Contrôle de routine</span>
-            <span class="mo-opt-hint" data-i18n="mo_routine_hint">Inspection périodique · hors nettoyage</span>
-          </span>
-        </label>
-        <label class="mo-opt">
-          <input type="radio" name="mo_moment" value="incident">
-          <span class="mo-opt-card">
-            <span class="mo-opt-key" data-i18n="mo_incident_key">Suite à incident</span>
-            <span class="mo-opt-hint" data-i18n="mo_incident_hint">Après alerte · investigation ciblée</span>
-          </span>
-        </label>
       </div>
     </div>
     <div class="mo-footer">
-      <button type="button" class="mo-skip" id="moSkipBtn" data-i18n="mo_skip">Sans précision</button>
+      <button type="button" class="mo-skip" id="moSkipBtn" data-i18n="mo_skip">Ignorer</button>
       <button type="button" class="mo-submit" id="moSubmitBtn" data-i18n="mo_submit">Lancer l'analyse</button>
-    </div>
-    <!-- V28.1 — Option "ne plus me demander" : skip définitif du popup -->
-    <div class="mo-noask-row">
-      <label class="mo-noask-label">
-        <input type="checkbox" id="moNoAskCheckbox" style="width:16px;height:16px;accent-color:var(--accent);">
-        <span data-i18n="mo_no_ask">Ne plus me demander</span>
-      </label>
     </div>
   </div>
 </div>
@@ -11435,13 +11409,13 @@ const I18N = {
     moment_after:              "Après nettoyage",
     moment_routine:            "Contrôle de routine",
     moment_incident:           "Suite à incident",
-    mo_eyebrow:                "Contexte du cliché",
+    mo_eyebrow:                "Avant l'analyse",
     /* V106 — REVERT V102 sur le titre : "Préciser le moment" perdait
        l'élégance du pattern "Cette photo a été prise…" où l'option choisie
        complète naturellement la phrase ("Cette photo a été prise…
        Avant nettoyage"). Pattern unique préservé. Les améliorations V102
        sur sous-titre et hints sont CONSERVÉES. */
-    mo_title:                  "Cette photo a été prise…",
+    mo_title:                  "Contexte du cliché",
     mo_sub:                    "Calibre la sévérité du score",
     mo_before_key:             "Avant nettoyage",
     mo_before_hint:            "Contrôle initial · contamination attendue",
@@ -11451,7 +11425,7 @@ const I18N = {
     mo_routine_hint:           "Inspection périodique · hors nettoyage",
     mo_incident_key:           "Suite à incident",
     mo_incident_hint:          "Après alerte · investigation ciblée",
-    mo_skip:                   "Sans précision",
+    mo_skip:                   "Ignorer",
     mo_submit:                 "Lancer l'analyse",
     mo_no_ask:                 "Ne plus me demander",
     mo_close_aria:             "Fermer",
@@ -12032,8 +12006,8 @@ const I18N = {
     moment_label:              "Photo moment",
     moment_unspecified:        "Unspecified",
     moment_before:             "Before cleaning",
-    mo_eyebrow:                "Photo context",
-    mo_title:                  "This photo was taken…",
+    mo_eyebrow:                "Before the analysis",
+    mo_title:                  "Photo context",
     mo_sub:                    "Calibrates score severity",
     mo_before_key:             "Before cleaning",
     mo_before_hint:            "Initial check · contamination expected",
@@ -12335,8 +12309,8 @@ const I18N = {
     rep_verify: "En caso de duda, confirmar mediante muestreo de superficie (ATP o laboratorio).",
     hdr_title: "LUCENS",
     hub_eyebrow: "UV-A 365 nm · Lucens IA",
-    mo_eyebrow:                "Contexto de la foto",
-    mo_title:                  "Esta foto fue tomada…",
+    mo_eyebrow:                "Antes del análisis",
+    mo_title:                  "Contexto de la foto",
     mo_sub:                    "Calibra la severidad del análisis",
     mo_before_key:             "Antes del lavado",
     mo_before_hint:            "Control inicial · contaminación esperada",
@@ -12346,7 +12320,7 @@ const I18N = {
     mo_routine_hint:           "Inspección periódica · fuera del lavado",
     mo_incident_key:           "Tras incidente",
     mo_incident_hint:          "Tras alerta · investigación dirigida",
-    mo_skip:                   "Sin precisar",
+    mo_skip:                   "Omitir",
     mo_submit:                 "Iniciar análisis",
     mo_no_ask:                 "No volver a preguntar",
     mo_close_aria:             "Cerrar",
@@ -12924,8 +12898,8 @@ const I18N = {
     rep_verify: "Im Zweifelsfall durch Oberflächenprobe (ATP oder Labor) bestätigen.",
     hdr_title: "LUCENS",
     hub_eyebrow: "UV-A 365 nm · Lucens IA",
-    mo_eyebrow:                "Aufnahmekontext",
-    mo_title:                  "Dieses Foto wurde aufgenommen…",
+    mo_eyebrow:                "Vor der Analyse",
+    mo_title:                  "Aufnahmekontext",
     mo_sub:                    "Kalibriert die Strenge der Bewertung",
     mo_before_key:             "Vor der Reinigung",
     mo_before_hint:            "Erstkontrolle · Kontamination erwartet",
@@ -12935,7 +12909,7 @@ const I18N = {
     mo_routine_hint:           "Periodische Inspektion · außerhalb Reinigung",
     mo_incident_key:           "Nach Vorfall",
     mo_incident_hint:          "Nach Alarm · gezielte Untersuchung",
-    mo_skip:                   "Keine Angabe",
+    mo_skip:                   "Überspringen",
     mo_submit:                 "Analyse starten",
     mo_no_ask:                 "Nicht mehr fragen",
     mo_close_aria:             "Schließen",
@@ -15576,77 +15550,42 @@ const Annotator = (() => {
   }
 
   /* ═══════════════════════════════════════════════════════════════════
-     V272 — RENDU PROJECTEUR (choix utilisateur 2026-06-10) : on assombrit +
-     désature TOUT sauf les zones fluorescentes validées (transition fondue).
-     PLUS de contour tracé (jugé inadapté / « entourages aléatoires »). La
-     DÉTECTION est inchangée (zones validées + champ de contraste absolu V271
-     + anti-reflet) ; seul le RENDU change : l'œil va au résidu sans ligne, et
-     c'est honnête face à l'ambiguïté physique de la frontière. Abstention si
-     rien de franc (photo nette) ; legacy V198/V259 UNIQUEMENT sur erreur.
-     Mesuré : case_H résidu → fond assombri / résidu net ~266 ms ; case_D
-     (plastique bleu à reflets) → maskFrac 0 → photo nette (aucun assombrissement). */
-  function _feather(mask, w, h, rad) {
-    var src = new Float32Array(w * h);
-    for (var i = 0; i < w * h; i++) src[i] = mask[i] ? 1 : 0;
-    var tmp = new Float32Array(w * h);
-    var pass, x, y, k, acc, norm = 1 / (2 * rad + 1);
-    for (pass = 0; pass < 3; pass++) {
-      for (y = 0; y < h; y++) {            /* horizontal */
-        acc = 0;
-        for (k = -rad; k <= rad; k++) { var xx = k < 0 ? 0 : (k >= w ? w - 1 : k); acc += src[y * w + xx]; }
-        for (x = 0; x < w; x++) {
-          tmp[y * w + x] = acc * norm;
-          var xo = x - rad; if (xo < 0) xo = 0;
-          var xn = x + rad + 1; if (xn >= w) xn = w - 1;
-          acc += src[y * w + xn] - src[y * w + xo];
-        }
-      }
-      for (x = 0; x < w; x++) {            /* vertical */
-        acc = 0;
-        for (k = -rad; k <= rad; k++) { var yy = k < 0 ? 0 : (k >= h ? h - 1 : k); acc += tmp[yy * w + x]; }
-        for (y = 0; y < h; y++) {
-          src[y * w + x] = acc * norm;
-          var yo = y - rad; if (yo < 0) yo = 0;
-          var yn = y + rad + 1; if (yn >= h) yn = h - 1;
-          acc += tmp[yn * w + x] - tmp[yo * w + x];
-        }
+     V274 — RENDU MOSAÏQUE (choix utilisateur 2026-06-10, capture fournie) :
+     la photo reste INTACTE, et chaque cellule de la grille de détection
+     reconnue fluorescente est remplie d'AMBRE translucide à arêtes franches
+     (nearest-neighbor, aucun flou). C'est le rendu le plus honnête : il
+     montre exactement CE que la détection a retenu, cellule par cellule —
+     ni ligne inventée (V259), ni assombrissement du décor (V272 projecteur,
+     jugé inadapté). La DÉTECTION est strictement inchangée (zones validées
+     + champ de contraste absolu V271 + anti-reflet) : c'est elle qui écarte
+     les faux positifs ; les garde-fous d'abstention restent identiques. */
+  function _renderMosaic(ctx, imageData, res, W, H) {
+    var IW = imageData.width, IH = imageData.height;
+    var gw = res.gw, gh = res.gh, mask = res.mask;
+    /* 1) photo de base, inchangée */
+    var pc = document.createElement('canvas'); pc.width = IW; pc.height = IH;
+    pc.getContext('2d').putImageData(imageData, 0, 0);
+    /* 2) masque grille → canvas gw×gh ambre opaque (1 cellule = 1 pixel) */
+    var mc = document.createElement('canvas'); mc.width = gw; mc.height = gh;
+    var mctx = mc.getContext('2d');
+    var md = mctx.createImageData(gw, gh);
+    for (var i = 0; i < gw * gh; i++) {
+      if (mask[i]) {
+        var o = i * 4;
+        md.data[o] = 236; md.data[o + 1] = 170; md.data[o + 2] = 60; md.data[o + 3] = 255;
       }
     }
-    return src;
-  }
-
-  /* rend le projecteur dans un buffer RGBA (W×H). res = retour de _spxLoops. */
-  function _renderSpotlight(srcData, W, H, res, opts) {
-    opts = opts || {};
-    var DIM   = opts.dim   != null ? opts.dim   : 0.42;  /* luminosité du fond hors-zone */
-    var FLOOR = opts.floor != null ? opts.floor : 0.18;  /* le fond reste visible (jamais noir total) */
-    var gw = res.gw, gh = res.gh, sG = res.sG;
-    var rad = Math.max(2, Math.round((gw < gh ? gw : gh) * 0.03));
-    var fm = _feather(res.mask, gw, gh, rad);
-    var out = new Uint8ClampedArray(W * H * 4);
-    var x, y, i;
-    for (y = 0; y < H; y++) {
-      var gy = y / sG; var gyi = gy | 0; if (gyi >= gh - 1) gyi = gh - 2 < 0 ? 0 : gh - 2; var fy = gy - gyi;
-      for (x = 0; x < W; x++) {
-        var gx = x / sG; var gxi = gx | 0; if (gxi >= gw - 1) gxi = gw - 2 < 0 ? 0 : gw - 2; var fx = gx - gxi;
-        /* bilinéaire du masque fondu */
-        var m00 = fm[gyi * gw + gxi], m10 = fm[gyi * gw + gxi + 1];
-        var m01 = fm[(gyi + 1) * gw + gxi], m11 = fm[(gyi + 1) * gw + gxi + 1];
-        var m = m00 * (1 - fx) * (1 - fy) + m10 * fx * (1 - fy) + m01 * (1 - fx) * fy + m11 * fx * fy;
-        if (m > 1) m = 1; else if (m < 0) m = 0;
-        i = (y * W + x) * 4;
-        var r = srcData[i], g = srcData[i + 1], b = srcData[i + 2];
-        var lum = 0.299 * r + 0.587 * g + 0.114 * b;
-        /* fond = désaturé (luma) assombri, teinte froide discrète, plancher de visibilité */
-        var f = FLOOR + (DIM - FLOOR) * 0;     /* base */
-        var dr = lum * DIM * 0.94, dg = lum * DIM * 1.0, db = lum * DIM * 1.16;
-        out[i]     = r * m + dr * (1 - m);
-        out[i + 1] = g * m + dg * (1 - m);
-        out[i + 2] = b * m + db * (1 - m);
-        out[i + 3] = 255;
-      }
-    }
-    return out;
+    mctx.putImageData(md, 0, 0);
+    /* 3) composition : photo nette + mosaïque ambre (blocs nets via nearest) */
+    ctx.clearRect(0, 0, W, H);
+    ctx.save();
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(pc, 0, 0, W, H);
+    ctx.globalAlpha = 0.55;
+    ctx.imageSmoothingEnabled = false;     /* arêtes franches : le bloc EST l'unité de détection */
+    ctx.drawImage(mc, 0, 0, gw, gh, 0, 0, (res.sG * gw / IW) * W, (res.sG * gh / IH) * H);
+    ctx.restore();
+    return true;
   }
 
   function highlightZones(ctx, imageData, zones, W, H) {
@@ -15671,17 +15610,7 @@ const Annotator = (() => {
     if (!res || !res.mask) return false;
     if (res.maskFrac > 0.50) return false;       /* voile probable → legacy (cousin V155) */
     if (res.maskFrac < 0.003) return true;        /* rien de franc → photo nette (abstention), pas de legacy */
-    const out = _renderSpotlight(imageData.data, IW, IH, res, {});
-    let od;
-    try { od = new ImageData(out, IW, IH); }
-    catch (e) { od = ctx.createImageData(IW, IH); od.data.set(out); }
-    if (IW === W && IH === H) { ctx.putImageData(od, 0, 0); }
-    else {
-      const tc = document.createElement('canvas'); tc.width = IW; tc.height = IH;
-      tc.getContext('2d').putImageData(od, 0, 0);
-      ctx.clearRect(0, 0, W, H); ctx.drawImage(tc, 0, 0, W, H);
-    }
-    return true;
+    return _renderMosaic(ctx, imageData, res, W, H);
   }
 
   function drawGrid(canvas, imageData, grid, W, H) {
@@ -19334,8 +19263,12 @@ const Annotator = (() => {
       setTimeout(() => { overlay.hidden = true; }, 250);
     }
 
-    function fire(momentValue) {
+    /* V275 — zone inspectée saisie dans le popup (volatile, par analyse) */
+    let lastZoneName = '';
+
+    function fire(momentValue, zoneValue) {
       lastSelectedMoment = momentValue || '';
+      lastZoneName = (zoneValue || '').trim();
       const file = pendingFile;
       const cb = pendingCallback;
       pendingFile = null;
@@ -19352,6 +19285,7 @@ const Annotator = (() => {
       pendingFile = null;
       pendingCallback = null;
       lastSelectedMoment = '';
+      lastZoneName = '';
       close();
     }
 
@@ -19364,35 +19298,25 @@ const Annotator = (() => {
       return v;
     }
 
-    /* V28.1 — Lecture de la préférence "ne plus demander" */
-    function shouldAlwaysSkip() {
-      try { return localStorage.getItem('lucens_moment_skip') === '1'; }
-      catch { return false; }
-    }
-    function setAlwaysSkip(v) {
-      try { localStorage.setItem('lucens_moment_skip', v ? '1' : '0'); }
-      catch {}
-    }
+    /* V275 — lectures NON destructives pour l'affichage (loader, historique).
+       consume() reste réservé au payload API (one-shot). */
+    function peekMoment() { return lastSelectedMoment; }
+    function getZone() { return lastZoneName; }
 
     function askThen(file, callback) {
-      /* V157 — POP-UP « contexte du cliché » RETIRÉ (jugé inutile par l'utilisateur).
-         L'analyse démarre DIRECTEMENT. Le contexte d'inspection se règle via le
-         bouton « Contexte » de la barre du bas, plus besoin d'une question par photo. */
-      lastSelectedMoment = '';
-      if (typeof callback === 'function') callback(file);
-      return;
-      /* eslint-disable no-unreachable — ancien flux conservé (mort) au cas où */
+      /* V275 — POPUP RÉACTIVÉ (décision utilisateur, annule V157) : 2 questions
+         — zone inspectée (texte libre) + moment du cliché (avant/après
+         nettoyage). « Ignorer » lance l'analyse sans contexte ; ✕ / voile /
+         Échap = ANNULER (V140). Le submit est TOUJOURS actif : les 2 champs
+         sont facultatifs, zéro friction. */
       const { overlay, submit } = elements();
-      if (shouldAlwaysSkip()) {
-        lastSelectedMoment = '';
-        if (typeof callback === 'function') callback(file);
-        return;
-      }
-      if (!overlay) { callback(file); return; }
+      if (!overlay) { lastSelectedMoment = ''; lastZoneName = ''; callback(file); return; }
       pendingFile = file;
       pendingCallback = callback;
       document.querySelectorAll('input[name="mo_moment"]').forEach(r => { r.checked = false; });
-      if (submit) submit.disabled = true;
+      const zi = document.getElementById('moZoneInput');
+      if (zi) zi.value = '';
+      if (submit) submit.disabled = false;
       overlay.hidden = false;
       /* V93 — Filet i18n : force la traduction de tous les data-i18n du
          popup moment à chaque ouverture. Garantit que "Ne plus me demander"
@@ -19413,14 +19337,6 @@ const Annotator = (() => {
       requestAnimationFrame(() => overlay.classList.add('visible'));
     }
 
-    /* Activation du submit dès qu'une option est sélectionnée */
-    document.addEventListener('change', e => {
-      if (e.target && e.target.name === 'mo_moment') {
-        const { submit } = elements();
-        if (submit) submit.disabled = !e.target.value;
-      }
-    });
-
     /* Branchement du submit / skip. La page peut déjà être chargée au moment
        où cette IIFE s'exécute (DOMContentLoaded déjà tiré), donc on essaie
        d'attacher immédiatement, puis on attend DOMContentLoaded en fallback. */
@@ -19429,20 +19345,13 @@ const Annotator = (() => {
       if (submit && !submit._moBound) {
         submit._moBound = true;
         submit.addEventListener('click', () => {
-          /* V28.1 — Si checkbox "Ne plus me demander" cochée → sauve la préf */
-          const cb = document.getElementById('moNoAskCheckbox');
-          if (cb && cb.checked) setAlwaysSkip(true);
-          fire(selected());
+          const zi = document.getElementById('moZoneInput');
+          fire(selected(), zi ? zi.value : '');
         });
       }
       if (skip && !skip._moBound) {
         skip._moBound = true;
-        skip.addEventListener('click', () => {
-          /* V28.1 — Idem au skip : si checkbox cochée → skip permanent */
-          const cb = document.getElementById('moNoAskCheckbox');
-          if (cb && cb.checked) setAlwaysSkip(true);
-          fire('');
-        });
+        skip.addEventListener('click', () => fire('', ''));   /* Ignorer → analyse directe */
       }
       /* Croix de fermeture uniforme (2026-05-15) */
       const closeX = document.getElementById('moCloseBtn');
@@ -19469,7 +19378,7 @@ const Annotator = (() => {
       if (e.key === 'Escape' && ov && !ov.hidden) cancel();
     });
 
-    return { askThen, consume };
+    return { askThen, consume, peekMoment, getZone };
   })();
 
   /* Init immédiat des 3 modules instrument — placé ici APRÈS toutes les
@@ -19816,14 +19725,27 @@ const Annotator = (() => {
     if (photoEl) photoEl.src = url;
     const sectorEl = $('loaderCtxSector');
     if (sectorEl) {
-      const SECTOR_LABEL_KEYS = {
-        restauration: 'ctx_opt_resto', agro: 'ctx_opt_agro', distrib: 'ctx_opt_distrib',
-        medical: 'ctx_opt_medical', pharma: 'ctx_opt_pharma', industrial: 'ctx_opt_industrial',
-        residential: 'ctx_opt_residential', erp: 'ctx_opt_erp',
-      };
-      let estab = null;
-      try { estab = JSON.parse(localStorage.getItem('lucens_user_context_v1') || 'null')?.establishmentType || null; } catch {}
-      sectorEl.textContent = (estab && SECTOR_LABEL_KEYS[estab]) ? t(SECTOR_LABEL_KEYS[estab]) : t('loader_ctx_generic');
+      /* V275 — priorité à la ZONE saisie dans le popup contexte ; sinon secteur ; sinon générique */
+      const zoneName = (typeof LucensMoment !== 'undefined' && LucensMoment.getZone) ? LucensMoment.getZone() : '';
+      if (zoneName) {
+        sectorEl.textContent = zoneName;
+      } else {
+        const SECTOR_LABEL_KEYS = {
+          restauration: 'ctx_opt_resto', agro: 'ctx_opt_agro', distrib: 'ctx_opt_distrib',
+          medical: 'ctx_opt_medical', pharma: 'ctx_opt_pharma', industrial: 'ctx_opt_industrial',
+          residential: 'ctx_opt_residential', erp: 'ctx_opt_erp',
+        };
+        let estab = null;
+        try { estab = JSON.parse(localStorage.getItem('lucens_user_context_v1') || 'null')?.establishmentType || null; } catch {}
+        sectorEl.textContent = (estab && SECTOR_LABEL_KEYS[estab]) ? t(SECTOR_LABEL_KEYS[estab]) : t('loader_ctx_generic');
+      }
+    }
+    /* V275 — moment du cliché à droite de la ligne contexte (repli : spec UV-A) */
+    const specEl = $('loaderCtxSpec');
+    if (specEl) {
+      const MO_KEYS = { before_cleaning: 'mo_before_key', after_cleaning: 'mo_after_key' };
+      const mo = (typeof LucensMoment !== 'undefined' && LucensMoment.peekMoment) ? LucensMoment.peekMoment() : '';
+      specEl.textContent = (mo && MO_KEYS[mo]) ? t(MO_KEYS[mo]) : 'UV-A · 365 nm';
     }
     startTipRotation();
     resetStepper();
@@ -22577,7 +22499,8 @@ const Annotator = (() => {
           zoneCount: (typeof res.zoneCount === 'number') ? res.zoneCount
                      : (Array.isArray(res.zones) ? res.zones.length : 0),
           sector: sector,
-          zone: '',
+          /* V275 — zone saisie dans le popup « Contexte du cliché » (sinon '') */
+          zone: (typeof LucensMoment !== 'undefined' && LucensMoment.getZone) ? (LucensMoment.getZone() || '') : '',
           image: annDataUrl,
           res: resLite,
           w: W || null, h: H || null,
