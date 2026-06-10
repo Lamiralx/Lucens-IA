@@ -174,6 +174,13 @@ Une seule croix ✕ et un seul chevron ‹ canoniques (V250) réutilisés partou
    en bas de fichier pour corriger la précédente (cause racine du chaos pré-V260 : 12 générations
    de styles pour `.viewer-tab`, 8 pour `.lv-verdict-eyebrow`). On ÉDITE la règle existante.
 2. Toute nouvelle valeur passe par un token existant ; sinon on discute le token, pas l'exception.
+2b. **Spine = aussi l'historique (V275).** Le détail d'une fiche historique est un CLONE DOM de
+   l'écran d'analyse ; chaque règle `#results.visible …` du bloc `#metier-spine-css` porte un
+   sélecteur JUMEAU `.hist-live-result …` (mappings : `#hero`→`.hero`, `#viewerStage`→`.viewer-stage`,
+   `#lvRisque`→`.lv-risque`, `.result-grid > ` supprimé). **Toute nouvelle règle spine doit recevoir
+   son jumeau** (générateur de référence : `.claude/tests/apply-v275.mjs`) — c'est ce qui garantit
+   « analyse et historique identiques » (vérif : parité de styles calculés dans
+   `.claude/tests/verify-v275.mjs`, 21 paires d'éléments).
 3. Avant commit UI : `node .claude/tests/audit-design-full.mjs` → vérifier les écrans touchés
    (clair + sombre) + le dump `styles-dump.json` (eyebrows/boutons/rayons conformes).
 4. Vérifier `node --check` sur les scripts inline extraits (7 blocs) —
