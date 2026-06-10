@@ -711,10 +711,10 @@ body.has-offline-banner .upload-hub {
   outline-offset: 6px;
   border-radius: var(--radius-sm);
 }
-/* V167 — Marque Lucens : cadre viseur + objectif + point orange central
-   (logo fourni). Couleurs exactes du concept. Aucune animation/glow. */
-.hdr-mark { display: inline-flex; flex-shrink: 0; color: var(--accent); }  /* V170 — la marque suit l'accent (visible en clair ET en sombre) */
-.hdr-mark svg { width: 30px; height: 30px; display: block; }
+/* V272 — MARQUE UNIFIÉE (décision utilisateur) : partout le même lockup =
+   wordmark LUCENS + point cuivre STATIQUE + éléments « RÉSIDUS · BIOFILMS ·
+   CONTAMINANTS » dessous. Le viseur reste l'icône d'app (PWA/favicon), il ne
+   fait plus partie du lockup in-app. Aucune animation/glow. */
 .hdr-lockup { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; }
 .hdr-wordmark {
   font-family: var(--font-display);
@@ -725,7 +725,10 @@ body.has-offline-banner .upload-hub {
   color: var(--accent);           /* V170 — suit l'accent : pétrole en clair, pétrole clair en sombre (visible) */
   display: inline-block;
 }
-.hdr-wordmark::after { content: none; }   /* V167 — point orange déplacé dans la marque */
+.hdr-wordmark::after {
+  content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--lucens-signature); margin-left: 5px; vertical-align: 0.16em;
+}
 .hdr-tagline {
   font-family: var(--font-body);
   font-weight: 600;
@@ -738,7 +741,6 @@ body.has-offline-banner .upload-hub {
 }
 @media (max-width: 640px) {
   .hdr-wordmark { font-size: 21px; }
-  .hdr-mark svg { width: 27px; height: 27px; }
   .hdr-tagline { font-size: 8.5px; letter-spacing: 0.11em; }
 }
 @media (max-width: 360px) {
@@ -1866,911 +1868,177 @@ input[type="file"] { display: none; }
   .shot-why { font-size: 11.5px; }
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   LOADING — refonte 2026-05-23
-   Carte centrale unique. Inspiration Linear / Stripe / Things.
-   Theme-aware (light par défaut, dark si app en dark).
-   ═══════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   LOADING — V272 « le rapport en train de naître »
+   La photo de l'inspecteur occupe la carte instrument (même idiome que
+   l'écran Résultats : image en tête, contenu dessous). La progression
+   habite l'emplacement du futur verdict. Briefing terrain sectoriel
+   (catégorie en eyebrow), Annuler en 2 temps, marque centrée canon.
+   Theme-aware (tokens), portrait + paysage, prefers-reduced-motion.
+   ═══════════════════════════════════════════════════════════════ */
 .loader {
   display: none; position: fixed; inset: 0;
-  /* Fond BLANC PUR (surface-low) plutôt que --surface-page (gris froid #F4F6F8) :
-     en plein écran le gris donne une impression de "page non chargée". Le blanc
-     pur convient mieux à un loader médical. En dark mode, surface-low devient
-     également propre (gris foncé subtil). */
-  background: var(--surface-low);
+  background: var(--surface-page);
   color: var(--ink-primary);
   z-index: 100;
   overflow: hidden;
   isolation: isolate;
   height: 100dvh;
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 .loader.active {
-  display: grid;
-  /* 4 lignes : brand auto · carte auto · tip 1fr (prend la place dispo) · foot auto (en bas) */
-  grid-template-rows: auto auto 1fr auto;
-  grid-template-columns: 1fr;
-  justify-items: center;
-  gap: clamp(20px, 3vh, 32px);
-  padding-top: clamp(48px, 8vh, 96px);
-  padding-bottom: max(24px, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  padding: calc(env(safe-area-inset-top, 0px) + 36px)
+           max(16px, env(safe-area-inset-right, 0px))
+           calc(env(safe-area-inset-bottom, 0px) + 16px)
+           max(16px, env(safe-area-inset-left, 0px));
 }
-/* Le tip occupe le 1fr et se centre dans l'espace disponible entre carte et footer */
-.loader .loader-tips { align-self: center; }
-/* Le footer est ancré en bas */
-.loader .loader-foot { align-self: end; }
-/* V27.1 — Bouton Annuler VISIBLE permanent avec code couleur Lucens rouge.
-   Centré, bordure rouge marquée, fond légèrement teinté, hover plein. */
-.loader-cancel-btn {
-  align-self: center;
-  margin-top: var(--space-4);
-  padding: 12px 28px;
-  background: rgba(208, 72, 72, 0.12);
-  border: 1.5px solid #d04848;
-  border-radius: var(--radius-md, 4px);
-  color: #d04848;
+/* Marque centrée — définition utilisateur (2026-06-10) : wordmark seul,
+   éléments « RÉSIDUS · BIOFILMS · CONTAMINANTS » dessous, point cuivre
+   STATIQUE (aucune animation/glow). */
+.loader-brand {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding-bottom: 20px; flex-shrink: 0; text-align: center;
+}
+.loader-wordmark {
+  font-family: var(--font-display);
+  font-weight: 800; font-size: 23px; letter-spacing: -0.01em; line-height: 1;
+  color: var(--accent);
+}
+.loader-wordmark::after {
+  content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--lucens-signature); margin-left: 5px; vertical-align: 0.16em;
+}
+.loader-tagline {
   font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: 0 2px 12px rgba(208, 72, 72, 0.15);
-  transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  font-weight: 600; font-size: 9px; line-height: 1; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--ink-tertiary); white-space: nowrap;
 }
-.loader-cancel-btn::before {
-  content: '✕';
-  font-size: 13px;
-  font-weight: 700;
-}
-.loader-cancel-btn:hover {
-  background: #d04848;
-  color: #FFFFFF;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 18px rgba(208, 72, 72, 0.32);
-}
-.loader-cancel-btn:active {
-  transform: translateY(0);
-}
-
-/* Brand — logo Lucens centré, registre identité, pas de tagline ici */
-.loader .loader-brand {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0;
-}
-.loader .loader-wordmark {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(22px, 2.4vw, 26px);
-  letter-spacing: -0.022em;
-  line-height: 1;
-  color: var(--ink-primary);
-  font-feature-settings: "ss01" 1, "ss03" 1, "kern" 1;
-  position: relative;
-  display: inline-block;
-}
-.loader .loader-wordmark::after {
-  content: '';
-  display: inline-block;
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--lucens-signature);
-  margin-left: 5px;
-  vertical-align: 0.16em;
-  box-shadow: 0 0 8px var(--lucens-signature-soft);
-  animation: wordmarkDotPulse 3.6s ease-in-out infinite;
-}
-
-/* ─── CARTE CENTRALE — l'élément unique qui contient toute la progression ─── */
-.loader .loader-card {
-  width: min(420px, calc(100vw - 32px));
-  background: var(--surface-low);
-  border: 1px solid var(--hairline);
+/* Carte instrument — idiome de l'écran Résultats (photo edge-to-edge en tête) */
+.loader-instr {
+  background: var(--surface-hi);
+  border: 1px solid var(--border);
   border-radius: 16px;
-  padding: clamp(28px, 4vh, 36px) clamp(24px, 4vw, 32px);
-  box-shadow: var(--shadow-md);
+  overflow: hidden;
   display: flex; flex-direction: column;
-  gap: 16px;
-  text-align: center;
+  flex-shrink: 0;
 }
-.loader .loader-card-title {
-  font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-tertiary);
-  line-height: 1;
+.loader-photo {
+  display: block; width: 100%;
+  height: clamp(140px, 26vh, 220px);
+  object-fit: cover;
+  background: #0a1119;   /* fond photo UV — identique #viewerStage */
 }
-
-/* Barre de progression fine, accent teal */
-.loader .loader-bar {
-  position: relative;
-  width: 100%;
-  height: 4px;
-  background: var(--hairline);
+.loader-ctx {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.loader-ctx-sector {
+  font-size: 14px; font-weight: 600; color: var(--ink-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.loader-ctx-spec {
+  font-size: 12px; font-weight: 500; color: var(--ink-tertiary);
+  flex-shrink: 0; font-variant-numeric: tabular-nums;
+}
+.loader-prog {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 14px 16px;
+}
+.loader-bar {
+  height: 4px; width: 100%;
+  background: var(--border);
   border-radius: 999px;
   overflow: hidden;
-  margin: 4px 0 2px;
 }
-.loader .loader-bar-fill {
+.loader-bar-fill {
   height: 100%; width: 0;
   background: var(--accent);
   border-radius: 999px;
   transition: width .6s cubic-bezier(.4, 0, .2, 1);
 }
-
-/* Méta : % · Étape X/7 — ligne unique en mono, registre lecture (pas hero) */
-.loader .loader-meta {
-  display: inline-flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 8px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-tertiary);
+.loader-etape {
+  font-size: 12px; font-weight: 500; color: var(--ink-tertiary);
   font-variant-numeric: tabular-nums;
-  line-height: 1;
 }
-.loader .loader-meta-pct {
-  color: var(--accent);
-  font-weight: 600;
-  font-size: 14px;
-}
-.loader .loader-meta-sep {
-  color: var(--ink-dim);
-}
-
-/* Nom de l'étape — registre humain, calme */
-.loader .loader-step-name {
+.loader-step-name {
   font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--ink-primary);
-  line-height: 1.4;
-  /* hauteur réservée pour éviter saut layout entre étapes */
-  min-height: 22px;
-  text-wrap: balance;
+  font-size: 18px; font-weight: 700; letter-spacing: -0.01em;
+  line-height: 1.3; color: var(--ink-primary);
+  min-height: 24px;             /* hauteur réservée : zéro saut entre étapes */
   transition: opacity 0.3s ease;
 }
-
-/* ─── TIP — sous la carte, calme, secondaire ─── */
-.loader .loader-tips {
-  width: min(560px, calc(100vw - 32px));
-  text-align: center;
-  align-self: center;
-  padding: 0 8px;
+/* Briefing terrain — la catégorie du conseil fait l'eyebrow (registre expert) */
+.loader-brief {
+  margin-top: 12px;
+  background: var(--surface-mid);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  flex-shrink: 0;
 }
-.loader .loader-tip-text {
-  font-family: var(--font-display);
-  font-size: clamp(15px, 1.8vw, 18px);
-  font-weight: 400;
+.loader-brief-eyebrow {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.10em;
+  text-transform: uppercase; color: var(--ink-tertiary);
+  margin-bottom: 6px;
+  transition: opacity .4s ease;
+}
+.loader-brief-text {
+  font-size: 14px; font-weight: 400; line-height: 1.5;
   color: var(--ink-secondary);
-  line-height: 1.55;
-  letter-spacing: -0.005em;
-  text-wrap: balance;
-  min-height: 80px;
-  display: flex; align-items: center; justify-content: center;
-  transition: opacity .5s cubic-bezier(.4, 0, .2, 1);
+  min-height: 63px;             /* ~3 lignes réservées : zéro saut entre conseils */
+  transition: opacity .4s ease;
 }
-.loader .loader-tips.fade-out .loader-tip-text { opacity: 0; }
-.loader .loader-tip-source {
-  margin-top: 10px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  color: var(--ink-dim);
-  transition: opacity .5s cubic-bezier(.4, 0, .2, 1);
-}
-.loader .loader-tips.fade-out .loader-tip-source { opacity: 0; }
-.loader .loader-tips.is-tappable { cursor: pointer; -webkit-tap-highlight-color: transparent; }
-
-/* ─── FOOTER — référentiel méthodologique ultra-discret ─── */
-.loader .loader-foot {
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  font-weight: 500;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  color: var(--ink-dim);
-  text-align: center;
-  line-height: 1.4;
-}
-
-@media (max-width: 380px) {
-  .loader.active { gap: 20px; padding-top: 40px; }
-  .loader .loader-card { padding: 24px 20px; gap: 14px; }
-  .loader .loader-step-name { font-size: 15px; }
-  .loader .loader-tip-text { font-size: 14px; min-height: 64px; }
-}
-/* Anciennes règles grid-template-areas supprimées (2026-05-23) — elles
-   écrasaient l'ordre du DOM de la nouvelle structure (brand → carte → tip → foot). */
-
-/* Anciens éléments structurels supprimés/cachés depuis la refonte 2026-05-23 :
-   - backdrop, veil, scan beam : cinématographiques, incompatibles médical clean
-   - top, progress, steps-list, pipeline 7 dots, active-step, phase, topbar :
-     remplacés par la carte centrale unique
-   - tip-eyebrow, status, compliance : remplacés par le footer minimal */
-.loader-backdrop, .loader-veil, .loader-scan,
-.loader-top, .loader-progress, .loader-pct,
-.loader-steps-list, .loader-step-row, .loader-active-step,
-.loader-phase, .loader-micro-status,
-.loader-topbar, .loader-status, .loader-compliance,
-.loader-tip-eyebrow {
-  display: none !important;
-}
-
-/* Barre de progression fine en haut — accent teal sur hairline neutre */
-.loader-topbar {
-  position: absolute;
-  left: 0; right: 0;
-  top: env(safe-area-inset-top, 0px);
-  height: 2px;
-  background: var(--hairline);
-  z-index: 5;
-}
-.loader-topbar-fill {
-  height: 100%; width: 0;
-  background: var(--accent);
-  transition: width .55s cubic-bezier(.4, 0, .2, 1);
-}
-
-/* ─── BLOC SUPÉRIEUR DU LOADER — composition aérée et hiérarchisée ─── */
-.loader-top {
-  position: relative; z-index: 6;
-  display: flex; flex-direction: column; align-items: center;
-  /* Espacement entre brand (logo+tagline) et bloc progression : respiration franche
-     pour distinguer clairement les deux groupes visuels (identité vs progression) */
-  gap: clamp(24px, 4vh, 36px);
-  /* Respiration modérée depuis le bord haut : safe-area + 5-9% viewport */
-  padding-top: calc(env(safe-area-inset-top, 0px) + clamp(40px, 7vh, 80px));
-  padding-bottom: var(--space-4);
-  padding-left: var(--space-4);
-  padding-right: var(--space-4);
-  width: 100%;
-  max-width: 720px;
-  margin: 0 auto;
-}
-
-/* LOGO LUCENS — IDENTIQUE au header (wordmark Geist 800 + dot + tagline mono) */
-.loader-brand {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  text-align: center;
-}
-.loader-wordmark {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 28px;
-  letter-spacing: -0.022em;
-  line-height: 1;
-  color: var(--ink-primary);
-  font-feature-settings: "ss01" 1, "ss03" 1, "kern" 1;
-  position: relative;
-  display: inline-block;
-}
-/* Le point blanc après LUCENS — identique au header */
-.loader-wordmark::after {
-  content: '';
-  display: inline-block;
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: var(--lucens-signature);
-  margin-left: 5px;
-  vertical-align: 0.16em;
-  box-shadow: 0 0 8px var(--lucens-signature-soft);
-  animation: wordmarkDotPulse 3.6s ease-in-out infinite;
-}
-.loader-tagline {
-  font-family: var(--font-mono);
-  font-weight: 500;
-  font-size: 10px;
-  line-height: 1;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--ink-tertiary);
-}
-
-/* PROGRESSION — % + phase dots + étape, intégrés en haut */
-.loader-progress {
-  display: flex; flex-direction: column; align-items: center;
-  /* Aération entre le grand % et la ligne des points (pipeline) */
-  gap: var(--space-5);
-  width: 100%;
-}
-.loader-progress .loader-pct {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 2px;
-  font-variant-numeric: tabular-nums;
-}
-/* Compteur % — focal point chromatique en accent teal (cohérent avec la marque) */
-.loader .loader-progress .pct-num,
-.loader #loaderPct {
-  font-family: var(--font-display);
-  font-size: 64px;
-  font-weight: 700;
-  color: var(--accent);
-  letter-spacing: -0.030em;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-.loader .loader-progress .pct-sign {
-  font-family: var(--font-mono);
-  font-size: 22px;
-  color: var(--ink-tertiary);
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  margin-left: 4px;
-}
-
-@media (max-width: 640px) {
-  .loader-top {
-    /* Mobile : on conserve une respiration franche entre brand et progression */
-    gap: clamp(22px, 3.5vh, 30px);
-    /* padding-top conservé du parent (pas d'override) — clamp adaptatif fonctionne */
-  }
-  .loader-wordmark { font-size: 24px; }
-  .loader-wordmark::after { width: 6px; height: 6px; margin-left: 4px; }
-  .loader-tagline { font-size: 9.5px; letter-spacing: 0.16em; }
-  .loader-progress {
-    /* Aération mobile : entre le grand % et les points */
-    gap: var(--space-4);
-  }
-  .loader .loader-progress .pct-num,
-  .loader #loaderPct { font-size: 52px; }
-  .loader .loader-progress .pct-sign { font-size: 18px; }
-  .loader-active-step {
-    /* Espace entre points et "Étape X / 7" sur mobile */
-    margin-top: var(--space-4);
-    font-size: 13.5px;
-  }
-  .loader-active-step-num { font-size: 9.5px; letter-spacing: 0.12em; }
-}
-
-/* ─── PIPELINE HORIZONTAL DES 7 ÉTAPES — design instrument horloger ─── */
-.loader-steps-list {
-  list-style: none;
-  margin: 0; padding: 0;
-  display: flex; flex-direction: row;
-  align-items: center; justify-content: space-between;
-  gap: 0;
-  width: 100%;
-  /* Pipeline ÉLARGI pour étaler les 7 nodes sur plus d'espace (registre instrument) */
-  max-width: 480px;
-  position: relative;
-  /* Ligne horizontale de fond reliant les nodes */
-  background-image: linear-gradient(90deg, var(--hairline) 0%, var(--hairline) 100%);
-  background-repeat: no-repeat;
-  background-position: 0 50%;
-  background-size: 100% 1px;
-}
-.loader-step-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  z-index: 2;
-  /* Texte caché — on n'affiche que le node */
-  font-size: 0;
-  width: 14px; height: 14px;
-}
-.ls-text {
-  /* Texte caché dans la liste — affiché ailleurs (active step name) */
-  position: absolute;
-  width: 1px; height: 1px;
-  overflow: hidden;
-  clip: rect(0,0,0,0);
-}
-.ls-dot {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  background: var(--surface-page);
-  border: 1.5px solid var(--border);
-  box-shadow: 0 0 0 4px var(--surface-page);  /* "trou" dans la ligne de fond */
-  transition: all 0.4s cubic-bezier(.4, 0, .2, 1);
-}
-/* Étapes COMPLÉTÉES (passées) — accent teal plein */
-.loader-step-row.done .ls-dot {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-/* Étape ACTIVE — node BIG + glow teal subtil */
-.loader-step-row.active .ls-dot {
-  width: 16px; height: 16px;
-  background: var(--accent);
-  border-color: var(--accent);
-  box-shadow:
-    0 0 0 4px var(--surface-page),
-    0 0 14px var(--accent-soft),
-    0 0 24px var(--accent-soft);
-  animation: lsActivePulse 1.8s ease-in-out infinite;
-}
-@keyframes lsActivePulse {
-  0%, 100% {
-    box-shadow:
-      0 0 0 4px var(--surface-page),
-      0 0 12px var(--accent-soft),
-      0 0 20px var(--accent-soft);
-  }
-  50% {
-    box-shadow:
-      0 0 0 4px var(--surface-page),
-      0 0 20px var(--accent-soft),
-      0 0 32px var(--accent-soft);
-  }
-}
-
-/* Texte de l'étape active — hauteur STRICTEMENT fixe pour éliminer
-   tout layout shift quand le nom de l'étape change. La règle CSS
-   contain: layout isole ce bloc du reste de la page : ses changements
-   internes ne peuvent jamais propager des sauts vers les éléments en-dessous
-   (tip "saviez-vous" et footer compliance). */
-.loader-active-step {
-  font-family: var(--font-display);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.005em;
-  color: var(--ink-primary);
-  margin-top: var(--space-5);
-  text-align: center;
-  line-height: 1.3;
-  /* Hauteur FIXE — verrouille le layout vertical */
-  height: 52px;
-  /* Largeur PLEINE — sinon `contain: size` rendait width=0 et le nom invisible */
-  width: 100%;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 6px;
-  /* Isolation layout VERTICALE uniquement (pas size complet qui cassait width) */
-  contain: layout;
-  /* Si un texte exceptionnellement long arrive, il est clipped plutôt que
-     pousser le layout — choix UX volontaire (rare et préférable au saut) */
-  overflow: hidden;
-  transition: opacity 0.4s cubic-bezier(.4, 0, .2, 1);
-}
-.loader-active-step-num {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.10em;
-  color: var(--ink-tertiary);
-  text-transform: uppercase;
-  display: block;
-  line-height: 1;
-  /* Hauteur fixée pour la même raison */
-  height: 12px;
-}
-#loaderActiveStepName {
-  display: inline-block;
-  text-wrap: balance;
-  /* Hauteur fixée pour le nom : 1 ligne (les 7 noms tiennent tous en 1 ligne
-     en français aux tailles desktop et mobile actuelles) */
-  height: 19px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-
-@media (max-width: 640px) {
-  .loader-steps-list { max-width: 92%; }   /* presque pleine largeur sur mobile */
-  .loader-step-row { width: 12px; height: 12px; }
-  .ls-dot { width: 8px; height: 8px; }
-  .loader-step-row.active .ls-dot { width: 14px; height: 14px; }
-  .loader-active-step { font-size: 13px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .loader-step-row.active .ls-dot { animation: none; }
-}
-
-/* Phase indicator legacy — caché complètement (remplacé par pipeline + active step name).
-   Le `hidden` de l'attribut HTML doit gagner sur le display: flex. */
-.loader-phase[hidden] { display: none !important; }
-.loader-phase {
-  font-family: var(--font-mono);
-  font-size: var(--t-eyebrow-size);
-  letter-spacing: var(--t-eyebrow-tracking);
-  text-transform: uppercase;
-  color: var(--ink-tertiary);
-  text-align: center;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: var(--space-2);
-  font-feature-settings: "tnum" 1;
-  width: 100%;
-}
-.loader-phase-dots { display: inline-flex; gap: 6px; align-items: center; }
-.loader-phase-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--surface-overlay);
-  transition: background 0.3s, box-shadow 0.3s;
-}
-.loader-phase-dot.done {
-  background: rgba(255,255,255,0.85);
-  box-shadow: 0 0 6px rgba(255,255,255,0.40);
-}
-.loader-phase-dot.active {
-  background: #FFFFFF;
-  box-shadow: 0 0 0 0 rgba(255,255,255,0.65);
-  animation: phaseDotPulse 1.4s infinite;
-}
-@keyframes phaseDotPulse {
-  0%   { box-shadow: 0 0 8px rgba(255,255,255,0.85), 0 0 0 0 rgba(255,255,255,0.55); }
-  70%  { box-shadow: 0 0 14px rgba(255,255,255,0.45), 0 0 0 6px rgba(255,255,255,0); }
-  100% { box-shadow: 0 0 8px rgba(255,255,255,0.85), 0 0 0 0 rgba(255,255,255,0); }
-}
-/* Container texte de phase : hauteur fixe = jamais de saut de layout */
-.loader-phase-text {
+.loader-brief.fade-out .loader-brief-eyebrow,
+.loader-brief.fade-out .loader-brief-text { opacity: 0; }
+.loader-brief.is-tappable { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+/* Palier +45 s : registre attention (ambre), pas d'alarme */
+.loader-brief.is-slow .loader-brief-eyebrow { color: var(--risk-mid); }
+/* Annuler — bouton secondaire canon, ancré en bas (zone pouce) */
+.loader-cancel-btn {
+  margin-top: auto;
+  height: 46px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--surface-hi);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 12px);
   color: var(--ink-secondary);
-  letter-spacing: 0.18em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 18px;
-  text-align: center;
-}
-.loader-phase-text strong {
-  color: var(--ink-primary);
-  font-weight: 600;
-  /* Transition douce sur changement de texte */
-  transition: opacity var(--motion-base) var(--ease-out);
-  display: inline-block;
-}
-.loader-phase-text strong.fading {
-  opacity: 0;
-}
-
-/* Tip — centré verticalement dans la ligne middle du Grid */
-.loader-tips {
-  position: relative; z-index: 6;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  text-align: center;
-  padding: var(--space-6);
-  max-width: 640px;
-  margin: 0 auto;
-  width: 100%;
-  min-height: 0;
-}
-.loader-tip-eyebrow {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--ink-tertiary);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  margin-bottom: var(--space-5);
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0;
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-}
-/* Petit point accent teal devant "Le saviez-vous" — signature Lucens cohérente */
-.loader-tip-eyebrow::before {
-  content: '';
-  display: inline-block;
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 6px var(--accent-soft);
-  animation: tipEyebrowPulse 2.4s ease-in-out infinite;
-}
-@keyframes tipEyebrowPulse {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.45; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .loader-tip-eyebrow::before { animation: none; }
-}
-.loader-tip-text {
-  font-family: var(--font-display);
-  font-size: clamp(19px, 2.6vw, 24px);
-  font-weight: 500;
-  color: var(--ink-secondary);
-  line-height: 1.50;
-  letter-spacing: -0.014em;
-  /* Hauteur réservée généreuse pour absorber les variations de longueur
-     sans faire sauter la composition */
-  min-height: 168px;
-  max-width: 680px;
-  text-wrap: balance;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* Animation premium : opacity + translate subtil */
-  opacity: 1;
-  transform: translateY(0);
-  transition:
-    opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform;
-}
-@media (max-width: 640px) {
-  .loader-tip-text { min-height: 132px; font-size: clamp(17px, 5vw, 22px); }
-}
-.loader-tip-source {
-  margin-top: var(--space-6);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--ink-tertiary);
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  font-weight: 500;
-  opacity: 1;
-  transform: translateY(0);
-  transition:
-    opacity 0.5s var(--ease-out) 0.05s,
-    transform 0.6s var(--ease-out) 0.05s;
-}
-.loader-tip-source::before { content: ''; }
-
-/* État caché : fade + glissé subtil (pas de scale qui fait sauter la perception) */
-.loader-tips.fade-out .loader-tip-text {
-  opacity: 0;
-  transform: translateY(8px);
-}
-.loader-tips.fade-out .loader-tip-source {
-  opacity: 0;
-  transform: translateY(4px);
-}
-
-/* Tap-to-skip : indique discrètement que le bloc est tappable (V5A.2). */
-.loader-tips.is-tappable {
+  font-family: var(--font-body); font-size: 14px; font-weight: 600;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
 }
-.loader-tips.is-tappable:active .loader-tip-text {
-  transform: translateY(1px);
-  transition: transform .08s ease;
+.loader-cancel-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+.loader-cancel-btn:active { background: var(--surface-mid); }
+/* 2e temps : confirmation destructive (tokens risque) — retour auto après 3 s */
+.loader-cancel-btn.confirm {
+  background: var(--risk-hi-soft, rgba(180,35,24,.08));
+  border-color: var(--risk-hi-edge, rgba(180,35,24,.28));
+  color: var(--risk-hi);
 }
-
-/* Pied du loader — minimal, pas de border, pas de bg, juste une ligne discrète */
-.loader-foot {
-  position: relative;
-  padding: 0 var(--space-6);
-  width: 100%;
-  max-width: 880px;
-  margin: 0 auto;
-  text-align: center;
-  /* Pas de border-top : créait une ligne grise contraire au design clean */
-}
-
-/* ─── BADGES DE CONFORMITÉ — crédibilité Lucens IA ─── */
-.loader-compliance {
-  display: flex; align-items: center; justify-content: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.06em;
-  color: var(--ink-tertiary);
-  text-transform: uppercase;
-}
-.compliance-eyebrow {
-  font-weight: 600;
-  color: var(--ink-dim);
-  letter-spacing: 0.10em;
-  margin-right: 4px;
-  /* Petit point séparateur après le label */
-  position: relative;
-  padding-right: 10px;
-}
-.compliance-eyebrow::after {
-  content: '';
-  position: absolute;
-  right: 0; top: 50%;
-  transform: translateY(-50%);
-  width: 1px; height: 8px;
-  background: var(--hairline);
-}
-.compliance-badge {
-  font-weight: 500;
-  color: var(--ink-secondary);
-  font-feature-settings: "tnum" 1;
-}
-.compliance-sep {
-  color: var(--ink-dim);
-  font-weight: 300;
-}
-@media (max-width: 480px) {
-  .loader-compliance { font-size: 8.5px; gap: 5px; }
-  .compliance-eyebrow { display: none; }  /* Économise la place sur très petit */
-}
-.loader-status {
-  font-family: var(--font-mono);
-  font-size: var(--t-eyebrow-size);
-  font-weight: var(--t-eyebrow-weight);
-  color: var(--ink-tertiary);
-  letter-spacing: var(--t-eyebrow-tracking);
-  text-transform: uppercase;
-  flex-shrink: 0;
-  font-feature-settings: "tnum" 1;
-}
-.loader-status .status-dot {
-  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 6px var(--accent-soft);
-  margin-right: var(--space-2);
-  vertical-align: baseline;
-  animation: statusDotPulse 1.4s ease-in-out infinite;
-}
-@keyframes statusDotPulse {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.50; }
-}
-/* .loader-pct conteneur — la typo est définie plus haut (.loader .loader-progress .pct-num)
-   pour éviter le conflit de spécificité qui écrasait le % géant. */
-.loader-pct {
-  display: flex; align-items: baseline; gap: 4px;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-/* Meta footer : timer + séparateur + pourcentage alignés */
-.loader-meta {
-  display: inline-flex;
-  align-items: baseline;
-  gap: var(--space-3);
-  font-variant-numeric: tabular-nums;
-}
-.loader-timer {
-  font-family: var(--font-mono);
-  font-size: clamp(13px, 1.3vw, 15px);
-  font-weight: 500;
-  color: var(--ink-secondary);
-  letter-spacing: 0.04em;
-  font-variant-numeric: tabular-nums;
-}
-.loader-meta-sep {
-  font-family: var(--font-mono);
-  color: var(--ink-dim);
-  font-weight: 500;
-}
-
-/* ─── MICRO-STATUS — ligne unique stable, ZÉRO layout shift ───
-   Approche : conteneur à hauteur strictement fixe + overflow hidden + truncation
-   ellipsis. Le texte qui change ne peut PAS déformer le bloc, ni propager de
-   shift vers les éléments en-dessous (contain: layout size). */
-/* ─── MICRO-STATUS — Système de DÉFILEMENT vertical (style readout digital)
-   Au lieu d'un fade in/out, les phrases sont empilées dans une "track" qui
-   se translate vers le haut à chaque changement. Effet instrument scientifique
-   à mémoire défilante (style affichage station, ticker financier).
-   Hauteur fixe stricte = zéro layout shift sur le tip "saviez-vous". */
-.loader-micro-status {
-  --micro-h: 24px;
-  margin-top: var(--space-4);
-  position: relative;
-  height: var(--micro-h);
-  width: 100%;
-  max-width: 92%;
-  margin-left: auto;
-  margin-right: auto;
-  /* Cadre du défilement : ce qui sort en haut/bas est masqué */
-  overflow: hidden;
-  /* Isolation layout : changements internes n'affectent pas le tip */
-  contain: layout size;
-  transition: opacity 0.4s cubic-bezier(.4, 0, .2, 1);
-}
-/* Place TOUJOURS réservée — apparition/disparition n'affecte pas le tip */
-.loader-micro-status[hidden] {
-  display: block !important;
-  visibility: hidden;
-  pointer-events: none;
-}
-/* Dot supprimé : .micro-pulse n'est plus dans le DOM nouveau, mais sécurité */
-.loader-micro-status .micro-pulse { display: none !important; }
-
-/* TRACK = la pile verticale de toutes les phrases.
-   Animée via transform: translateY pour faire défiler. */
-.micro-track {
-  display: flex;
-  flex-direction: column;
-  /* Animation premium : courbe ease-out asymétrique qui simule l'inertie
-     d'un mécanisme calibré. Durée 0.6s = perceptible mais pas lent. */
-  transform: translateY(0);
-  transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);
-  will-change: transform;
-}
-
-/* Chaque phrase occupe exactement la hauteur du cadre (24px desktop / 22px mobile).
-   Une seule est visible à la fois ; les autres défilent en haut/bas. */
-.micro-track .micro-text {
-  flex-shrink: 0;
-  height: var(--micro-h);
-  line-height: var(--micro-h);
-  font-family: var(--font-mono);
-  font-size: 12.5px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.95);
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 0 8px;
-}
-
-/* Mode "snap" : utilisé quand on revient au début (loop infini sans jump visible) */
-.micro-track.snap { transition: none; }
-
-@media (max-width: 640px) {
-  .loader-micro-status {
-    --micro-h: 22px;
-    margin-top: var(--space-3);
+/* Paysage téléphone : carte instrument à gauche, flux à droite (grille V217) */
+@media (orientation: landscape) and (max-height: 600px) {
+  .loader.active {
+    display: grid;
+    grid-template-columns: 45% 1fr;
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas: "instr brand" "instr brief" "instr cancel";
+    column-gap: 16px;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 14px);
   }
-  .micro-track .micro-text {
-    font-size: 11px;
-    letter-spacing: 0.14em;
-  }
+  .loader-brand { grid-area: brand; padding-bottom: 12px; }
+  .loader-instr { grid-area: instr; height: 100%; min-height: 0; }
+  .loader-photo { flex: 1 1 auto; min-height: 0; height: auto; }
+  .loader-brief { grid-area: brief; margin-top: 0; align-self: start; }
+  .loader-cancel-btn { grid-area: cancel; align-self: end; height: 42px; }
 }
-@media (max-width: 360px) {
-  .loader-micro-status { --micro-h: 20px; }
-  .micro-track .micro-text {
-    font-size: 10.5px;
-    letter-spacing: 0.12em;
-  }
-}
-
-/* Overrides loader supprimés (2026-05-23) — ils forçaient des gris clairs
-   conçus pour un fond sombre, devenus invisibles sur fond clair du redesign.
-   Les éléments utilisent désormais les tokens thématiques natifs
-   (--ink-tertiary, --ink-secondary, --accent) qui basculent proprement
-   entre light et dark. */
-
-/* Mobile : layout compact qui tient dans l'écran (iPhone SE → Pro Max) */
-@media (max-width: 640px) {
-  /* Phase indicator : sous le tip, plus compact */
-  .loader-phase {
-    margin: var(--space-3) auto var(--space-5);
-    font-size: 10.5px;
-    gap: var(--space-2);
-  }
-  .loader-phase-text { font-size: 10.5px; min-height: 16px; padding: 0 16px; }
-  /* Tips : centre vertical, marges compactes, hauteur réservée plus modeste */
-  .loader-tips { padding: 14px 18px; }
-  .loader-tip-eyebrow { margin-bottom: var(--space-4); font-size: 9.5px; padding: 3px 10px; }
-  .loader-tip-text { font-size: clamp(15px, 4.4vw, 20px); min-height: 88px; line-height: 1.4; }
-  .loader-tip-source { margin-top: var(--space-3); font-size: 10px; padding: 0 12px; }
-  /* Footer : compact, safe-area bottom respecté */
-  .loader-foot {
-    padding: 12px 18px max(14px, env(safe-area-inset-bottom));
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  .loader-status { font-size: 10px; letter-spacing: 0.08em; }
-  /* Désactive le filter:blur expensive sur mobile - remplace par opacité dim */
-  .loader-backdrop {
-    /* Mobile : blur moins coûteux, opacité légèrement réduite */
-    filter: blur(18px) saturate(0.55);
-    opacity: 0.15;
-  }
-  /* Scan beam préservé sur mobile (perfo OK, animation simple) */
-  .loader-tip-eyebrow::before, .loader-tip-eyebrow::after { display: none; }
-}
-
-/* iPhone SE et très petits écrans (≤ 380px) : encore plus compact */
 @media (max-width: 380px) {
-  .loader-phase { margin-top: max(16px, env(safe-area-inset-top)); }
-  .loader-tip-text { font-size: 14px; min-height: 72px; }
-  .loader-tip-eyebrow { margin-bottom: 14px; }
-  .loader-foot { padding: 10px 14px max(12px, env(safe-area-inset-bottom)); }
+  .loader-photo { height: clamp(120px, 22vh, 160px); }
+  .loader-brief-text { min-height: 60px; font-size: 13px; }
 }
-/* Force compositor pour les éléments animés (perf mobile + desktop) */
-.loader-tip-text, .loader-tip-source { will-change: opacity; }
-.loader-backdrop { will-change: transform; }
-.loader-scan { will-change: top; }
+@media (prefers-reduced-motion: reduce) {
+  .loader-bar-fill, .loader-step-name,
+  .loader-brief-eyebrow, .loader-brief-text { transition: none; }
+}
 
 /* ─── RESULTS ─── */
 .results { display: none; }
@@ -9730,24 +8998,10 @@ body.lv-open { overflow: hidden; touch-action: none; }
     <span class="offline-banner-text" id="offlineBannerText">Hors-ligne · vos analyses partiront à la reconnexion</span>
   </div>
 
-  <!-- HEADER — LUCENS wordmark only -->
+  <!-- HEADER — V272 : LOCKUP UNIFIÉ (wordmark + point cuivre + tagline).
+       Le viseur reste l'icône d'app (PWA/favicon), plus dans le lockup in-app. -->
   <header class="hdr">
-    <!-- V167 — NOUVEAU LOGO (concept fourni) : marque viseur + objectif + point
-         orange central, puis lockup « LUCENS » + tagline. Couleurs exactes du
-         concept (#123A63 navy, #C7532B orange). Plus de point pulsant/glow. -->
     <a class="hdr-brand" href="/" aria-label="Lucens — Résidus, biofilms, contaminants">
-      <span class="hdr-mark" aria-hidden="true">
-        <svg viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <g stroke="currentColor" stroke-width="7" stroke-linecap="square">
-            <path d="M0 24 V0 H24"/>
-            <path d="M72 0 H96 V24"/>
-            <path d="M96 72 V96 H72"/>
-            <path d="M24 96 H0 V72"/>
-            <circle cx="48" cy="48" r="20" stroke-width="4.5"/>
-          </g>
-          <circle cx="48" cy="48" r="8.5" fill="#B54A2A"/>
-        </svg>
-      </span>
       <span class="hdr-lockup">
         <span class="hdr-wordmark" data-i18n="hdr_title">LUCENS</span>
         <span class="hdr-tagline" data-i18n="hdr_brandline">RÉSIDUS · BIOFILMS · CONTAMINANTS</span>
@@ -9845,7 +9099,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v271</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v272</div>
         </div>
       </div>
     </div>
@@ -10324,51 +9578,49 @@ body.lv-open { overflow: hidden; touch-action: none; }
       <input type="file" id="galleryInput" accept="image/*">
     </section>
 
-    <!-- LOADING — design clean médical, carte centrale calme (Linear/Stripe/Things) -->
+    <!-- LOADING — V272 « le rapport en train de naître » : la photo analysée
+         occupe la carte instrument (idiome de l'écran Résultats), la progression
+         habite l'emplacement du futur verdict. -->
     <div class="loader" id="loader">
 
-      <!-- Brand : logo Lucens centré en haut -->
+      <!-- Marque centrée — définition utilisateur : wordmark + éléments dessous -->
       <div class="loader-brand">
         <span class="loader-wordmark">LUCENS</span>
+        <span class="loader-tagline" data-i18n="hdr_brandline">RÉSIDUS · BIOFILMS · CONTAMINANTS</span>
       </div>
 
-      <!-- Carte centrale unique : titre + barre de progression + métadonnées -->
-      <div class="loader-card" role="status" aria-live="polite">
-        <div class="loader-card-title" data-i18n="loader_status">Analyse en cours</div>
-
-        <div class="loader-bar">
-          <div class="loader-bar-fill" id="loaderBarFill"></div>
+      <!-- Carte instrument : LA photo analysée + secteur + progression réelle -->
+      <div class="loader-instr" role="status" aria-live="polite">
+        <img class="loader-photo" id="loaderPhoto" alt="">
+        <div class="loader-ctx">
+          <span class="loader-ctx-sector" id="loaderCtxSector">&nbsp;</span>
+          <span class="loader-ctx-spec">UV-A · 365 nm</span>
         </div>
-
-        <div class="loader-meta">
-          <span class="loader-meta-pct"><span id="loaderPct">0</span> %</span>
-          <span class="loader-meta-sep">·</span>
-          <span class="loader-meta-step" id="loaderActiveStepNum">Étape 1 / 7</span>
+        <div class="loader-prog">
+          <div class="loader-bar">
+            <div class="loader-bar-fill" id="loaderBarFill"></div>
+          </div>
+          <div class="loader-etape" id="loaderActiveStepNum">Étape 1 / 7</div>
+          <div class="loader-step-name" id="loaderActiveStepName" data-i18n="loader_step1">Réception de votre photo</div>
         </div>
-
-        <div class="loader-step-name" id="loaderActiveStepName" data-i18n="loader_step1">Réception de votre photo</div>
       </div>
 
-      <!-- Tip discret sous la carte -->
-      <div class="loader-tips" id="loaderTips" aria-live="polite">
-        <div class="loader-tip-text" id="loaderTipText"></div>
-        <div class="loader-tip-source" id="loaderTipSource"></div>
+      <!-- Briefing terrain sectoriel (catégorie du conseil = eyebrow) ;
+           devient le palier « connexion lente » à +45 s -->
+      <div class="loader-brief" id="loaderTips" aria-live="polite">
+        <div class="loader-brief-eyebrow" id="loaderTipSource"></div>
+        <div class="loader-brief-text" id="loaderTipText"></div>
       </div>
 
-      <!-- V26 — Bouton Annuler l'analyse en cours.
-           Permet d'interrompre l'analyse Claude si l'utilisateur a fait une
-           erreur de photo / contexte / s'est trompé. AbortController arrête
-           la requête fetch en cours et revient à l'écran d'accueil. -->
+      <!-- V272 — Annulation en 2 TEMPS (anti-effleurement gants/terrain) :
+           tap 1 → « Confirmer l'annulation ? » (état risque, retour auto 3 s),
+           tap 2 → AbortController + retour accueil. -->
       <button type="button" class="loader-cancel-btn" id="loaderCancelBtn"
               data-i18n-aria-label="loader_cancel_aria"
               aria-label="Annuler l'analyse">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
         <span data-i18n="loader_cancel">Annuler l'analyse</span>
       </button>
-
-      <!-- Référentiel méthodologique — ultra-discret en bas -->
-      <div class="loader-foot">
-        <span class="loader-foot-text" data-i18n="compliance_codex">Codex Alimentarius · Principes d'hygiène</span>
-      </div>
 
       <!-- Backward compat (hidden) : legacy elements pour ne pas casser le JS existant.
            Ces éléments restent dans le DOM pour les selectors mais ne sont plus visibles. -->
@@ -11804,6 +11056,11 @@ const I18N = {
     /* V82 — Annuler l'analyse + bandeau offline */
     loader_cancel:        "Annuler l'analyse",
     loader_cancel_aria:   "Annuler l'analyse en cours",
+    /* V272 — loader « rapport en gestation » */
+    loader_cancel_confirm: "Confirmer l'annulation ?",
+    loader_slow_eyebrow:  "Toujours en cours",
+    loader_slow_text:     "L'analyse prend plus de temps que d'habitude, connexion lente probable. Elle continue : vous pouvez patienter ou annuler.",
+    loader_ctx_generic:   "Analyse de surface",
     offline_only:         "Hors-ligne · mode local",
     offline_with_queue:   "Hors-ligne · mode local",
     syncing_queue:        "Synchronisation · {n} analyse(s) en cours",
@@ -12407,6 +11664,10 @@ const I18N = {
     loader_status: "Analysis in progress",
     /* V82 — Cancel analysis + offline banner (UK) */
     loader_cancel:        "Cancel analysis",
+    loader_cancel_confirm: "Confirm cancellation?",
+    loader_slow_eyebrow:  "Still running",
+    loader_slow_text:     "The analysis is taking longer than usual, likely a slow connection. It is still running: you can wait or cancel.",
+    loader_ctx_generic:   "Surface analysis",
     loader_cancel_aria:   "Cancel current analysis",
     offline_only:         "Offline · local mode",
     offline_with_queue:   "Offline · local mode",
@@ -13121,6 +12382,10 @@ const I18N = {
     loader_status: "Análisis en curso",
     /* V82 — Cancelar análisis + banner sin conexión (ES) */
     loader_cancel:        "Cancelar análisis",
+    loader_cancel_confirm: "¿Confirmar la cancelación?",
+    loader_slow_eyebrow:  "Aún en curso",
+    loader_slow_text:     "El análisis está tardando más de lo habitual, probablemente una conexión lenta. Sigue en curso: puede esperar o cancelar.",
+    loader_ctx_generic:   "Análisis de superficie",
     loader_cancel_aria:   "Cancelar el análisis en curso",
     offline_only:         "Sin conexión · modo local",
     offline_with_queue:   "Sin conexión · modo local",
@@ -13706,6 +12971,10 @@ const I18N = {
     loader_status: "Analyse läuft",
     /* V82 — Analyse abbrechen + Offline-Banner (DE) */
     loader_cancel:        "Analyse abbrechen",
+    loader_cancel_confirm: "Abbruch bestätigen?",
+    loader_slow_eyebrow:  "Läuft noch",
+    loader_slow_text:     "Die Analyse dauert länger als üblich, vermutlich eine langsame Verbindung. Sie läuft weiter: Sie können warten oder abbrechen.",
+    loader_ctx_generic:   "Oberflächenanalyse",
     loader_cancel_aria:   "Laufende Analyse abbrechen",
     offline_only:         "Offline · lokaler Modus",
     offline_with_queue:   "Offline · lokaler Modus",
@@ -15953,6 +15222,8 @@ const Annotator = (() => {
     var MAX_LOOPS = opts.maxLoops   || 24;
     var loopsOut = [];
     var maskAreaImg = 0;
+    var Mglob = null;            /* masque global (grille) des zones gardées — pour le projecteur */
+
 
     /* ════ CHAMP GLOBAL (une fois par appel) : E puis Ec = E − médiane ════
        Échelle de calibration : grand côté ≤ 1024 (stride sG). */
@@ -15960,6 +15231,7 @@ const Annotator = (() => {
     var sG = Math.max(1, Math.ceil(longEdge / 1024));
     var gw = Math.max(8, Math.floor(IW / sG)), gh = Math.max(8, Math.floor(IH / sG));
     var gn = gw * gh;
+    Mglob = new Uint8Array(gn);
     var E = new Float32Array(gn);
     var gx, gy, gi, p, r, g, bl, mx, mn, val, sat, ev, es;
     for (gy = 0; gy < gh; gy++) {
@@ -16172,6 +15444,8 @@ const Annotator = (() => {
       for (i = 0; i < n; i++) if (mask[i] && keepLab[labels[i]]) { K[i] = 1; keptArea++; }
       if (!keptArea) continue;
       maskAreaImg += keptArea * sG * sG;
+      for (i = 0; i < n; i++) if (K[i]) Mglob[(y0 + ((i / fw) | 0)) * gw + (x0 + (i % fw))] = 1;
+
 
       /* ── frontière des composantes retenues ── */
       var Bnd = new Uint8Array(n);
@@ -16298,13 +15572,84 @@ const Annotator = (() => {
         loopsOut.push({ pts: pts, closed: closed });
       }
     }
-    return { loops: loopsOut, maskFrac: maskAreaImg / (IW * IH) };
+    return { loops: loopsOut, maskFrac: maskAreaImg / (IW * IH), mask: Mglob, gw: gw, gh: gh, sG: sG };
   }
 
-  /* V270 — wrapper : zones normalisées → boîtes px image (fusion V197 + marge),
-     appel du cœur borné, garde anti-voile, tracé style carto figé (CARTO_COLOR).
-     Retourne true si au moins une boucle a été tracée. */
-  function subpixelZoneContours(ctx, imageData, zones, W, H) {
+  /* ═══════════════════════════════════════════════════════════════════
+     V272 — RENDU PROJECTEUR (choix utilisateur 2026-06-10) : on assombrit +
+     désature TOUT sauf les zones fluorescentes validées (transition fondue).
+     PLUS de contour tracé (jugé inadapté / « entourages aléatoires »). La
+     DÉTECTION est inchangée (zones validées + champ de contraste absolu V271
+     + anti-reflet) ; seul le RENDU change : l'œil va au résidu sans ligne, et
+     c'est honnête face à l'ambiguïté physique de la frontière. Abstention si
+     rien de franc (photo nette) ; legacy V198/V259 UNIQUEMENT sur erreur.
+     Mesuré : case_H résidu → fond assombri / résidu net ~266 ms ; case_D
+     (plastique bleu à reflets) → maskFrac 0 → photo nette (aucun assombrissement). */
+  function _feather(mask, w, h, rad) {
+    var src = new Float32Array(w * h);
+    for (var i = 0; i < w * h; i++) src[i] = mask[i] ? 1 : 0;
+    var tmp = new Float32Array(w * h);
+    var pass, x, y, k, acc, norm = 1 / (2 * rad + 1);
+    for (pass = 0; pass < 3; pass++) {
+      for (y = 0; y < h; y++) {            /* horizontal */
+        acc = 0;
+        for (k = -rad; k <= rad; k++) { var xx = k < 0 ? 0 : (k >= w ? w - 1 : k); acc += src[y * w + xx]; }
+        for (x = 0; x < w; x++) {
+          tmp[y * w + x] = acc * norm;
+          var xo = x - rad; if (xo < 0) xo = 0;
+          var xn = x + rad + 1; if (xn >= w) xn = w - 1;
+          acc += src[y * w + xn] - src[y * w + xo];
+        }
+      }
+      for (x = 0; x < w; x++) {            /* vertical */
+        acc = 0;
+        for (k = -rad; k <= rad; k++) { var yy = k < 0 ? 0 : (k >= h ? h - 1 : k); acc += tmp[yy * w + x]; }
+        for (y = 0; y < h; y++) {
+          src[y * w + x] = acc * norm;
+          var yo = y - rad; if (yo < 0) yo = 0;
+          var yn = y + rad + 1; if (yn >= h) yn = h - 1;
+          acc += tmp[yn * w + x] - tmp[yo * w + x];
+        }
+      }
+    }
+    return src;
+  }
+
+  /* rend le projecteur dans un buffer RGBA (W×H). res = retour de _spxLoops. */
+  function _renderSpotlight(srcData, W, H, res, opts) {
+    opts = opts || {};
+    var DIM   = opts.dim   != null ? opts.dim   : 0.42;  /* luminosité du fond hors-zone */
+    var FLOOR = opts.floor != null ? opts.floor : 0.18;  /* le fond reste visible (jamais noir total) */
+    var gw = res.gw, gh = res.gh, sG = res.sG;
+    var rad = Math.max(2, Math.round((gw < gh ? gw : gh) * 0.03));
+    var fm = _feather(res.mask, gw, gh, rad);
+    var out = new Uint8ClampedArray(W * H * 4);
+    var x, y, i;
+    for (y = 0; y < H; y++) {
+      var gy = y / sG; var gyi = gy | 0; if (gyi >= gh - 1) gyi = gh - 2 < 0 ? 0 : gh - 2; var fy = gy - gyi;
+      for (x = 0; x < W; x++) {
+        var gx = x / sG; var gxi = gx | 0; if (gxi >= gw - 1) gxi = gw - 2 < 0 ? 0 : gw - 2; var fx = gx - gxi;
+        /* bilinéaire du masque fondu */
+        var m00 = fm[gyi * gw + gxi], m10 = fm[gyi * gw + gxi + 1];
+        var m01 = fm[(gyi + 1) * gw + gxi], m11 = fm[(gyi + 1) * gw + gxi + 1];
+        var m = m00 * (1 - fx) * (1 - fy) + m10 * fx * (1 - fy) + m01 * (1 - fx) * fy + m11 * fx * fy;
+        if (m > 1) m = 1; else if (m < 0) m = 0;
+        i = (y * W + x) * 4;
+        var r = srcData[i], g = srcData[i + 1], b = srcData[i + 2];
+        var lum = 0.299 * r + 0.587 * g + 0.114 * b;
+        /* fond = désaturé (luma) assombri, teinte froide discrète, plancher de visibilité */
+        var f = FLOOR + (DIM - FLOOR) * 0;     /* base */
+        var dr = lum * DIM * 0.94, dg = lum * DIM * 1.0, db = lum * DIM * 1.16;
+        out[i]     = r * m + dr * (1 - m);
+        out[i + 1] = g * m + dg * (1 - m);
+        out[i + 2] = b * m + db * (1 - m);
+        out[i + 3] = 255;
+      }
+    }
+    return out;
+  }
+
+  function highlightZones(ctx, imageData, zones, W, H) {
     if (!ctx || !imageData || !imageData.data || !zones || !zones.length) return false;
     const IW = imageData.width || W, IH = imageData.height || H;
     if (!IW || !IH) return false;
@@ -16323,30 +15668,20 @@ const Annotator = (() => {
       });
     }
     const res = _spxLoops(imageData.data, IW, IH, boxesPx, {});
-    if (!res || !res.loops || !res.loops.length) return false;
-    if (res.maskFrac > 0.50) return false;          /* garde-fou voile (cousin V155) */
-    const sx = W / IW, sy = H / IH;
-    ctx.save();
-    ctx.strokeStyle = CARTO_COLOR.stroke;
-    ctx.lineWidth = Math.max(2.5, Math.round(Math.min(W, H) * 0.0042));
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
-    ctx.shadowBlur = Math.max(1.5, Math.round(Math.min(W, H) * 0.003));
-    let drawn = 0;
-    for (const L of res.loops) {
-      const pts = L.closed ? _chaikin(L.pts.map(p => [p[0] * sx, p[1] * sy]), 1)
-                           : L.pts.map(p => [p[0] * sx, p[1] * sy]);
-      if (pts.length < 4) continue;
-      ctx.beginPath();
-      ctx.moveTo(pts[0][0], pts[0][1]);
-      for (let k = 1; k < pts.length; k++) ctx.lineTo(pts[k][0], pts[k][1]);
-      if (L.closed) ctx.closePath();
-      ctx.stroke();
-      drawn++;
+    if (!res || !res.mask) return false;
+    if (res.maskFrac > 0.50) return false;       /* voile probable → legacy (cousin V155) */
+    if (res.maskFrac < 0.003) return true;        /* rien de franc → photo nette (abstention), pas de legacy */
+    const out = _renderSpotlight(imageData.data, IW, IH, res, {});
+    let od;
+    try { od = new ImageData(out, IW, IH); }
+    catch (e) { od = ctx.createImageData(IW, IH); od.data.set(out); }
+    if (IW === W && IH === H) { ctx.putImageData(od, 0, 0); }
+    else {
+      const tc = document.createElement('canvas'); tc.width = IW; tc.height = IH;
+      tc.getContext('2d').putImageData(od, 0, 0);
+      ctx.clearRect(0, 0, W, H); ctx.drawImage(tc, 0, 0, W, H);
     }
-    ctx.restore();
-    return drawn > 0;
+    return true;
   }
 
   function drawGrid(canvas, imageData, grid, W, H) {
@@ -16386,9 +15721,9 @@ const Annotator = (() => {
     /* V270 — CHEMIN PRIMAIRE : contour sous-pixel dans les zones validées.
        En échec ou sans zone exploitable → pipeline V198/V259/équerres intact. */
     try {
-      _cartoPainted = subpixelZoneContours(ctx, imageData, zones, W, H);
+      _cartoPainted = highlightZones(ctx, imageData, zones, W, H);
     } catch (e) {
-      console.warn('[V271 carto] sous-pixel KO → pipeline legacy:', e);
+      console.warn('[V272 carto] projecteur KO → pipeline legacy:', e);
       _cartoPainted = false;
     }
 
@@ -20362,15 +19697,41 @@ const Annotator = (() => {
     }
     loader.classList.remove('active');
     stopTipRotation();
+    try { stopMicroRotation(); } catch {}
+    try { stopLoaderTimer(); } catch {}     /* V272 — palier lent + état confirm */
     uploadHub.style.display = '';
     toast('Analyse annulée', 'info');
   }
-  /* Branche le bouton (1 seule fois) */
+  /* V272 — Annulation en 2 TEMPS (anti-effleurement gants/terrain) :
+     tap 1 → le bouton devient « Confirmer l'annulation ? » (tokens risque),
+     retour auto à l'état normal après 3 s sans 2e tap ; tap 2 → annulation. */
+  let cancelConfirmTimer = null;
+  function resetCancelConfirm() {
+    if (cancelConfirmTimer) { clearTimeout(cancelConfirmTimer); cancelConfirmTimer = null; }
+    const btn = document.getElementById('loaderCancelBtn');
+    if (btn) {
+      btn.classList.remove('confirm');
+      const lbl = btn.querySelector('span');
+      if (lbl) lbl.textContent = t('loader_cancel');
+      btn.setAttribute('aria-label', t('loader_cancel_aria'));
+    }
+  }
   (function bindLoaderCancel() {
     const btn = document.getElementById('loaderCancelBtn');
     if (btn && !btn._bound) {
       btn._bound = true;
-      btn.addEventListener('click', cancelCurrentAnalysis);
+      btn.addEventListener('click', () => {
+        if (btn.classList.contains('confirm')) {
+          resetCancelConfirm();
+          cancelCurrentAnalysis();
+          return;
+        }
+        btn.classList.add('confirm');
+        const lbl = btn.querySelector('span');
+        if (lbl) lbl.textContent = t('loader_cancel_confirm');
+        btn.setAttribute('aria-label', t('loader_cancel_confirm'));
+        cancelConfirmTimer = setTimeout(resetCancelConfirm, 3000);
+      });
     }
   })();
 
@@ -20447,8 +19808,23 @@ const Annotator = (() => {
     }
     const url = URL.createObjectURL(file);
     lastObjectUrl = url;
-    const backdrop = $('loaderBackdrop');
-    if (backdrop) backdrop.style.backgroundImage = `url(${url})`;
+    /* V272 — la carte instrument montre CE qui est analysé : photo + secteur.
+       (Vérification active : c'est la donnée qui justifie « Annuler ».)
+       Lecture DIRECTE du localStorage — surtout pas LucensContext.get(),
+       qui consomme le moment volatile destiné au payload API. */
+    const photoEl = $('loaderPhoto');
+    if (photoEl) photoEl.src = url;
+    const sectorEl = $('loaderCtxSector');
+    if (sectorEl) {
+      const SECTOR_LABEL_KEYS = {
+        restauration: 'ctx_opt_resto', agro: 'ctx_opt_agro', distrib: 'ctx_opt_distrib',
+        medical: 'ctx_opt_medical', pharma: 'ctx_opt_pharma', industrial: 'ctx_opt_industrial',
+        residential: 'ctx_opt_residential', erp: 'ctx_opt_erp',
+      };
+      let estab = null;
+      try { estab = JSON.parse(localStorage.getItem('lucens_user_context_v1') || 'null')?.establishmentType || null; } catch {}
+      sectorEl.textContent = (estab && SECTOR_LABEL_KEYS[estab]) ? t(SECTOR_LABEL_KEYS[estab]) : t('loader_ctx_generic');
+    }
     startTipRotation();
     resetStepper();
     setLoaderProgress(0);
@@ -21227,9 +20603,32 @@ const Annotator = (() => {
     else stopMicroRotation();
   }
 
-  /* (timer écoulé retiré — n'apportait rien à l'expérience) */
-  function startLoaderTimer() {}
-  function stopLoaderTimer() {}
+  /* ─── V272 — PALIER « CONNEXION LENTE » (+45 s) ───
+     En cave / chambre froide, l'API peut traîner bien au-delà de la médiane.
+     À +45 s : le briefing devient un message d'attente CALME (eyebrow ambre),
+     la rotation des conseils est figée. Le watchdog 180 s reste l'ultime garde.
+     Réinitialise aussi l'état « confirm » du bouton Annuler à chaque analyse.
+     (Branché sur les appels startLoaderTimer/stopLoaderTimer existants.) */
+  let slowStateTimer = null;
+  function startLoaderTimer() {
+    stopLoaderTimer();
+    resetCancelConfirm();
+    slowStateTimer = setTimeout(() => {
+      if (!loader.classList.contains('active')) return;
+      stopTipRotation();
+      const tipsEl = $('loaderTips');
+      const srcEl = $('loaderTipSource');
+      const textEl = $('loaderTipText');
+      if (tipsEl) tipsEl.classList.add('is-slow');
+      if (srcEl) srcEl.textContent = t('loader_slow_eyebrow');
+      if (textEl) textEl.textContent = t('loader_slow_text');
+    }, 45000);
+  }
+  function stopLoaderTimer() {
+    if (slowStateTimer) { clearTimeout(slowStateTimer); slowStateTimer = null; }
+    const tipsEl = $('loaderTips');
+    if (tipsEl) tipsEl.classList.remove('is-slow');
+  }
 
   function updateStepper(activeStep) {
     /* Met à jour la NOUVELLE liste des 7 étapes (visible) */
