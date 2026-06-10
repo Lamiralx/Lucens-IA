@@ -9845,7 +9845,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v261</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v262</div>
         </div>
       </div>
     </div>
@@ -10495,7 +10495,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results .result-grid { order:-1; }
       #results.visible { display:flex !important; flex-direction:column; }
       #hero { order:-2; }
-      .viewer-tabs { display:none !important; }
       #results .disclaimer-fold { display:none !important; }
       /* filets entre sections (Origine / Risque / Action) comme le mockup */
       .lv-risque { border-top:1px solid var(--border,#E5E7EB) !important; padding-top:13px !important; margin-top:13px !important; }
@@ -10611,18 +10610,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
       /* Le score est ajouté en JS uniquement sur la case active, donc les autres
          cases n'ont jamais de .hero-seg-score à masquer. Style direct, rien à cacher. */
 
-      /* 4) Toggle Image avec / sans cartographie : on RÉACTIVE viewer-tabs
-         et on les style en pillules compactes au-dessus du canvas. */
-      #results.visible .viewer-tabs { display: flex !important; gap: 8px !important;
-        padding: 0 !important; margin: 0 0 8px 0 !important; background: transparent !important;
-        border: 0 !important; }
-      #results.visible .viewer-tab { flex: 1 1 50% !important; padding: 7px 10px !important;
-        background: var(--surface-low,#F8FAFC) !important; color: var(--text-3,#6B7280) !important;
-        border: 1px solid var(--border,#E5E7EB) !important; border-radius: 9px !important;
-        font-size: 12px !important; font-weight: 600 !important; cursor: pointer !important; }
-      #results.visible .viewer-tab.active { background: var(--primary,#0F3D4E) !important;
-        color: #fff !important; border-color: var(--primary,#0F3D4E) !important; }
-
       /* 5) Image : hauteur compacte + remplit toute la largeur (le canvas suit). */
       #results.visible #viewerStage { height: 220px !important; min-height: 0 !important;
         width: 100% !important; border-radius: 12px !important; overflow: hidden !important;
@@ -10654,9 +10641,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
           border-radius: 12px !important; }
         /* Image très compacte (priorité aux blocs texte + boutons accessibles). */
         #results.visible #viewerStage { height: 130px !important; }
-        #results.visible .viewer-tabs { margin: 0 0 4px 0 !important; gap: 6px !important; }
-        #results.visible .viewer-tab { padding: 4px 8px !important; font-size: 11px !important;
-          border-radius: 7px !important; }
         #results.visible .hero-seg { gap: 4px !important; margin-top: 6px !important; }
         #results.visible .hero-seg-s { padding: 6px 3px !important; font-size: 12px !important;
           border-radius: 7px !important; }
@@ -10686,9 +10670,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results.visible .lv-verify { display: block !important;
         font-size: 11.5px !important; color: var(--text-3,#6B7280) !important;
         margin-top: 6px !important; line-height: 1.4 !important; }
-
-      /* Toggle Zones détectées / Image source : RETIRÉ (cible n'en montre pas). */
-      #results.visible .viewer-tabs { display: none !important; }
 
       /* Score retiré de la case active de la barre, va à droite du label "Niveau de risque". */
       #results.visible .hero-seg-score { display: none !important; }
@@ -11040,30 +11021,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results.visible .result-grid > .card:has(#viewerStage) {
         padding: 11px 11px 11px !important;
       }
-      #results.visible .viewer-tabs {
-        display: flex !important;
-        gap: 7px !important;
-        margin: 0 0 9px !important;
-        padding: 0 !important;
-        background: transparent !important;
-        border: 0 !important;
-      }
-      #results.visible .viewer-tab {
-        flex: 1 !important;
-        padding: 7px 10px !important;
-        background: var(--surface-low, #F8FAFC) !important;
-        color: var(--text-3, #6B7280) !important;
-        border: 1px solid var(--border, #E5E7EB) !important;
-        border-radius: 8px !important;
-        font-size: 11.5px !important;
-        font-weight: 600 !important;
-        cursor: pointer !important;
-      }
-      #results.visible .viewer-tab.active {
-        background: var(--primary, #0F3D4E) !important;
-        color: #fff !important;
-        border-color: var(--primary, #0F3D4E) !important;
-      }
       #results.visible #viewerStage {
         border-radius: 8px !important;
         height: 160px !important;
@@ -11196,7 +11153,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         #results.visible .hero-seg-s { padding: 9px 4px !important; font-size: 12px !important; }
         #results.visible .result-grid > .card:has(#viewerStage) { padding: 10px 10px !important; }
         #results.visible #viewerStage { height: 140px !important; }
-        #results.visible .viewer-tab { padding: 6px 8px !important; font-size: 11px !important; }
         #results.visible .lv-verdict-head { padding: 11px 13px 4px !important; }
         #results.visible .lv-verdict-interpretation { padding: 2px 13px 11px !important; margin-bottom: 8px !important; font-size: 12.5px !important; }
         #results.visible .lv-verdict-title { font-size: 18px !important; }
@@ -11331,36 +11287,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         overflow: hidden !important;
         display: flex !important;
         flex-direction: column !important;
-      }
-      /* Segmented control iOS — pilule grise centrée */
-      #results.visible .viewer-tabs {
-        display: inline-flex !important;
-        align-self: center !important;
-        background: var(--surface-mid) !important;
-        border-radius: 9px !important;
-        padding: 2px !important;
-        gap: 0 !important;
-        margin: 10px auto 9px !important;
-        border: 0 !important;
-        width: auto !important;
-      }
-      #results.visible .viewer-tab {
-        padding: 6px 14px !important;
-        font-size: 12.5px !important; font-weight: 500 !important;
-        color: var(--ink-tertiary, #6B7280) !important;
-        background: transparent !important;
-        border: 0 !important;
-        border-radius: 7px !important;
-        cursor: pointer !important;
-        letter-spacing: -.005em !important;
-        text-transform: none !important;
-        font-family: var(--font-body) !important;
-      }
-      #results.visible .viewer-tab.active {
-        background: var(--surface-hi) !important;
-        color: var(--ink-primary, #0C0E13) !important;
-        font-weight: 600 !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,.07), 0 0 0 .5px rgba(0,0,0,.04) !important;
       }
       /* Image elle-même : edge-to-edge dans la carte, pas de border-radius */
       #results.visible #viewerStage {
@@ -11562,8 +11488,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         #results.visible #hero .hero-row { margin-bottom: 11px !important; }
         #results.visible #hero .score-value { font-size: 23px !important; }
         #results.visible #viewerStage { height: 150px !important; }
-        #results.visible .viewer-tabs { margin: 9px auto 8px !important; }
-        #results.visible .viewer-tab { padding: 5px 12px !important; font-size: 12px !important; }
         #results.visible .lv-verdict-head { padding: 12px 14px 0 !important; }
         #results.visible .lv-verdict-title { font-size: 19px !important; }
         #results.visible .lv-verdict-interpretation { padding: 4px 14px 12px !important; font-size: 13px !important; }
@@ -11596,21 +11520,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results.visible .viewer-tab.active::after,
       #results.visible .viewer-tab::after { content: none !important; display: none !important;
         background: transparent !important; animation: none !important; }
-
-      /* (3) Compacte le segmented control : min-height 44px hérité de l'app → 32px. */
-      #results.visible .viewer-tab {
-        min-height: 0 !important;
-        padding: 6px 14px !important;
-        font-family: var(--font-body) !important;
-        font-size: 12.5px !important;
-        font-weight: 500 !important;
-        text-transform: none !important;
-        letter-spacing: -.005em !important;
-      }
-      #results.visible .viewer-tabs {
-        padding: 2px !important;
-        align-items: center !important;
-      }
 
       /* (4) Saturation du gradient de la jauge : on remplace les pastels quasi
             invisibles par des tints 18% au-dessus du fond blanc. Les 3 zones sont
@@ -11705,25 +11614,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
         width: 20px !important; height: 20px !important;
         border-width: 4px !important;
         box-shadow: 0 2px 5px rgba(0,0,0,.3) !important;
-      }
-
-      /* (c) SEGMENTED CONTROL plus petit encore : font 11.5px, padding 4px 10px. */
-      #results.visible .viewer-tab {
-        padding: 4px 11px !important;
-        font-size: 11.5px !important;
-        min-height: 0 !important;
-        line-height: 1.3 !important;
-      }
-      #results.visible .viewer-tabs {
-        padding: 2px !important;
-        margin: 8px auto 7px !important;
-        border-radius: 8px !important;
-      }
-      #results.visible .viewer-tab {
-        border-radius: 6px !important;
-      }
-      #results.visible .viewer-tab.active {
-        box-shadow: 0 0.5px 2px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.04) !important;
       }
 
       /* ═══════ V188 — ACCUEIL EN BLOCS (demande utilisateur insistante) ═══════
@@ -28965,22 +28855,76 @@ const Annotator = (() => {
 })();
 </script>
 
-<!-- V238 — Live View plein écran : status bar NOIRE (continuité du flux caméra,
-     supprime la bande grise/blanche en haut, zone Dynamic Island). On bascule le
-     meta theme-color sur #000 quand le Live View est ouvert, et on restaure la
-     couleur du thème à la fermeture. Observateur de classe = capte tous les
-     chemins d'ouverture/fermeture. -->
+<!-- V262 — Status bar Live View, 2e tentative (V238 inopérante sur device) :
+     (1) On RETIRE complètement le meta theme-color pendant le Live View.
+         Hypothèse iOS 26 : la zone status-bar est peinte d'après le theme-color
+         et les CHANGEMENTS de contenu à chaud sont ignorés (d'où l'échec V238) ;
+         sans meta, le backdrop redevient adaptatif (suit le fond noir de la page).
+         Le meta (même nœud) est ré-inséré à la fermeture avec la couleur du thème.
+     (2) SONDE DIAG temporaire (protocole V210 : mesurer le vrai device, pas
+         deviner) : panneau de mesures + lignes témoin dans le Live View.
+         Lecture : ligne ROUGE = y=0 de la page (si elle touche le haut physique
+         de l'écran, la page possède la zone Dynamic Island) ; ligne VERTE =
+         fin du safe-area-top ; sat = env(safe-area-inset-top) réel.
+         À RETIRER une fois le diagnostic posé. -->
 <script>
 (function(){
   var mc = document.querySelector('meta[name="theme-color"]');
-  if (!mc || typeof MutationObserver === 'undefined') return;
   function themeCol(){ return document.documentElement.getAttribute('data-theme') === 'dark' ? '#06070A' : '#F4F6F8'; }
   function lvOpen(){ return document.body.classList.contains('lv-open') || document.documentElement.classList.contains('lv-open'); }
   var last = null;
-  function sync(){ var o = lvOpen(); if (o === last) return; last = o; mc.setAttribute('content', o ? '#000000' : themeCol()); }
-  var obs = new MutationObserver(sync);
-  obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'] });
-  obs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  function sync(){
+    var o = lvOpen(); if (o === last) return; last = o;
+    if (mc) {
+      if (o) { if (mc.parentNode) mc.parentNode.removeChild(mc); }
+      else { mc.setAttribute('content', themeCol()); if (!mc.parentNode) document.head.appendChild(mc); }
+    }
+    diag(o);
+  }
+  /* ── SONDE DIAG V262 (temporaire) ── */
+  var panel = null, probe = null, redLine = null, greenLine = null, timer = null;
+  function diag(on){
+    var lv = document.getElementById('lvModal');
+    if (!lv) return;
+    if (!on) {
+      if (timer) { clearInterval(timer); timer = null; }
+      [panel, probe, redLine, greenLine].forEach(function(n){ if (n && n.parentNode) n.parentNode.removeChild(n); });
+      panel = probe = redLine = greenLine = null;
+      return;
+    }
+    probe = document.createElement('div');
+    probe.style.cssText = 'position:fixed;top:0;left:-9999px;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);visibility:hidden;';
+    lv.appendChild(probe);
+    redLine = document.createElement('div');
+    redLine.style.cssText = 'position:absolute;top:0;left:0;right:0;height:3px;background:#FF0000;z-index:9;pointer-events:none;';
+    lv.appendChild(redLine);
+    greenLine = document.createElement('div');
+    greenLine.style.cssText = 'position:absolute;top:env(safe-area-inset-top,0px);left:0;right:0;height:3px;background:#00FF44;z-index:9;pointer-events:none;';
+    lv.appendChild(greenLine);
+    panel = document.createElement('div');
+    panel.style.cssText = 'position:absolute;left:12px;right:12px;bottom:96px;z-index:9;background:rgba(0,0,0,0.78);color:#fff;font:600 11px/1.5 ui-monospace,monospace;padding:8px 10px;border-radius:8px;pointer-events:none;white-space:pre;';
+    lv.appendChild(panel);
+    function refresh(){
+      try {
+        var cs = getComputedStyle(probe);
+        var mm = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) ? 'Y' : 'N';
+        var ns = (navigator.standalone === true) ? 'Y' : (navigator.standalone === false ? 'N' : '?');
+        var tcEl = document.querySelector('meta[name="theme-color"]');
+        panel.textContent =
+          'DIAG v262  standalone mm:' + mm + ' nav:' + ns + '\n' +
+          'sat:' + cs.paddingTop + '  sab:' + cs.paddingBottom + '\n' +
+          'ih:' + window.innerHeight + ' sh:' + (screen && screen.height) + ' vv:' + (window.visualViewport ? Math.round(visualViewport.height) : '-') + '\n' +
+          'html:' + document.documentElement.clientHeight + ' body:' + document.body.clientHeight + ' tc:' + (tcEl ? tcEl.getAttribute('content') : 'ABSENT');
+      } catch(e){ panel.textContent = 'DIAG err ' + e.message; }
+    }
+    refresh();
+    timer = setInterval(refresh, 1000);
+  }
+  if (typeof MutationObserver !== 'undefined') {
+    var obs = new MutationObserver(sync);
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+    obs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  }
   sync();
 })();
 </script>
