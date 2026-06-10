@@ -28862,76 +28862,36 @@ const Annotator = (() => {
 })();
 </script>
 
-<!-- V262 — Status bar Live View, 2e tentative (V238 inopérante sur device) :
-     (1) On RETIRE complètement le meta theme-color pendant le Live View.
-         Hypothèse iOS 26 : la zone status-bar est peinte d'après le theme-color
-         et les CHANGEMENTS de contenu à chaud sont ignorés (d'où l'échec V238) ;
-         sans meta, le backdrop redevient adaptatif (suit le fond noir de la page).
-         Le meta (même nœud) est ré-inséré à la fermeture avec la couleur du thème.
-     (2) SONDE DIAG temporaire (protocole V210 : mesurer le vrai device, pas
-         deviner) : panneau de mesures + lignes témoin dans le Live View.
-         Lecture : ligne ROUGE = y=0 de la page (si elle touche le haut physique
-         de l'écran, la page possède la zone Dynamic Island) ; ligne VERTE =
-         fin du safe-area-top ; sat = env(safe-area-inset-top) réel.
-         À RETIRER une fois le diagnostic posé. -->
+<!-- V263 — Status bar Live View : fix DÉFINITIF de la bande blanche Dynamic
+     Island (diagnostic par sonde V262 sur device réel, protocole V210).
+     Mécanisme : iOS peint la zone status-bar d'après le meta theme-color, le
+     lit au lancement et IGNORE les changements de contenu à chaud (échec V238).
+     En revanche, RETIRER le meta du DOM rend le backdrop adaptatif → il suit
+     le fond noir du Live View. Le meta (même nœud) est ré-inséré à la
+     fermeture avec la couleur du thème.
+     Limite ASSUMÉE (décision utilisateur 2026-06-10) : le placement de la
+     fenêtre web est GRAVÉ à l'installation du Web Clip ; cette installation
+     date de l'ère « default » (V210) → la page démarre SOUS la status bar
+     (mesures sonde : sat:0px, ih:812 vs sh:874). Les pixels caméra ne peuvent
+     donc pas passer sous la Dynamic Island sans RÉINSTALLER l'app (= perte des
+     données locales) ; l'utilisateur garde son installation. Une
+     réinstallation future bénéficiera automatiquement du plein écran
+     (black-translucent + height:100vh V261 déjà en place). -->
 <script>
 (function(){
   var mc = document.querySelector('meta[name="theme-color"]');
+  if (!mc || typeof MutationObserver === 'undefined') return;
   function themeCol(){ return document.documentElement.getAttribute('data-theme') === 'dark' ? '#06070A' : '#F4F6F8'; }
   function lvOpen(){ return document.body.classList.contains('lv-open') || document.documentElement.classList.contains('lv-open'); }
   var last = null;
   function sync(){
     var o = lvOpen(); if (o === last) return; last = o;
-    if (mc) {
-      if (o) { if (mc.parentNode) mc.parentNode.removeChild(mc); }
-      else { mc.setAttribute('content', themeCol()); if (!mc.parentNode) document.head.appendChild(mc); }
-    }
-    diag(o);
+    if (o) { if (mc.parentNode) mc.parentNode.removeChild(mc); }
+    else { mc.setAttribute('content', themeCol()); if (!mc.parentNode) document.head.appendChild(mc); }
   }
-  /* ── SONDE DIAG V262 (temporaire) ── */
-  var panel = null, probe = null, redLine = null, greenLine = null, timer = null;
-  function diag(on){
-    var lv = document.getElementById('lvModal');
-    if (!lv) return;
-    if (!on) {
-      if (timer) { clearInterval(timer); timer = null; }
-      [panel, probe, redLine, greenLine].forEach(function(n){ if (n && n.parentNode) n.parentNode.removeChild(n); });
-      panel = probe = redLine = greenLine = null;
-      return;
-    }
-    probe = document.createElement('div');
-    probe.style.cssText = 'position:fixed;top:0;left:-9999px;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);visibility:hidden;';
-    lv.appendChild(probe);
-    redLine = document.createElement('div');
-    redLine.style.cssText = 'position:absolute;top:0;left:0;right:0;height:3px;background:#FF0000;z-index:9;pointer-events:none;';
-    lv.appendChild(redLine);
-    greenLine = document.createElement('div');
-    greenLine.style.cssText = 'position:absolute;top:env(safe-area-inset-top,0px);left:0;right:0;height:3px;background:#00FF44;z-index:9;pointer-events:none;';
-    lv.appendChild(greenLine);
-    panel = document.createElement('div');
-    panel.style.cssText = 'position:absolute;left:12px;right:12px;bottom:96px;z-index:9;background:rgba(0,0,0,0.78);color:#fff;font:600 11px/1.5 ui-monospace,monospace;padding:8px 10px;border-radius:8px;pointer-events:none;white-space:pre;';
-    lv.appendChild(panel);
-    function refresh(){
-      try {
-        var cs = getComputedStyle(probe);
-        var mm = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) ? 'Y' : 'N';
-        var ns = (navigator.standalone === true) ? 'Y' : (navigator.standalone === false ? 'N' : '?');
-        var tcEl = document.querySelector('meta[name="theme-color"]');
-        panel.textContent =
-          'DIAG v262  standalone mm:' + mm + ' nav:' + ns + '\n' +
-          'sat:' + cs.paddingTop + '  sab:' + cs.paddingBottom + '\n' +
-          'ih:' + window.innerHeight + ' sh:' + (screen && screen.height) + ' vv:' + (window.visualViewport ? Math.round(visualViewport.height) : '-') + '\n' +
-          'html:' + document.documentElement.clientHeight + ' body:' + document.body.clientHeight + ' tc:' + (tcEl ? tcEl.getAttribute('content') : 'ABSENT');
-      } catch(e){ panel.textContent = 'DIAG err ' + e.message; }
-    }
-    refresh();
-    timer = setInterval(refresh, 1000);
-  }
-  if (typeof MutationObserver !== 'undefined') {
-    var obs = new MutationObserver(sync);
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'] });
-    obs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-  }
+  var obs = new MutationObserver(sync);
+  obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+  obs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
   sync();
 })();
 </script>
