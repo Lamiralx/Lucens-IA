@@ -5084,6 +5084,14 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   grid-template-columns: 1fr 1fr;   /* V288 — toujours 2 colonnes : tient sans scroll */
   gap: 8px;
 }
+/* V289 — chaque libellé sur UNE ligne parfaitement claire (demande utilisateur) */
+.ctx-opt-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* V289 — révélation progressive : le RÔLE apparaît après le choix du secteur,
+   micro-animation hyper discrète (fondu + 6px), neutralisée si reduced-motion. */
+.ctx-step.ctx-await { display: none; }
+.ctx-step.ctx-reveal { animation: ctxReveal .22s ease-out; }
+@keyframes ctxReveal { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .ctx-step.ctx-reveal { animation: none; } }
 /* V288 — pille secteur compacte : libellé seul, centré, cible >=44px */
 .ctx-options-sector .ctx-opt-pill { min-height: 46px; display: flex; align-items: center; }
 .ctx-options-role .ctx-opt-pill { min-height: 56px; }
@@ -7092,6 +7100,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   background: var(--surface-mid);
 }
 .hist-item-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.hist-item-date.is-unnamed, .home-hrow-date.is-unnamed { color: var(--ink-dim); font-weight: 500; }
 .hist-item-date {
   font-family: var(--font-display);
   font-size: 13.5px; font-weight: 600;
@@ -8753,7 +8762,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v288</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v289</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -11968,11 +11977,11 @@ const I18N = {
     ctx_back:                  "Back",
     ctx_opt_resto:             "Food service",
     ctx_opt_resto_hint:        "Restaurant, canteen, hotel, snack",
-    ctx_opt_agro:              "Food production",
+    ctx_opt_agro:              "Production",
     ctx_opt_agro_hint:         "Processing plant, packaging, abattoir, dairy",
-    ctx_opt_distrib:           "Food retail",
+    ctx_opt_distrib:           "Retail",
     ctx_opt_distrib_hint:      "Supermarket, market, cold warehouse, refrigerated transport",
-    ctx_opt_medical:           "Health and care",
+    ctx_opt_medical:           "Healthcare",
     ctx_opt_medical_hint:      "Hospital, nursing home, clinic, veterinary, medical practice",
     ctx_opt_pharma:            "Pharma & labs",
     ctx_opt_pharma_hint:       "Pharmaceutical production, cleanroom, cosmetics",
@@ -12207,7 +12216,7 @@ const I18N = {
     ctx_opt_agro_hint: "Planta de transformación, envasado, matadero, lácteos",
     ctx_opt_distrib: "Distribución",
     ctx_opt_distrib_hint: "Supermercado, mercado, almacén frigorífico, transporte refrigerado",
-    ctx_opt_medical: "Salud y cuidado",
+    ctx_opt_medical: "Salud",
     ctx_opt_medical_hint: "Hospital, residencia, clínica, veterinaria, consulta médica",
     ctx_opt_pharma: "Farma y labo",
     ctx_opt_pharma_hint: "Producción farmacéutica, sala blanca, cosmética",
@@ -12793,11 +12802,11 @@ const I18N = {
     ctx_back: "Zurück",
     ctx_opt_resto: "Gastronomie",
     ctx_opt_resto_hint: "Restaurant, Kantine, Hotel, Imbiss",
-    ctx_opt_agro: "Lebensmittelproduktion",
+    ctx_opt_agro: "Produktion",
     ctx_opt_agro_hint: "Verarbeitungsbetrieb, Verpackung, Schlachthof, Molkerei",
     ctx_opt_distrib: "Handel",
     ctx_opt_distrib_hint: "Supermarkt, Markt, Kühllager, Kühltransport",
-    ctx_opt_medical: "Gesundheit und Pflege",
+    ctx_opt_medical: "Gesundheit",
     ctx_opt_medical_hint: "Krankenhaus, Pflegeheim, Klinik, Tiermedizin, Arztpraxis",
     ctx_opt_pharma: "Pharma & Labor",
     ctx_opt_pharma_hint: "Pharmaproduktion, Reinraum, Kosmetik",
@@ -19005,6 +19014,14 @@ const Annotator = (() => {
            directement (currentStep forcé à la dernière étape). goToStep/dots/
            Suivant n'existent plus dans le markup ; null-checks conservés. */
         steps.forEach(el => { if (el) el.classList.add('is-on'); });
+        /* V289 — révélation progressive : à la première ouverture, seule la
+           question SECTEUR est visible ; le RÔLE se révèle au choix du secteur
+           (micro-animation). À la réouverture (contexte déjà enregistré), tout
+           est visible avec les sélections cochées, prêtes à modifier. */
+        if (steps[1]) {
+          if (existingType) steps[1].classList.remove('ctx-await');
+          else steps[1].classList.add('ctx-await');
+        }
         currentStep = steps.length - 1;
         if (submitBtn && typeof t === 'function') submitBtn.textContent = t('ctx_submit');
         refreshNav();
@@ -19012,7 +19029,15 @@ const Annotator = (() => {
         /* V26 — Type → MAJ visuelle des dots (PAS d'auto-advance forcé).
            L'utilisateur clique "Suivant" pour passer à l'étape suivante,
            ce qui lui laisse le contrôle total sur la navigation. */
-        const onTypeChange = () => { refreshNav(); };
+        const onTypeChange = () => {
+          refreshNav();
+          const s2 = document.getElementById('ctxStep2');
+          if (s2 && s2.classList.contains('ctx-await')) {
+            s2.classList.remove('ctx-await');
+            s2.classList.add('ctx-reveal');
+            setTimeout(() => s2.classList.remove('ctx-reveal'), 300);
+          }
+        };
         overlay.querySelectorAll('input[name="ctx_type"]').forEach(r => {
           r.removeEventListener('change', onTypeChange);
           r.addEventListener('change', onTypeChange);
@@ -27624,8 +27649,9 @@ const Annotator = (() => {
         }
         var body = E('div','hist-item-body');
         var zc = entry.zoneCount || 0;
-        var rowTitle = (entry.zone && entry.zone.trim()) ? entry.zone.trim() : tr('h_unnamed', 'Inspection sans nom');
-        body.appendChild(E('div','hist-item-date', rowTitle));
+        /* V289 — fallback uniforme « — » (cohérent avec l'aperçu accueil) */
+        var rowZone = (entry.zone && entry.zone.trim()) ? entry.zone.trim() : '';
+        body.appendChild(E('div','hist-item-date' + (rowZone ? '' : ' is-unnamed'), rowZone || '—'));
         body.appendChild(E('div','hist-item-meta',
           fmtDate(entry.date)+'  ·  '+sectorLabel(entry.sector)+'  ·  '+zonesText(zc)));
         item.appendChild(body);
@@ -27702,6 +27728,12 @@ const Annotator = (() => {
         if (window.LucensHistory && window.LucensHistory.update){
           window.LucensHistory.update(entry.id, { zone: v });
           entry.zone = v;
+          /* V289 — propagation EN DIRECT du renommage (demande utilisateur) :
+             la ligne contexte sous la photo reflète immédiatement le nouveau
+             nom ; la liste et l'aperçu accueil se re-rendent à la fermeture. */
+          var zSpan = report.querySelector('.result-ctx-zone');
+          if (zSpan) zSpan.textContent = v;
+          else if (v) renderDetail(entry.id);   /* la ligne n'existait pas encore */
           savedBadge.classList.add('is-on');
           setTimeout(function(){ savedBadge.classList.remove('is-on'); }, 1400);
         }
@@ -27975,22 +28007,13 @@ const Annotator = (() => {
           row.appendChild(E('div','home-hrow-thumb'));
         }
         var body = E('div','home-hrow-body');
+        /* V289 — STRUCTURE UNIFORME (demande utilisateur : « toujours la même
+           structure ») : titre = ZONE nommée, sinon un tiret sobre ; méta =
+           DATE · HEURE EXACTES, toujours présente. Fini le relatif à géométrie
+           variable (« TEST / 39 min » vs « 50 min ago » seul). */
         var hz = (entry.zone && entry.zone.trim()) ? entry.zone.trim() : '';
-        var hasSector = !!entry.sector;
-        var sectorStr = hasSector ? sectorLabel(entry.sector) : '';
-        var zc = entry.zoneCount || 0;
-        var zonesTxt = zonesText(zc);
-        /* V231 — Identifiant = ZONE saisie, sinon SECTEUR (ce qui a été inspecté),
-           sinon la date ; sous-ligne = date (+ secteur si un nom de zone est saisi). */
-        var primary = hz || sectorStr || relTime(entry.date);
-        body.appendChild(E('div','home-hrow-date', primary));
-        var metaParts = [];
-        if (hz || hasSector) metaParts.push(relTime(entry.date));
-        if (hz && hasSector) metaParts.push(sectorStr);
-        /* V228 — « n zones » RETIRÉ partout (jugé non pertinent terrain par les
-           utilisateurs, demande). Méta = date (lignes nommées) + secteur. On n'ajoute
-           la ligne que si elle a du contenu (pas de méta fantôme vide). */
-        if (metaParts.length) body.appendChild(E('div','home-hrow-meta', metaParts.join('  ·  ')));
+        body.appendChild(E('div','home-hrow-date' + (hz ? '' : ' is-unnamed'), hz || '—'));
+        body.appendChild(E('div','home-hrow-meta', fmtDate(entry.date)));
         row.appendChild(body);
         /* V188 — badge de niveau (FAIBLE/MOYEN/ÉLEVÉ + pastille) au lieu du score
            chiffré, pour coller à la capture d'accueil. riskOf() reste la source. */
