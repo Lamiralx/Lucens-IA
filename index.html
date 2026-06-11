@@ -739,7 +739,7 @@ body.has-offline-banner .upload-hub {
 .home-learn-link .hl-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .home-learn-link .hl-t { display: block; }
 .home-learn-link .hl-t { font-size: 15px; font-weight: 700; color: var(--ink-primary); }
-.home-learn-link .hl-s { font-size: 12.5px; color: var(--ink-tertiary); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.home-learn-link .hl-s { font-size: 12px; color: var(--ink-tertiary); margin-top: 1px; line-height: 1.35; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; } /* V290 — tout visible (2 lignes), fini l'ellipse qui coupait */
 .home-learn-link .hl-chev { color: var(--border-hi); font-size: 20px; line-height: 1; flex-shrink: 0; }
 
 /* Page « En savoir plus » : overlay plein écran qui glisse depuis la DROITE. */
@@ -8762,7 +8762,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v289</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v290</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -11864,6 +11864,9 @@ const I18N = {
     h_home_all: "View all",
     home_recent: "Latest inspections",
     home_more: "Learn more",
+    learn_sub: "Why Lucens · How it works · Precautions",
+    settings_theme_dark: "Dark theme",
+    settings_theme_dark_sub: "Visual comfort in low light",
     h_empty_t: "No inspections yet",
     h_empty_s: "Your analyses will appear here, saved on this device.",
     h_unnamed: "Unnamed inspection",
@@ -12582,6 +12585,9 @@ const I18N = {
     h_home_all: "Ver todo",
     home_recent: "Últimas inspecciones",
     home_more: "Más información",
+    learn_sub: "Por qué Lucens · Cómo funciona · Precauciones",
+    settings_theme_dark: "Tema oscuro",
+    settings_theme_dark_sub: "Confort visual con poca luz",
     h_empty_t: "Sin inspecciones",
     h_empty_s: "Sus análisis aparecerán aquí, guardados en este dispositivo.",
     h_unnamed: "Inspección sin nombre",
@@ -13172,6 +13178,9 @@ const I18N = {
     h_home_all: "Alle ansehen",
     home_recent: "Letzte Inspektionen",
     home_more: "Mehr erfahren",
+    learn_sub: "Warum Lucens · So funktioniert es · Hinweise",
+    settings_theme_dark: "Dunkles Design",
+    settings_theme_dark_sub: "Sehkomfort bei wenig Licht",
     h_empty_t: "Keine Inspektionen",
     h_empty_s: "Ihre Analysen erscheinen hier, auf diesem Gerät gespeichert.",
     h_unnamed: "Unbenannte Inspektion",
@@ -13481,6 +13490,15 @@ function setLang(lang) {
   currentLang = lang;
   localStorage.setItem('uvLang', lang);
   applyLang();
+}
+
+/* V290 — RACINE i18n : ce script s'exécute au MILIEU du document → les éléments
+   situés APRÈS lui (page « En savoir plus », overlays learn/historique…)
+   n'existaient pas encore lors des passes de chargement et restaient en
+   français tant qu'on ne changeait pas de langue à la main. On rejoue UNE
+   passe complète quand le DOM est entièrement chargé. */
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function () { applyLang(); });
 }
 
 
@@ -18455,7 +18473,7 @@ const Annotator = (() => {
     /* ─── DISCLAIMER LÉGAL (auto-dimensionné selon longueur texte) ─── */
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(6.4);
-    const discLines = pdf.splitTextToSize(t('disclaimer'), contentW - 4);
+    const discLines = pdf.splitTextToSize(t('rep_disclaimer'), contentW - 4);
     const lineH = 2.9;
     const titleH = 4;
     const padTop = 2;
