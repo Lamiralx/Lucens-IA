@@ -8762,7 +8762,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v290</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v291</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -10440,7 +10440,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <div class="lv-verdict-action">
           <div class="lv-verdict-action-icon" aria-hidden="true">⤳</div>
           <div class="lv-verdict-action-body">
-            <div class="lv-verdict-action-title" id="lvVerdictActionTitle">Action recommandée</div>
+            <div class="lv-verdict-action-title" id="lvVerdictActionTitle" data-i18n="rep_action_label">Action recommandée</div>
             <div class="lv-verdict-action-text" id="lvVerdictActionText">—</div>
             <div class="lv-verify" data-i18n="rep_verify">En cas de doute, confirmer par prélèvement (ATP ou laboratoire).</div>
           </div>
@@ -21073,8 +21073,19 @@ const Annotator = (() => {
     }
 
     return {
-      score: raw.overall_score,
-      riskLevel: raw.risk_level,
+      /* V291 — BUG RISQUE 0 : le SYSTEM_PROMPT (api/analyze.js « CHAMPS LEGACY
+         OBLIGATOIRES ») impose à Claude de remplir `score` + `riskLevel`. C'est
+         ce que l'API renvoie réellement (preuve : result/recommendation/
+         contextual_reasoning, eux aussi propres au system prompt, s'affichent).
+         L'ancien code lisait `overall_score`/`risk_level` — des noms qui ne
+         viennent QUE de l'exemple obsolète du user-message et que le serveur
+         force même à 0 (analyze.js:1384). Résultat : TOUTES les analyses
+         tombaient à 0/100. On lit la vraie clé, avec repli legacy pour les
+         réponses en cache / anciens formats. */
+      score: (typeof raw.score === 'number') ? raw.score
+             : (typeof raw.overall_score === 'number') ? raw.overall_score
+             : undefined,
+      riskLevel: raw.riskLevel || raw.risk_level || null,
       coveragePercent: ga.suspected_fluorescent_area_pct,
       probabilities,
       zones,
@@ -22906,12 +22917,15 @@ const Annotator = (() => {
                  contexte, vigilance, référentiels). */
               try {
                 if (typeof LucensHistory !== 'undefined' && data) {
-                  /* V136 — La réponse /api/analyze est BRUTE (overall_score,
-                     risk_level, global_assessment.suspected_fluorescent_area_pct,
-                     zones…). On la NORMALISE via adaptApiResponse pour obtenir
-                     score / riskLevel / coveragePercent / zones cohérents.
-                     Avant V136 : on lisait data.score (inexistant sur la brute)
-                     → fiche d'historique vide « 0 zones · 0 ». */
+                  /* V136 — La réponse /api/analyze est BRUTE (zones[],
+                     global_assessment, observations…). On la NORMALISE via
+                     adaptApiResponse pour obtenir score / riskLevel /
+                     coveragePercent / zones cohérents.
+                     V291 — CORRECTION du modèle mental : l'API renvoie
+                     `score` + `riskLevel` (imposés par le SYSTEM_PROMPT), PAS
+                     `overall_score`/`risk_level` (qui ne sont que dans l'exemple
+                     obsolète du user-message). Le repli `data.overall_score`
+                     ci-dessous reste pour compat ascendante uniquement. */
                   let norm = data;
                   try {
                     if (typeof adaptApiResponse === 'function') norm = adaptApiResponse(data) || data;
@@ -23350,7 +23364,11 @@ const Annotator = (() => {
         } catch (e) {}
         $set('lvVerdictActionText', recommendation.primary_action);
         const actTitle = document.getElementById('lvVerdictActionTitle');
-        if (actTitle) actTitle.textContent = recommendation.title || 'Action recommandée';
+        /* V291 — Label CHROME : suit la langue de l'UI (i18n), comme « Risque
+           associé » (data-i18n). Avant : lu depuis recommendation.title (IA) avec
+           repli FR codé en dur → restait « Action recommandée » en session EN
+           quand l'IA n'envoyait pas le titre. */
+        if (actTitle) actTitle.textContent = (typeof t === 'function' && t('rep_action_label')) || 'Action recommandée';
         const vig = document.getElementById('lvVerdictVigilance');
         const vigText = document.getElementById('lvVerdictVigilanceText');
         const pov = (res.point_of_vigilance && res.point_of_vigilance.text) || '';
@@ -27905,8 +27923,9 @@ const Annotator = (() => {
           vCard.appendChild(rq);
         }
         if (rAction){
-          var actLbl = (res.recommendation && (res.recommendation.title || '').toString().trim())
-            || tr('rep_action_label', 'Action recommandée');
+          /* V291 — Label CHROME : i18n (langue UI), cohérent avec la carte
+             principale. Avant : préférait recommendation.title (langue d'analyse). */
+          var actLbl = tr('rep_action_label', 'Action recommandée');
           var act = E('div','lv-verdict-action');
           var actBody = E('div','lv-verdict-action-body');
           actBody.appendChild(E('div','lv-verdict-action-title', actLbl));
