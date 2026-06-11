@@ -4851,9 +4851,10 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   box-shadow: none;
   width: 100%;
   max-width: 560px;             /* V37 : 540 → 560 */
-  height: 92dvh;                /* V37 : occupe quasi tout l'écran (bottom sheet) */
-  max-height: 92dvh;
-  min-height: min(85dvh, 720px);
+  /* V288 — hauteur = CONTENU (un seul écran sans scroll) ; plafond sécurité. */
+  height: auto;
+  max-height: calc(100dvh - var(--sa-t, 0px) - 8px);
+  min-height: 0;
   display: flex; flex-direction: column;
   overflow: hidden;
   transform: translateY(100%);
@@ -4935,7 +4936,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 }
 .ctx-body::-webkit-scrollbar { display: none; width: 0; height: 0; }
 /* Jauge de scroll — teal, visible dès qu'il y a quelque chose à scroller */
-.ctx-scrollbar {
+.ctx-scrollbar { display: none !important; /* V288 — plus de scroll dans le popup */
   position: absolute;
   top: 8px; bottom: 8px; right: 4px;
   width: 5px;
@@ -5080,9 +5081,13 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 
 .ctx-options {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 6px;
+  grid-template-columns: 1fr 1fr;   /* V288 — toujours 2 colonnes : tient sans scroll */
+  gap: 8px;
 }
+/* V288 — pille secteur compacte : libellé seul, centré, cible >=44px */
+.ctx-options-sector .ctx-opt-pill { min-height: 46px; display: flex; align-items: center; }
+.ctx-options-role .ctx-opt-pill { min-height: 56px; }
+.ctx-options-role .ctx-opt-hint { font-size: 11px; line-height: 1.35; }
 @media (min-width: 480px) {
   .ctx-options { grid-template-columns: 1fr 1fr; }
 }
@@ -8748,7 +8753,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v287</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v288</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -10929,53 +10934,31 @@ body.lv-open { overflow: hidden; touch-action: none; }
 
     <div class="ctx-body-wrap">
     <div class="ctx-body" id="ctxBody">
-      <div class="ctx-stepnav">
-        <button type="button" class="ctx-back" id="ctxBackBtn" hidden>
-          <!-- V250 — chevron retour CANONIQUE (bouton libellé : reste inline texte, pas un cercle) -->
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M15 6l-6 6 6 6"/>
-          </svg>
-          <span data-i18n="ctx_back">Précédent</span>
-        </button>
-        <!-- V26 — Dots cliquables : indicateur visuel des étapes + accès direct.
-             Dot vert = répondu, dot ambre = en cours, dot gris = non répondu. -->
-        <div class="ctx-dots" id="ctxDots" role="tablist" data-i18n-aria-label="ctx_steps_aria" aria-label="Étapes">
-          <button type="button" class="ctx-dot" data-step="0" role="tab" data-i18n-aria-label="ctx_step1_aria" aria-label="Question 1">
-            <span class="ctx-dot-num">1</span><span class="ctx-dot-label" data-i18n="ctx_step1_label">Secteur</span>
-          </button>
-          <span class="ctx-dot-bar" aria-hidden="true"></span>
-          <button type="button" class="ctx-dot" data-step="1" role="tab" data-i18n-aria-label="ctx_step2_aria" aria-label="Question 2">
-            <span class="ctx-dot-num">2</span><span class="ctx-dot-label" data-i18n="ctx_step2_label">Rôle</span>
-          </button>
-        </div>
-        <button type="button" class="ctx-next" id="ctxNextBtn" hidden>
-          <span data-i18n="ctx_next">Suivant</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M9 6l6 6-6 6"/>
-          </svg>
-        </button>
-      </div>
+      <!-- V288 — UN SEUL ÉCRAN (fin du wizard 2 étapes, des dots et de Suivant —
+           demande utilisateur). SECTEURS : libellé court SEUL, grille 2 colonnes
+           (un restaurateur se reconnaît dans « Restauration », pas besoin
+           d'inventaire). RÔLE : libellé + détail dessous. Zéro scroll. -->
       <div class="ctx-step is-on" id="ctxStep1">
         <div class="ctx-q-label" data-i18n="ctx_q_type">Secteur d'activité</div>
-        <div class="ctx-options">
-          <label class="ctx-opt"><input type="radio" name="ctx_type" value="restauration"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_opt_resto">Restauration et hôtellerie</span><span class="ctx-opt-hint" data-i18n="ctx_opt_resto_hint">Restaurant, cantine, hôtel, snack</span></span></label>
-          <label class="ctx-opt"><input type="radio" name="ctx_type" value="agro"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_opt_agro">Production agroalimentaire</span><span class="ctx-opt-hint" data-i18n="ctx_opt_agro_hint">Usine de transformation, conditionnement, abattoir, laiterie</span></span></label>
-          <label class="ctx-opt"><input type="radio" name="ctx_type" value="distrib"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_opt_distrib">Distribution alimentaire</span><span class="ctx-opt-hint" data-i18n="ctx_opt_distrib_hint">Supermarché, marché, entrepôt froid, transport réfrigéré</span></span></label>
-          <label class="ctx-opt"><input type="radio" name="ctx_type" value="medical"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_opt_medical">Santé et soin</span><span class="ctx-opt-hint" data-i18n="ctx_opt_medical_hint">Hôpital, EHPAD, clinique, vétérinaire, cabinet médical</span></span></label>
-          <label class="ctx-opt"><input type="radio" name="ctx_type" value="pharma"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_opt_pharma">Pharma et laboratoires</span><span class="ctx-opt-hint" data-i18n="ctx_opt_pharma_hint">Production pharmaceutique, salle blanche, cosmétique</span></span></label>
-          <label class="ctx-opt"><input type="radio" name="ctx_type" value="industrial"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_opt_industrial">Industrie et atelier</span><span class="ctx-opt-hint" data-i18n="ctx_opt_industrial_hint">Atelier mécanique, traitement de surface, peinture, métallurgie</span></span></label>
-          <label class="ctx-opt"><input type="radio" name="ctx_type" value="residential"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_opt_residential">Habitat résidentiel</span><span class="ctx-opt-hint" data-i18n="ctx_opt_residential_hint">Appartement, maison, copropriété</span></span></label>
-          <label class="ctx-opt"><input type="radio" name="ctx_type" value="erp"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_opt_erp">ERP et lieux publics</span><span class="ctx-opt-hint" data-i18n="ctx_opt_erp_hint">École, transport, piscine, vestiaire, musée</span></span></label>
+        <div class="ctx-options ctx-options-sector">
+          <label class="ctx-opt"><input type="radio" name="ctx_type" value="restauration"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_opt_resto">Restauration</span></span></label>
+          <label class="ctx-opt"><input type="radio" name="ctx_type" value="agro"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_opt_agro">Agroalimentaire</span></span></label>
+          <label class="ctx-opt"><input type="radio" name="ctx_type" value="distrib"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_opt_distrib">Distribution</span></span></label>
+          <label class="ctx-opt"><input type="radio" name="ctx_type" value="medical"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_opt_medical">Santé et soin</span></span></label>
+          <label class="ctx-opt"><input type="radio" name="ctx_type" value="pharma"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_opt_pharma">Pharma et labo</span></span></label>
+          <label class="ctx-opt"><input type="radio" name="ctx_type" value="industrial"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_opt_industrial">Industrie</span></span></label>
+          <label class="ctx-opt"><input type="radio" name="ctx_type" value="residential"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_opt_residential">Résidentiel</span></span></label>
+          <label class="ctx-opt"><input type="radio" name="ctx_type" value="erp"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_opt_erp">Lieux publics</span></span></label>
         </div>
       </div>
 
-      <div class="ctx-step" id="ctxStep2">
+      <div class="ctx-step is-on" id="ctxStep2">
         <div class="ctx-q-label ctx-q-sector" data-i18n="ctx_q_role">Votre rôle</div>
-        <div class="ctx-options">
-          <label class="ctx-opt"><input type="radio" name="ctx_role" value="operationnel"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_role_op">Opérateur ou intervenant terrain</span><span class="ctx-opt-hint" data-i18n="ctx_role_op_h">Cuisinier, agent de nettoyage, technicien, intervenant ponctuel, particulier</span></span></label>
-          <label class="ctx-opt"><input type="radio" name="ctx_role" value="responsable"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_role_resp">Responsable hygiène ou pilote</span><span class="ctx-opt-hint" data-i18n="ctx_role_resp_h">Manager HACCP, cadre de santé, QSE, QC pharma, pharmacien</span></span></label>
-          <label class="ctx-opt"><input type="radio" name="ctx_role" value="auditeur"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_role_aud">Auditeur ou inspecteur</span><span class="ctx-opt-hint" data-i18n="ctx_role_aud_h">Certificateur, inspecteur public, consultant, contrôle externe</span></span></label>
-          <label class="ctx-opt"><input type="radio" name="ctx_role" value="formateur"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_role_form">Formateur ou sensibilisateur</span><span class="ctx-opt-hint" data-i18n="ctx_role_form_h">Formateur HACCP, enseignant, coach hygiène</span></span></label>
+        <div class="ctx-options ctx-options-role">
+          <label class="ctx-opt"><input type="radio" name="ctx_role" value="operationnel"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_role_op">Terrain</span><span class="ctx-opt-hint" data-i18n="ctx_role_op_h">Cuisinier, agent de nettoyage, technicien</span></span></label>
+          <label class="ctx-opt"><input type="radio" name="ctx_role" value="responsable"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_role_resp">Responsable</span><span class="ctx-opt-hint" data-i18n="ctx_role_resp_h">HACCP, QSE, cadre, pharmacien</span></span></label>
+          <label class="ctx-opt"><input type="radio" name="ctx_role" value="auditeur"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_role_aud">Auditeur</span><span class="ctx-opt-hint" data-i18n="ctx_role_aud_h">Inspecteur, certificateur, consultant</span></span></label>
+          <label class="ctx-opt"><input type="radio" name="ctx_role" value="formateur"><span class="ctx-opt-pill"><span class="ctx-opt-title" data-i18n="ctx_role_form">Formateur</span><span class="ctx-opt-hint" data-i18n="ctx_role_form_h">Formateur HACCP, enseignant</span></span></label>
         </div>
       </div>
 
@@ -11382,31 +11365,31 @@ const I18N = {
     ctx_step1_aria:            "Question 1",
     ctx_step2_aria:            "Question 2",
     ctx_back:                  "Précédent",
-    ctx_opt_resto:             "Restauration et hôtellerie",
+    ctx_opt_resto:             "Restauration",
     ctx_opt_resto_hint:        "Restaurant, cantine, hôtel, snack",
-    ctx_opt_agro:              "Production agroalimentaire",
+    ctx_opt_agro:              "Agroalimentaire",
     ctx_opt_agro_hint:         "Usine de transformation, conditionnement, abattoir, laiterie",
-    ctx_opt_distrib:           "Distribution alimentaire",
+    ctx_opt_distrib:           "Distribution",
     ctx_opt_distrib_hint:      "Supermarché, marché, entrepôt froid, transport réfrigéré",
     ctx_opt_medical:           "Santé et soin",
     ctx_opt_medical_hint:      "Hôpital, EHPAD, clinique, vétérinaire, cabinet médical",
-    ctx_opt_pharma:            "Pharma et laboratoires",
+    ctx_opt_pharma:            "Pharma et labo",
     ctx_opt_pharma_hint:       "Production pharmaceutique, salle blanche, cosmétique",
-    ctx_opt_industrial:        "Industrie et atelier",
+    ctx_opt_industrial:        "Industrie",
     ctx_opt_industrial_hint:   "Atelier mécanique, traitement de surface, peinture, métallurgie",
-    ctx_opt_residential:       "Habitat résidentiel",
+    ctx_opt_residential:       "Résidentiel",
     ctx_opt_residential_hint:  "Appartement, maison, copropriété",
-    ctx_opt_erp:               "ERP et lieux publics",
+    ctx_opt_erp:               "Lieux publics",
     ctx_opt_erp_hint:          "École, transport, piscine, vestiaire, musée",
     ctx_q_role: "Votre rôle",
-    ctx_role_op: "Opérateur ou intervenant terrain",
-    ctx_role_op_h: "Cuisinier, agent de nettoyage, technicien, intervenant ponctuel, particulier",
-    ctx_role_resp: "Responsable hygiène ou pilote",
-    ctx_role_resp_h: "Manager HACCP, cadre de santé, QSE, QC pharma, pharmacien",
-    ctx_role_aud: "Auditeur ou inspecteur",
-    ctx_role_aud_h: "Certificateur, inspecteur public, consultant, contrôle externe",
-    ctx_role_form: "Formateur ou sensibilisateur",
-    ctx_role_form_h: "Formateur HACCP, enseignant, coach hygiène",
+    ctx_role_op: "Terrain",
+    ctx_role_op_h: "Cuisinier, agent de nettoyage, technicien",
+    ctx_role_resp: "Responsable",
+    ctx_role_resp_h: "HACCP, QSE, cadre, pharmacien",
+    ctx_role_aud: "Auditeur",
+    ctx_role_aud_h: "Inspecteur, certificateur, consultant",
+    ctx_role_form: "Formateur",
+    ctx_role_form_h: "Formateur HACCP, enseignant",
     moment_label:              "Moment du cliché",
     moment_unspecified:        "Non précisé",
     moment_before:             "Avant nettoyage",
@@ -11983,31 +11966,31 @@ const I18N = {
     ctx_step1_aria:            "Question 1",
     ctx_step2_aria:            "Question 2",
     ctx_back:                  "Back",
-    ctx_opt_resto:             "Foodservice and hospitality",
+    ctx_opt_resto:             "Food service",
     ctx_opt_resto_hint:        "Restaurant, canteen, hotel, snack",
     ctx_opt_agro:              "Food production",
     ctx_opt_agro_hint:         "Processing plant, packaging, abattoir, dairy",
-    ctx_opt_distrib:           "Food distribution",
+    ctx_opt_distrib:           "Food retail",
     ctx_opt_distrib_hint:      "Supermarket, market, cold warehouse, refrigerated transport",
     ctx_opt_medical:           "Health and care",
     ctx_opt_medical_hint:      "Hospital, nursing home, clinic, veterinary, medical practice",
-    ctx_opt_pharma:            "Pharma and laboratories",
+    ctx_opt_pharma:            "Pharma & labs",
     ctx_opt_pharma_hint:       "Pharmaceutical production, cleanroom, cosmetics",
-    ctx_opt_industrial:        "Industry and workshops",
+    ctx_opt_industrial:        "Industry",
     ctx_opt_industrial_hint:   "Mechanical workshop, surface treatment, painting, metallurgy",
     ctx_opt_residential:       "Residential",
     ctx_opt_residential_hint:  "Apartment, house, condominium",
     ctx_opt_erp:               "Public venues",
     ctx_opt_erp_hint:          "School, transport, swimming pool, locker room, museum",
     ctx_q_role: "Your role",
-    ctx_role_op: "Field operator or on-site staff",
-    ctx_role_op_h: "Cook, cleaning agent, technician, occasional operator, individual",
-    ctx_role_resp: "Hygiene manager or lead",
-    ctx_role_resp_h: "HACCP manager, health executive, QHSE, pharma QC, pharmacist",
-    ctx_role_aud: "Auditor or inspector",
-    ctx_role_aud_h: "Certifier, public inspector, consultant, external control",
-    ctx_role_form: "Trainer or instructor",
-    ctx_role_form_h: "HACCP trainer, teacher, hygiene coach",
+    ctx_role_op: "Field",
+    ctx_role_op_h: "Cook, cleaning agent, technician",
+    ctx_role_resp: "Manager",
+    ctx_role_resp_h: "HACCP, QHSE, executive, pharmacist",
+    ctx_role_aud: "Auditor",
+    ctx_role_aud_h: "Inspector, certifier, consultant",
+    ctx_role_form: "Trainer",
+    ctx_role_form_h: "HACCP trainer, teacher",
     moment_label:              "Photo moment",
     moment_unspecified:        "Unspecified",
     moment_before:             "Before cleaning",
@@ -12218,31 +12201,31 @@ const I18N = {
     ctx_step1_aria: "Pregunta 1",
     ctx_step2_aria: "Pregunta 2",
     ctx_back: "Anterior",
-    ctx_opt_resto: "Restauración y hostelería",
+    ctx_opt_resto: "Restauración",
     ctx_opt_resto_hint: "Restaurante, cantina, hotel, snack",
-    ctx_opt_agro: "Producción agroalimentaria",
+    ctx_opt_agro: "Agroalimentaria",
     ctx_opt_agro_hint: "Planta de transformación, envasado, matadero, lácteos",
-    ctx_opt_distrib: "Distribución alimentaria",
+    ctx_opt_distrib: "Distribución",
     ctx_opt_distrib_hint: "Supermercado, mercado, almacén frigorífico, transporte refrigerado",
     ctx_opt_medical: "Salud y cuidado",
     ctx_opt_medical_hint: "Hospital, residencia, clínica, veterinaria, consulta médica",
-    ctx_opt_pharma: "Farma y laboratorios",
+    ctx_opt_pharma: "Farma y labo",
     ctx_opt_pharma_hint: "Producción farmacéutica, sala blanca, cosmética",
-    ctx_opt_industrial: "Industria y taller",
+    ctx_opt_industrial: "Industria",
     ctx_opt_industrial_hint: "Taller mecánico, tratamiento de superficies, pintura, metalurgia",
-    ctx_opt_residential: "Vivienda residencial",
+    ctx_opt_residential: "Residencial",
     ctx_opt_residential_hint: "Apartamento, casa, comunidad de propietarios",
-    ctx_opt_erp: "Establecimientos públicos",
+    ctx_opt_erp: "Espacios públicos",
     ctx_opt_erp_hint: "Escuela, transporte, piscina, vestuario, museo",
     ctx_q_role: "Su rol",
-    ctx_role_op: "Operativo o personal de campo",
-    ctx_role_op_h: "Cocinero, agente de limpieza, técnico, operador puntual, particular",
-    ctx_role_resp: "Responsable de higiene o jefe",
-    ctx_role_resp_h: "Responsable APPCC, mando sanitario, QHSE, QC farma, farmacéutico",
-    ctx_role_aud: "Auditor o inspector",
-    ctx_role_aud_h: "Certificador, inspector público, consultor, control externo",
-    ctx_role_form: "Formador o sensibilizador",
-    ctx_role_form_h: "Formador APPCC, docente, coach de higiene",
+    ctx_role_op: "Campo",
+    ctx_role_op_h: "Cocinero, agente de limpieza, técnico",
+    ctx_role_resp: "Responsable",
+    ctx_role_resp_h: "APPCC, QHSE, mando, farmacéutico",
+    ctx_role_aud: "Auditor",
+    ctx_role_aud_h: "Inspector, certificador, consultor",
+    ctx_role_form: "Formador",
+    ctx_role_form_h: "Formador APPCC, docente",
     moment_label: "Momento de la foto",
     moment_unspecified: "Sin especificar",
     moment_before: "Antes de la limpieza",
@@ -12808,31 +12791,31 @@ const I18N = {
     ctx_step1_aria: "Frage 1",
     ctx_step2_aria: "Frage 2",
     ctx_back: "Zurück",
-    ctx_opt_resto: "Gastronomie und Hotellerie",
+    ctx_opt_resto: "Gastronomie",
     ctx_opt_resto_hint: "Restaurant, Kantine, Hotel, Imbiss",
     ctx_opt_agro: "Lebensmittelproduktion",
     ctx_opt_agro_hint: "Verarbeitungsbetrieb, Verpackung, Schlachthof, Molkerei",
-    ctx_opt_distrib: "Lebensmittelvertrieb",
+    ctx_opt_distrib: "Handel",
     ctx_opt_distrib_hint: "Supermarkt, Markt, Kühllager, Kühltransport",
     ctx_opt_medical: "Gesundheit und Pflege",
     ctx_opt_medical_hint: "Krankenhaus, Pflegeheim, Klinik, Tiermedizin, Arztpraxis",
-    ctx_opt_pharma: "Pharma und Labore",
+    ctx_opt_pharma: "Pharma & Labor",
     ctx_opt_pharma_hint: "Pharmaproduktion, Reinraum, Kosmetik",
-    ctx_opt_industrial: "Industrie und Werkstatt",
+    ctx_opt_industrial: "Industrie",
     ctx_opt_industrial_hint: "Mechanikwerkstatt, Oberflächenbehandlung, Lackierung, Metallurgie",
     ctx_opt_residential: "Wohnen",
     ctx_opt_residential_hint: "Wohnung, Haus, Eigentümergemeinschaft",
-    ctx_opt_erp: "Öffentliche Einrichtungen",
+    ctx_opt_erp: "Öffentliche Orte",
     ctx_opt_erp_hint: "Schule, Verkehr, Schwimmbad, Umkleide, Museum",
     ctx_q_role: "Ihre Rolle",
-    ctx_role_op: "Operativ vor Ort oder Einsatzkraft",
-    ctx_role_op_h: "Koch, Reinigungskraft, Techniker, gelegentliche Kraft, Privatperson",
-    ctx_role_resp: "Hygieneverantwortliche·r oder Leitung",
-    ctx_role_resp_h: "HACCP-Manager, Pflegeleitung, QHSE, Pharma-QC, Apotheker",
-    ctx_role_aud: "Auditor·in oder Inspektor·in",
-    ctx_role_aud_h: "Zertifizierer, Amtsinspektor, Berater, externe Kontrolle",
-    ctx_role_form: "Trainer·in oder Multiplikator·in",
-    ctx_role_form_h: "HACCP-Trainer, Lehrkraft, Hygiene-Coach",
+    ctx_role_op: "Vor Ort",
+    ctx_role_op_h: "Koch, Reinigungskraft, Techniker",
+    ctx_role_resp: "Verantwortlich",
+    ctx_role_resp_h: "HACCP, QHSE, Leitung, Apotheker",
+    ctx_role_aud: "Auditor",
+    ctx_role_aud_h: "Inspektor, Zertifizierer, Berater",
+    ctx_role_form: "Trainer",
+    ctx_role_form_h: "HACCP-Trainer, Lehrkraft",
     moment_label: "Aufnahmezeitpunkt",
     moment_unspecified: "Nicht angegeben",
     moment_before: "Vor der Reinigung",
@@ -19017,11 +19000,14 @@ const Annotator = (() => {
           }
           refreshNav();
         }
-        /* Position de départ : si tout est déjà rempli, on commence à la
-           dernière étape pour permettre l'édition rapide ; sinon étape 1. */
-        if (existingType && existingRole) goToStep(1);
-        else if (existingType) goToStep(1);
-        else goToStep(0);
+        /* V288 — UN SEUL ÉCRAN (fin du wizard, demande utilisateur) : les deux
+           questions sont visibles en permanence, le bouton ENREGISTRE
+           directement (currentStep forcé à la dernière étape). goToStep/dots/
+           Suivant n'existent plus dans le markup ; null-checks conservés. */
+        steps.forEach(el => { if (el) el.classList.add('is-on'); });
+        currentStep = steps.length - 1;
+        if (submitBtn && typeof t === 'function') submitBtn.textContent = t('ctx_submit');
+        refreshNav();
 
         /* V26 — Type → MAJ visuelle des dots (PAS d'auto-advance forcé).
            L'utilisateur clique "Suivant" pour passer à l'étape suivante,
@@ -19674,7 +19660,7 @@ const Annotator = (() => {
     if (total > 60) {
       const bRatio = meanB / total;
       if (bRatio < 0.27 && meanLum > 60) {
-        issues.push("Cette photo ne semble pas prise sous UV-A 365 nm. Vérifiez que votre lampe UV-A est allumée et que la pièce est dans l'obscurité.");
+        issues.push("Cette photo ne semble pas prise sous lampe UV. Allumez votre lampe UV, éteignez la lumière, et reprenez la photo sur la surface à contrôler.");
         canProceed = false;
         return { canProceed, issues };
       }
