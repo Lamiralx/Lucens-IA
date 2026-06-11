@@ -8559,7 +8559,10 @@ html.lv-open, body.lv-open { background: #000 !important; }
   letter-spacing: 0.01em;
   cursor: pointer;
   flex-shrink: 0;
-  transition: transform 0.1s ease, background 0.15s ease;
+  /* V278 — plus AUCUNE transition de fond : le fond ne change plus jamais
+     (la boucle de readiness ne pilote plus le bouton). Seul le micro-retour
+     tactile au doigt (scale :active) garde une transition transform courte. */
+  transition: transform 0.1s ease;
   /* V164 — halo lumineux retiré (le brief interdit les glows). */
 }
 .lv-analyze-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
@@ -8575,25 +8578,31 @@ html.lv-open, body.lv-open { background: #000 !important; }
 .lv-analyze-btn { position: relative; overflow: hidden; touch-action: none; }
 .lv-analyze-btn::before { content: none !important; }
 .lv-analyze-btn .lv-press-fill { display: none !important; }
-.lv-analyze-btn.lv-flash { background: var(--accent) !important; }
 .lv-analyze-btn .lv-analyze-content {
   position: relative; z-index: 1;
   display: inline-flex; align-items: center; gap: 11px;
+}
+/* V278 — CAUSE RACINE DU « SURSAUT » ÉLIMINÉE : la boucle de readiness (4 Hz)
+   ajoutait/retirait .lv-not-ready (opacity:0.55) à chaque tick et SANS hystérésis
+   → scène limite = opacité qui clignote 1↔0,55 plusieurs fois/seconde. On ne pilote
+   PLUS aucune propriété visuelle du bouton depuis la boucle (l'état reste en JS via
+   lvReadyState). TOUTES les classes d'état (lv-flash, lv-ready-*, lv-not-ready,
+   lv-press-success) sont neutralisées à zéro changement visuel : le bouton garde EN
+   PERMANENCE background:var(--accent), opacity:1. Aucune animation, aucun virage. */
+.lv-analyze-btn.lv-flash,
+.lv-analyze-btn.lv-ready-green,
+.lv-analyze-btn.lv-ready-amber,
+.lv-analyze-btn.lv-ready-red,
+.lv-analyze-btn.lv-not-ready {
+  background: var(--accent) !important;
+  color: #FFFFFF !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
 }
 .lv-analyze-btn.lv-press-success { animation: none !important; }
 .lv-analyze-btn.lv-ready-green::before,
 .lv-analyze-btn.lv-ready-amber::before,
 .lv-analyze-btn.lv-ready-red::before { content: none !important; }
-/* « Pas prêt » : MÊME couleur accent (jamais de virage), juste une opacité
-   réduite STATIQUE comme indice tactile que la capture attend une scène nette. */
-.lv-analyze-btn.lv-not-ready {
-  background: var(--accent);
-  color: #FFFFFF;
-  opacity: 0.55;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-.lv-analyze-btn.lv-not-ready:active { transform: none; }
 
 /* Readout discret DANS le drawer (jamais sur la caméra) */
 .lv-drawer-readout {
@@ -8951,7 +8960,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v277</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v278</div>
         </div>
       </div>
     </div>
@@ -24855,7 +24864,7 @@ const Annotator = (() => {
      et brillance élevées), on saute la validation Claude (latence 600-2000ms)
      et on confirme directement FLUO. Bénéfice : feedback quasi-instantané
      pour les vraies fluo nettes (détergent, urine rongeur, biofilm marqué). */
-  const CH_OBVIOUS_BRIGHT_RATIO = 0.18;  /* 18% pixels brillants = évident */
+  const CH_OBVIOUS_BRIGHT_RATIO = 0.10;  /* V278 — 0.18→0.10 : une fluo FRANCHE confirme localement sans attendre le juge distant (qui pouvait l'annuler) */
   const CH_OBVIOUS_SAT_AVG      = 0.42;  /* sat moyenne >0.42 = saturé */
   /* V24 — Hysteresis : un verdict FLUO/OBJECT persiste 3s même si signal
      vacille → évite les flashs ambre/cyan/rouge à chaque petit mouvement. */
@@ -25146,7 +25155,11 @@ const Annotator = (() => {
         satSum += sat;
         valSum += val;
         n++;
-        if (sat >= T.satMin && val >= T.valMin) {
+        /* V278 — BIAIS PRÉSENCE (besoin central : ne jamais rater une fluorescence).
+           Une fluo est AVANT TOUT de la lumière émise : un pixel TRÈS lumineux compte
+           comme brillant même s'il est peu saturé (voile blanc/bleuté sous 365 nm,
+           résidu pâle) — l'ancien gate sat ET val ratait toute fluo claire. */
+        if ((sat >= T.satMin && val >= T.valMin) || val >= 0.82) {
           bright++;
           rSumB += R; gSumB += G; bSumB += B;
           nB++;
@@ -25154,6 +25167,7 @@ const Annotator = (() => {
       }
     }
     return {
+      bright: bright,           /* V278 — compte ABSOLU exposé : déclencheur 'petit spot' */
       brightRatio: n > 0 ? bright / n : 0,
       avgSat: n > 0 ? satSum / n : 0,
       avgVal: n > 0 ? valSum / n : 0,
@@ -25274,7 +25288,12 @@ const Annotator = (() => {
            - sensibilité 65 (équilibrée)    → ratio ≥ 4 % (= défaut historique)
            - sensibilité 100 (très sensible)→ ratio ≥ 1.8 % seulement */
         const { ratioMin } = getDetectionThresholds(lv.sensDisplay != null ? lv.sensDisplay : 65);
-        const hasSignal = sample.brightRatio >= ratioMin;
+        /* V278 — DEUX voies de signal : ratio global OU présence d'un AMAS brillant
+           absolu (≥120 px). La fenêtre échantillonnée couvre ~83 % du frame, donc un
+           VRAI petit spot (30×30 ≈ 900 px) était dilué sous ratioMin et finissait
+           'idle' (= « pas de résidu ») alors qu'il est net à l'œil. Le compte absolu
+           le rattrape : on ne rate plus une petite fluo. */
+        const hasSignal = sample.brightRatio >= ratioMin || sample.bright >= 120;
         /* V243 — type EN DIRECT (alimente la bannière), recalculé chaque frame
            tant qu'il y a du signal coloré au viseur. */
         lv.liveType = hasSignal ? lvLiveType(sample) : null;
@@ -25299,14 +25318,19 @@ const Annotator = (() => {
             setCrosshairState('fluo', cachedVerdict.reason);
           }
           else if (cachedVerdict.verdict === 'NO_OBJECT') setCrosshairState('object', cachedVerdict.reason);
+          /* V278 — même biais présence sur le rejeu de cache : un UNCERTAIN mis en
+             cache ne doit pas faire disparaître une fluo locale franche. */
+          else if (sample.brightRatio >= 0.06 || sample.avgSat >= 0.30) setCrosshairState('fluo', cachedVerdict.reason);
           else setCrosshairState('idle');
         } else if ((now - chLastSample) >= CH_SAMPLE_EVERY_MS) {
           /* Signal présent, pas en cache, timing OK */
           chLastSample = now;
           /* V28 — Fast path : signal HSV très évident → on confirme FLUO
              instantanément sans attendre Claude. Bénéfice = feedback réactif. */
-          if (sample.brightRatio >= CH_OBVIOUS_BRIGHT_RATIO
-              && sample.avgSat >= CH_OBVIOUS_SAT_AVG) {
+          if ((sample.brightRatio >= CH_OBVIOUS_BRIGHT_RATIO && sample.avgSat >= CH_OBVIOUS_SAT_AVG)
+              || (sample.brightRatio >= 0.06 && sample.avgVal >= 0.85)) {
+            /* V278 — 2ᵉ voie : fluo TRÈS lumineuse (avgVal≥0.85) confirme aussi en
+               local, même peu saturée → couvre la fluo pâle franche sans Claude. */
             setCrosshairState('fluo', 'signal net');
             /* V255 — Fast path « signal net » : pas d'appel Claude, donc pas de type
                affiné → on garde le pré-remplissage de teinte locale (lv.liveType déjà
@@ -25357,9 +25381,18 @@ const Annotator = (() => {
                 setCrosshairState('fluo', res.reason || '');
               }
               else if (v === 'NO_OBJECT') setCrosshairState('object', res.reason || '');
+              /* V278 — UNCERTAIN ne doit PLUS effacer un signal colorimétrique FORT :
+                 un crop JPEG étiré depuis 240×180 fait facilement hésiter le juge
+                 distant → il renvoyait 'idle' sur une vraie fluo (« clignote puis
+                 disparaît »). Biais présence : signal local franc = on AFFICHE fluo. */
+              else if (sample.brightRatio >= 0.06 || sample.avgSat >= 0.30) setCrosshairState('fluo', res.reason || '');
               else setCrosshairState('idle');
             })
-            .catch(() => { setCrosshairState('idle'); });
+            /* V278 — une erreur réseau ne doit JAMAIS effacer un signal local fort. */
+            .catch(() => {
+              if (sample.brightRatio >= 0.06 || sample.avgSat >= 0.30) setCrosshairState('fluo');
+              else setCrosshairState('idle');
+            });
           })();
         }
 
@@ -25890,13 +25923,15 @@ const Annotator = (() => {
     /* Le halo rouge devient un AVERTISSEMENT NON-BLOQUANT (2026-05-23) :
        le clic part toujours. Si la scène est dégradée, on toast une fois
        l'avertissement mais l'utilisateur garde le contrôle. */
-    if (btn.classList.contains('lv-not-ready')) {
+    /* V278 — gating lu sur l'ÉTAT JS (lvReadyState), plus sur une classe visuelle :
+       le bouton ne change jamais d'apparence. Avertissement non-bloquant conservé. */
+    if (lvReadyState && lvReadyState.status === 'red') {
       const reason = lvReadinessReason();
       if (reason) lvToast(reason);
       /* On continue malgré tout — pas de return. */
     }
-    btn.classList.add('lv-flash');
-    setTimeout(() => btn.classList.remove('lv-flash'), 200);
+    /* V278 — plus de .lv-flash : il reposait la même couleur accent en passant par
+       une transition = pur bruit visuel (« le bouton s'anime »). Supprimé. */
 
     if (!cam.videoWidth) return;
 
@@ -26112,13 +26147,10 @@ const Annotator = (() => {
     lvReadyState.status = level;
     lvReadyState.reasons = reasons;
 
-    /* Applique l'état au bouton */
-    const btn = $$('lvShoot');
-    if (btn) {
-      btn.classList.remove('lv-ready-green', 'lv-ready-amber', 'lv-ready-red', 'lv-not-ready');
-      btn.classList.add('lv-ready-' + level);
-      if (level === 'red') btn.classList.add('lv-not-ready');
-    }
+    /* V278 — La boucle NE TOUCHE PLUS au bouton (cause racine du sursaut : le
+       toggle d'opacité à 4 Hz sans hystérésis). L'état reste disponible en JS via
+       lvReadyState.status, lu par lvCapture pour l'avertissement non-bloquant. Le
+       bouton garde une apparence ABSOLUMENT constante (accent, opacité 1). */
   }
   function startReadinessLoop() {
     if (lvReadyTimer) return;
