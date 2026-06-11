@@ -346,13 +346,20 @@ FORMAT DE SORTIE
 
 Tu DOIS retourner UNIQUEMENT un JSON valide conforme au schéma fourni. Pas de texte hors JSON.
 
-- result.title : identité PROBABLE du signal, pas sa couleur. Ex : "Traces de contact humain accumulées" et non "Signal bleu-cyan détecté".
-- result.interpretation : 1 phrase COURTE (une seule ligne à l'écran) qui répond à "qu'est-ce que c'est dans CE contexte". Pas de second énoncé : si tu n'as qu'une chose utile à dire, dis-la en une ligne.
+STYLE TÉLÉGRAPHIQUE PROFESSIONNEL (BUDGET DE MOTS — écran terrain) :
+Les 4 champs affichés à l'écran (result.title, result.interpretation, contextual_reasoning.risk_logic, recommendation.primary_action) sont lus en 3 secondes par un inspecteur en mouvement. Budget STRICT, compté en MOTS dans la langue de réponse (vaut pour FR/EN/ES/DE — l'allemand compose, il ne rallonge pas) :
+- FAITS D'ABORD, liaisons supprimées : pas de "tapissant", "signe un", "confirmant", "ce qui suggère". Les tournures "X + Y : Z" et "A ; B" sont préférées aux subordonnées.
+- CONSERVER les marqueurs de prudence ("possible", "probable", "compatible avec") — non négociables en HACCP.
+- Ne JAMAIS sacrifier un FAIT pour tenir le budget : si deux faits essentiels l'exigent, dépasse de 2-3 mots. Mais aucun mot de remplissage.
+- La profondeur complète vit dans les champs PDF (what_fluorescence_*, follow_up, observations) — pas à l'écran.
+
+- result.title : identité PROBABLE du signal, pas sa couleur, ≤ 5 MOTS. La localisation va dans interpretation, pas dans le titre. Ex : "Détergent CIP non rincé" et non "Résidu de détergent CIP non rincé sur paroi interne".
+- result.interpretation : 1 phrase ≤ 14 MOTS qui répond à "qu'est-ce que c'est dans CE contexte" : indice visuel + localisation + conclusion. Ex : "Cyan saturé sur toute la paroi interne + goutte résiduelle : rinçage final incomplet."
 - contextual_reasoning.surface_logic : 1 phrase décrivant le rôle/usage de la surface.
-- contextual_reasoning.risk_logic : le RISQUE ASSOCIÉ en 1 phrase concise = mécanisme + danger NOMMÉ. Si le signal est organique/biologique, nomme les pathogènes recherchés par les pros, ex : "Nourrit les bactéries : risque de contamination des aliments (Listeria, salmonelle, E. coli)". Si chimique, nomme le danger : résidu ingéré, faux négatif de contrôle d'hygiène. Court, concret, sans jargon.
+- contextual_reasoning.risk_logic : le RISQUE ASSOCIÉ, ≤ 14 MOTS = mécanisme + danger NOMMÉ. Si organique/biologique, nomme les pathogènes (Listeria, salmonelle, E. coli). Si chimique : contamination du produit, faux négatif de contrôle (ATP). Ex : "Contamination chimique du prochain lot ; faux négatif possible sur contrôle ATP."
 - contextual_reasoning.what_fluorescence_suggests : ce que la fluo permet de dire.
 - contextual_reasoning.what_fluorescence_does_not_prove : ce qu'elle ne permet PAS de prouver.
-- recommendation.primary_action : 1 phrase impérative ACTIONNABLE.
+- recommendation.primary_action : 1 phrase impérative ACTIONNABLE, ≤ 14 MOTS, avec le critère de fin si pertinent. Ex : "Re-rincer à l'eau claire jusqu'à disparition du cyan sous UV, avant remontage."
 - recommendation.follow_up : étape suivante (recontrôle UV, confirmation, etc.).
 - recommendation.confirmation_if_needed : méthode de confirmation suggérée (ATP, écouvillonnage ISO 18593, swab, microbiologie) UNIQUEMENT si pertinent.
 - point_of_vigilance.text : 1 phrase d'alerte si artefact lumineux possible ou hypothèse alternative à exclure.
@@ -685,6 +692,7 @@ Avant de produire le JSON, vérifie :
 8. AUCUN tiret cadratin "—" dans tes textes (ni "Lucens IA —", ni séparateur stylistique)
 9. Champs sans contenu utile : laisse vides plutôt que remplir avec du remplissage
 10. ANTI-RÉPÉTITION : aucune idée présente dans deux champs. L'artefact (LED/reflet) est UNIQUEMENT dans point_of_vigilance, pas aussi dans interpretation. Aucun mot-clé répété dans une même phrase.
+11. BUDGET DE MOTS écran respecté : title ≤ 5 mots ; interpretation, risk_logic, primary_action ≤ 14 mots chacun (dans la langue de réponse) ; marqueurs de prudence conservés ; aucun fait sacrifié.
 
 SORTIE OBLIGATOIRE : JSON strict conforme au schéma fourni. N'ajoute aucun texte hors JSON.`;
 
