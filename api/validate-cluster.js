@@ -48,20 +48,23 @@ Tu reçois un PETIT CROP d'image (zone localisée d'une photo sous UV) et tu doi
 
 - **UNCERTAIN** : signal ambigu, ni clairement fluo, ni clairement objet. À utiliser avec parcimonie.
 
-Quand verdict = YES_FLUO, tu CLASSES AUSSI la NATURE du résidu via le champ "type", choisi STRICTEMENT dans ce vocabulaire (reste VOLONTAIREMENT VAGUE — la couleur sous UV n'est qu'un indice, n'invente pas de détail) :
-- **organic** : vert-jaune diffus → matière organique / alimentaire / biologique.
-- **chemical** : bleu-cyan lisse → produit chimique (savon, solvant, nettoyant, azurant). RESTE VAGUE : ne dis PAS "détergent", "rinçage", "produit de rinçage".
-- **mineral** : blanc-bleuté cristallin → tartre / calcaire.
-- **dust** : points épars ternes → poussière.
-- **fatty** : orange-ambre irisé → corps gras / huile.
+Quand verdict = YES_FLUO, tu CLASSES la NATURE du résidu via "type".
+
+⚠️ NE DÉCIDE PAS À LA COULEUR SEULE. Sous UV-A la balance des blancs du téléphone voile TOUT en bleu : un résidu BLANC (fromage, lait, calcaire) paraît souvent bleuté → si tu te fies à la couleur, tu le classes "chimique" À TORT. Décide avec TROIS critères ENSEMBLE : COULEUR + TEXTURE (granuleux/relief 3D vs lisse/film uniforme) + FORME (goutte compacte vs tache étalée à bords flous vs film vs mouchetures éparses). La TEXTURE et la FORME priment sur la couleur pour les résidus pâles.
+
+- **organic** : matière organique / alimentaire / biologique. Indices : vert-jaune diffus, OU surface BLANCHE/claire GRANULEUSE, opaque, en RELIEF 3D, à grain irrégulier (fromage, lait séché, miette, résidu protéique). ⚠️ Un blanc/pâle GRANULEUX et opaque = ORGANIQUE, PAS chimique.
+- **chemical** : produit chimique (savon, nettoyant, azurant). Indices STRICTS : film LISSE, plat, uniforme, sans relief ni grain, légèrement bleu-cyan, bords nets (coulure/goutte étalée lisse). RESTE VAGUE : ne dis pas "détergent"/"rinçage". Si c'est granuleux ou en relief → ce n'est PAS chimical.
+- **mineral** : tartre / calcaire. Indices : tache DIFFUSE, blanc-gris NEUTRE (pas franchement bleue), aspect poudreux/cristallin/crayeux, contours FLOUS, peu lumineuse, sur zone d'eau/séchage.
+- **dust** : MOUCHETURES fines, ternes, ÉPARSES/dispersées (pas une tache continue).
+- **fatty** : orange-ambre irisé, halo gras brillant.
 - **pigmented** : rouge-rose → sang, porphyrines, pigments.
-- **biofilm** : voile structuré le long des joints / zones humides → biofilm potentiel.
-- **unknown** : fluorescence RÉELLE mais nature indéterminée (à utiliser RAREMENT).
+- **biofilm** : voile STRUCTURÉ le long des joints / zones humides → biofilm potentiel.
+- **unknown** : fluorescence RÉELLE mais nature indéterminée (RAREMENT).
 
 RÈGLES STRICTES :
 1. Réponds UNIQUEMENT au format JSON exact : {"verdict":"YES_FLUO|NO_OBJECT|UNCERTAIN","type":"organic|chemical|mineral|dust|fatty|pigmented|biofilm|unknown","reason":"3 à 6 mots maximum"}
 2. PAS de texte avant ou après le JSON
-3. La raison doit nommer le matériau probable (ex: "grain bois clair", "plastique bleu lisse", "vraie tache cyan glow", "verre reflet bleu")
+3. La raison doit nommer l'INDICE DÉCISIF (matériau + texture/forme), ex: "blanc granuleux opaque", "film bleu lisse", "tache crayeuse diffuse", "grain bois clair", "mouchetures éparses"
 4. Si la zone montre principalement du métal nu, plastique uniforme, bois, carton, verre, écran ou LED → NO_OBJECT systématique
 5. Si la zone montre un halo diffus saturé sans texture de matériau → YES_FLUO
 6. En cas de doute réel entre les deux → UNCERTAIN

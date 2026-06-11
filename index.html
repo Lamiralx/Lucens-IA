@@ -7682,7 +7682,12 @@ html.lv-open, body.lv-open { background: #000 !important; }
 .lv-crosshair {
   position: absolute; top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  width: 68px; height: 68px;
+  /* V293 — BOÎTE DE VISÉE : représente (approximativement) la zone réellement
+     analysée (~rayon 80 sur work 240 ≈ 64 % du frame). Avant : 68px = mensonger
+     (la zone faisait ~83 %). Taille à confirmer caméra en main selon l'object-fit. */
+  width: min(62%, 270px); height: min(62%, 270px);
+  border: 1.5px solid rgba(255, 176, 32, 0.45);
+  border-radius: 14px;
   pointer-events: none;
   opacity: 1;
   /* V127 — transition de taille retirée : le réticule ne doit JAMAIS changer
@@ -7694,17 +7699,19 @@ html.lv-open, body.lv-open { background: #000 !important; }
 .lv-crosshair::before, .lv-crosshair::after {
   content: ''; position: absolute;
 }
+/* V293 — petit croisillon CENTRAL (la BORDURE de la boîte montre la zone ; le
+   croisillon ne marque plus que le centre précis de visée). */
 .lv-crosshair::before {
-  left: 50%; top: 0; width: 2px; height: 100%;
-  transform: translateX(-50%);
+  left: 50%; top: 50%; width: 2px; height: 26px;
+  transform: translate(-50%, -50%);
   background: linear-gradient(to bottom,
-    #FFB020 0%, #FFB020 30%, transparent 30%, transparent 70%, #FFB020 70%, #FFB020 100%);
+    #FFB020 0%, #FFB020 38%, transparent 38%, transparent 62%, #FFB020 62%, #FFB020 100%);
 }
 .lv-crosshair::after {
-  top: 50%; left: 0; width: 100%; height: 2px;
-  transform: translateY(-50%);
+  top: 50%; left: 50%; width: 26px; height: 2px;
+  transform: translate(-50%, -50%);
   background: linear-gradient(to right,
-    #FFB020 0%, #FFB020 30%, transparent 30%, transparent 70%, #FFB020 70%, #FFB020 100%);
+    #FFB020 0%, #FFB020 38%, transparent 38%, transparent 62%, #FFB020 62%, #FFB020 100%);
 }
 .lv-crosshair-dot {
   position: absolute; top: 50%; left: 50%;
@@ -8694,8 +8701,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
   /* Bandeau coach / instruction calibration ne doivent pas chevaucher la
      topbar en paysage : on les recentre sous elle. */
   .lv-cal-instruction { top: auto; bottom: calc(env(safe-area-inset-bottom, 8px) + 76px); }
-  /* Réticule un poil plus petit (cadre plus court) */
-  .lv-crosshair { width: 46px; height: 46px; }
+  /* V293 — Boîte de visée un poil plus petite en paysage (cadre plus court). */
+  .lv-crosshair { width: min(54%, 200px); height: min(72%, 200px); }
   .lv-modal.lv-cal-mode .lv-crosshair { width: 70px; height: 70px; }
 }
 </style>
@@ -8810,7 +8817,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v292</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v293</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -25182,11 +25189,12 @@ const Annotator = (() => {
        3. On envoie le crop à Claude (haiku) via /api/validate-cluster
        4. État du réticule mis à jour : pending → fluo / object
        5. Cache spatial (la zone change peu si le user reste stable) */
-  /* V24 — Zone visée ÉLARGIE : avant 80×80 (trop petit, on ratait les
-     fluo pas exactement au centre). Maintenant 200×200 (40% du frame
-     work) → englobe naturellement toute la tache que l'utilisateur vise
-     avec le réticule, pas juste le pixel central. */
-  const CH_SAMPLE_RADIUS  = 100;    /* fenêtre 200×200 sur work canvas */
+  /* V293 — ZONE VISÉE FOCALISÉE + RÉTICULE HONNÊTE : 200×200 (~83 % du frame)
+     diluait le spot visé et la couleur dans une énorme moyenne → « viser ne
+     focalise pas ». On revient à 160×160 (rayon 80, dans la plage testée, > 80×80
+     qui ratait le hors-centre) ET le réticule visuel représente DÉSORMAIS cette
+     zone réelle (boîte de visée), au lieu d'un petit crosshair mensonger. */
+  const CH_SAMPLE_RADIUS  = 80;    /* fenêtre 160×160 sur work canvas 240×180 */
   const CH_CROP_HD_PX     = 320;    /* taille du crop envoyé à Claude */
   const CH_SAT_MIN        = 0.16;
   const CH_VAL_MIN        = 0.22;
@@ -25303,31 +25311,40 @@ const Annotator = (() => {
       else h = ((R - G) / d + 4) / 6;
       h *= 360;
     }
+    /* V293 — DÉCISION MULTI-PARAMÈTRES (couleur + TEXTURE + FORME), au lieu de la
+       couleur seule. C'est la correction de fond : un blanc GRANULEUX (fromage,
+       résidu alimentaire) ≠ un film blanc LISSE (détergent) ≠ une tache DIFFUSE
+       (calcaire). La couleur seule les confondait tous en « chimique »/« minéral ». */
+    const tex   = sample.lumStd || 0;                                   /* granularité du signal */
+    const fill  = (typeof sample.fillRatio === 'number') ? sample.fillRatio : 0.6;
+    const GRANULAR = tex >= 26;        /* relief 3D : fromage, miettes, biofilm sec */
+    const SMOOTH   = tex < 18;         /* film/liquide lisse */
+    const DIFFUSE  = fill < 0.42;      /* tache étalée / mouchetures (calcaire, poussière) */
     let id = 'unknown';
-    if (s <= 0.20 && lum >= 195) id = 'mineral';
-    else {
-      /* V244 — catégorie "biofilm" (violet 225-330) RETIRÉE : sous 365 nm le violet
-         est la LAMPE réfléchie, pas une fluorescence de résidu (correction expert). */
-      /* V255 — Le local n'est plus qu'un PRÉ-REMPLISSAGE instantané : il DOIT émettre
-         un type concret tout de suite, Claude (type par point) corrige sous ~250 ms.
-         On REBAISSE chemical satMin 0.45→0.25 (le 0.45 + le voile le faisait s'effondrer
-         en 'unknown'). La balance des blancs partielle (40%) reste, mais organic/fatty/
-         pigmented gardent une priorité d'ordre + un seuil ≤ chemical → ils peuvent gagner
-         AVANT le bucket cyan, donc plus de « toujours chimique ». */
-      const P = [['organic',45,165,0.18],['fatty',15,45,0.20],['pigmented',330,15,0.22],['chemical',165,225,0.25]];
-      for (let k = 0; k < P.length; k++) {
-        const a = P[k][1], b = P[k][2], sm = P[k][3];
-        if (s < sm) continue;
-        const inR = a <= b ? (h >= a && h <= b) : (h >= a || h <= b);
-        if (inR) { id = P[k][0]; break; }
+    /* 1) COULEUR FRANCHE (saturée) : la teinte tranche — SAUF le cyan/bleu, ambigu
+       (détergent lisse vs protéine granuleuse), départagé par la texture. */
+    if (s >= 0.30) {
+      if (h >= 45 && h <= 165) id = 'organic';        /* vert/jaune-vert */
+      else if (h >= 15 && h < 45) id = 'fatty';        /* orange : gras */
+      else if (h >= 330 || h <= 15) id = 'pigmented';  /* rouge : pigment/sang */
+      else if (h > 165 && h < 225) id = GRANULAR ? 'organic' : 'chemical';
+    }
+    /* 2) BLANC / PEU SATURÉ — la zone des confusions : TEXTURE + FORME décident. */
+    if (id === 'unknown') {
+      if (DIFFUSE) id = (lum >= 150 && fill >= 0.25) ? 'mineral' : 'dust';  /* signal ÉTALÉ : calcaire diffus vs poussière fine */
+      else if (GRANULAR) id = 'organic';                     /* compact + relief 3D = aliment (fromage) */
+      else if (lum >= 170) id = (B > R + 8 && B >= G) ? 'chemical' : 'mineral';  /* film lisse compact clair : bleuté = détergent, neutre = calcaire */
+      else if (s >= 0.18) {
+        const P = [['organic',45,165],['fatty',15,45],['pigmented',330,15],['chemical',165,225]];
+        for (let k = 0; k < P.length; k++) {
+          const a = P[k][1], b = P[k][2];
+          const inR = a <= b ? (h >= a && h <= b) : (h >= a || h <= b);
+          if (inR) { id = P[k][0]; break; }
+        }
       }
     }
-    /* V276 — INTERDICTION DU « À CONFIRMER » (demande utilisateur, non négociable) :
-       si les buckets HSV n'ont pas tranché, on NE retombe JAMAIS sur 'unknown'. On
-       interroge la bibliothèque spectroscopique (15 signatures fluorophores, distance
-       de Mahalanobis chromatique) déjà embarquée → la signature la plus proche donne
-       une catégorie CONCRÈTE via FLUORO_TO_CAT. Dernier filet : 'organic' (le résidu
-       le plus à risque en HACCP — ne JAMAIS sous-évaluer). « unknown » est mort. */
+    /* V276 — JAMAIS « à confirmer » : dernier filet spectroscopique (signature la plus
+       proche), puis 'organic' (le plus à risque HACCP — ne jamais sous-évaluer). */
     if (id === 'unknown') { id = lvNearestCat(R, G, B); }
     const r = LV_READOUT[id] || LV_READOUT.organic;
     return { id: id, label: r.label, color: r.color, badge: r.badge, level: r.level };
@@ -25472,6 +25489,13 @@ const Annotator = (() => {
     let rSumB = 0, gSumB = 0, bSumB = 0, nB = 0;
     let satSum = 0, valSum = 0;
     let rSum = 0, gSum = 0, bSum = 0;
+    /* V293 — TEXTURE & FORME (nouveaux discriminants, au-delà de la couleur) :
+       lumStd = contraste local / granularité du signal sur les pixels « signal-ish »
+       (val ≥ 0.45, donc facettes brillantes ET creux ombrés) → fromage granuleux ≠
+       film de détergent lisse ; bbox des pixels brillants → étalement / compacité
+       (tache calcaire diffuse ≠ goutte compacte). */
+    let lumSumT = 0, lumSqSumT = 0, nT = 0;
+    let minX = 1e9, maxX = -1, minY = 1e9, maxY = -1;
     /* V46 — Lecture en direct de la valeur du slider (lv.sensDisplay 10-100).
        Le changement prend effet IMMÉDIATEMENT à la frame suivante. */
     const T = getDetectionThresholds(lv.sensDisplay != null ? lv.sensDisplay : 65);
@@ -25491,13 +25515,22 @@ const Annotator = (() => {
            Une fluo est AVANT TOUT de la lumière émise : un pixel TRÈS lumineux compte
            comme brillant même s'il est peu saturé (voile blanc/bleuté sous 365 nm,
            résidu pâle) — l'ancien gate sat ET val ratait toute fluo claire. */
+        const lumP = R * 0.299 + G * 0.587 + B * 0.114;
+        if (val >= 0.45) { lumSumT += lumP; lumSqSumT += lumP * lumP; nT++; }   /* texture du résidu */
         if ((sat >= T.satMin && val >= T.valMin) || val >= 0.82) {
           bright++;
           rSumB += R; gSumB += G; bSumB += B;
           nB++;
+          if (x < minX) minX = x; if (x > maxX) maxX = x;
+          if (y < minY) minY = y; if (y > maxY) maxY = y;
         }
       }
     }
+    const winA = Math.max(1, (x1 - x0) * (y1 - y0));
+    const bboxW = maxX >= minX ? (maxX - minX + 1) : 0;
+    const bboxH = maxY >= minY ? (maxY - minY + 1) : 0;
+    const bboxA = Math.max(1, bboxW * bboxH);
+    const lumMeanT = nT > 0 ? lumSumT / nT : 0;
     return {
       bright: bright,           /* V278 — compte ABSOLU exposé : déclencheur 'petit spot' */
       brightRatio: n > 0 ? bright / n : 0,
@@ -25515,6 +25548,10 @@ const Annotator = (() => {
       bgB: (n - nB) > 0 ? (bSum - bSumB) / (n - nB) : 0,
       nBg: n - nB,
       n,
+      /* V293 — TEXTURE & FORME du signal (pixels brillants) */
+      lumStd: nT > 1 ? Math.sqrt(Math.max(0, lumSqSumT / nT - lumMeanT * lumMeanT)) : 0,
+      spread: bboxA / winA,            /* fraction de la fenêtre occupée par le signal (étalement) */
+      fillRatio: nB / bboxA,           /* compacité : goutte ≈ 1, tache diffuse / mouchetures < 0.5 */
     };
   }
 
@@ -25625,7 +25662,7 @@ const Annotator = (() => {
            VRAI petit spot (30×30 ≈ 900 px) était dilué sous ratioMin et finissait
            'idle' (= « pas de résidu ») alors qu'il est net à l'œil. Le compte absolu
            le rattrape : on ne rate plus une petite fluo. */
-        const hasSignal = sample.brightRatio >= ratioMin || sample.bright >= 120;
+        const hasSignal = sample.brightRatio >= ratioMin || sample.bright >= 90;  /* V293 — rescue petit-spot calé sur la fenêtre focalisée 160×160 */
         /* V243 — type EN DIRECT (alimente la bannière), recalculé chaque frame
            tant qu'il y a du signal coloré au viseur. */
         lv.liveType = hasSignal ? lvLiveType(sample) : null;
@@ -25687,9 +25724,20 @@ const Annotator = (() => {
             const cctx = cropCanvas.getContext('2d');
             cctx.imageSmoothingEnabled = true;
             cctx.imageSmoothingQuality = 'high';
-            cctx.drawImage(work, Math.max(0, cx - r), Math.max(0, cy - r),
-              Math.min(2 * r, cw), Math.min(2 * r, ch), 0, 0, CH_CROP_HD_PX, CH_CROP_HD_PX);
-            const b64 = cropCanvas.toDataURL('image/jpeg', 0.78).split(',')[1];
+            /* V293 — CROP HD depuis la vidéo PLEINE RÉSOLUTION (pas le work 240×180
+               flou) : la zone du réticule mappée en coords vidéo réelles → Claude
+               voit la TEXTURE et la FORME nettement (granuleux fromage vs film lisse). */
+            const vw = cam.videoWidth || 0, vh = cam.videoHeight || 0;
+            if (vw > 0 && vh > 0) {
+              cctx.drawImage(cam,
+                Math.max(0, (cx - r) / cw) * vw, Math.max(0, (cy - r) / ch) * vh,
+                (Math.min(2 * r, cw) / cw) * vw, (Math.min(2 * r, ch) / ch) * vh,
+                0, 0, CH_CROP_HD_PX, CH_CROP_HD_PX);
+            } else {
+              cctx.drawImage(work, Math.max(0, cx - r), Math.max(0, cy - r),
+                Math.min(2 * r, cw), Math.min(2 * r, ch), 0, 0, CH_CROP_HD_PX, CH_CROP_HD_PX);
+            }
+            const b64 = cropCanvas.toDataURL('image/jpeg', 0.82).split(',')[1];
             fetch('/api/validate-cluster', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
