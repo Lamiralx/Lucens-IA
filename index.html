@@ -8748,7 +8748,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v286</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v287</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -9576,6 +9576,30 @@ body.lv-open { overflow: hidden; touch-action: none; }
       .hist-live-result .viewer-legend { display: none !important; }
       #results.visible .viewer-meta,
       .hist-live-result .viewer-meta { display: none !important; }
+      /* V288 — le card-body de la carte image est VIDE dans 99% des cas
+         (refusal/missing cachés) mais occupait 32px : masqué sauf contenu visible. */
+      #results.visible .result-grid .card-body:not(:has(.refusal-card.visible)):not(:has(.missing-context-card.visible)) { display: none !important; }
+
+      /* V287 — CONTEXTE DU CLICHÉ sous la photo : zone inspectée + moment.
+         Même idiome que la carte instrument du loader. Jumeau hist (§9.2b). */
+      #results.visible .result-ctx,
+      .hist-live-result .result-ctx {
+        display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+        padding: 8px 16px;
+        border-top: 1px solid var(--border);
+      }
+      #results.visible .result-ctx[hidden],
+      .hist-live-result .result-ctx[hidden] { display: none; }
+      #results.visible .result-ctx-zone,
+      .hist-live-result .result-ctx-zone {
+        font-size: 14px; font-weight: 600; color: var(--ink-primary);
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      #results.visible .result-ctx-moment,
+      .hist-live-result .result-ctx-moment {
+        font-size: 12px; font-weight: 600; color: var(--ink-tertiary);
+        white-space: nowrap; flex-shrink: 0;
+      }
 
       /* ─── BLOC 3 — ANALYSE : 3 sections séparées par filets ─── */
       /* Icône loupe (Origine probable) — colorée primary navy */
@@ -10060,7 +10084,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results.visible .viewer-tabs,
       .hist-live-result .viewer-tabs {
         display: flex !important; width: fit-content !important; max-width: 100% !important;
-        margin: 6px auto 10px !important; padding: 3px !important; gap: 0 !important;
+        margin: 6px auto 6px !important; padding: 3px !important; gap: 0 !important;
         background: var(--surface-mid) !important; border-radius: 9px !important;
         border: 0 !important; align-self: center !important; align-items: center !important;
       }
@@ -10245,7 +10269,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
            défilent EN INTERNE, jamais la page, pour ne JAMAIS rogner les 2 boutons. */
         #results.visible > .lucens-verdict-card {
           flex: 0 1 auto !important; min-height: 0 !important;
-          overflow-y: auto !important; gap: 6px !important;
+          overflow-y: auto !important; gap: 10px !important; /* V288 — séparation nette des 3 lectures */
         }
         /* Compaction des 3 blocs : règles de STYLE (padding/marges/interligne).
            Jumelées avec .hist-live-result pour préserver « historique = analyse »
@@ -10253,21 +10277,21 @@ body.lv-open { overflow: hidden; touch-action: none; }
            body.on-results, main…) restent propres au live (le détail historique a
            son propre conteneur défilant). */
         #results.visible .lv-verdict-head,
-        .hist-live-result .lv-verdict-head { padding: 10px 14px 0 !important; }
+        .hist-live-result .lv-verdict-head { padding: 13px 15px 0 !important; }
         #results.visible .lv-verdict-interpretation,
-        .hist-live-result .lv-verdict-interpretation { padding: 2px 14px 10px !important; line-height: 1.3 !important; }
+        .hist-live-result .lv-verdict-interpretation { padding: 4px 15px 13px !important; }
         #results.visible #lvRisque,
-        .hist-live-result .lv-risque { padding: 9px 14px 9px 15px !important; }
+        .hist-live-result .lv-risque { padding: 13px 15px 13px 18px !important; }
         #results.visible .lv-verdict-action,
-        .hist-live-result .lv-verdict-action { padding: 9px 14px !important; }
+        .hist-live-result .lv-verdict-action { padding: 13px 15px !important; }
         #results.visible .lv-verdict-eyebrow,
         #results.visible .lv-risque-label,
         #results.visible .lv-verdict-action-title,
         .hist-live-result .lv-verdict-eyebrow,
         .hist-live-result .lv-risque-label,
-        .hist-live-result .lv-verdict-action-title { margin: 0 0 3px !important; }
+        .hist-live-result .lv-verdict-action-title { margin: 0 0 6px !important; }
         #results.visible .lv-verdict-title,
-        .hist-live-result .lv-verdict-title { font-size: 16px !important; margin: 0 0 3px !important; }
+        .hist-live-result .lv-verdict-title { font-size: 16px !important; margin: 0 0 5px !important; }
         /* V279 — corps des 3 blocs 14→13px (taille LÉGALE de l'échelle design ;
            l'utilisateur autorise la réduction de texte pour tenir en une page) +
            interligne 1.3. Jumelé historique = parité V275 préservée. */
@@ -10276,7 +10300,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         #results.visible .lv-verdict-action-text,
         .hist-live-result .lv-verdict-interpretation,
         .hist-live-result .lv-risque-text,
-        .hist-live-result .lv-verdict-action-text { font-size: 13px !important; line-height: 1.3 !important; }
+        .hist-live-result .lv-verdict-action-text { font-size: 14px !important; line-height: 1.45 !important; } /* V288 — lisibilité (textes courts V285) */
         /* 2 BOUTONS : toujours entièrement visibles, épinglés en bas de la pile */
         #results.visible > .results-toolbar { flex: 0 0 auto !important; margin: 8px 0 0 !important; }
 
@@ -10475,6 +10499,13 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <span class="viewer-legend-swatch"></span>
               <span data-i18n="viewer_legend">Zone fluorescente détectée</span>
             </div>
+          </div>
+          <!-- V287 — CONTEXTE DU CLICHÉ sous la photo (demande utilisateur) :
+               la zone inspectée saisie + le moment (avant/après nettoyage).
+               Même idiome que la carte instrument du loader. Masqué si vide. -->
+          <div class="result-ctx" id="resultCtx" hidden>
+            <span class="result-ctx-zone" id="resultCtxZone"></span>
+            <span class="result-ctx-moment" id="resultCtxMoment"></span>
           </div>
           <div class="card-body">
             <!-- Refus gracieux : photo non-analysable (Sprint 1) -->
@@ -18855,15 +18886,28 @@ const Annotator = (() => {
        par le module LucensMoment au moment de l'analyse. */
     function get() {
       const ctx = read();
-      const moment = (typeof LucensMoment !== 'undefined') ? LucensMoment.consume() : '';
+      /* V287 — fin du consume() destructif DANS un getter : get() est appelé par
+         plusieurs lecteurs (secteur du loader, repli local, historique) et le
+         PREMIER appel volait le moment → le payload API partait avec moment:null
+         (bug latent prouvé par test). La copie collante de LucensMoment (vidée à
+         l'annulation, écrasée à chaque popup) rend le one-shot inutile. */
+      const moment = (typeof LucensMoment !== 'undefined' && LucensMoment.peekMoment) ? LucensMoment.peekMoment() : '';
+      /* V287 — la ZONE INSPECTÉE saisie dans le popup est ENFIN transmise à
+         l'IA : c'est le contexte d'identification primaire (« panneau
+         synoptique » → toucher humain ; « tubulure CIP » → détergent…).
+         Avant : tapée par l'utilisateur, affichée au loader, sauvée en
+         historique… mais jamais envoyée au moteur (analyses à l'aveugle). */
+      const zone = (typeof LucensMoment !== 'undefined' && LucensMoment.getZone)
+        ? (LucensMoment.getZone() || '').slice(0, 80) : '';
       const base = (ctx && ctx.establishmentType) ? {
         establishmentType: ctx.establishmentType,
         role: ctx.role || null,
       } : null;
-      if (!base && !moment) return null;
+      if (!base && !moment && !zone) return null;
       return {
         ...(base || {}),
         moment: moment || null,
+        zone: zone || null,
       };
     }
 
@@ -19333,9 +19377,14 @@ const Annotator = (() => {
 
     /* V275 — zone inspectée saisie dans le popup (volatile, par analyse) */
     let lastZoneName = '';
+    /* V287 — copie COLLANTE du moment : consume() vide lastSelectedMoment pour
+       le payload API, mais l'écran rapport et l'historique doivent encore pouvoir
+       afficher « Avant/Après nettoyage » APRÈS l'envoi. Vidée par cancel(). */
+    let lastFiredMoment = '';
 
     function fire(momentValue, zoneValue) {
       lastSelectedMoment = momentValue || '';
+      lastFiredMoment = momentValue || '';
       lastZoneName = (zoneValue || '').trim();
       const file = pendingFile;
       const cb = pendingCallback;
@@ -19353,6 +19402,7 @@ const Annotator = (() => {
       pendingFile = null;
       pendingCallback = null;
       lastSelectedMoment = '';
+      lastFiredMoment = '';
       lastZoneName = '';
       close();
     }
@@ -19366,9 +19416,10 @@ const Annotator = (() => {
       return v;
     }
 
-    /* V275 — lectures NON destructives pour l'affichage (loader, historique).
-       consume() reste réservé au payload API (one-shot). */
-    function peekMoment() { return lastSelectedMoment; }
+    /* V275 — lectures NON destructives pour l'affichage (loader, rapport,
+       historique). consume() reste réservé au payload API (one-shot) ; peekMoment
+       lit la copie COLLANTE (V287) qui survit à consume(). */
+    function peekMoment() { return lastFiredMoment; }
     function getZone() { return lastZoneName; }
 
     function askThen(file, callback) {
@@ -22583,6 +22634,19 @@ const Annotator = (() => {
         const resLite = Object.assign({}, res);
         delete resLite.grid;
         delete resLite._rawZones;
+        /* V287 — image SOURCE réduite (≤800px) : la fiche historique offre le
+           MÊME toggle « Zones détectées / Image source » que l'écran d'analyse. */
+        let srcDataUrl = '';
+        try {
+          const oi = document.getElementById('originalImg');
+          if (oi && oi.naturalWidth) {
+            const sc = Math.min(1, 800 / Math.max(oi.naturalWidth, oi.naturalHeight));
+            const c2 = document.createElement('canvas');
+            c2.width = Math.round(oi.naturalWidth * sc); c2.height = Math.round(oi.naturalHeight * sc);
+            c2.getContext('2d').drawImage(oi, 0, 0, c2.width, c2.height);
+            srcDataUrl = c2.toDataURL('image/jpeg', 0.72);
+          }
+        } catch (e) {}
         const entry = {
           id: 'insp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
           date: Date.now(),
@@ -22595,6 +22659,8 @@ const Annotator = (() => {
           /* V275 — zone saisie dans le popup « Contexte du cliché » (sinon '') */
           zone: (typeof LucensMoment !== 'undefined' && LucensMoment.getZone) ? (LucensMoment.getZone() || '') : '',
           image: annDataUrl,
+          source: srcDataUrl,
+          moment: (typeof LucensMoment !== 'undefined' && LucensMoment.peekMoment) ? (LucensMoment.peekMoment() || '') : '',
           res: resLite,
           w: W || null, h: H || null,
         };
@@ -22604,6 +22670,23 @@ const Annotator = (() => {
         save(entry).then(function(){
           try { window.dispatchEvent(new Event('lucens-history-changed')); } catch (e) {}
         });
+        /* V287 — la source n'était pas toujours décodée au moment de record() :
+           on la complète dès le décodage (la fiche offre alors le toggle source). */
+        if (!entry.source) {
+          try {
+            const oi2 = document.getElementById('originalImg');
+            if (oi2 && oi2.src && oi2.decode) {
+              oi2.decode().then(function(){
+                if (!oi2.naturalWidth) return;
+                const sc2 = Math.min(1, 800 / Math.max(oi2.naturalWidth, oi2.naturalHeight));
+                const c3 = document.createElement('canvas');
+                c3.width = Math.round(oi2.naturalWidth * sc2); c3.height = Math.round(oi2.naturalHeight * sc2);
+                c3.getContext('2d').drawImage(oi2, 0, 0, c3.width, c3.height);
+                update(entry.id, { source: c3.toDataURL('image/jpeg', 0.72) });
+              }).catch(function(){});
+            }
+          } catch (e) {}
+        }
         requestPersist();
       } catch (e) { /* silencieux */ }
     }
@@ -23875,6 +23958,21 @@ const Annotator = (() => {
     }
 
     /* Reveal */
+    /* V287 — contexte du cliché sous la photo : zone + moment saisis au popup */
+    try {
+      const _zEl = document.getElementById('resultCtxZone');
+      const _mEl = document.getElementById('resultCtxMoment');
+      const _wrap = document.getElementById('resultCtx');
+      if (_wrap && _zEl && _mEl) {
+        const _z = (typeof LucensMoment !== 'undefined' && LucensMoment.getZone) ? (LucensMoment.getZone() || '') : '';
+        const _mom = (typeof LucensMoment !== 'undefined' && LucensMoment.peekMoment) ? LucensMoment.peekMoment() : '';
+        const _MOK = { before_cleaning: 'mo_before_key', after_cleaning: 'mo_after_key' };
+        const _mLab = (_MOK[_mom] && typeof t === 'function') ? t(_MOK[_mom]) : '';
+        _zEl.textContent = _z;
+        _mEl.textContent = _mLab;
+        _wrap.hidden = !(_z || _mLab);
+      }
+    } catch (e) {}
     results.classList.add('visible');
     /* V188.8 — body.on-results masque la barre Historique/Contexte/Réglages sur
        l'écran rapport (focus verdict + 2 actions). */
@@ -27670,16 +27768,67 @@ const Annotator = (() => {
       hero.appendChild(gl);
       live.appendChild(hero);
 
-      /* (Bloc IMAGE) — clone de la carte viewer (image annotée dans la carte) */
+      /* (Bloc IMAGE) — clone de la carte viewer. V287 : STRUCTURE IDENTIQUE à
+         l'écran d'analyse (demande utilisateur) — toggle « Zones détectées /
+         Image source » quand la source est sauvée (fiches récentes), + ligne
+         CONTEXTE (zone inspectée · moment) sous la photo. Fiches anciennes
+         (sans source) : image annotée seule, sans onglets. */
       if (entry.image){
         var imgCard = E('div','card');
-        var stage = E('div','viewer-stage show-original');
-        var img = document.createElement('img');
-        img.className = 'original';
-        img.src = entry.image;
-        img.alt = "Image fluorescente annotée de l'inspection";
-        stage.appendChild(img);
+        var hasSrc = !!(entry.source && entry.source.length > 100);
+        if (hasSrc){
+          var tabs = E('div','viewer-tabs');
+          var tabA = E('button','viewer-tab active', tr('tab_annotated','Zones détectées'));
+          tabA.type = 'button'; tabA.setAttribute('data-tab','annotated');
+          var tabO = E('button','viewer-tab', tr('tab_original','Image source'));
+          tabO.type = 'button'; tabO.setAttribute('data-tab','original');
+          tabs.appendChild(tabA); tabs.appendChild(tabO);
+          imgCard.appendChild(tabs);
+        }
+        var stage = E('div', hasSrc ? 'viewer-stage show-annotated' : 'viewer-stage show-original');
+        if (hasSrc){
+          /* réplique exacte du live : canvas.annotated + img.original */
+          var cAnn = document.createElement('canvas');
+          cAnn.className = 'annotated';
+          var annImg = new Image();
+          annImg.onload = function(){
+            cAnn.width = annImg.naturalWidth; cAnn.height = annImg.naturalHeight;
+            cAnn.getContext('2d').drawImage(annImg, 0, 0);
+          };
+          annImg.src = entry.image;
+          stage.appendChild(cAnn);
+          var srcImg = document.createElement('img');
+          srcImg.className = 'original';
+          srcImg.src = entry.source;
+          srcImg.alt = 'Image source de l\'inspection';
+          stage.appendChild(srcImg);
+          tabs.addEventListener('click', function(ev){
+            var btn = ev.target.closest('.viewer-tab');
+            if (!btn) return;
+            tabs.querySelectorAll('.viewer-tab').forEach(function(b){ b.classList.remove('active'); });
+            btn.classList.add('active');
+            var mode = btn.getAttribute('data-tab');
+            stage.classList.toggle('show-annotated', mode === 'annotated');
+            stage.classList.toggle('show-original',  mode === 'original');
+          });
+        } else {
+          var img = document.createElement('img');
+          img.className = 'original';
+          img.src = entry.image;
+          img.alt = "Image fluorescente annotée de l'inspection";
+          stage.appendChild(img);
+        }
         imgCard.appendChild(stage);
+        /* ligne CONTEXTE (zone · moment) — même idiome que l'écran d'analyse */
+        var ctxZ = (entry.zone || '').trim();
+        var MOK2 = { before_cleaning: 'mo_before_key', after_cleaning: 'mo_after_key' };
+        var ctxM = (entry.moment && MOK2[entry.moment]) ? tr(MOK2[entry.moment], entry.moment === 'before_cleaning' ? 'Avant nettoyage' : 'Après nettoyage') : '';
+        if (ctxZ || ctxM){
+          var rctx = E('div','result-ctx');
+          rctx.appendChild(E('span','result-ctx-zone', ctxZ));
+          rctx.appendChild(E('span','result-ctx-moment', ctxM));
+          imgCard.appendChild(rctx);
+        }
         live.appendChild(imgCard);
       }
 
