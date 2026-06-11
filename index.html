@@ -5515,6 +5515,54 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 .mo-submit:hover { background: var(--accent-hi); border-color: var(--accent-hi); }
 .mo-submit:disabled { opacity: 0.45; cursor: not-allowed; background: var(--surface-mid, var(--bg-2)); border-color: var(--border); color: var(--ink-tertiary); }
 
+/* ─── V292 — SÉLECTEUR « Composer le rapport » (remplace le feedback) ───
+   Réutilise la coque canon .mo-* (overlay/modal/header/footer/close).
+   Seule pièce nouvelle : .rc-opt = option pleine largeur (radio + nom + détail),
+   cumulative (Photos ⊂ Essentiel ⊂ Complet). Tokens uniquement, LOI design. */
+.rc-opts { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+.rc-opt { cursor: pointer; display: block; }
+.rc-opt input { position: absolute; opacity: 0; pointer-events: none; }
+.rc-opt-card {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 13px 14px;
+  background: var(--surface-hi);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  transition: background .15s, border-color .15s, box-shadow .15s;
+}
+.rc-opt:hover .rc-opt-card { border-color: var(--border-hi); }
+.rc-opt input:checked + .rc-opt-card {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.rc-radio {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid var(--border-hi);
+  flex-shrink: 0; margin-top: 1px; position: relative;
+  transition: border-color .15s;
+}
+.rc-opt input:checked + .rc-opt-card .rc-radio { border-color: var(--accent); }
+.rc-opt input:checked + .rc-opt-card .rc-radio::after {
+  content: ''; position: absolute; inset: 3px; border-radius: 50%; background: var(--accent);
+}
+.rc-opt-main { flex: 1; min-width: 0; }
+.rc-opt-name {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-display);
+  font-size: 14px; font-weight: 700; letter-spacing: -0.005em;
+  color: var(--ink-primary);
+}
+.rc-opt-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-soft, rgba(15,61,78,.08));
+  padding: 2px 7px; border-radius: var(--radius-pill, 999px);
+}
+.rc-opt-desc {
+  font-size: 12px; font-weight: 500; line-height: 1.45;
+  color: var(--ink-secondary); margin-top: 5px;
+}
+.rc-opt-desc b { color: var(--ink-primary); font-weight: 600; }
+
 /* ─── Capture corrective (étape opt-in si feedback négatif) ─── */
 .fb-correct {
   display: none;  /* dévoilé par JS si réponse négative */
@@ -8762,7 +8810,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v291</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v292</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -10247,6 +10295,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
           min-height: calc(66px + var(--sa-t)) !important;
           padding-top: var(--sa-t) !important;
         }
+        /* V292 — ZÉRO-SCROLL strict (demande utilisateur) : tout tient dans l'écran,
+           jamais de défilement. Zone image FIXE + 3 textes COMPACTÉS pour tenir. */
         body.on-results main {
           height: calc(100dvh - 66px - var(--sa-t)) !important;
           min-height: 0 !important;
@@ -10257,7 +10307,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         main > #results.visible {
           height: 100% !important; min-height: 0 !important;
           display: flex !important; flex-direction: column !important;
-          gap: 8px !important; margin: 0 !important; padding: 0 !important;
+          gap: 7px !important; margin: 0 !important; padding: 0 !important;
         }
         #results.visible > .quality-panel,
         #results.visible > .translate-banner { flex: 0 0 auto !important; margin: 0 !important; }
@@ -10272,32 +10322,41 @@ body.lv-open { overflow: hidden; touch-action: none; }
            restant APRÈS hero + 3 blocs + boutons (ne « gonfle » pas en mangeant
            la place du verdict). Les 3 blocs s'affichent donc en ENTIER sans
            défiler ; l'image se contente du reste (jamais < 48 px). */
+        /* V292 — ZONE IMAGE FIXE & DÉDIÉE (demande utilisateur) : l'image n'est
+           PLUS l'amortisseur écrasé. Hauteur STABLE (30dvh, identique à chaque
+           analyse, verticale comme horizontale), affichée ENTIÈRE (contain). */
         #results.visible > .result-grid {
-          flex: 1 1 0 !important; min-height: 32px !important;
+          flex: 0 0 auto !important; height: 30dvh !important; min-height: 0 !important;
           margin: 0 !important; display: flex !important; flex-direction: column !important;
         }
-        #results.visible .result-grid > .card:has(#viewerStage) { flex: 1 1 auto !important; min-height: 32px !important; }
-        #results.visible #viewerStage { height: auto !important; flex: 1 1 auto !important; min-height: 32px !important; }
-        /* 3 BLOCS d'analyse COMPACTÉS (1 phrase/bloc = la loi) pour tenir en entier
-           sans défilement ; en ultime recours sur texte IA anormalement long ils
-           défilent EN INTERNE, jamais la page, pour ne JAMAIS rogner les 2 boutons. */
+        #results.visible .result-grid > .card:has(#viewerStage) { flex: 1 1 auto !important; min-height: 0 !important; }
+        #results.visible #viewerStage { height: auto !important; flex: 1 1 auto !important; min-height: 0 !important; }
+        /* V292 — cartographie ENTIÈRE, jamais recadrée (parité paysage + PDF) */
+        #results.visible #viewerStage canvas,
+        #results.visible #viewerStage img.original { object-fit: contain !important; }
+        /* TEXTE (3 blocs) : occupe le reste sous la zone image fixe. Compacté pour
+           que les 3 tiennent SANS défilement de page. Scroll interne = ultime
+           recours seulement (texte IA anormalement long). */
         #results.visible > .lucens-verdict-card {
-          flex: 0 1 auto !important; min-height: 0 !important;
-          overflow-y: auto !important; gap: 10px !important; /* V288 — séparation nette des 3 lectures */
+          flex: 1 1 auto !important; min-height: 0 !important;
+          overflow-y: auto !important; gap: 10px !important; /* V292 — séparation NETTE des 3 blocs (gap standard LOI) */
         }
         /* Compaction des 3 blocs : règles de STYLE (padding/marges/interligne).
            Jumelées avec .hist-live-result pour préserver « historique = analyse »
            (loi des jumeaux V275). Les règles de LAYOUT viewport ci-dessus (flex,
            body.on-results, main…) restent propres au live (le détail historique a
            son propre conteneur défilant). */
+        /* V292 — RESPIRATION des 3 blocs (correction sur-compaction) : padding 14,
+           gap 12, body 14/1.5 → blocs nettement distincts, conformes à la LOI
+           design (grille 4px, cartes 14-16). Tient en zéro-scroll sur écran réel. */
         #results.visible .lv-verdict-head,
-        .hist-live-result .lv-verdict-head { padding: 13px 15px 0 !important; }
+        .hist-live-result .lv-verdict-head { padding: 12px 16px 0 !important; }
         #results.visible .lv-verdict-interpretation,
-        .hist-live-result .lv-verdict-interpretation { padding: 4px 15px 13px !important; }
+        .hist-live-result .lv-verdict-interpretation { padding: 4px 16px 12px !important; }
         #results.visible #lvRisque,
-        .hist-live-result .lv-risque { padding: 13px 15px 13px 18px !important; }
+        .hist-live-result .lv-risque { padding: 12px 16px 12px 18px !important; }
         #results.visible .lv-verdict-action,
-        .hist-live-result .lv-verdict-action { padding: 13px 15px !important; }
+        .hist-live-result .lv-verdict-action { padding: 12px 16px !important; }
         #results.visible .lv-verdict-eyebrow,
         #results.visible .lv-risque-label,
         #results.visible .lv-verdict-action-title,
@@ -10305,16 +10364,14 @@ body.lv-open { overflow: hidden; touch-action: none; }
         .hist-live-result .lv-risque-label,
         .hist-live-result .lv-verdict-action-title { margin: 0 0 6px !important; }
         #results.visible .lv-verdict-title,
-        .hist-live-result .lv-verdict-title { font-size: 16px !important; margin: 0 0 5px !important; }
-        /* V279 — corps des 3 blocs 14→13px (taille LÉGALE de l'échelle design ;
-           l'utilisateur autorise la réduction de texte pour tenir en une page) +
-           interligne 1.3. Jumelé historique = parité V275 préservée. */
+        .hist-live-result .lv-verdict-title { font-size: 16px !important; margin: 0 0 6px !important; }
+        /* Corps des 3 blocs : 14px / interligne 1.5 (Body, LOI design §2). */
         #results.visible .lv-verdict-interpretation,
         #results.visible .lv-risque-text,
         #results.visible .lv-verdict-action-text,
         .hist-live-result .lv-verdict-interpretation,
         .hist-live-result .lv-risque-text,
-        .hist-live-result .lv-verdict-action-text { font-size: 14px !important; line-height: 1.45 !important; } /* V288 — lisibilité (textes courts V285) */
+        .hist-live-result .lv-verdict-action-text { font-size: 14px !important; line-height: 1.45 !important; }
         /* 2 BOUTONS : toujours entièrement visibles, épinglés en bas de la pile */
         #results.visible > .results-toolbar { flex: 0 0 auto !important; margin: 8px 0 0 !important; }
 
@@ -10348,13 +10405,16 @@ body.lv-open { overflow: hidden; touch-action: none; }
           display: flex !important; flex-direction: column !important; gap: 8px !important;
         }
         .hist-report .hist-live-result .hero { flex: 0 0 auto !important; }
-        .hist-report .hist-live-result .card:has(.viewer-stage) { flex: 1 1 0 !important; min-height: 32px !important; }
+        /* V292 — ZONE IMAGE FIXE & DÉDIÉE (jumeau du live) : hauteur stable 38dvh. */
+        .hist-report .hist-live-result .card:has(.viewer-stage) { flex: 0 0 auto !important; height: 34dvh !important; min-height: 0 !important; }
         .hist-report .hist-live-result .viewer-stage {
-          flex: 1 1 auto !important; min-height: 32px !important; height: auto !important;
+          flex: 1 1 auto !important; min-height: 0 !important; height: auto !important;
         }
+        /* V292 — carto ENTIÈRE : canvas (zones détectées) + photo source, jamais recadrés */
+        .hist-report .hist-live-result .viewer-stage canvas,
         .hist-report .hist-live-result .viewer-stage img.original { object-fit: contain !important; }
         .hist-report .hist-live-result .lucens-verdict-card {
-          flex: 0 1 auto !important; min-height: 0 !important; overflow-y: auto !important;
+          flex: 1 1 auto !important; min-height: 0 !important; overflow-y: auto !important;
         }
         /* 2 boutons (Télécharger / Supprimer) épinglés en bas, compacts */
         .hist-report .hist-actions { flex: 0 0 auto !important; margin-top: 8px !important; }
@@ -10883,6 +10943,67 @@ body.lv-open { overflow: hidden; touch-action: none; }
       <!-- V281 — « Continuer l'analyse » : l'utilisateur a DÉJÀ lancé l'analyse
            (capture/import faits) ; le popup ne fait que la contextualiser. -->
       <button type="button" class="mo-submit" id="moSubmitBtn" data-i18n="mo_submit">Continuer l'analyse</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     V292 — SÉLECTEUR « Composer le rapport » (remplace le feedback)
+     Ouvert au clic « Générer le rapport ». 3 profils CUMULATIFS
+     (Photos ⊂ Essentiel ⊂ Complet), zéro personnalisation. Coque
+     canon .mo-* (conforme LOI par construction). Le profil choisi
+     pilote exportReport(ctx, profil).
+     ═══════════════════════════════════════════════════════════ -->
+<div class="mo-overlay" id="reportComposerOverlay" hidden>
+  <div class="mo-modal" role="dialog" aria-modal="true" aria-labelledby="rcTitle">
+    <div class="mo-header">
+      <div class="mo-header-top">
+        <span class="mo-eyebrow" data-i18n="rc_eyebrow">Rapport d'inspection</span>
+        <button type="button" class="mo-close" id="rcCloseBtn" data-i18n-aria-label="rc_close_aria" aria-label="Fermer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <h3 class="mo-title" id="rcTitle" data-i18n="rc_title">Composer le rapport</h3>
+    </div>
+    <div class="mo-body">
+      <div class="rc-opts" role="radiogroup" aria-labelledby="rcTitle">
+        <label class="rc-opt">
+          <input type="radio" name="rc_profile" value="photos">
+          <span class="rc-opt-card">
+            <span class="rc-radio" aria-hidden="true"></span>
+            <span class="rc-opt-main">
+              <span class="rc-opt-name"><span data-i18n="rc_photos_name">Photos</span></span>
+              <span class="rc-opt-desc" data-i18n="rc_photos_desc" data-i18n-html>Photo <b>sans</b> et <b>avec</b> cartographie · zone inspectée · date &amp; heure · avant/après nettoyage.</span>
+            </span>
+          </span>
+        </label>
+        <label class="rc-opt">
+          <input type="radio" name="rc_profile" value="essentiel" checked>
+          <span class="rc-opt-card">
+            <span class="rc-radio" aria-hidden="true"></span>
+            <span class="rc-opt-main">
+              <span class="rc-opt-name"><span data-i18n="rc_essentiel_name">Essentiel</span><span class="rc-opt-badge" data-i18n="rc_badge">Conseillé</span></span>
+              <span class="rc-opt-desc" data-i18n="rc_essentiel_desc" data-i18n-html>Tout « Photos » <b>+ niveau de criticité</b> (score de risque).</span>
+            </span>
+          </span>
+        </label>
+        <label class="rc-opt">
+          <input type="radio" name="rc_profile" value="complet">
+          <span class="rc-opt-card">
+            <span class="rc-radio" aria-hidden="true"></span>
+            <span class="rc-opt-main">
+              <span class="rc-opt-name"><span data-i18n="rc_complet_name">Complet</span></span>
+              <span class="rc-opt-desc" data-i18n="rc_complet_desc" data-i18n-html>Tout « Essentiel » <b>+ origine probable, risque associé, action &amp; axes recommandés</b>.</span>
+            </span>
+          </span>
+        </label>
+      </div>
+    </div>
+    <div class="mo-footer">
+      <button type="button" class="mo-skip" id="rcCancelBtn" data-i18n="rc_cancel">Annuler</button>
+      <button type="button" class="mo-submit" id="rcSubmitBtn" data-i18n="rc_submit">Télécharger le rapport</button>
     </div>
   </div>
 </div>
@@ -11488,6 +11609,18 @@ const I18N = {
     rep_hypothesis:            "Hypothèse principale",
     rep_risque_label:          "Risque associé",
     rep_action_label:          "Action recommandée",
+    rc_eyebrow:       "Rapport d'inspection",
+    rc_title:         "Composer le rapport",
+    rc_close_aria:    "Fermer",
+    rc_photos_name:   "Photos",
+    rc_photos_desc:   "Photo <b>sans</b> et <b>avec</b> cartographie · zone inspectée · date &amp; heure · avant/après nettoyage.",
+    rc_essentiel_name:"Essentiel",
+    rc_badge:         "Conseillé",
+    rc_essentiel_desc:"Tout « Photos » <b>+ niveau de criticité</b> (score de risque).",
+    rc_complet_name:  "Complet",
+    rc_complet_desc:  "Tout « Essentiel » <b>+ origine probable, risque associé, action &amp; axes recommandés</b>.",
+    rc_cancel:        "Annuler",
+    rc_submit:        "Télécharger le rapport",
     rep_action_clean:          "Aucune action requise.",
     rep_verify:                "En cas de doute, confirmer par prélèvement (ATP ou laboratoire).",
     fb_correct_eyebrow: "Aidez-nous à corriger",
@@ -12085,6 +12218,18 @@ const I18N = {
     rep_hypothesis:            "Main hypothesis",
     rep_risque_label:          "Associated risk",
     rep_action_label:          "Recommended action",
+    rc_eyebrow:       "Inspection report",
+    rc_title:         "Compose the report",
+    rc_close_aria:    "Close",
+    rc_photos_name:   "Photos",
+    rc_photos_desc:   "Photo <b>without</b> and <b>with</b> mapping · inspected area · date &amp; time · before/after cleaning.",
+    rc_essentiel_name:"Essential",
+    rc_badge:         "Recommended",
+    rc_essentiel_desc:"Everything in “Photos” <b>+ risk level</b> (risk score).",
+    rc_complet_name:  "Full",
+    rc_complet_desc:  "Everything in “Essential” <b>+ probable origin, associated risk, recommended action &amp; next steps</b>.",
+    rc_cancel:        "Cancel",
+    rc_submit:        "Download the report",
     rep_action_clean:          "No action required.",
     rep_verify:                "If in doubt, confirm by surface sampling (ATP or laboratory).",
     fb_correct_eyebrow: "Help us correct",
@@ -12305,6 +12450,18 @@ const I18N = {
     rep_hypothesis: "Hipótesis principal",
     rep_risque_label: "Riesgo asociado",
     rep_action_label: "Acción recomendada",
+    rc_eyebrow:       "Informe de inspección",
+    rc_title:         "Componer el informe",
+    rc_close_aria:    "Cerrar",
+    rc_photos_name:   "Fotos",
+    rc_photos_desc:   "Foto <b>sin</b> y <b>con</b> cartografía · zona inspeccionada · fecha y hora · antes/después de la limpieza.",
+    rc_essentiel_name:"Esencial",
+    rc_badge:         "Recomendado",
+    rc_essentiel_desc:"Todo lo de «Fotos» <b>+ nivel de criticidad</b> (puntuación de riesgo).",
+    rc_complet_name:  "Completo",
+    rc_complet_desc:  "Todo lo de «Esencial» <b>+ origen probable, riesgo asociado, acción y ejes recomendados</b>.",
+    rc_cancel:        "Cancelar",
+    rc_submit:        "Descargar el informe",
     rep_action_clean: "No se requiere acción.",
     rep_verify: "En caso de duda, confirmar mediante muestreo de superficie (ATP o laboratorio).",
     hdr_title: "LUCENS",
@@ -12898,6 +13055,18 @@ const I18N = {
     rep_hypothesis: "Haupthypothese",
     rep_risque_label: "Verbundenes Risiko",
     rep_action_label: "Empfohlene Maßnahme",
+    rc_eyebrow:       "Inspektionsbericht",
+    rc_title:         "Bericht zusammenstellen",
+    rc_close_aria:    "Schließen",
+    rc_photos_name:   "Fotos",
+    rc_photos_desc:   "Foto <b>ohne</b> und <b>mit</b> Kartierung · inspizierter Bereich · Datum &amp; Uhrzeit · vor/nach der Reinigung.",
+    rc_essentiel_name:"Wesentlich",
+    rc_badge:         "Empfohlen",
+    rc_essentiel_desc:"Alles aus „Fotos“ <b>+ Risikostufe</b> (Risikowert).",
+    rc_complet_name:  "Vollständig",
+    rc_complet_desc:  "Alles aus „Wesentlich“ <b>+ wahrscheinliche Ursache, verbundenes Risiko, empfohlene Maßnahme &amp; nächste Schritte</b>.",
+    rc_cancel:        "Abbrechen",
+    rc_submit:        "Bericht herunterladen",
     rep_action_clean: "Keine Maßnahme erforderlich.",
     rep_verify: "Im Zweifelsfall durch Oberflächenprobe (ATP oder Labor) bestätigen.",
     hdr_title: "LUCENS",
@@ -16635,19 +16804,48 @@ const Annotator = (() => {
   };
   $('exportBtn').addEventListener('click', () => {
     if (!lastResult) return;
-    /* Décision intelligente : faut-il montrer la modale feedback ?
-       Sur un audit terrain de 20+ photos, harceler à chaque export ferait :
-       - utilisateurs qui skippent systématiquement → données feedback fausses
-       - utilisateurs qui sortent de l'app par frustration → perte de signal
-       On ne montre la modale que sur les cas à valeur (premières fois, scores
-       incertains, ou rappels espacés). Sinon on télécharge direct. */
-    const score = (lastResult && typeof lastResult.score === 'number') ? lastResult.score : null;
-    if (shouldShowFeedback(score)) {
-      openFeedbackModal(() => exportReport(lastResult));
-    } else {
-      exportReport(lastResult);
-    }
+    /* V292 — « Générer le rapport » ouvre le SÉLECTEUR « Composer le rapport »
+       (remplace l'ancien modal feedback, retiré du flux). Le profil choisi
+       pilote les blocs embarqués : Photos ⊂ Essentiel ⊂ Complet. */
+    openReportComposer((profile) => exportReport(lastResult, profile));
   });
+
+  /* ─── V292 — SÉLECTEUR « COMPOSER LE RAPPORT » (canon .mo-*) ─── */
+  let _rcOnConfirm = null;
+  function rcGetProfile() {
+    const c = document.querySelector('input[name="rc_profile"]:checked');
+    return (c && c.value) || 'essentiel';
+  }
+  function openReportComposer(onConfirm) {
+    const overlay = $('reportComposerOverlay');
+    if (!overlay) { try { onConfirm && onConfirm(rcGetProfile()); } catch (e) {} return; }
+    _rcOnConfirm = onConfirm || null;
+    overlay.hidden = false;
+    requestAnimationFrame(() => overlay.classList.add('visible'));
+  }
+  function closeReportComposer() {
+    const overlay = $('reportComposerOverlay');
+    if (!overlay) return;
+    overlay.classList.remove('visible');
+    setTimeout(() => { overlay.hidden = true; }, 220);
+  }
+  (function wireReportComposer() {
+    const overlay = $('reportComposerOverlay');
+    if (!overlay) return;
+    const onClose = $('rcCloseBtn'), onCancel = $('rcCancelBtn'), onSubmit = $('rcSubmitBtn');
+    if (onClose)  onClose.addEventListener('click', closeReportComposer);
+    if (onCancel) onCancel.addEventListener('click', closeReportComposer);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeReportComposer(); });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !overlay.hidden) closeReportComposer();
+    });
+    if (onSubmit) onSubmit.addEventListener('click', () => {
+      const profile = rcGetProfile();
+      const cb = _rcOnConfirm; _rcOnConfirm = null;
+      closeReportComposer();
+      setTimeout(() => { try { cb && cb(profile); } catch (e) { console.error('[report] export fail', e); } }, 70);
+    });
+  })();
 
   /* ─── FEEDBACK MODAL ─── */
   let _feedbackPendingAction = null;
@@ -17867,17 +18065,26 @@ const Annotator = (() => {
     }
   }, 0);
 
-  function exportReport(ctx) {
-    /* V175 — RAPPORT SOBRE « application métier » (port fidèle de mockup-ex-rapport).
-       Logo viseur + traçabilité (zone/date) + barre de risque segmentée + constat
-       visuel (2 images + légende) + Origine probable (titre coloré par le risque) +
-       Risque associé + Action recommandée + ligne de vérification + avertissement.
-       Données issues du résultat réel ; champs verbeux réduits à leur 1re phrase. */
+  function exportReport(ctx, profile) {
+    /* V292 — RAPPORT D'INSPECTION. Profil CUMULATIF choisi dans « Composer le rapport » :
+         'photos'    → en-tête + traçabilité (zone · date/heure · moment) + 2 photos + avertissement
+         'essentiel' → + niveau de criticité (barre de risque, score réel)
+         'complet'   → + origine probable + risque associé + action recommandée
+       Données du résultat réel ; champs verbeux réduits à leur 1re phrase.
+       Zone d'exception design (LOI §8.1) : rendu jsPDF programmatique. */
     const c = ctx || {};
+    const prof = (profile === 'photos' || profile === 'essentiel' || profile === 'complet') ? profile : 'complet';
+    const showRisk = (prof !== 'photos');
+    const showAnalysis = (prof === 'complet');
     const score = (typeof c.score === 'number') ? c.score : 0;
     const zoneCount = c.zoneCount || 0;
     const interpretable = !(c.image_quality && c.image_quality.usable === false) && c.analyzable !== false;
     const hasFinding = interpretable && zoneCount > 0;
+    /* Moment réel de l'analyse (source de vérité : LucensMoment.peekMoment). */
+    let _momV = '';
+    try { _momV = (typeof LucensMoment !== 'undefined' && LucensMoment.peekMoment) ? (LucensMoment.peekMoment() || '') : ''; } catch (e) {}
+    const momentTxt = _momV === 'before_cleaning' ? t('mo_before_key')
+                    : _momV === 'after_cleaning'  ? t('mo_after_key') : '—';
 
     /* Concision : 1re phrase d'un champ (+ troncature douce optionnelle). */
     const firstSentence = (s, max) => {
@@ -17930,22 +18137,31 @@ const Annotator = (() => {
     pdf.text(t('rep_tagline').toUpperCase(), lx + ls + 3.6, y + 7.6);
     y += ls + 6;
 
-    /* ─── TRAÇABILITÉ : 2 cellules (zone | date & heure) ─── */
-    const trH = 13;
+    /* ─── TRAÇABILITÉ : 3 cellules ALIGNÉES (zone | date & heure | moment) ───
+       Tiers égaux, libellés et valeurs sur la MÊME ligne de base par cellule. */
+    const trH = 13, cellW = CW / 3, cp = 4;
     pdf.setDrawColor(BORDER[0], BORDER[1], BORDER[2]); pdf.setLineWidth(0.3);
     pdf.setFillColor(BG2[0], BG2[1], BG2[2]);
     pdf.roundedRect(M, y, CW, trH, 1.6, 1.6, 'FD');
-    pdf.line(M + CW / 2, y, M + CW / 2, y + trH);
-    const cp = 4;
-    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(6.2); pdf.setTextColor(INK3[0], INK3[1], INK3[2]);
-    pdf.text(t('rep_zone').toUpperCase(), M + cp, y + 5);
-    pdf.text(t('rep_date').toUpperCase(), M + CW / 2 + cp, y + 5);
-    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(10.5); pdf.setTextColor(INK[0], INK[1], INK[2]);
-    pdf.text(pdf.splitTextToSize(zoneTxt, CW / 2 - cp * 2)[0], M + cp, y + 10);
-    pdf.text(dateStr, M + CW / 2 + cp, y + 10);
+    pdf.line(M + cellW, y, M + cellW, y + trH);
+    pdf.line(M + cellW * 2, y, M + cellW * 2, y + trH);
+    const trCells = [
+      { lbl: t('rep_zone').toUpperCase(),  val: zoneTxt },
+      { lbl: t('rep_date').toUpperCase(),  val: dateStr },
+      { lbl: t('moment_label').toUpperCase(), val: momentTxt },
+    ];
+    for (let i = 0; i < 3; i++) {
+      const cx = M + i * cellW + cp;
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(6.2); pdf.setTextColor(INK3[0], INK3[1], INK3[2]);
+      pdf.text(trCells[i].lbl, cx, y + 5);
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(9.5); pdf.setTextColor(INK[0], INK[1], INK[2]);
+      pdf.text(pdf.splitTextToSize(trCells[i].val, cellW - cp * 2)[0], cx, y + 10);
+    }
     y += trH + 9;
 
-    /* ─── NIVEAU DE RISQUE : barre segmentée ─── */
+    /* ─── NIVEAU DE RISQUE : barre segmentée (Essentiel + Complet) ───
+       Score RÉEL de l'analyse, seuils canon 28/63 (= system prompt + jauge écran). */
+    if (showRisk) {
     pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); pdf.setTextColor(INK3[0], INK3[1], INK3[2]);
     pdf.text(t('rep_lvl_label'), M, y);
     y += 3;
@@ -17962,28 +18178,36 @@ const Annotator = (() => {
       pdf.text(segLabels[i], sx + segW / 2, y + segH / 2 + 1.6, { align: 'center' });
     }
     y += segH + 10;
+    }
 
     /* ─── CONSTAT VISUEL : 2 images + légende ─── */
     pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7); pdf.setTextColor(INK3[0], INK3[1], INK3[2]);
     pdf.text(t('rep_sect_visual').toUpperCase(), M, y);
     y += 3.5;
-    const gap = 6, iw = (CW - gap) / 2;
-    const ratio = (annCanvas && annCanvas.height && annCanvas.width) ? (annCanvas.height / annCanvas.width) : 0.72;
-    let ih = iw * ratio; if (ih > 78) ih = 78;
-    const xL = M, xR = M + iw + gap;
+    const gap = 6, colW = (CW - gap) / 2, boxH = 70;
+    /* V292 — FIX déformation : boîte fixe colW×boxH par photo, image ENTIÈRE
+       (contain) centrée dessus, fond neutre. Plus jamais d'étirement (le défaut
+       était `ih` plafonné sans corriger `iw`). Verticale comme horizontale. */
+    const natRatio = (annCanvas && annCanvas.width && annCanvas.height) ? (annCanvas.height / annCanvas.width) : 0.72;
+    let drawW = colW, drawH = colW * natRatio;
+    if (drawH > boxH) { drawH = boxH; drawW = boxH / natRatio; }
+    const offX = (colW - drawW) / 2, offY = (boxH - drawH) / 2;
+    const colL = M, colR = M + colW + gap, DARK = [10, 17, 25];
     try {
       const sc = document.createElement('canvas');
       sc.width = annCanvas.width; sc.height = annCanvas.height;
       sc.getContext('2d').drawImage(origImg, 0, 0, sc.width, sc.height);
-      pdf.addImage(sc.toDataURL('image/jpeg', 0.9), 'JPEG', xL, y, iw, ih);
-      pdf.addImage(annCanvas.toDataURL('image/jpeg', 0.9), 'JPEG', xR, y, iw, ih);
+      pdf.setFillColor(DARK[0], DARK[1], DARK[2]);
+      pdf.rect(colL, y, colW, boxH, 'F'); pdf.rect(colR, y, colW, boxH, 'F');
+      pdf.addImage(sc.toDataURL('image/jpeg', 0.92), 'JPEG', colL + offX, y + offY, drawW, drawH);
+      pdf.addImage(annCanvas.toDataURL('image/jpeg', 0.92), 'JPEG', colR + offX, y + offY, drawW, drawH);
     } catch (e) {}
     pdf.setDrawColor(BORDER[0], BORDER[1], BORDER[2]); pdf.setLineWidth(0.3);
-    pdf.rect(xL, y, iw, ih); pdf.rect(xR, y, iw, ih);
+    pdf.rect(colL, y, colW, boxH); pdf.rect(colR, y, colW, boxH);
     pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7); pdf.setTextColor(INK3[0], INK3[1], INK3[2]);
-    pdf.text(t('rep_img_orig'), xL + iw / 2, y + ih + 4, { align: 'center' });
-    pdf.text(t('rep_img_analyzed'), xR + iw / 2, y + ih + 4, { align: 'center' });
-    y += ih + 9;
+    pdf.text(t('rep_img_orig'), colL + colW / 2, y + boxH + 4, { align: 'center' });
+    pdf.text(t('rep_img_analyzed'), colR + colW / 2, y + boxH + 4, { align: 'center' });
+    y += boxH + 9;
     if (hasFinding) {
       pdf.setDrawColor(COPPER[0], COPPER[1], COPPER[2]); pdf.setLineWidth(0.6);
       pdf.circle(M + 1.5, y - 1, 1.4, 'S');
@@ -17992,6 +18216,8 @@ const Annotator = (() => {
       y += 7;
     }
 
+    /* ─── ANALYSE (Origine → Risque → Action) : profil COMPLET uniquement ─── */
+    if (showAnalysis) {
     /* ─── ORIGINE PROBABLE / RÉSULTAT (titre coloré par le risque) ─── */
     let origLabel, origTitle, origExpl;
     if (!interpretable) { origLabel = t('rep_result_label'); origTitle = t('rep_concl_uninterp'); origExpl = ''; }
@@ -18036,6 +18262,7 @@ const Annotator = (() => {
       pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); pdf.setTextColor(INK3[0], INK3[1], INK3[2]);
       const vLines = pdf.splitTextToSize(verify, CW);
       pdf.text(vLines, M, y);
+    }
     }
 
     /* ─── AVERTISSEMENT (bas de page) ─── */
