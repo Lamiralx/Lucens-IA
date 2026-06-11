@@ -7236,8 +7236,10 @@ body.has-sw-update .home {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: calc(60px + env(safe-area-inset-top, 0px));
-  padding: env(safe-area-inset-top, 0px) max(14px, env(safe-area-inset-right)) 0 max(14px, env(safe-area-inset-left));
+  /* V279 — safe-top via var(--sa-t) (= env) : passe sous la Dynamic Island ET
+     reste testable en injectant de vraies safe-areas (comme l'en-tête V277). */
+  min-height: calc(60px + var(--sa-t, 0px));
+  padding: var(--sa-t, 0px) max(14px, env(safe-area-inset-right)) 0 max(14px, env(safe-area-inset-left));
   border-bottom: 1px solid var(--hairline);
   background: var(--header-bg);
   -webkit-backdrop-filter: saturate(180%) blur(16px);
@@ -8960,7 +8962,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v278</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v279</div>
         </div>
       </div>
     </div>
@@ -10438,11 +10440,11 @@ body.lv-open { overflow: hidden; touch-action: none; }
            la place du verdict). Les 3 blocs s'affichent donc en ENTIER sans
            défiler ; l'image se contente du reste (jamais < 48 px). */
         #results.visible > .result-grid {
-          flex: 1 1 0 !important; min-height: 48px !important;
+          flex: 1 1 0 !important; min-height: 32px !important;
           margin: 0 !important; display: flex !important; flex-direction: column !important;
         }
-        #results.visible .result-grid > .card:has(#viewerStage) { flex: 1 1 auto !important; min-height: 48px !important; }
-        #results.visible #viewerStage { height: auto !important; flex: 1 1 auto !important; min-height: 48px !important; }
+        #results.visible .result-grid > .card:has(#viewerStage) { flex: 1 1 auto !important; min-height: 32px !important; }
+        #results.visible #viewerStage { height: auto !important; flex: 1 1 auto !important; min-height: 32px !important; }
         /* 3 BLOCS d'analyse COMPACTÉS (1 phrase/bloc = la loi) pour tenir en entier
            sans défilement ; en ultime recours sur texte IA anormalement long ils
            défilent EN INTERNE, jamais la page, pour ne JAMAIS rogner les 2 boutons. */
@@ -10458,7 +10460,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         #results.visible .lv-verdict-head,
         .hist-live-result .lv-verdict-head { padding: 10px 14px 0 !important; }
         #results.visible .lv-verdict-interpretation,
-        .hist-live-result .lv-verdict-interpretation { padding: 2px 14px 10px !important; line-height: 1.4 !important; }
+        .hist-live-result .lv-verdict-interpretation { padding: 2px 14px 10px !important; line-height: 1.3 !important; }
         #results.visible #lvRisque,
         .hist-live-result .lv-risque { padding: 9px 14px 9px 15px !important; }
         #results.visible .lv-verdict-action,
@@ -10471,14 +10473,59 @@ body.lv-open { overflow: hidden; touch-action: none; }
         .hist-live-result .lv-verdict-action-title { margin: 0 0 3px !important; }
         #results.visible .lv-verdict-title,
         .hist-live-result .lv-verdict-title { font-size: 16px !important; margin: 0 0 3px !important; }
+        /* V279 — corps des 3 blocs 14→13px (taille LÉGALE de l'échelle design ;
+           l'utilisateur autorise la réduction de texte pour tenir en une page) +
+           interligne 1.3. Jumelé historique = parité V275 préservée. */
         #results.visible .lv-verdict-interpretation,
         #results.visible .lv-risque-text,
         #results.visible .lv-verdict-action-text,
         .hist-live-result .lv-verdict-interpretation,
         .hist-live-result .lv-risque-text,
-        .hist-live-result .lv-verdict-action-text { line-height: 1.4 !important; }
+        .hist-live-result .lv-verdict-action-text { font-size: 13px !important; line-height: 1.3 !important; }
         /* 2 BOUTONS : toujours entièrement visibles, épinglés en bas de la pile */
         #results.visible > .results-toolbar { flex: 0 0 auto !important; margin: 8px 0 0 !important; }
+
+        /* ═══ V279 — RAPPORT HISTORIQUE : MÊME VERROU « UNE PAGE SANS SCROLL » ═══
+           Le détail historique (renderDetail dans #histOverlay) défilait par
+           conception (.hist-scroll overflow-y:auto) alors que l'utilisateur veut
+           les DEUX rapports identiques, sans scroll. On transpose le verrou V277
+           UNIQUEMENT en mode DÉTAIL (sélecteur :has(.hist-report)) pour NE PAS
+           casser le défilement de la LISTE des inspections. L'image reste
+           l'amortisseur ; zone + 2 boutons épinglés ; tailles de texte inchangées
+           (parité V275 — c'est l'image qui absorbe, pas la police). */
+        .hist-scroll:has(.hist-report) {
+          overflow: hidden !important;
+          display: flex !important; flex-direction: column !important;
+          padding-top: 10px !important;
+          padding-bottom: calc(8px + var(--sa-b)) !important;
+        }
+        .hist-scroll:has(.hist-report) .hist-scroll-inner {
+          width: 100% !important; flex: 1 1 auto !important; min-height: 0 !important;
+          display: flex !important; flex-direction: column !important;
+        }
+        .hist-report {
+          flex: 1 1 auto !important; min-height: 0 !important;
+          display: flex !important; flex-direction: column !important;
+          gap: 10px !important;
+        }
+        /* champ « nom de zone » : fixe, compact (input garde 16px → pas de zoom iOS au focus) */
+        .hist-report .hist-zone-block { flex: 0 0 auto !important; }
+        .hist-report .hist-live-result {
+          flex: 1 1 auto !important; min-height: 0 !important;
+          display: flex !important; flex-direction: column !important; gap: 8px !important;
+        }
+        .hist-report .hist-live-result .hero { flex: 0 0 auto !important; }
+        .hist-report .hist-live-result .card:has(.viewer-stage) { flex: 1 1 0 !important; min-height: 32px !important; }
+        .hist-report .hist-live-result .viewer-stage {
+          flex: 1 1 auto !important; min-height: 32px !important; height: auto !important;
+        }
+        .hist-report .hist-live-result .viewer-stage img.original { object-fit: contain !important; }
+        .hist-report .hist-live-result .lucens-verdict-card {
+          flex: 0 1 auto !important; min-height: 0 !important; overflow-y: auto !important;
+        }
+        /* 2 boutons (Télécharger / Supprimer) épinglés en bas, compacts */
+        .hist-report .hist-actions { flex: 0 0 auto !important; margin-top: 8px !important; }
+        .hist-report .hist-actions .hist-btn { height: 44px !important; }
       }
       </style>
       <!-- V187 — bloc .results-hdr (en-tête LUCENS dupliqué + croix ✕) retiré. -->
