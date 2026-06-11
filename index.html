@@ -1878,7 +1878,7 @@ input[type="file"] { display: none; }
    éléments « RÉSIDUS · BIOFILMS · CONTAMINANTS » dessous, point cuivre
    STATIQUE (aucune animation/glow). */
 .loader-brand {
-  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
   padding-bottom: 20px; flex-shrink: 0; text-align: center;
 }
 .loader-wordmark {
@@ -1894,6 +1894,16 @@ input[type="file"] { display: none; }
   font-family: var(--font-body);
   font-weight: 600; font-size: 9px; line-height: 1; letter-spacing: 0.14em;
   text-transform: uppercase; color: var(--ink-tertiary); white-space: nowrap;
+}
+/* V284 — LOGO IDENTIQUE AU PIXEL au header sur TOUS les écrans (l'utilisateur
+   voyait DEUX logos différents sur téléphone : header 21px/8.5px, loader resté
+   23px/9px avec un gap plus large). Mêmes ruptures que .hdr-wordmark/.hdr-tagline. */
+@media (max-width: 640px) {
+  .loader-wordmark { font-size: 21px; }
+  .loader-tagline { font-size: 8.5px; letter-spacing: 0.11em; }
+}
+@media (max-width: 360px) {
+  .loader-tagline { display: none; }
 }
 /* Carte instrument — idiome de l'écran Résultats (photo edge-to-edge en tête) */
 .loader-instr {
@@ -2014,7 +2024,7 @@ input[type="file"] { display: none; }
   .loader-instr { grid-area: instr; height: 100%; min-height: 0; }
   .loader-photo { flex: 1 1 auto; min-height: 0; height: auto; }
   .loader-brief { grid-area: brief; margin-top: 0; align-self: start; }
-  .loader-cancel-btn { grid-area: cancel; align-self: end; height: 42px; }
+  .loader-cancel-btn { grid-area: cancel; align-self: end; height: 46px; } /* V284 — canon 46 (42 violait la cible tactile ≥44) */
 }
 @media (max-width: 380px) {
   .loader-photo { height: clamp(120px, 22vh, 160px); }
@@ -8738,7 +8748,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v283</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v284</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -9261,10 +9271,12 @@ body.lv-open { overflow: hidden; touch-action: none; }
       <!-- V272 — Annulation en 2 TEMPS (anti-effleurement gants/terrain) :
            tap 1 → « Confirmer l'annulation ? » (état risque, retour auto 3 s),
            tap 2 → AbortController + retour accueil. -->
+      <!-- V284 — CANON bouton secondaire : TEXTE SEUL (l'icône ✕ dans un bouton
+           à libellé était un hybride hors canon ; la croix-cercle est un autre
+           composant, réservé à Fermer). 46px / r12 / 14·600 partout. -->
       <button type="button" class="loader-cancel-btn" id="loaderCancelBtn"
               data-i18n-aria-label="loader_cancel_aria"
               aria-label="Annuler l'analyse">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
         <span data-i18n="loader_cancel">Annuler l'analyse</span>
       </button>
 
@@ -27377,6 +27389,15 @@ const Annotator = (() => {
     requestAnimationFrame(function(){ overlay.classList.add('is-open'); });
   }
   function closeHist(){
+    /* V284 — a11y : si le focus est encore DANS l'overlay (ex. la croix qu'on
+       vient de cliquer), aria-hidden serait bloqué par le navigateur («Blocked
+       aria-hidden on an element because its descendant retained focus»). On
+       retire le focus AVANT de masquer. */
+    try {
+      if (overlay.contains(document.activeElement) && document.activeElement.blur) {
+        document.activeElement.blur();
+      }
+    } catch (e) {}
     overlay.classList.remove('is-open');
     overlay.setAttribute('aria-hidden','true');
     setTimeout(function(){ overlay.hidden = true; }, 220);
