@@ -8748,7 +8748,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v285</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v286</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -15320,7 +15320,9 @@ const Annotator = (() => {
          même teinte (Δhue<18°) ET à peine plus saturé (Δsat<0.08) → spéculaire. */
       var keepLab = new Uint8Array(areas.length);
       var ringDist = new Int16Array(n);
-      for (k = 0; k < Math.min(6, order.length); k++) {
+      var SALV = new Uint8Array(n); var k5;
+      /* V286 — TOUTES les composantes >= minA sont jugées (le plafond top-6 jetait des taches réelles sans jugement — prouvé au banc) */
+      for (k = 0; k < order.length; k++) {
         var L = order[k];
         /* intérieur : moyenne circulaire de hue pondérée par Ec + sat moyenne */
         var sumCos = 0, sumSin = 0, wSum = 0, satIn = 0, satInW = 0;
@@ -15385,13 +15387,62 @@ const Annotator = (() => {
            sur surface éclairée). Un blob isolé sur fond sombre (anneau peu
            lumineux) = vraie émission → GARDÉ même si le halo est de même teinte. */
         var isReflet = (dh < DH_MIN) && ((satIn - satOut) < DSAT_MIN) && (valOut > 0.45);
-        if (isReflet) continue;   /* reflet sur surface éclairée → rejet */
+        if (isReflet) {
+          /* ═══ V286 — SAUVETAGE PAR GRAINES (fin du verdict tout-ou-rien) ═══
+             L'extension d'hystérésis peut FUSIONNER un vrai résidu avec une bande
+             de reflet (prouvé au banc realH : bande 70 974 px jugée reflet, le
+             haut du résidu mort avec). Avant de jeter la composante, on re-juge
+             ses SOUS-RÉGIONS GRAINES (cellules F ≥ seuil fort) : celles dont la
+             chimie diffère de l'anneau (Δteinte ≥ DH_MIN OU sursaturation ≥
+             DSAT_MIN) sont une vraie émission → SAUVÉES. Le reflet (même teinte,
+             pas plus saturé) reste rejeté. Aucun seuil global modifié. */
+          var sub = new Int32Array(n); var subAreas = [0]; var slab = 0;
+          for (i = 0; i < n; i++) {
+            if (labels[i] !== L || F[i] < th || sub[i]) continue;
+            slab++; qh = 0; qt = 0; queue[qt++] = i; sub[i] = slab; var sa = 0;
+            while (qh < qt) {
+              var ci2 = queue[qh++]; sa++;
+              var sx5 = ci2 % fw, sy5 = (ci2 / fw) | 0;
+              if (sx5 > 0)      { var n1 = ci2 - 1;  if (labels[n1] === L && F[n1] >= th && !sub[n1]) { sub[n1] = slab; queue[qt++] = n1; } }
+              if (sx5 < fw - 1) { var n2 = ci2 + 1;  if (labels[n2] === L && F[n2] >= th && !sub[n2]) { sub[n2] = slab; queue[qt++] = n2; } }
+              if (sy5 > 0)      { var n3 = ci2 - fw; if (labels[n3] === L && F[n3] >= th && !sub[n3]) { sub[n3] = slab; queue[qt++] = n3; } }
+              if (sy5 < fh - 1) { var n4 = ci2 + fw; if (labels[n4] === L && F[n4] >= th && !sub[n4]) { sub[n4] = slab; queue[qt++] = n4; } }
+            }
+            subAreas.push(sa);
+          }
+          var sc5 = new Float64Array(slab + 1), ss5 = new Float64Array(slab + 1), sw5 = new Float64Array(slab + 1);
+          var sst5 = new Float64Array(slab + 1), sstw5 = new Float64Array(slab + 1);
+          for (i = 0; i < n; i++) {
+            var SL = sub[i]; if (!SL) continue;
+            var ixp5 = ((y0 + ((i / fw) | 0)) * sG * IW + (x0 + (i % fw)) * sG) * 4;
+            var r5 = data[ixp5], g5 = data[ixp5 + 1], b5 = data[ixp5 + 2];
+            var h5 = _hueOf(r5, g5, b5);
+            var mx5 = r5 > g5 ? (r5 > b5 ? r5 : b5) : (g5 > b5 ? g5 : b5);
+            var mn5 = r5 < g5 ? (r5 < b5 ? r5 : b5) : (g5 < b5 ? g5 : b5);
+            var st5 = mx5 > 0 ? (mx5 - mn5) / mx5 : 0;
+            var w5 = F[i] + 0.001;
+            if (h5 >= 0) { var ra5 = h5 * 0.0174533; sc5[SL] += Math.cos(ra5) * w5; ss5[SL] += Math.sin(ra5) * w5; sw5[SL] += w5; }
+            sst5[SL] += st5 * w5; sstw5[SL] += w5;
+          }
+          for (k5 = 1; k5 <= slab; k5++) {
+            if (subAreas[k5] < minA) continue;
+            var hin5 = -1;
+            if (sw5[k5]) { hin5 = Math.atan2(ss5[k5] / sw5[k5], sc5[k5] / sw5[k5]) * 57.29578; if (hin5 < 0) hin5 += 360; }
+            var sin5 = sstw5[k5] ? sst5[k5] / sstw5[k5] : 0;
+            var dh5 = 999;
+            if (hin5 >= 0) { dh5 = Math.abs(hin5 - hueOut) % 360; if (dh5 > 180) dh5 = 360 - dh5; }
+            if (dh5 >= DH_MIN || (sin5 - satOut) >= DSAT_MIN) {
+              for (i = 0; i < n; i++) if (sub[i] === k5) SALV[i] = 1;
+            }
+          }
+          continue;   /* composante-reflet jetée ; seules ses graines sauvées survivent */
+        }
         keepLab[L] = 1;
       }
 
       var K = new Uint8Array(n);
       var keptArea = 0;
-      for (i = 0; i < n; i++) if (mask[i] && keepLab[labels[i]]) { K[i] = 1; keptArea++; }
+      for (i = 0; i < n; i++) if ((mask[i] && keepLab[labels[i]]) || SALV[i]) { K[i] = 1; keptArea++; }
       if (!keptArea) continue;
       maskAreaImg += keptArea * sG * sG;
       for (i = 0; i < n; i++) if (K[i]) Mglob[(y0 + ((i / fw) | 0)) * gw + (x0 + (i % fw))] = 1;
@@ -15582,8 +15633,49 @@ const Annotator = (() => {
         x1: (b.x + b.w) * IW + padX, y1: (b.y + b.h) * IH + padY,
       });
     }
-    const res = _spxLoops(imageData.data, IW, IH, boxesPx, {});
+    /* ═══ V286 — VETO PAR COMPOSANTE, plus jamais par cellule ═══
+       CAUSE RACINE (prouvée au banc sur realH + cadre API réel) : l'API peut
+       renvoyer UN cadre serré autour d'un résidu étendu ; l'ancien veto jetait
+       toute cellule détectée HORS cadre → 35 % de la détection amputée, des
+       morceaux de fluorescence réelle non cartographiés (signalé utilisateur).
+       Doctrine : la FORME vient du client, l'IA ne fait que VALIDER l'existence.
+       Donc : détection PLEIN CADRE, puis une tache connexe qui TOUCHE un cadre
+       IA est validée et gardée ENTIÈRE ; une tache qui ne touche aucun cadre
+       (LED, reflet isolé) reste éliminée — l'anti-faux-positif est préservé. */
+    const res = _spxLoops(imageData.data, IW, IH, [{ x0: 0, y0: 0, x1: IW, y1: IH }], {});
     if (!res || !res.mask) return false;
+    const gw = res.gw, gh = res.gh, sG = res.sG, mask = res.mask;
+    const gboxes = boxesPx.map(b => ({
+      x0: Math.max(0, Math.floor(b.x0 / sG)), y0: Math.max(0, Math.floor(b.y0 / sG)),
+      x1: Math.min(gw, Math.ceil(b.x1 / sG)), y1: Math.min(gh, Math.ceil(b.y1 / sG)),
+    }));
+    const lbl = new Int32Array(gw * gh);
+    const stack = new Int32Array(gw * gh);
+    let keptArea = 0, comp = 0;
+    for (let s = 0; s < gw * gh; s++) {
+      if (!mask[s] || lbl[s]) continue;
+      comp++;
+      let sp = 0; stack[sp++] = s; lbl[s] = comp;
+      let touches = false;
+      const cells = [];
+      while (sp) {
+        const c = stack[--sp]; cells.push(c);
+        const cx = c % gw, cy = (c / gw) | 0;
+        if (!touches) {
+          for (let k = 0; k < gboxes.length; k++) {
+            const g = gboxes[k];
+            if (cx >= g.x0 && cx < g.x1 && cy >= g.y0 && cy < g.y1) { touches = true; break; }
+          }
+        }
+        if (cx > 0)      { const n = c - 1;  if (mask[n] && !lbl[n]) { lbl[n] = comp; stack[sp++] = n; } }
+        if (cx < gw - 1) { const n = c + 1;  if (mask[n] && !lbl[n]) { lbl[n] = comp; stack[sp++] = n; } }
+        if (cy > 0)      { const n = c - gw; if (mask[n] && !lbl[n]) { lbl[n] = comp; stack[sp++] = n; } }
+        if (cy < gh - 1) { const n = c + gw; if (mask[n] && !lbl[n]) { lbl[n] = comp; stack[sp++] = n; } }
+      }
+      if (touches) keptArea += cells.length;
+      else for (let k = 0; k < cells.length; k++) mask[cells[k]] = 0;  /* tache sans validation IA → artefact */
+    }
+    res.maskFrac = (keptArea * sG * sG) / (IW * IH);
     if (res.maskFrac > 0.50) return false;       /* voile probable → legacy (cousin V155) */
     if (res.maskFrac < 0.003) return true;        /* rien de franc → photo nette (abstention), pas de legacy */
     return _renderMosaic(ctx, imageData, res, W, H);
