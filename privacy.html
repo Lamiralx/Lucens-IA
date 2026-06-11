@@ -266,6 +266,8 @@ footer a {
   transition: color .15s;
 }
 footer a:hover { color: var(--ink-primary); }
+/* V283 — seul lien d'action du corps de page : le mailto de contact */
+.contact-link { color: var(--accent); text-decoration: underline; font-weight: 600; }
 
 @media (min-width: 640px) {
   .privacy-header-inner { padding: 12px 32px; }
@@ -371,7 +373,11 @@ footer a:hover { color: var(--ink-primary); }
 <p data-i18n="p_not_2" data-i18n-rich>La décision finale (valider une surface, libérer un produit, conclure sur l'hygiène) reste toujours <strong>humaine</strong>. Elle doit être confirmée par les méthodes de terrain appropriées : ATP-métrie, écouvillonnages, analyses de laboratoire, contrôles HACCP.</p>
 
 <h2 data-i18n="h2_contact">Nous contacter</h2>
-<p data-i18n="p_contact">Pour toute question sur vos données, pour obtenir la liste des prestataires ou pour faire effacer un feedback, utilisez le formulaire de retour intégré à l'application (proposé après chaque analyse) et joignez votre code de suppression à votre message. Votre demande est traitée gratuitement.</p>
+<!-- V283 — adresse fournie par l'utilisateur. Le lien est statique (3 nœuds) car
+     le parseur i18n n'accepte que <strong>, jamais de <a> injecté. -->
+<p>
+  <span data-i18n="p_contact_pre">Pour toute question sur vos données, pour obtenir la liste des prestataires ou pour faire effacer un feedback, écrivez-nous : </span><a class="contact-link" href="mailto:contact@lucens.com">contact@lucens.com</a><span data-i18n="p_contact_post">. Joignez votre code de suppression à votre message. Votre demande est traitée gratuitement. Vous pouvez aussi passer par le formulaire de retour intégré à l'application.</span>
+</p>
 
 <footer>
   <span data-i18n="footer_brand">Lucens IA · Confidentialité</span>
@@ -443,7 +449,8 @@ footer a:hover { color: var(--ink-primary); }
       p_not_1: "Lucens est une <strong>aide visuelle</strong>. Ce n'est pas un diagnostic microbiologique, chimique ou médical. Lucens ne prend aucune décision officielle à votre place.",
       p_not_2: "La décision finale (valider une surface, libérer un produit, conclure sur l'hygiène) reste toujours <strong>humaine</strong>. Elle doit être confirmée par les méthodes de terrain appropriées : ATP-métrie, écouvillonnages, analyses de laboratoire, contrôles HACCP.",
       h2_contact: "Nous contacter",
-      p_contact: "Pour toute question sur vos données, pour obtenir la liste des prestataires ou pour faire effacer un feedback, utilisez le formulaire de retour intégré à l'application (proposé après chaque analyse) et joignez votre code de suppression à votre message. Votre demande est traitée gratuitement.",
+      p_contact_pre: "Pour toute question sur vos données, pour obtenir la liste des prestataires ou pour faire effacer un feedback, écrivez-nous : ",
+      p_contact_post: ". Joignez votre code de suppression à votre message. Votre demande est traitée gratuitement. Vous pouvez aussi passer par le formulaire de retour intégré à l'application.",
       footer_brand: "Lucens IA · Confidentialité",
       footer_update: "Mise à jour : juin 2026",
       footer_back: "Retour à l'app",
@@ -506,7 +513,8 @@ footer a:hover { color: var(--ink-primary); }
       p_not_1: "Lucens is a <strong>visual aid</strong>. It is not a microbiological, chemical or medical diagnosis. Lucens makes no official decision on your behalf.",
       p_not_2: "The final decision (validating a surface, releasing a product, concluding on hygiene) always remains <strong>human</strong>. It must be confirmed by the appropriate field methods: ATP testing, swabbing, laboratory analyses, HACCP controls.",
       h2_contact: "Contact us",
-      p_contact: "For any question about your data, to obtain the list of providers, or to have feedback erased, use the feedback form built into the app (offered after each analysis) and include your deletion code in your message. Your request is handled free of charge.",
+      p_contact_pre: "For any question about your data, to obtain the list of providers, or to have feedback erased, write to us: ",
+      p_contact_post: ". Include your deletion code in your message. Your request is handled free of charge. You can also use the feedback form built into the app.",
       footer_brand: "Lucens IA · Privacy",
       footer_update: "Updated: June 2026",
       footer_back: "Back to the app",
@@ -569,7 +577,8 @@ footer a:hover { color: var(--ink-primary); }
       p_not_1: "Lucens es una <strong>ayuda visual</strong>. No es un diagnóstico microbiológico, químico o médico. Lucens no toma ninguna decisión oficial en su lugar.",
       p_not_2: "La decisión final (validar una superficie, liberar un producto, concluir sobre la higiene) sigue siendo siempre <strong>humana</strong>. Debe confirmarse mediante los métodos de campo apropiados: ATP-metría, hisopos, análisis de laboratorio, controles APPCC.",
       h2_contact: "Contáctenos",
-      p_contact: "Para cualquier consulta sobre sus datos, para obtener la lista de proveedores o para eliminar un feedback, utilice el formulario de comentarios integrado en la aplicación (propuesto tras cada análisis) e incluya su código de eliminación en su mensaje. Su solicitud se tramita de forma gratuita.",
+      p_contact_pre: "Para cualquier consulta sobre sus datos, para obtener la lista de proveedores o para eliminar un feedback, escríbanos: ",
+      p_contact_post: ". Incluya su código de eliminación en su mensaje. Su solicitud se tramita de forma gratuita. También puede usar el formulario de comentarios integrado en la aplicación.",
       footer_brand: "Lucens IA · Privacidad",
       footer_update: "Actualización: junio de 2026",
       footer_back: "Volver a la app",
@@ -632,7 +641,8 @@ footer a:hover { color: var(--ink-primary); }
       p_not_1: "Lucens ist eine <strong>visuelle Hilfe</strong>. Es ist keine mikrobiologische, chemische oder medizinische Diagnose. Lucens trifft keine offizielle Entscheidung an Ihrer Stelle.",
       p_not_2: "Die endgültige Entscheidung (eine Oberfläche freigeben, ein Produkt freigeben, ein Hygieneurteil fällen) bleibt stets <strong>menschlich</strong>. Sie muss durch die geeigneten Feldmethoden bestätigt werden: ATP-Messung, Abstriche, Laboranalysen, HACCP-Kontrollen.",
       h2_contact: "Kontakt",
-      p_contact: "Bei Fragen zu Ihren Daten, zur Liste der Dienstleister oder zur Löschung eines Feedbacks nutzen Sie das in die App integrierte Feedback-Formular (nach jeder Analyse angeboten) und fügen Sie Ihren Löschcode bei. Ihre Anfrage wird kostenlos bearbeitet.",
+      p_contact_pre: "Bei Fragen zu Ihren Daten, zur Liste der Dienstleister oder zur Löschung eines Feedbacks schreiben Sie uns: ",
+      p_contact_post: ". Fügen Sie Ihren Löschcode bei. Ihre Anfrage wird kostenlos bearbeitet. Sie können auch das in die App integrierte Feedback-Formular nutzen.",
       footer_brand: "Lucens IA · Datenschutz",
       footer_update: "Aktualisiert: Juni 2026",
       footer_back: "Zurück zur App",
