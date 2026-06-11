@@ -50,62 +50,24 @@ if ('serviceWorker' in navigator) {
       })
       .catch((err) => console.warn('[Lucens] SW échec enregistrement:', err?.message));
   });
-  /* V40 — Notification SW "Mise à jour disponible" en composant premium.
-     Remplace l'ancienne pill V38 inline-stylée par une carte intégrée au
-     design system Lucens (CSS dans <style>, accent teal, IBM Plex, radius,
-     shadows, hairline). Position fixed bottom-center, animation slide-up
-     élégante. Dismiss persistant par version (localStorage) : si l'user
-     ignore v39, on ne lui re-affiche plus pour v39 — mais on lui affiche
-     v40, v41, etc. dès qu'elles arrivent.
-     V47 — Toggle de classe body.has-sw-update pour que le CSS pousse le
-     contenu de .home vers le haut (évite que la bannière chevauche le
-     dernier accordéon "Avertissement légal"). */
+  /* V280 — FIN DU POP-UP DE MISE À JOUR (demande utilisateur : « très mal
+     intégré, pas utile »). Plus AUCUNE bannière flottante : quand une nouvelle
+     version est disponible, on révèle simplement la rangée « Mettre à jour »
+     dans RÉGLAGES (groupe Version, sa place naturelle). L'utilisateur clique,
+     ça recharge, c'est tout. Complété par le rechargement silencieux V139
+     (au repos) : la plupart du temps l'app se met à jour toute seule, le
+     bouton des Réglages est le filet quand l'app est occupée. */
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (!event || !event.data || event.data.type !== 'SW_UPDATE_AVAILABLE') return;
-    const version = event.data.version || 'unknown';
-    /* Skip si déjà dismiss pour cette version exacte */
-    try {
-      const skipped = localStorage.getItem('lucens_sw_update_dismissed');
-      if (skipped === version) return;
-    } catch {}
-    /* Skip si déjà affichée */
-    if (document.getElementById('lucensSwUpdate')) return;
-    const tpl = document.getElementById('lucensSwUpdateTpl');
-    if (!tpl || !tpl.content) return;
-    const node = tpl.content.firstElementChild.cloneNode(true);
-    /* V100 — Force i18n sur tous les éléments data-i18n du node cloné.
-       Avant V100 : le template avait les strings hardcodés FR donc
-       apparaissait en français même en EN/ES/DE. Maintenant : les
-       data-i18n sont présents et on force la traduction au clone. */
-    try {
-      if (typeof t === 'function') {
-        node.querySelectorAll('[data-i18n]').forEach(el => {
-          const k = el.getAttribute('data-i18n');
-          el.textContent = t(k);
-        });
-        node.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
-          el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria-label')));
-        });
-      }
-    } catch (e) { /* silencieux : si t() échoue on garde le texte par défaut FR */ }
-    /* Wire actions */
-    node.querySelector('[data-sw-action="reload"]').addEventListener('click', () => {
-      try { localStorage.removeItem('lucens_sw_update_dismissed'); } catch {}
-      location.reload();
-    });
-    node.querySelector('[data-sw-action="dismiss"]').addEventListener('click', () => {
-      try { localStorage.setItem('lucens_sw_update_dismissed', version); } catch {}
-      node.classList.remove('is-visible');
-      document.body.classList.remove('has-sw-update');
-      setTimeout(() => node.remove(), 280);
-    });
-    document.body.appendChild(node);
-    /* V47 — signale au CSS que le contenu doit réserver de l'espace bas */
-    document.body.classList.add('has-sw-update');
-    /* Animation d'entrée en 2 frames (force reflow + ajout classe) */
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => node.classList.add('is-visible'));
-    });
+    window.__lucensSwUpdatePending = event.data.version || 'unknown';
+    const row = document.getElementById('settingsUpdateRow');
+    if (!row) return;
+    row.hidden = false;
+    const btn = document.getElementById('settingsUpdateBtn');
+    if (btn && !btn._swBound) {
+      btn._swBound = true;
+      btn.addEventListener('click', () => { location.reload(); });
+    }
   });
 
   /* V139 — MISE À JOUR SANS FRICTION. Quand un nouveau Service Worker prend le
@@ -1342,6 +1304,25 @@ body.has-offline-banner .upload-hub {
 }
 .settings-lang-grid { display: flex; flex-direction: column; gap: 2px; }
 /* Thème : ligne tactile avec état (Clair/Sombre) + interrupteur. */
+/* V280 — Rangée « Mettre à jour » dans Réglages (groupe Version). N'apparaît
+   que quand une nouvelle version attend ([hidden] sinon). Canon design : texte
+   Body 13/500, bouton primaire accent 14/600 r12, hauteur compacte 38px. */
+.settings-update-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; padding: 8px 0 2px;
+}
+.settings-update-row[hidden] { display: none; }
+.settings-update-text { font-size: 13px; font-weight: 500; color: var(--ink-secondary); min-width: 0; }
+.settings-update-btn {
+  flex-shrink: 0;
+  height: 38px; padding: 0 16px;
+  background: var(--accent); color: #fff;
+  border: 0; border-radius: var(--radius-md, 12px);
+  font-family: var(--font-body); font-size: 14px; font-weight: 600;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.settings-update-btn:active { background: var(--accent-hi, var(--accent)); }
+
 .settings-theme-row {
   display: flex; align-items: center; justify-content: space-between;
   width: 100%; gap: 12px; padding: 13px 14px;
@@ -5872,236 +5853,9 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
    des modals d'analyse mais sous les overlays critiques (codepad, etc.).
    Dismiss persistant par version via localStorage.
    ─────────────────────────────────────────────────────────────────────────── */
-/* V40.2 — Bannière "Mise à jour" en mode LIGHT (fond blanc).
-   ────────────────────────────────────────────────────────────────────
-   Refonte premium contraste max :
-   - Fond blanc pur pour lisibilité totale en plein jour HACCP terrain
-   - Texte en gris très foncé (presque noir) — accessibilité AAA
-   - Bordure teal fine pour signature couleur Lucens
-   - Bouton primary teal pleine + texte BLANC (contraste évident)
-   - Bouton fermer (×) icône explicite isolée en haut-droite
-   - Bouton "Plus tard" supprimé (la croix suffit, moins ambigu)
-   - Positionnement bulletproof : inset-inline + margin auto (V40.1)
-   ──────────────────────────────────────────────────────────────────── */
-.lucens-sw-update {
-  position: fixed;
-  left: 14px;
-  right: 14px;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
-  margin-inline: auto;
-  width: auto;
-  max-width: 440px;
-  /* V102 — z-index ABAISSÉ de 99998 à 9999 : avant V102 la bannière SW
-     update couvrait les bouton primaires des modals (mo-overlay z-index
-     10000, ctx-overlay, fb-overlay) → "Lancer l'analyse" caché sous la
-     bannière, bug bloquant pour l'analyse. Maintenant : tous les modals
-     (z-index ≥ 10000) couvrent proprement la bannière, qui reste visible
-     UNIQUEMENT quand aucun modal n'est ouvert. */
-  z-index: 9999;
-  background: #FFFFFF;
-  border: 1px solid var(--accent-edge);
-  border-radius: 16px;
-  padding: 16px 44px 14px 18px;                /* +30px right pour le × */
-  box-shadow:
-    0 24px 64px rgba(8, 12, 22, 0.28),
-    0 6px 18px var(--accent-soft),
-    0 1px 0 rgba(0, 0, 0, 0.04) inset;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  opacity: 0;
-  transform: translateY(20px);
-  pointer-events: none;
-  transition: opacity 0.28s var(--ease-out, cubic-bezier(.16, 1, .3, 1)),
-              transform 0.34s cubic-bezier(.16, 1, .3, 1);
-  will-change: transform, opacity;
-  contain: layout style;
-}
-.lucens-sw-update.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-/* Bouton fermer (×) — top right, isolé, parfaitement visible sur blanc */
-.lucens-sw-update-close {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 32px;
-  height: 32px;
-  border: 0;
-  background: transparent;
-  color: #6B7280;                /* gris medium, contraste OK sur blanc */
-  font-size: 20px;
-  line-height: 1;
-  cursor: pointer;
-  border-radius: 8px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.16s ease, color 0.16s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-.lucens-sw-update-close:hover {
-  color: #06070A;
-  background: rgba(8, 10, 14, 0.05);
-}
-.lucens-sw-update-close:active {
-  background: rgba(8, 10, 14, 0.10);
-}
-
-.lucens-sw-update-head {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-.lucens-sw-update-icon {
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--accent-soft);
-  border: 1px solid var(--accent-edge);
-  color: #0E8C84;                /* teal foncé pour contraste sur fond clair */
-}
-.lucens-sw-update-icon svg {
-  width: 18px;
-  height: 18px;
-}
-.lucens-sw-update-text {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding-top: 1px;
-}
-.lucens-sw-update-eyebrow {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #0E8C84;                /* teal foncé */
-  line-height: 1;
-}
-.lucens-sw-update-title {
-  margin: 0;
-  font-family: var(--font-body);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.005em;
-  line-height: 1.3;
-  color: #0A0C11;                /* presque noir, AAA sur blanc */
-}
-.lucens-sw-update-desc {
-  margin: 2px 0 0;
-  font-family: var(--font-body);
-  font-size: 12.5px;
-  font-weight: 400;
-  line-height: 1.45;
-  color: #4B5563;                /* gris foncé lisible */
-}
-.lucens-sw-update-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-.lucens-sw-update-btn {
-  height: 44px;
-  padding: 0 18px;
-  border-radius: 10px;
-  border: 0;
-  font-family: var(--font-body);
-  font-size: 13.5px;
-  font-weight: 600;
-  letter-spacing: 0.005em;
-  cursor: pointer;
-  transition: background 0.16s ease, transform 0.1s ease, box-shadow 0.16s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-/* Bouton primary RECHARGER : pill teal pleine + TEXTE BLANC + icône blanche.
-   Contraste WCAG AA largement respecté (teal #0E8C84 + blanc = 4.7:1). */
-.lucens-sw-update-btn.is-primary {
-  flex: 1 1 auto;
-  background: #0E8C84;
-  color: #FFFFFF;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  box-shadow: 0 2px 6px rgba(14, 140, 132, 0.32);
-}
-.lucens-sw-update-btn.is-primary:hover {
-  background: #0B7670;
-  box-shadow: 0 4px 10px rgba(14, 140, 132, 0.4);
-}
-.lucens-sw-update-btn.is-primary:active {
-  transform: scale(0.98);
-  background: #095F5A;
-}
-.lucens-sw-update-btn.is-primary svg { width: 15px; height: 15px; }
-
-@media (max-width: 380px) {
-  .lucens-sw-update {
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
-    padding: 14px 42px 12px 16px;
-    border-radius: 14px;
-    gap: 12px;
-  }
-  .lucens-sw-update-title { font-size: 14px; }
-  .lucens-sw-update-desc { font-size: 12px; }
-  .lucens-sw-update-btn { height: 42px; font-size: 13px; padding: 0 14px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .lucens-sw-update { transition: opacity 0.2s ease; transform: translateY(0); }
-}
-
-/* ═══ V235 — Bandeau « Mise à jour » COMPACT & DISCRET (demande : trop gros/mal
-   intégré). Réduit à une fine barre sur UNE ligne : titre + Recharger + croix.
-   Icône / eyebrow / description masqués, ombre allégée, posé au-dessus de la
-   barre du bas (ne la chevauche plus). ═══ */
-.lucens-sw-update {
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 9px !important;
-  max-width: 360px !important;
-  padding: 6px 8px 6px 14px !important;
-  border-radius: 12px !important;
-  border: 1px solid rgba(8,12,22,.10) !important;
-  box-shadow: 0 6px 22px rgba(8,12,22,.15) !important;
-  bottom: calc(var(--bottom-bar-total, 64px) + 12px) !important;
-}
-.lucens-sw-update-icon, .lucens-sw-update-eyebrow, .lucens-sw-update-desc { display: none !important; }
-.lucens-sw-update-head { display: contents !important; }
-.lucens-sw-update-text { order: 1 !important; flex: 1 1 auto !important; min-width: 0 !important; padding: 0 !important; gap: 0 !important; }
-.lucens-sw-update-title { font-size: 13.5px !important; line-height: 1.2 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
-.lucens-sw-update-actions { order: 2 !important; flex: 0 0 auto !important; }
-.lucens-sw-update-btn { height: 34px !important; padding: 0 14px !important; border-radius: 9px !important; font-size: 13px !important; }
-.lucens-sw-update-btn.is-primary { flex: 0 0 auto !important; box-shadow: none !important; }
-.lucens-sw-update-close { position: static !important; order: 3 !important; flex: 0 0 auto !important; width: 28px !important; height: 28px !important; font-size: 17px !important; top: auto !important; right: auto !important; }
-
-/* V47 — Quand la bannière SW update est visible, on RÉSERVE l'espace en
-   bas pour éviter qu'elle chevauche le dernier accordéon "Avertissement
-   légal" de la home. Hauteur réservée = hauteur estimée de la bannière
-   (~140px) + marge bottom (~18px) + safe-area iOS.
-   Appliqué à .home (max-height interne) et à la zone des accordéons
-   qui devient légèrement compressée mais reste utilisable. */
-body.has-sw-update .home {
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 160px);
-}
-@media (min-width: 600px) {
-  /* Sur desktop la bannière est dans le viewport mais centrée — l'espace
-     additionnel est plus réduit car le contenu home est dans un container
-     plus étroit (max-width 440-720px). */
-  body.has-sw-update .home {
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 180px);
-  }
-}
+/* V280 — CSS de la bannière de mise à jour SUPPRIMÉ (~180 lignes) : la mise à
+   jour vit désormais dans RÉGLAGES (rangée .settings-update-row). Le pop-up
+   flottant « Nouvelle version disponible » n'existe plus. */
 
 /* ═══════════════════════════════════════════════════════════════════════════
    V44 — Rapport analyse CONDENSÉ ×2
@@ -8962,7 +8716,14 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v279</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v280</div>
+          <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
+               n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
+               message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
+          <div class="settings-update-row" id="settingsUpdateRow" hidden>
+            <span class="settings-update-text" data-i18n="sw_update_title">Nouvelle version disponible</span>
+            <button type="button" class="settings-update-btn" id="settingsUpdateBtn" data-i18n="settings_update_btn">Mettre à jour</button>
+          </div>
         </div>
       </div>
     </div>
@@ -11211,6 +10972,7 @@ const I18N = {
     sw_update_title:      "Nouvelle version disponible",
     sw_update_desc:       "Recharge pour activer la mise à jour.",
     sw_update_reload:     "Recharger maintenant",
+    settings_update_btn:  "Mettre à jour",
     loader_step1: "Réception de votre photo",
     loader_step2: "Contrôle qualité d'image",
     loader_step3: "Détection des zones fluorescentes",
@@ -11819,6 +11581,7 @@ const I18N = {
     sw_update_title:      "New version available",
     sw_update_desc:       "Reload to get the latest improvements and fixes.",
     sw_update_reload:     "Reload now",
+    settings_update_btn:  "Update now",
     loader_step1: "Receiving your photo",
     loader_step2: "Image quality check",
     loader_step3: "Detecting fluorescent zones",
@@ -12537,6 +12300,7 @@ const I18N = {
     sw_update_title:      "Nueva versión disponible",
     sw_update_desc:       "Recargue para obtener las últimas mejoras y correcciones.",
     sw_update_reload:     "Recargar ahora",
+    settings_update_btn:  "Actualizar",
     loader_step1: "Recibiendo su foto",
     loader_step2: "Control de calidad de imagen",
     loader_step3: "Detección de zonas fluorescentes",
@@ -13126,6 +12890,7 @@ const I18N = {
     sw_update_title:      "Neue Version verfügbar",
     sw_update_desc:       "Neu laden, um die neuesten Verbesserungen und Korrekturen zu erhalten.",
     sw_update_reload:     "Jetzt neu laden",
+    settings_update_btn:  "Jetzt aktualisieren",
     loader_step1: "Foto wird empfangen",
     loader_step2: "Bildqualitätskontrolle",
     loader_step3: "Fluoreszierende Zonen werden erkannt",
@@ -28042,38 +27807,7 @@ const Annotator = (() => {
      Avant V100 : tous les strings hardcodés en FR → bannière restait en
      français même quand l'utilisateur était en EN/ES/DE. Repéré via
      exploration Playwright WebKit iPhone 13 (.claude/tests/explore.mjs). -->
-<template id="lucensSwUpdateTpl">
-  <aside class="lucens-sw-update" id="lucensSwUpdate" role="status" aria-live="polite" data-i18n-aria-label="sw_update_aria" aria-label="Nouvelle version de Lucens IA disponible">
-    <button type="button" class="lucens-sw-update-close" data-sw-action="dismiss" data-i18n-aria-label="sw_update_close_aria" aria-label="Fermer la notification de mise à jour">
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:16px;height:16px">
-        <line x1="5" y1="5" x2="15" y2="15"/>
-        <line x1="15" y1="5" x2="5" y2="15"/>
-      </svg>
-    </button>
-    <div class="lucens-sw-update-head">
-      <span class="lucens-sw-update-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 12a9 9 0 1 1-3.5-7.1"/>
-          <polyline points="21 4 21 10 15 10"/>
-        </svg>
-      </span>
-      <div class="lucens-sw-update-text">
-        <span class="lucens-sw-update-eyebrow" data-i18n="sw_update_eyebrow">Lucens IA</span>
-        <h3 class="lucens-sw-update-title" data-i18n="sw_update_title">Nouvelle version disponible</h3>
-        <p class="lucens-sw-update-desc" data-i18n="sw_update_desc">Recharge pour activer la mise à jour.</p>
-      </div>
-    </div>
-    <div class="lucens-sw-update-actions">
-      <button type="button" class="lucens-sw-update-btn is-primary" data-sw-action="reload">
-        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M15.5 9a6.5 6.5 0 1 1-2.4-5.1"/>
-          <polyline points="15.5 2.5 15.5 6.5 11.5 6.5"/>
-        </svg>
-        <span data-i18n="sw_update_reload">Recharger maintenant</span>
-      </button>
-    </div>
-  </aside>
-</template>
+<!-- V280 — template lucensSwUpdateTpl SUPPRIMÉ : la mise à jour est une rangée des Réglages. -->
 
 <!-- V227 — Page « En savoir plus » : déplace les accordéons existants dans la
      page dédiée + ouverture/fermeture (glisse depuis la droite). -->
