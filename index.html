@@ -8817,7 +8817,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v297</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v298</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -11266,6 +11266,8 @@ const I18N = {
     lv_sens_min:              "Minimale · fluorescences très marquées",
     lv_map_label:      "Cartographie",
     lv_map_help:       "Repérage visuel des zones fluorescentes",
+    lv_ai_label:       "Validation IA en direct",
+    lv_ai_help:        "Juge le point visé ; OFF = 100 % local, sans IA",
     lv_sens_label:     "Sensibilité",
     lv_zones_word:     "zones",
     lv_area_word:      "couverture",
@@ -11885,6 +11887,8 @@ const I18N = {
     lv_sens_min:              "Minimal · only pronounced fluorescence",
     lv_map_label:      "Mapping",
     lv_map_help:       "Visual highlight of fluorescent areas",
+    lv_ai_label:       "Live AI validation",
+    lv_ai_help:        "Judges the aimed spot; OFF = 100% local, no AI",
     lv_sens_label:     "Sensitivity",
     lv_zones_word:     "zones",
     lv_area_word:      "coverage",
@@ -12630,6 +12634,8 @@ const I18N = {
     lv_sens_min:              "Mínima · fluorescencias muy marcadas",
     lv_map_label:      "Cartografía",
     lv_map_help:       "Resaltado visual de zonas fluorescentes",
+    lv_ai_label:       "Validación IA en directo",
+    lv_ai_help:        "Evalúa el punto apuntado; OFF = 100 % local, sin IA",
     lv_sens_label:     "Sensibilidad",
     lv_zones_word:     "zonas",
     lv_area_word:      "cobertura",
@@ -13235,6 +13241,8 @@ const I18N = {
     lv_sens_min:              "Minimal · sehr deutliche Fluoreszenzen",
     lv_map_label:      "Kartierung",
     lv_map_help:       "Visuelle Hervorhebung fluoreszenter Bereiche",
+    lv_ai_label:       "KI-Prüfung in Echtzeit",
+    lv_ai_help:        "Bewertet den anvisierten Punkt; AUS = 100 % lokal, ohne KI",
     lv_sens_label:     "Empfindlichkeit",
     lv_zones_word:     "Zonen",
     lv_area_word:      "Abdeckung",
@@ -24454,6 +24462,13 @@ const Annotator = (() => {
           </div>
         </div>
         <div class="lv-drawer-hint" id="lvSensHint" data-i18n="lv_sens_balanced">Équilibrée — détection standard</div>
+        <div class="lv-drawer-row">
+          <div>
+            <span class="lv-drawer-label" data-i18n="lv_ai_label">Validation IA en direct</span>
+            <span class="lv-drawer-sub" data-i18n="lv_ai_help">Juge le point visé ; OFF = 100 % local, sans IA</span>
+          </div>
+          <div class="lv-toggle lv-on" id="lvAiToggle" role="switch" aria-checked="true" tabindex="0" data-i18n-aria-label="lv_ai_label" aria-label="Validation IA en direct"></div>
+        </div>
         <div class="lv-drawer-row lv-drawer-row-cal">
           <div class="lv-cal-head">
             <span class="lv-drawer-label" data-i18n="lv_cal_label">Calibration</span>
@@ -26874,6 +26889,32 @@ const Annotator = (() => {
   $$('lvMapToggle').addEventListener('keydown', (e) => {
     if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setMapEnabled(!lv.mapEnabled); }
   });
+
+  /* V298 — Toggle « Validation IA en direct ». OFF = Live View 100 % LOCAL
+     (aucun appel API, gratuit) ; ON (défaut) = juge IA quand le réticule est
+     stable (dwell V297). Persisté : le choix de l'utilisateur tient entre sessions. */
+  const LV_AI_KEY = 'lucens_lv_ai_validate';
+  function setAiValidate(on) {
+    lv.validateEnabled = !!on;
+    const toggle = $$('lvAiToggle');
+    if (toggle) {
+      toggle.classList.toggle('lv-on', lv.validateEnabled);
+      toggle.setAttribute('aria-checked', lv.validateEnabled ? 'true' : 'false');
+    }
+    try { localStorage.setItem(LV_AI_KEY, lv.validateEnabled ? '1' : '0'); } catch (e) {}
+    /* En repassant en local, on efface un éventuel verdict 'pending' resté bloqué. */
+    if (!lv.validateEnabled && chCurrentVerdict.state === 'pending') setCrosshairState('idle');
+  }
+  try {
+    const _savedAi = localStorage.getItem(LV_AI_KEY);
+    if (_savedAi === '0' || _savedAi === '1') setAiValidate(_savedAi === '1');
+  } catch (e) {}
+  if ($$('lvAiToggle')) {
+    $$('lvAiToggle').addEventListener('click', () => setAiValidate(!lv.validateEnabled));
+    $$('lvAiToggle').addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setAiValidate(!lv.validateEnabled); }
+    });
+  }
 
   /* ─── Sensibilité — stepper +/− + saisie manuelle ─────────────────
      Échelle affichée 10-100 INTUITIVE : plus haut = détecte plus.
