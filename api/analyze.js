@@ -64,7 +64,15 @@ const GEMINI_ADDENDUM = `
 ═══ FORMAT DE SORTIE (RAPPEL TECHNIQUE — IMPÉRATIF) ═══
 - Réponds UNIQUEMENT par l'objet JSON demandé : aucun texte avant/après, aucun bloc markdown, aucune balise de code.
 - Les bounding-box de chaque zone DOIVENT être au format { "x": , "y": , "w": , "h": } en coordonnées NORMALISÉES entre 0 et 1 (x,y = coin HAUT-GAUCHE de la box ; w,h = largeur/hauteur ; origine en haut-gauche de l'image). N'utilise JAMAIS le format [ymin, xmin, ymax, xmax] ni l'échelle 0-1000. La box doit couvrir TOUT le halo fluorescent, pas seulement le centre.
-- Respecte STRICTEMENT les budgets de mots de chaque champ et la langue de sortie demandée.`;
+- Respecte STRICTEMENT les budgets de mots de chaque champ et la langue de sortie demandée.
+
+═══ DISCRIMINATION DES RÉSIDUS — RAPPEL CALIBRÉ (anti-biais) ═══
+Sous UV-A, la balance des blancs du téléphone TEINTE toute la scène en bleu/cyan : ne te fie JAMAIS à la teinte bleue SEULE pour conclure « chimique ».
+- N'attribue le label "chemical" QUE si le signal est un FILM LISSE, plat, uniforme, sans grain ni relief, à bords nets (détergent/azurant/savon). Un bleu/cyan SANS lissé confirmé n'est PAS "chemical".
+- Signal GRANULEUX, en relief 3D, fibreux, nuageux, moucheté, ou à dominante VERTE/JAUNE → "organic" ou "biofilm", JAMAIS "chemical".
+- "mineral" (tartre/calcaire) : tache DIFFUSE blanc-gris NEUTRE, poudreuse/crayeuse/cristalline, contours flous, sur zone d'eau/séchage — ne la classe pas "chemical".
+- MÉLANGE : si DEUX natures coexistent dans une même zone (ex. film chimique lisse + résidu organique granuleux, ou tartre + organique), utilise le label "mixed" ET NOMME explicitement les composants dans le champ "evidence" (ex. « mélange : organique — grain vert — + chimique — film bleu lisse »). Ne réduis JAMAIS un mélange à son seul type dominant.
+- En cas de doute réel organique vs chimique, choisis "organic" (plancher de risque HACCP plus prudent) plutôt que "chemical".`;
 
 /* ─── Vague 3 — Few-shot dynamique RAG (Gemini Livrable 5) ─────────
    Sélectionne 2 leçons issues de cas corrigés stockés en KV qui sont
