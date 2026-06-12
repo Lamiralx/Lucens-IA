@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens — cartographie multi-zones</title>
+<style>
+  :root{
+    --primary:#0F3D4E; --signal:#B54A2A; --signalbright:#E06A3A;
+    --text:#111827; --text2:#4B5563; --text3:#6B7280;
+    --bg:#FFFFFF; --bg2:#FAFBFC; --border:#E5E7EB; --hair:#EEF0F3;
+    --low:#2E7D32; --mid:#B7791F; --hi:#B42318;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EEF1F4;font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased;padding:32px 24px 60px}
+  .stage{max-width:400px;margin:0 auto}
+  .cap{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#9aa3af;text-align:center;margin-bottom:12px}
+
+  .ana{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;border-top:3px solid var(--mid);box-shadow:0 8px 26px rgba(17,24,39,.09)}
+
+  .vseg{padding:14px 16px}
+  .vseg .l{font-size:11.5px;font-weight:600;color:var(--text3);margin-bottom:8px}
+  .seg{display:flex;gap:5px}
+  .seg .s{flex:1;text-align:center;font-size:12.5px;font-weight:700;padding:9px 4px;border-radius:8px;background:var(--bg2);border:1px solid var(--border);color:var(--text3)}
+  .seg .s.on{background:var(--mid);border-color:var(--mid);color:#fff}
+
+  .img{height:280px;position:relative;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:#070d14;overflow:hidden}
+  .img svg{position:absolute;inset:0;width:100%;height:100%}
+  .tagnum{fill:#fff;font:700 12px var(--font)}
+
+  .sec{padding:14px 16px}
+  .sec+.sec,.zones+.sec,.sec+.zones{border-top:1px solid var(--border)}
+  .flabel{font-size:12px;font-weight:600;color:var(--text3)}
+  .ftitle{font-size:20px;font-weight:800;color:var(--mid);letter-spacing:-.01em;margin-top:7px;line-height:1.18}
+  .fexpl{font-size:13px;color:var(--text2);line-height:1.45;margin-top:6px}
+  .faction{font-size:15px;font-weight:600;color:var(--text);line-height:1.35;margin-top:7px}
+  .fverify{font-size:12.5px;color:var(--text3);line-height:1.4;margin-top:7px}
+
+  /* zones détectées */
+  .zones{padding:13px 16px;border-top:1px solid var(--border)}
+  .zlbl{font-size:12px;font-weight:600;color:var(--text3);margin-bottom:8px}
+  .zrow{display:flex;align-items:center;gap:11px;padding:7px 0}
+  .zrow+.zrow{border-top:1px solid var(--hair)}
+  .znum{width:22px;height:22px;border-radius:50%;background:var(--signal);color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .zmain{flex:1;font-size:13.5px;font-weight:600}
+  .zext{font-size:12px;color:var(--text3);white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="cap">Cartographie — résidus irréguliers, sans comptage ni %</div>
+  <div class="ana">
+
+    <div class="vseg">
+      <div class="l">Niveau de risque</div>
+      <div class="seg"><div class="s">Faible</div><div class="s on">Modéré</div><div class="s">Élevé</div></div>
+    </div>
+
+    <div class="img">
+      <svg viewBox="0 0 358 280" preserveAspectRatio="none">
+        <defs><filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7.5"/></filter></defs>
+        <g filter="url(#glow)" fill="#5cb2ec">
+          <path d="M62 84 C56 64 74 50 96 52 C110 53 114 42 128 47 C144 52 150 68 144 84 C140 96 154 100 149 114 C144 130 122 128 112 136 C102 144 86 140 78 127 C70 114 76 108 68 101 C61 94 67 92 62 84 Z" opacity=".62"/>
+          <path d="M172 150 C168 138 179 128 194 131 C206 133 211 123 226 127 C241 131 249 143 243 156 C238 166 248 171 242 182 C235 193 219 187 209 190 C198 194 186 196 178 187 C171 180 174 173 172 166 C170 159 174 156 172 150 Z" opacity=".6"/>
+          <path d="M96 226 C93 215 103 207 115 208 C125 209 129 203 137 210 C145 217 143 227 136 232 C130 237 133 242 126 246 C118 250 109 245 102 243 C94 241 98 234 96 226 Z" opacity=".55"/>
+          <path d="M268 90 C266 83 273 78 281 79 C289 80 293 86 290 93 C288 100 279 100 273 98 C268 96 270 94 268 90 Z" opacity=".5"/>
+          <path d="M58 200 C56 193 63 188 71 189 C79 190 83 196 80 203 C78 210 69 210 63 208 C58 206 60 204 58 200 Z" opacity=".48"/>
+        </g>
+        <g fill="none" stroke="#E06A3A" stroke-width="2.2" stroke-linejoin="round">
+          <path d="M62 84 C56 64 74 50 96 52 C110 53 114 42 128 47 C144 52 150 68 144 84 C140 96 154 100 149 114 C144 130 122 128 112 136 C102 144 86 140 78 127 C70 114 76 108 68 101 C61 94 67 92 62 84 Z"/>
+          <path d="M172 150 C168 138 179 128 194 131 C206 133 211 123 226 127 C241 131 249 143 243 156 C238 166 248 171 242 182 C235 193 219 187 209 190 C198 194 186 196 178 187 C171 180 174 173 172 166 C170 159 174 156 172 150 Z"/>
+          <path d="M96 226 C93 215 103 207 115 208 C125 209 129 203 137 210 C145 217 143 227 136 232 C130 237 133 242 126 246 C118 250 109 245 102 243 C94 241 98 234 96 226 Z"/>
+          <path d="M268 90 C266 83 273 78 281 79 C289 80 293 86 290 93 C288 100 279 100 273 98 C268 96 270 94 268 90 Z"/>
+          <path d="M58 200 C56 193 63 188 71 189 C79 190 83 196 80 203 C78 210 69 210 63 208 C58 206 60 204 58 200 Z"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="sec">
+      <div class="flabel">Origine probable</div>
+      <div class="ftitle">Résidu de produit de nettoyage</div>
+      <div class="fexpl">Savon, détergent ou agent chimique insuffisamment rincé, réparti sur les zones repérées.</div>
+    </div>
+
+    <div class="sec">
+      <div class="flabel">Action recommandée</div>
+      <div class="faction">Re-rincer les zones repérées puis recontrôler.</div>
+      <div class="fverify">En cas de doute, confirmer par prélèvement de surface (ATP ou laboratoire).</div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens — 3 rapports concrets</title>
+<style>
+  :root{
+    --primary:#0F3D4E; --signal:#B54A2A; --text:#111827; --text2:#4B5563; --text3:#6B7280;
+    --bg:#FFFFFF; --bg2:#FAFBFC; --border:#E5E7EB; --hair:#EEF0F3;
+    --low:#2E7D32; --mid:#B7791F; --hi:#B42318;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#E4E7EC;font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased;padding:28px 20px 50px}
+  .row{display:flex;gap:26px;justify-content:center;align-items:flex-start;flex-wrap:wrap;max-width:1420px;margin:0 auto}
+  .rep{width:438px;min-height:620px;background:#fff;box-shadow:0 10px 30px rgba(17,24,39,.16);padding:30px 32px 24px;display:flex;flex-direction:column}
+
+  .rhead{display:flex;align-items:center;gap:9px}
+  .rhead svg{width:26px;height:26px}
+  .rhead .wm{font-size:18px;font-weight:800;color:var(--primary);letter-spacing:-.01em;line-height:1}
+  .rhead .tg{font-size:7px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-top:3px}
+
+  .trace{display:flex;border:1px solid var(--border);border-radius:8px;background:var(--bg2);margin-top:16px;overflow:hidden}
+  .tc{flex:1;padding:8px 11px}
+  .tc+.tc{border-left:1px solid var(--border)}
+  .tc .l{font-size:7.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text3)}
+  .tc .v{font-size:12px;font-weight:600;margin-top:2px}
+
+  .vseg{margin-top:18px}
+  .vseg .l{font-size:10px;font-weight:600;color:var(--text3);margin-bottom:7px}
+  .seg{display:flex;gap:5px;max-width:340px}
+  .seg .s{flex:1;text-align:center;font-size:11.5px;font-weight:700;padding:8px 4px;border-radius:8px;background:var(--bg2);border:1px solid var(--border);color:var(--text3)}
+  .rep.low .seg .s.on{background:var(--low);border-color:var(--low);color:#fff}
+  .rep.mid .seg .s.on{background:var(--mid);border-color:var(--mid);color:#fff}
+  .rep.high .seg .s.on{background:var(--hi);border-color:var(--hi);color:#fff}
+
+  .sectlbl{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin:18px 0 8px}
+  .img{height:168px;background:#070d14;position:relative;border:1px solid var(--border);overflow:hidden}
+  .img svg{position:absolute;inset:0;width:100%;height:100%}
+  .clean{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(40,70,95,.28),rgba(10,17,25,0) 70%)}
+  .legend{display:flex;align-items:center;gap:7px;font-size:10px;color:var(--text3);margin-top:9px}
+  .legend .dot{width:10px;height:10px;border:2px solid var(--signal);border-radius:50%;flex-shrink:0}
+
+  .ident{margin-top:18px}
+  .flabel{font-size:10.5px;font-weight:600;color:var(--text3)}
+  .ftitle{font-size:20px;font-weight:800;letter-spacing:-.01em;margin-top:6px;line-height:1.16}
+  .rep.low .ftitle{color:var(--low)} .rep.mid .ftitle{color:var(--mid)} .rep.high .ftitle{color:var(--hi)}
+  .fexpl{font-size:12px;color:var(--text2);line-height:1.45;margin-top:6px}
+
+  .action{margin-top:18px}
+  .faction{font-size:14px;font-weight:600;line-height:1.35;margin-top:6px}
+  .fverify{font-size:11.5px;color:var(--text3);line-height:1.4;margin-top:7px}
+
+  .disc{margin-top:auto;padding-top:13px;border-top:1px solid var(--border);font-size:8.5px;color:#9aa2ad;line-height:1.4}
+
+  .glow1{fill:#6cc0f0} .glow2{fill:#bfe05a}
+  .blob{fill:none;stroke:#E06A3A;stroke-width:2.1;stroke-linejoin:round}
+</style>
+</head>
+<body>
+<div class="row">
+
+  <!-- REPORT 1 — PROPRE -->
+  <div class="rep low">
+    <div class="rhead"><svg viewBox="0 0 96 96" fill="none"><g stroke="#0F3D4E" stroke-width="7" stroke-linecap="square"><path d="M0 24 V0 H24"/><path d="M72 0 H96 V24"/><path d="M96 72 V96 H72"/><path d="M24 96 H0 V72"/><circle cx="48" cy="48" r="20" stroke-width="4.5"/></g><circle cx="48" cy="48" r="8.5" fill="#B54A2A"/></svg><div><div class="wm">LUCENS</div><div class="tg">Résidus · Biofilms · Contaminants</div></div></div>
+    <div class="trace"><div class="tc"><div class="l">Zone inspectée</div><div class="v">Plan de travail</div></div><div class="tc"><div class="l">Date & heure</div><div class="v">6 juin 2026, 14:02</div></div></div>
+    <div class="vseg"><div class="l">Niveau de risque</div><div class="seg"><div class="s on">Faible</div><div class="s">Modéré</div><div class="s">Élevé</div></div></div>
+    <div class="sectlbl">Constat visuel</div>
+    <div class="img"><div class="clean"></div></div>
+    <div class="ident"><div class="flabel">Résultat</div><div class="ftitle">Aucun résidu significatif</div><div class="fexpl">Surface conforme au contrôle par fluorescence UV.</div></div>
+    <div class="action"><div class="flabel">Action recommandée</div><div class="faction">Aucune action requise.</div></div>
+    <div class="disc">Résultat fourni à titre d'aide à l'interprétation, à confirmer selon les procédures internes applicables.</div>
+  </div>
+
+  <!-- REPORT 2 — NETTOYAGE -->
+  <div class="rep mid">
+    <div class="rhead"><svg viewBox="0 0 96 96" fill="none"><g stroke="#0F3D4E" stroke-width="7" stroke-linecap="square"><path d="M0 24 V0 H24"/><path d="M72 0 H96 V24"/><path d="M96 72 V96 H72"/><path d="M24 96 H0 V72"/><circle cx="48" cy="48" r="20" stroke-width="4.5"/></g><circle cx="48" cy="48" r="8.5" fill="#B54A2A"/></svg><div><div class="wm">LUCENS</div><div class="tg">Résidus · Biofilms · Contaminants</div></div></div>
+    <div class="trace"><div class="tc"><div class="l">Zone inspectée</div><div class="v">Plan de travail</div></div><div class="tc"><div class="l">Date & heure</div><div class="v">6 juin 2026, 14:02</div></div></div>
+    <div class="vseg"><div class="l">Niveau de risque</div><div class="seg"><div class="s">Faible</div><div class="s on">Modéré</div><div class="s">Élevé</div></div></div>
+    <div class="sectlbl">Constat visuel</div>
+    <div class="img"><svg viewBox="0 0 374 168" preserveAspectRatio="none">
+      <defs><filter id="rg1" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter></defs>
+      <g filter="url(#rg1)" class="glow1">
+        <path d="M64 60 C58 42 76 32 96 34 C112 36 116 28 130 32 C146 37 152 50 146 62 C142 73 156 77 151 90 C146 104 124 102 114 109 C104 116 88 112 80 100 C72 88 78 82 70 76 Z" opacity=".6"/>
+        <path d="M186 100 C182 88 194 80 208 82 C220 84 225 76 240 79 C255 82 262 94 256 105 C251 114 261 119 255 129 C248 140 232 134 222 137 C211 141 199 143 191 134 C184 127 187 120 185 114 Z" opacity=".56"/>
+      </g>
+      <g class="blob">
+        <path d="M64 60 C58 42 76 32 96 34 C112 36 116 28 130 32 C146 37 152 50 146 62 C142 73 156 77 151 90 C146 104 124 102 114 109 C104 116 88 112 80 100 C72 88 78 82 70 76 Z"/>
+        <path d="M186 100 C182 88 194 80 208 82 C220 84 225 76 240 79 C255 82 262 94 256 105 C251 114 261 119 255 129 C248 140 232 134 222 137 C211 141 199 143 191 134 C184 127 187 120 185 114 Z"/>
+      </g>
+    </svg></div>
+    <div class="legend"><span class="dot"></span>Zone fluorescente détectée</div>
+    <div class="ident"><div class="flabel">Origine probable</div><div class="ftitle">Résidu de produit de nettoyage</div><div class="fexpl">Savon, détergent ou agent chimique insuffisamment rincé.</div></div>
+    <div class="action"><div class="flabel">Action recommandée</div><div class="faction">Re-rincer les zones repérées puis recontrôler.</div><div class="fverify">En cas de doute, confirmer par prélèvement (ATP ou laboratoire).</div></div>
+    <div class="disc">Résultat fourni à titre d'aide à l'interprétation, à confirmer selon les procédures internes applicables.</div>
+  </div>
+
+  <!-- REPORT 3 — ORGANIQUE -->
+  <div class="rep high">
+    <div class="rhead"><svg viewBox="0 0 96 96" fill="none"><g stroke="#0F3D4E" stroke-width="7" stroke-linecap="square"><path d="M0 24 V0 H24"/><path d="M72 0 H96 V24"/><path d="M96 72 V96 H72"/><path d="M24 96 H0 V72"/><circle cx="48" cy="48" r="20" stroke-width="4.5"/></g><circle cx="48" cy="48" r="8.5" fill="#B54A2A"/></svg><div><div class="wm">LUCENS</div><div class="tg">Résidus · Biofilms · Contaminants</div></div></div>
+    <div class="trace"><div class="tc"><div class="l">Zone inspectée</div><div class="v">Évier cuisine</div></div><div class="tc"><div class="l">Date & heure</div><div class="v">6 juin 2026, 09:30</div></div></div>
+    <div class="vseg"><div class="l">Niveau de risque</div><div class="seg"><div class="s">Faible</div><div class="s">Modéré</div><div class="s on">Élevé</div></div></div>
+    <div class="sectlbl">Constat visuel</div>
+    <div class="img"><svg viewBox="0 0 374 168" preserveAspectRatio="none">
+      <defs><filter id="rg2" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6.5"/></filter></defs>
+      <g filter="url(#rg2)" class="glow2">
+        <path d="M58 64 C50 44 72 32 96 34 C112 36 116 26 132 31 C150 37 156 54 149 70 C145 82 160 86 154 102 C148 119 124 117 112 124 C100 131 82 127 74 113 C66 99 72 92 64 84 Z" opacity=".56"/>
+        <path d="M194 98 C190 86 202 78 216 80 C228 82 233 73 248 77 C264 81 271 94 265 107 C260 117 270 122 264 133 C257 144 240 138 230 141 C219 145 207 147 199 137 C192 130 195 122 193 115 Z" opacity=".54"/>
+        <path d="M104 128 C101 118 111 110 123 111 C133 112 137 106 145 113 C153 120 151 130 144 135 C138 140 141 145 134 149 C126 153 117 148 110 146 C102 144 106 137 104 128 Z" opacity=".48"/>
+      </g>
+      <g class="blob">
+        <path d="M58 64 C50 44 72 32 96 34 C112 36 116 26 132 31 C150 37 156 54 149 70 C145 82 160 86 154 102 C148 119 124 117 112 124 C100 131 82 127 74 113 C66 99 72 92 64 84 Z"/>
+        <path d="M194 98 C190 86 202 78 216 80 C228 82 233 73 248 77 C264 81 271 94 265 107 C260 117 270 122 264 133 C257 144 240 138 230 141 C219 145 207 147 199 137 C192 130 195 122 193 115 Z"/>
+        <path d="M104 128 C101 118 111 110 123 111 C133 112 137 106 145 113 C153 120 151 130 144 135 C138 140 141 145 134 149 C126 153 117 148 110 146 C102 144 106 137 104 128 Z"/>
+      </g>
+    </svg></div>
+    <div class="legend"><span class="dot"></span>Zone fluorescente détectée</div>
+    <div class="ident"><div class="flabel">Origine probable</div><div class="ftitle">Matière organique</div><div class="fexpl">Résidu alimentaire, graisse ou protéine. Terrain propice aux bactéries.</div></div>
+    <div class="action"><div class="flabel">Action recommandée</div><div class="faction">Nettoyer et désinfecter, puis recontrôler.</div><div class="fverify">En cas de doute, confirmer par prélèvement (ATP ou laboratoire).</div></div>
+    <div class="disc">Résultat fourni à titre d'aide à l'interprétation, à confirmer selon les procédures internes applicables.</div>
+  </div>
+
+</div>
+</body>
+</html>

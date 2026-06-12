@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens — jauge en coin de photo</title>
+<style>
+  :root{
+    --primary:#0F3D4E; --signal:#B54A2A;
+    --text:#111827; --text2:#4B5563; --text3:#6B7280;
+    --bg:#FFFFFF; --bg2:#FAFBFC; --border:#E5E7EB; --hair:#EEF0F3;
+    --low:#2E7D32; --mid:#B7791F; --hi:#B42318;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EEF1F4;font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased;padding:34px 24px 64px}
+  .stage{max-width:430px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+  .cap{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#9aa3af;text-align:center;margin-bottom:6px}
+  .hint{font-size:12px;color:#94a3b8;text-align:center;margin-bottom:8px}
+
+  .ana{background:#fff;border:1px solid var(--border);border-radius:18px;overflow:hidden;border-top:3px solid var(--mid);box-shadow:0 10px 30px rgba(17,24,39,.10)}
+  .img{height:228px;background:#0a1119;position:relative}
+  .img::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 42% 46%,rgba(96,185,235,.92),rgba(96,185,235,0) 48%)}
+  .img::after{content:'';position:absolute;left:28%;top:30%;width:120px;height:92px;border:2px solid var(--signal);border-radius:42% 55% 50% 45%;opacity:.9}
+
+  /* badge jauge, coin bas-droit, fond blanc */
+  .badge{position:absolute;right:13px;bottom:13px;background:#fff;border-radius:13px;box-shadow:0 5px 18px rgba(0,0,0,.30);padding:8px 13px 7px 11px;display:flex;align-items:center;gap:11px}
+  .badge .mini{width:54px;flex-shrink:0}
+  .badge .mini svg{width:100%;display:block}
+  .badge .bt{display:flex;flex-direction:column;gap:1px}
+  .badge .bt .l{font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text3)}
+  .badge .bt .w{font-size:17px;font-weight:800;color:var(--mid);line-height:1.05}
+  .badge .bt .s{font-size:11px;color:var(--text3);font-weight:600}
+
+  .slbl{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--text2)}
+  .slbl svg{width:17px;height:17px;color:var(--primary);flex-shrink:0}
+  .sec{padding:16px 18px}
+  .sec+.sec{border-top:1px solid var(--border)}
+  .stitle{font-size:18px;font-weight:700;line-height:1.22;margin-top:9px;color:var(--mid)}
+  .sconf{font-size:12.5px;color:var(--text3);margin-top:3px}
+  .sbody{font-size:14px;line-height:1.46;color:var(--text2);margin-top:8px}
+  .saction{font-size:15px;font-weight:600;line-height:1.35;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div>
+    <div class="cap">Jauge intégrée — coin bas-droit de la photo</div>
+    <div class="hint">Petit badge blanc sur la preuve. Plus de bloc verdict séparé.</div>
+    <div class="ana">
+      <div class="img">
+        <div class="badge">
+          <div class="mini">
+            <svg viewBox="0 0 160 92" fill="none">
+              <path d="M14 84 A66 66 0 0 1 45 28" stroke="#2E7D32" stroke-width="12" stroke-linecap="round"/>
+              <path d="M49 25.7 A66 66 0 0 1 111 25.7" stroke="#B7791F" stroke-width="12" stroke-linecap="round"/>
+              <path d="M115 28 A66 66 0 0 1 146 84" stroke="#B42318" stroke-width="12" stroke-linecap="round"/>
+              <line x1="80" y1="84" x2="71" y2="27.5" stroke="#111827" stroke-width="3.6" stroke-linecap="round"/>
+              <circle cx="80" cy="84" r="5.6" fill="#111827"/><circle cx="80" cy="84" r="2" fill="#fff"/>
+            </svg>
+          </div>
+          <div class="bt"><span class="l">Niveau de risque</span><span class="w">Moyen</span><span class="s">45 / 100</span></div>
+        </div>
+      </div>
+      <div class="sec">
+        <div class="slbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Hypothèse principale</div>
+        <div class="stitle">Résidu de nettoyage probable</div>
+        <div class="sconf">Confiance modérée</div>
+        <div class="sbody">Signal compatible avec un film résiduel de nettoyage.</div>
+      </div>
+      <div class="sec">
+        <div class="slbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>Action recommandée</div>
+        <div class="saction">Re-rincer puis recontrôler la zone.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

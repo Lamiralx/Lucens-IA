@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens — 3 analyses concrètes</title>
+<style>
+  :root{
+    --primary:#0F3D4E; --signal:#B54A2A; --text:#111827; --text2:#4B5563; --text3:#6B7280;
+    --bg:#FFFFFF; --bg2:#FAFBFC; --border:#E5E7EB; --hair:#EEF0F3;
+    --low:#2E7D32; --mid:#B7791F; --hi:#B42318;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EEF1F4;font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased;padding:30px 22px 56px}
+  .row{display:flex;gap:30px;justify-content:center;align-items:flex-start;flex-wrap:wrap;max-width:1180px;margin:0 auto}
+  .col{width:340px;display:flex;flex-direction:column;gap:11px}
+  .cap{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#9aa3af;text-align:center}
+
+  .ana{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;border-top:3px solid var(--mid);box-shadow:0 8px 26px rgba(17,24,39,.09)}
+  .ana.low{border-top-color:var(--low)} .ana.mid{border-top-color:var(--mid)} .ana.high{border-top-color:var(--hi)}
+
+  .vseg{padding:13px 15px}
+  .vtop{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
+  .vseg .l{font-size:11.5px;font-weight:600;color:var(--text3)}
+  .score{font-size:14px;font-weight:700;color:var(--text3)}
+  .score b{font-size:18px;font-weight:800}
+  .ana.low .score b{color:var(--low)} .ana.mid .score b{color:var(--mid)} .ana.high .score b{color:var(--hi)}
+  .seg{display:flex;gap:5px}
+  .seg .s{flex:1;text-align:center;font-size:12px;font-weight:700;padding:8px 4px;border-radius:8px;background:var(--bg2);border:1px solid var(--border);color:var(--text3)}
+  .ana.low .seg .s.on{background:var(--low);border-color:var(--low);color:#fff}
+  .ana.mid .seg .s.on{background:var(--mid);border-color:var(--mid);color:#fff}
+  .ana.high .seg .s.on{background:var(--hi);border-color:var(--hi);color:#fff}
+
+  .img{height:200px;position:relative;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:#070d14;overflow:hidden}
+  .img svg{position:absolute;inset:0;width:100%;height:100%}
+  .clean{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(40,70,95,.30),rgba(10,17,25,0) 70%)}
+
+  .sec{padding:13px 15px}
+  .sec+.sec{border-top:1px solid var(--border)}
+  .flabel{font-size:12px;font-weight:600;color:var(--text3)}
+  .ftitle{font-size:19px;font-weight:800;letter-spacing:-.01em;margin-top:6px;line-height:1.18}
+  .ana.low .ftitle{color:var(--low)} .ana.mid .ftitle{color:var(--mid)} .ana.high .ftitle{color:var(--hi)}
+  .fexpl{font-size:12.5px;color:var(--text2);line-height:1.45;margin-top:6px}
+  .frisk{font-size:12.5px;color:var(--text2);line-height:1.45;margin-top:6px}
+  .frisk b{font-weight:700;color:var(--text)}
+  .faction{font-size:14.5px;font-weight:600;color:var(--text);line-height:1.35;margin-top:6px}
+  .fverify{font-size:12px;color:var(--text3);line-height:1.4;margin-top:7px}
+</style>
+</head>
+<body>
+<div class="row">
+
+  <!-- 1 — SURFACE PROPRE -->
+  <div class="col">
+    <div class="cap">Exemple 1 — Surface propre</div>
+    <div class="ana low">
+      <div class="vseg"><div class="vtop"><span class="l">Niveau de risque</span><span class="score"><b>6</b> / 100</span></div><div class="seg"><div class="s on">Faible</div><div class="s">Modéré</div><div class="s">Élevé</div></div></div>
+      <div class="img"><div class="clean"></div></div>
+      <div class="sec">
+        <div class="flabel">Résultat</div>
+        <div class="ftitle">Aucun résidu significatif</div>
+        <div class="fexpl">Surface conforme au contrôle par fluorescence UV.</div>
+      </div>
+      <div class="sec">
+        <div class="flabel">Action recommandée</div>
+        <div class="faction">Aucune action requise.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 — RÉSIDU DE NETTOYAGE -->
+  <div class="col">
+    <div class="cap">Exemple 2 — Résidu de nettoyage</div>
+    <div class="ana mid">
+      <div class="vseg"><div class="vtop"><span class="l">Niveau de risque</span><span class="score"><b>45</b> / 100</span></div><div class="seg"><div class="s">Faible</div><div class="s on">Modéré</div><div class="s">Élevé</div></div></div>
+      <div class="img">
+        <svg viewBox="0 0 340 200" preserveAspectRatio="none">
+          <defs><filter id="g1" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7"/></filter></defs>
+          <g filter="url(#g1)" fill="#6cc0f0">
+            <path d="M58 70 C52 50 70 38 92 40 C106 41 110 32 124 36 C140 41 146 56 140 70 C136 82 150 86 145 100 C140 116 118 114 108 122 C98 130 82 126 74 113 C66 100 72 94 64 87 C57 80 63 78 58 70 Z" opacity=".6"/>
+            <path d="M168 124 C164 112 175 102 190 105 C202 107 207 97 222 101 C237 105 245 117 239 130 C234 140 244 145 238 156 C231 167 215 161 205 164 C194 168 182 170 174 161 C167 154 170 147 168 140 C166 133 170 130 168 124 Z" opacity=".58"/>
+            <path d="M86 150 C83 140 93 132 105 133 C115 134 119 128 127 135 C135 142 133 152 126 157 C120 162 123 167 116 171 C108 175 99 170 92 168 C84 166 88 159 86 150 Z" opacity=".5"/>
+          </g>
+          <g fill="none" stroke="#E06A3A" stroke-width="2.1" stroke-linejoin="round">
+            <path d="M58 70 C52 50 70 38 92 40 C106 41 110 32 124 36 C140 41 146 56 140 70 C136 82 150 86 145 100 C140 116 118 114 108 122 C98 130 82 126 74 113 C66 100 72 94 64 87 C57 80 63 78 58 70 Z"/>
+            <path d="M168 124 C164 112 175 102 190 105 C202 107 207 97 222 101 C237 105 245 117 239 130 C234 140 244 145 238 156 C231 167 215 161 205 164 C194 168 182 170 174 161 C167 154 170 147 168 140 C166 133 170 130 168 124 Z"/>
+            <path d="M86 150 C83 140 93 132 105 133 C115 134 119 128 127 135 C135 142 133 152 126 157 C120 162 123 167 116 171 C108 175 99 170 92 168 C84 166 88 159 86 150 Z"/>
+          </g>
+        </svg>
+      </div>
+      <div class="sec">
+        <div class="flabel">Origine probable</div>
+        <div class="ftitle">Résidu de produit de nettoyage</div>
+        <div class="fexpl">Savon, détergent ou agent chimique insuffisamment rincé.</div>
+      </div>
+      <div class="sec">
+        <div class="flabel">Risque associé</div>
+        <div class="frisk">Un résidu de détergent peut contaminer chimiquement les aliments et traduit un rinçage incomplet.</div>
+      </div>
+      <div class="sec">
+        <div class="flabel">Action recommandée</div>
+        <div class="faction">Re-rincer les zones repérées puis recontrôler.</div>
+        <div class="fverify">En cas de doute, confirmer par prélèvement (ATP ou laboratoire).</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 — MATIÈRE ORGANIQUE -->
+  <div class="col">
+    <div class="cap">Exemple 3 — Matière organique</div>
+    <div class="ana high">
+      <div class="vseg"><div class="vtop"><span class="l">Niveau de risque</span><span class="score"><b>78</b> / 100</span></div><div class="seg"><div class="s">Faible</div><div class="s">Modéré</div><div class="s on">Élevé</div></div></div>
+      <div class="img">
+        <svg viewBox="0 0 340 200" preserveAspectRatio="none">
+          <defs><filter id="g2" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7.5"/></filter></defs>
+          <g filter="url(#g2)" fill="#bfe05a">
+            <path d="M52 76 C46 54 66 40 90 42 C106 44 110 33 126 38 C144 44 150 62 143 78 C139 90 154 94 148 110 C142 128 118 126 106 134 C94 142 76 138 68 124 C60 110 66 103 58 95 C50 87 57 84 52 76 Z" opacity=".58"/>
+            <path d="M172 122 C168 110 180 100 196 103 C209 105 214 95 230 99 C246 103 254 116 248 130 C243 140 254 146 247 158 C240 170 222 163 211 167 C199 171 186 173 177 163 C170 156 173 148 171 141 C168 134 173 129 172 122 Z" opacity=".56"/>
+            <path d="M80 156 C77 146 87 138 99 139 C109 140 113 134 121 141 C129 148 127 158 120 163 C114 168 117 173 110 177 C102 181 93 176 86 174 C78 172 82 165 80 156 Z" opacity=".5"/>
+            <path d="M252 58 C250 50 258 45 267 46 C276 47 280 54 277 62 C275 70 265 70 258 68 C252 66 254 63 252 58 Z" opacity=".46"/>
+          </g>
+          <g fill="none" stroke="#E06A3A" stroke-width="2.1" stroke-linejoin="round">
+            <path d="M52 76 C46 54 66 40 90 42 C106 44 110 33 126 38 C144 44 150 62 143 78 C139 90 154 94 148 110 C142 128 118 126 106 134 C94 142 76 138 68 124 C60 110 66 103 58 95 C50 87 57 84 52 76 Z"/>
+            <path d="M172 122 C168 110 180 100 196 103 C209 105 214 95 230 99 C246 103 254 116 248 130 C243 140 254 146 247 158 C240 170 222 163 211 167 C199 171 186 173 177 163 C170 156 173 148 171 141 C168 134 173 129 172 122 Z"/>
+            <path d="M80 156 C77 146 87 138 99 139 C109 140 113 134 121 141 C129 148 127 158 120 163 C114 168 117 173 110 177 C102 181 93 176 86 174 C78 172 82 165 80 156 Z"/>
+            <path d="M252 58 C250 50 258 45 267 46 C276 47 280 54 277 62 C275 70 265 70 258 68 C252 66 254 63 252 58 Z"/>
+          </g>
+        </svg>
+      </div>
+      <div class="sec">
+        <div class="flabel">Origine probable</div>
+        <div class="ftitle">Matière organique</div>
+        <div class="fexpl">Résidu alimentaire, graisse ou protéine.</div>
+      </div>
+      <div class="sec">
+        <div class="flabel">Risque associé</div>
+        <div class="frisk">Au contact des aliments, une matière organique peut favoriser le développement bactérien (<b>Listeria</b>, salmonelles) et une contamination croisée.</div>
+      </div>
+      <div class="sec">
+        <div class="flabel">Action recommandée</div>
+        <div class="faction">Nettoyer et désinfecter, puis recontrôler.</div>
+        <div class="fverify">En cas de doute, confirmer par prélèvement (ATP ou laboratoire).</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

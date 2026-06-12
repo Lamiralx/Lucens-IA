@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens — carte d'analyse en grand + choix icône risque</title>
+<style>
+  :root{
+    --primary:#0F3D4E; --signal:#B54A2A;
+    --text:#111827; --text2:#4B5563; --text3:#6B7280;
+    --bg:#FFFFFF; --bg2:#FAFBFC; --border:#E5E7EB; --hair:#EEF0F3; --mid:#B7791F;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EEF1F4;font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased;padding:36px 24px 60px}
+  .stage{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:30px}
+  .cap{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#9aa3af;margin-bottom:12px;text-align:center}
+
+  /* ---- carte d'analyse, grand format ---- */
+  .ana{background:#fff;border:1px solid var(--border);border-radius:20px;overflow:hidden;border-top:4px solid var(--mid);box-shadow:0 10px 30px rgba(17,24,39,.10)}
+  .slbl{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:600;color:var(--text2)}
+  .slbl svg{width:19px;height:19px;color:var(--primary);flex-shrink:0}
+  .verdict{display:flex;align-items:flex-end;gap:14px;padding:20px 22px 18px;border-bottom:1px solid var(--border)}
+  .vl{display:flex;flex-direction:column;gap:8px}
+  .vrisk{font-size:30px;font-weight:800;letter-spacing:-.015em;line-height:1;color:var(--mid)}
+  .vscore{margin-left:auto;display:flex;align-items:baseline;gap:2px}
+  .vscore b{font-size:30px;font-weight:800;letter-spacing:-.02em}
+  .vscore span{font-size:16px;color:var(--text3);font-weight:600}
+  .img{height:230px;background:#0a1119;position:relative;border-bottom:1px solid var(--border)}
+  .img::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 44% 50%,rgba(96,185,235,.92),rgba(96,185,235,0) 46%)}
+  .img::after{content:'';position:absolute;left:33%;top:32%;width:128px;height:98px;border:2px solid var(--signal);border-radius:42% 55% 50% 45%;opacity:.9}
+  .sec{padding:18px 22px}
+  .sec+.sec{border-top:1px solid var(--border)}
+  .stitle{font-size:19px;font-weight:700;line-height:1.22;margin-top:9px}
+  .sconf{font-size:13.5px;color:var(--text3);margin-top:3px}
+  .sbody{font-size:15px;line-height:1.5;color:var(--text2);margin-top:9px}
+  .saction{font-size:17px;font-weight:600;line-height:1.35;margin-top:9px}
+
+  /* ---- sélecteur d'icône risque ---- */
+  .panel{background:#fff;border:1px solid var(--border);border-radius:18px;padding:18px 18px 8px;box-shadow:0 1px 2px rgba(17,24,39,.05)}
+  .ptitle{font-size:14px;font-weight:700;margin:0 2px 4px}
+  .phint{font-size:12.5px;color:var(--text3);margin:0 2px 14px;line-height:1.4}
+  .opt{display:flex;align-items:center;gap:14px;padding:13px 6px;border-top:1px solid var(--hair)}
+  .opt:first-of-type{border-top:0}
+  .onum{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text3);flex-shrink:0}
+  .oico{width:40px;height:40px;border-radius:11px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .oico svg{width:22px;height:22px;color:var(--primary)}
+  .oinfo{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
+  .oname{font-size:14px;font-weight:600}
+  .odesc{font-size:12px;color:var(--text3)}
+  .opreview{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--text2);white-space:nowrap}
+  .opreview .pm{color:var(--mid);font-weight:700}
+  .reco{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--primary);background:rgba(15,61,78,.07);padding:2px 7px;border-radius:6px;margin-left:6px}
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <!-- carte d'analyse en grand -->
+  <div>
+    <div class="cap">Carte d'analyse — grand format (Option C)</div>
+    <div class="ana">
+      <div class="verdict">
+        <div class="vl">
+          <span class="slbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 17a8.5 8.5 0 0 1 17 0"/><path d="M12 17l4-4.5"/><circle cx="12" cy="17" r="1.3" fill="currentColor" stroke="none"/></svg>Niveau de risque</span>
+          <span class="vrisk">Moyen</span>
+        </div>
+        <div class="vscore"><b>45</b><span>/100</span></div>
+      </div>
+      <div class="img"></div>
+      <div class="sec">
+        <div class="slbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Hypothèse principale</div>
+        <div class="stitle">Résidu de nettoyage probable</div>
+        <div class="sconf">Confiance modérée</div>
+        <div class="sbody">Signal compatible avec un film résiduel de nettoyage.</div>
+      </div>
+      <div class="sec">
+        <div class="slbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>Action recommandée</div>
+        <div class="saction">Re-rincer puis recontrôler la zone.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- sélecteur icône risque -->
+  <div>
+    <div class="cap">Icône du « Niveau de risque » — laquelle ?</div>
+    <div class="panel">
+      <p class="ptitle">4 options, même contexte</p>
+      <p class="phint">Le picto ne sert qu'à repérer la section d'un coup d'œil. Hypothèse (loupe) et action (flèche) ne changent pas.</p>
+
+      <div class="opt">
+        <div class="onum">1</div>
+        <div class="oico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 17a8.5 8.5 0 0 1 17 0"/><path d="M12 17l4-4.5"/><circle cx="12" cy="17" r="1.3" fill="currentColor" stroke="none"/></svg></div>
+        <div class="oinfo"><span class="oname">Jauge <span class="reco">Reco</span></span><span class="odesc">Un niveau qui se mesure. Le plus juste.</span></div>
+        <div class="opreview">Niveau de risque · <span class="pm">Moyen</span></div>
+      </div>
+
+      <div class="opt">
+        <div class="onum">2</div>
+        <div class="oico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 4.5-3 7.5-8 9-5-1.5-8-4.5-8-9V7z"/></svg></div>
+        <div class="oinfo"><span class="oname">Bouclier</span><span class="odesc">Sécurité, hygiène. Plus institutionnel.</span></div>
+        <div class="opreview">Niveau de risque · <span class="pm">Moyen</span></div>
+      </div>
+
+      <div class="opt">
+        <div class="onum">3</div>
+        <div class="oico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 L21.5 19.5 H2.5 Z"/><path d="M12 10v4.2"/><circle cx="12" cy="17.4" r="1" fill="currentColor" stroke="none"/></svg></div>
+        <div class="oinfo"><span class="oname">Triangle d'alerte</span><span class="odesc">Vigilance. Un peu anxiogène si répété.</span></div>
+        <div class="opreview">Niveau de risque · <span class="pm">Moyen</span></div>
+      </div>
+
+      <div class="opt">
+        <div class="onum">4</div>
+        <div class="oico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="3.4"/></svg></div>
+        <div class="oinfo"><span class="oname">Cible</span><span class="odesc">Détection, zone visée. Neutre.</span></div>
+        <div class="opreview">Niveau de risque · <span class="pm">Moyen</span></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

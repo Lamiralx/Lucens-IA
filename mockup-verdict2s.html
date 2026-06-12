@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens — lire le risque en 2 secondes</title>
+<style>
+  :root{
+    --primary:#0F3D4E; --signal:#B54A2A;
+    --text:#111827; --text2:#4B5563; --text3:#6B7280;
+    --bg:#FFFFFF; --bg2:#FAFBFC; --border:#E5E7EB;
+    --low:#2E7D32; --mid:#B7791F; --hi:#B42318;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EEF1F4;font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased;padding:34px 24px 64px}
+  .stage{max-width:430px;margin:0 auto;display:flex;flex-direction:column;gap:26px}
+  .opt .cap{font-size:13px;font-weight:700;color:#111827}
+  .opt .sub{font-size:11.5px;color:#9aa3af;margin:2px 0 10px}
+
+  .card{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 6px 22px rgba(17,24,39,.08)}
+  .photo{height:150px;background:#0a1119;position:relative}
+  .photo::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 44% 48%,rgba(96,185,235,.88),rgba(96,185,235,0) 52%)}
+  .photo::after{content:'';position:absolute;left:32%;top:30%;width:96px;height:74px;border:2px solid #B54A2A;border-radius:42% 55% 50% 45%;opacity:.9}
+  .vbox{padding:14px 16px 16px}
+
+  /* 1 — pastille seule */
+  .p1{display:flex;align-items:center;gap:9px}
+  .p1 .l{font-size:12px;font-weight:600;color:var(--text3)}
+  .p1 .chip{display:inline-flex;align-items:center;gap:6px;margin-left:auto}
+  .p1 .chip .d{width:9px;height:9px;border-radius:50%;background:var(--mid)}
+  .p1 .chip .w{font-size:14px;font-weight:800;color:var(--mid)}
+
+  /* 2 — barre segmentée */
+  .p2 .l{font-size:11px;font-weight:600;color:var(--text3);margin-bottom:8px}
+  .seg{display:flex;gap:5px}
+  .seg .s{flex:1;text-align:center;font-size:13px;font-weight:700;padding:10px 4px;border-radius:9px;background:var(--bg2);border:1px solid var(--border);color:var(--text3)}
+  .seg .s.on{background:var(--mid);border-color:var(--mid);color:#fff}
+
+  /* 3 — mini-jauge arc */
+  .p3{display:flex;align-items:center;gap:14px}
+  .arc{flex-shrink:0;width:92px}
+  .arc svg{width:100%;display:block}
+  .arc .ends{display:flex;justify-content:space-between;margin-top:-3px;padding:0 3px}
+  .arc .ends span{font-size:8px;font-weight:700}
+  .arc .ends .lo{color:var(--low)} .arc .ends .hi{color:var(--hi)}
+  .p3 .info .l{font-size:11px;font-weight:600;color:var(--text3)}
+  .p3 .info .w{font-size:19px;font-weight:800;color:var(--mid);line-height:1.05}
+  .p3 .info .s{font-size:12px;color:var(--text3);font-weight:600}
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <!-- 1 -->
+  <div class="opt">
+    <div class="cap">1 — Pastille seule</div>
+    <div class="sub">Couleur + mot, mais pas d'échelle. Lecture correcte, contexte absent.</div>
+    <div class="card">
+      <div class="photo"></div>
+      <div class="vbox">
+        <div class="p1"><span class="l">Niveau de risque</span><span class="chip"><span class="d"></span><span class="w">Modéré</span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="opt">
+    <div class="cap">2 — Barre segmentée</div>
+    <div class="sub">Le segment allumé saute aux yeux. Niveau + échelle d'un seul regard.</div>
+    <div class="card">
+      <div class="photo"></div>
+      <div class="vbox">
+        <div class="p2">
+          <div class="l">Niveau de risque</div>
+          <div class="seg"><div class="s">Faible</div><div class="s on">Modéré</div><div class="s">Élevé</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="opt">
+    <div class="cap">3 — Mini-jauge en arc</div>
+    <div class="sub">Aiguille + zones colorées. Montre la position exacte sur l'échelle.</div>
+    <div class="card">
+      <div class="photo"></div>
+      <div class="vbox">
+        <div class="p3">
+          <div class="arc">
+            <svg viewBox="0 0 160 92" fill="none">
+              <path d="M14 84 A66 66 0 0 1 45 28" stroke="#2E7D32" stroke-width="12" stroke-linecap="round"/>
+              <path d="M49 25.7 A66 66 0 0 1 111 25.7" stroke="#B7791F" stroke-width="12" stroke-linecap="round"/>
+              <path d="M115 28 A66 66 0 0 1 146 84" stroke="#B42318" stroke-width="12" stroke-linecap="round"/>
+              <line x1="80" y1="84" x2="71" y2="27.5" stroke="#111827" stroke-width="3.4" stroke-linecap="round"/>
+              <circle cx="80" cy="84" r="5.4" fill="#111827"/><circle cx="80" cy="84" r="2" fill="#fff"/>
+            </svg>
+            <div class="ends"><span class="lo">Faible</span><span class="hi">Élevé</span></div>
+          </div>
+          <div class="info"><div class="l">Niveau de risque</div><div class="w">Modéré</div><div class="s">45 / 100</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup — Pop-up « Contexte du cliché » (zone + moment) V274</title>
+<style>
+:root{
+  --accent:#0F3D4E; --accent-hi:#0A2C39; --accent-soft:rgba(15,61,78,.08); --accent-edge:rgba(15,61,78,.30);
+  --ink-primary:#111827; --ink-secondary:#4B5563; --ink-tertiary:#6B7280; --ink-dim:#9CA3AF;
+  --surface-page:#FFFFFF; --surface-mid:#F7F8FA; --surface-hi:#FFFFFF;
+  --border:#E5E7EB; --border-hi:#D1D5DB; --lucens-signature:#B54A2A;
+  --font-body:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+}
+.dark{
+  --accent:#5AA6BC; --accent-hi:#7FBCCD; --accent-soft:rgba(90,166,188,.12); --accent-edge:rgba(90,166,188,.38);
+  --ink-primary:#F3F4F6; --ink-secondary:#C7CBD1; --ink-tertiary:#9CA3AF; --ink-dim:#6B7280;
+  --surface-page:#06070A; --surface-mid:#14161C; --surface-hi:#0E1014;
+  --border:#252A33; --border-hi:#333A45;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#E8EAEE;font-family:var(--font-body);padding:24px;color:#111827}
+h1{font-size:18px;font-weight:700;margin-bottom:4px}
+.sub{font-size:13px;color:#4B5563;margin-bottom:20px;max-width:980px;line-height:1.5}
+.toggle{position:fixed;top:16px;right:16px;z-index:10;height:40px;padding:0 16px;border-radius:12px;
+  border:1px solid #D1D5DB;background:#fff;font:600 13px var(--font-body);cursor:pointer}
+.row{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+.col{display:flex;flex-direction:column;gap:10px}
+.lbl{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#4B5563}
+.notes{width:390px;font-size:12px;line-height:1.55;color:#374151;background:#fff;border:1px solid #D1D5DB;border-radius:12px;padding:12px 14px}
+.notes b{color:#111827}
+.notes li{margin:0 0 6px 16px}
+
+/* cadre téléphone : home en fond + voile + sheet */
+.phone{width:390px;height:760px;border-radius:28px;overflow:hidden;border:1px solid #C5C9D0;
+  position:relative;background:var(--surface-page);box-shadow:0 12px 32px rgba(0,0,0,.10)}
+.fakehome{position:absolute;inset:0;padding:18px 16px;opacity:.9}
+.fh-brand{text-align:center;font-weight:800;font-size:21px;letter-spacing:-0.01em;color:var(--accent);padding:8px 0 22px}
+.fh-brand::after{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--lucens-signature);margin-left:4px;vertical-align:2px}
+.fh-btn{height:52px;border-radius:12px;background:var(--accent);color:#fff;font:700 16px var(--font-body);display:flex;align-items:center;justify-content:center}
+.veil{position:absolute;inset:0;background:rgba(6,7,10,.45)}
+/* ── LA SHEET (canon : radius 24 haut, eyebrow + Titre 18/700 + X 40px) ── */
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--surface-hi);
+  border-radius:24px 24px 0 0;padding:20px 16px calc(16px + 12px);border-top:1px solid var(--border)}
+.sh-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:16px}
+.sh-eyebrow{font-size:10px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:var(--ink-tertiary);margin-bottom:4px}
+.sh-title{font-size:18px;font-weight:700;letter-spacing:-0.01em;color:var(--ink-primary)}
+.sh-x{width:40px;height:40px;border-radius:50%;background:var(--accent);border:0;color:#fff;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
+.sh-x svg{width:20px;height:20px}
+.sh-label{font-size:10px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:var(--ink-tertiary);margin:0 0 8px}
+.sh-input{width:100%;height:46px;border-radius:12px;border:1px solid var(--border);background:var(--surface-mid);
+  padding:0 14px;font:500 16px var(--font-body);color:var(--ink-primary)}
+.sh-input::placeholder{color:var(--ink-dim);font-weight:400}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.chip{height:36px;padding:0 14px;border-radius:999px;background:var(--surface-mid);border:1px solid var(--border);
+  font:500 13px var(--font-body);color:var(--ink-secondary);display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.chip svg{width:13px;height:13px;color:var(--ink-dim)}
+.mo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:0}
+.mo{height:48px;border-radius:12px;border:1px solid var(--border);background:var(--surface-hi);
+  font:600 14px var(--font-body);color:var(--ink-secondary);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;text-align:center}
+.mo.sel{border:2px solid var(--accent);background:var(--accent-soft);color:var(--accent)}
+/* Footer canon modal : Secondaire (flex 0) + Primaire (flex 1), gap 10 */
+.sh-footer{margin-top:20px;display:flex;gap:10px}
+.sh-skip{flex:0 0 auto;height:46px;padding:0 20px;border-radius:12px;background:var(--surface-hi);
+  border:1px solid var(--border);color:var(--ink-secondary);font:600 14px var(--font-body);cursor:pointer}
+.sh-go{flex:1 1 auto;height:46px;border-radius:12px;background:var(--accent);border:1px solid var(--accent);
+  color:#fff;font:600 14px var(--font-body);display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.gap18{height:18px}
+
+/* aperçu liaison loader */
+.link-card{width:390px;background:var(--surface-hi);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.link-img{height:84px;background:#0e1117;background-image:radial-gradient(circle at 60% 45%,rgba(120,210,255,.9) 0%,rgba(120,210,255,0) 40%)}
+.link-ctx{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.link-zone{font-size:14px;font-weight:600;color:var(--ink-primary)}
+.link-mo{font-size:12px;font-weight:500;color:var(--ink-tertiary)}
+.link-prog{padding:12px 16px}
+.link-bar{height:4px;background:var(--border);border-radius:99px;overflow:hidden}
+.link-bar i{display:block;height:100%;width:38%;background:var(--accent);border-radius:99px}
+</style>
+</head>
+<body>
+<button class="toggle" onclick="document.querySelectorAll('.phone,.link-card').forEach(p=>p.classList.toggle('dark'))">☼ / ☾ Basculer le thème</button>
+<h1>Pop-up « Contexte du cliché » — 2 questions, 1 sheet, 2 taps minimum</h1>
+<p class="sub">À l'import de la photo : une <b>bottom sheet canon</b> (rayon 24, eyebrow + Titre 18/700 + ✕ 40 px = annuler).
+Question 1 : <b>zone inspectée</b> (saisie libre + <b>zones récentes en 1 tap</b> — un inspecteur repasse aux mêmes endroits).
+Question 2 : <b>moment</b> en grille 2×2 (cibles 48 px, gants OK). Les deux champs sont <b>optionnels</b> :
+« Lancer l'analyse » est toujours actif — zéro friction, données quand elles existent. La zone et le moment
+s'affichent ensuite dans la carte instrument du loader (zone prévue), partent au rapport/historique, et le
+moment recalibre la sévérité de l'IA (mort depuis V157, réactivé).</p>
+
+<div class="row">
+  <div class="col">
+    <div class="lbl">La sheet (état : moment sélectionné)</div>
+    <div class="phone">
+      <div class="fakehome">
+        <div class="fh-brand">LUCENS</div>
+        <div class="fh-btn">Importer une image à analyser</div>
+      </div>
+      <div class="veil"></div>
+      <div class="sheet">
+        <div class="sh-head">
+          <div>
+            <div class="sh-eyebrow">Avant l'analyse</div>
+            <div class="sh-title">Contexte du cliché</div>
+          </div>
+          <button class="sh-x" aria-label="Annuler">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="sh-label">Zone inspectée</div>
+        <input class="sh-input" />
+        <div class="chips">
+          <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Chambre froide 2</span>
+          <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Trancheuse</span>
+          <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Poignée four</span>
+        </div>
+        <div class="gap18"></div>
+        <div class="sh-label">Moment</div>
+        <div class="mo-grid">
+          <div class="mo">Avant nettoyage</div>
+          <div class="mo sel">Après nettoyage</div>
+          <div class="mo">Routine</div>
+          <div class="mo">Incident</div>
+        </div>
+        <div class="sh-footer">
+          <button class="sh-skip">Ignorer</button>
+          <button class="sh-go">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            Lancer l'analyse
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="lbl">Liaison — la carte instrument du loader reprend les réponses</div>
+    <div class="link-card">
+      <div class="link-img"></div>
+      <div class="link-ctx">
+        <span class="link-zone">Plan de travail inox</span>
+        <span class="link-mo">Après nettoyage</span>
+      </div>
+      <div class="link-prog">
+        <div class="link-bar"><i></i></div>
+      </div>
+    </div>
+    <div class="notes">
+      <li><b>Zone saisie → partout</b> : ligne contexte du loader (à la place du secteur), rapport, historique (plus de fiche « sans zone » à renommer après coup)</li>
+      <li><b>Zones récentes</b> (3 dernières, localStorage) : la tournée type = 1 tap au lieu de 20 caractères au gant</li>
+      <li><b>Moment → IA</b> : la sévérité change réellement selon avant/après nettoyage (canal V157 réactivé) ; affiché à droite de la ligne contexte (« UV-A · 365 nm » reste le repli sans moment)</li>
+      <li><b>Ignorer</b> = on saute les 2 questions et l'analyse démarre direct (secondaire canon, flex 0) ; <b>✕</b> = annuler tout (V140 : fermer ne lance jamais l'analyse). Deux gestes distincts et clairs</li>
+      <li><b>Champs vides</b> : input sans valeur ni placeholder (le label « Zone inspectée » suffit) ; rien de pré-rempli à effacer au gant</li>
+      <li><b>Clavier mobile</b> : l'input ne s'autofocus PAS (le clavier n'avale pas la sheet) ; focus seulement au tap</li>
+      <li><b>Paysage</b> : la sheet passe en modale plafonnée + défilante (règles V225 existantes)</li>
+      <li>Canon respecté : sheet r24, eyebrows 10/600/.10em, Titre 18/700, footer Secondaire+Primaire/gap 10, options 48 px, sélection = accent (2 px + fond soft), aucun littéral hors tokens</li>
+    </div>
+  </div>
+</div>
+</body>
+</html>

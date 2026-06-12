@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens — pop-ups (Réglages + Contexte)</title>
+<style>
+  :root{
+    --primary:#0F3D4E; --signal:#B54A2A;
+    --text:#111827; --text2:#4B5563; --text3:#6B7280;
+    --bg:#FFFFFF; --bg2:#FAFBFC; --border:#E5E7EB; --hair:#EEF0F3;
+    --primarytint:#0F3D4E;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EEF1F4;font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased;padding:30px 24px 60px}
+  .wrap{display:flex;gap:46px;justify-content:center;align-items:flex-start;flex-wrap:wrap;max-width:980px;margin:0 auto}
+  .col{display:flex;flex-direction:column;align-items:center;gap:13px}
+  .cap{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#9aa3af}
+  .phone{width:390px;height:800px;background:#0e1722;border:1px solid #DDE1E6;border-radius:30px;overflow:hidden;box-shadow:0 18px 50px rgba(17,24,39,.16);position:relative}
+  /* fond app estompé */
+  .backdrop{position:absolute;inset:0;background:rgba(8,12,18,.55)}
+
+  /* bottom-sheet */
+  .sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.3);display:flex;flex-direction:column;max-height:94%}
+  .grab{width:38px;height:4px;border-radius:3px;background:#d3d8df;margin:9px auto 4px}
+  .shead{display:flex;align-items:center;gap:10px;padding:8px 18px 14px;border-bottom:1px solid var(--border)}
+  .shead .st{font-size:18px;font-weight:800;letter-spacing:-.01em}
+  .shead .eb{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3)}
+  .shead .close{margin-left:auto;width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;color:var(--text3);flex-shrink:0}
+  .shead .close svg{width:16px;height:16px}
+  .sbody{padding:16px 18px;overflow:auto}
+  .glabel{font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text3);margin:0 2px 9px}
+  .glabel.next{margin-top:22px}
+
+  /* Réglages — langue */
+  .langgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .langbtn{display:flex;align-items:center;gap:9px;padding:12px 12px;border:1px solid var(--border);border-radius:12px;background:#fff;position:relative}
+  .langbtn.sel{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)}
+  .langbtn .flag{width:23px;height:16px;border-radius:3px;overflow:hidden;flex-shrink:0;box-shadow:0 0 0 1px rgba(0,0,0,.12)}
+  .langbtn .flag svg{width:100%;height:100%;display:block}
+  .langbtn .name{font-size:13.5px;font-weight:600;color:var(--text)}
+  .langbtn .chk{margin-left:auto;color:var(--primary);display:none}
+  .langbtn.sel .chk{display:block}
+  .langbtn .chk svg{width:16px;height:16px;display:block}
+
+  /* Réglages — thème */
+  .themerow{display:flex;align-items:center;justify-content:space-between;padding:14px 15px;border:1px solid var(--border);border-radius:12px}
+  .themerow .tl{font-size:14.5px;font-weight:600}
+  .themerow .ts{font-size:12.5px;color:var(--text3);margin-top:2px}
+  .switch{width:48px;height:29px;border-radius:999px;background:var(--primary);position:relative;flex-shrink:0}
+  .switch .knob{position:absolute;top:3px;left:3px;width:23px;height:23px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .15s}
+  .switch.on .knob{left:22px}
+
+  /* Contexte — sub + étapes */
+  .csub{font-size:13px;color:var(--text2);line-height:1.45;margin:7px 2px 0}
+  .steps{display:flex;align-items:center;gap:9px;margin:16px 2px 4px}
+  .stepdot{display:flex;align-items:center;gap:7px}
+  .stepdot .n{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;border:1.5px solid var(--border);color:var(--text3)}
+  .stepdot.on .n{background:var(--primary);border-color:var(--primary);color:#fff}
+  .stepdot .sl{font-size:12px;font-weight:600;color:var(--text3)}
+  .stepdot.on .sl{color:var(--text)}
+  .stepbar{flex:1;height:1.5px;background:var(--border)}
+
+  /* options radio */
+  .opt{display:flex;align-items:flex-start;gap:11px;padding:12px 13px;border:1px solid var(--border);border-radius:12px;background:#fff}
+  .opt+.opt{margin-top:8px}
+  .opt.sel{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)}
+  .radio{width:19px;height:19px;border-radius:50%;border:2px solid #cbd5e1;flex-shrink:0;margin-top:1px;position:relative}
+  .opt.sel .radio{border-color:var(--primary)}
+  .opt.sel .radio::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--primary)}
+  .otext{min-width:0;display:flex;flex-direction:column;gap:2px}
+  .ot{font-size:14px;font-weight:600;line-height:1.25}
+  .oh{font-size:11.5px;color:var(--text3);line-height:1.35}
+
+  /* footer Contexte */
+  .sfoot{display:flex;align-items:center;gap:12px;padding:13px 18px;border-top:1px solid var(--border)}
+  .sfoot .skip{font-size:14px;font-weight:600;color:var(--text3);background:none;border:0}
+  .sfoot .submit{margin-left:auto;height:46px;padding:0 22px;border-radius:11px;background:var(--primary);color:#fff;font-size:14.5px;font-weight:700;border:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- RÉGLAGES -->
+  <div class="col">
+    <div class="cap">Réglages</div>
+    <div class="phone">
+      <div class="backdrop"></div>
+      <div class="sheet" style="max-height:62%">
+        <div class="grab"></div>
+        <div class="shead"><span class="st">Réglages</span><span class="close"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6 L14 14 M14 6 L6 14"/></svg></span></div>
+        <div class="sbody">
+          <div class="glabel">Langue</div>
+          <div class="langgrid">
+            <div class="langbtn sel"><span class="flag"><svg viewBox="0 0 3 2" preserveAspectRatio="none"><rect width="3" height="2" fill="#fff"/><rect width="1" height="2" fill="#0055A4"/><rect x="2" width="1" height="2" fill="#EF4135"/></svg></span><span class="name">Français</span><span class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span></div>
+            <div class="langbtn"><span class="flag"><svg viewBox="0 0 60 30" preserveAspectRatio="none"><clipPath id="uk"><rect width="60" height="30"/></clipPath><g clip-path="url(#uk)"><rect width="60" height="30" fill="#012169"/><path d="M0,0 60,30 M60,0 0,30" stroke="#fff" stroke-width="6"/><path d="M30,0 V30 M0,15 H60" stroke="#fff" stroke-width="10"/><path d="M30,0 V30 M0,15 H60" stroke="#C8102E" stroke-width="6"/></g></svg></span><span class="name">English</span></div>
+            <div class="langbtn"><span class="flag"><svg viewBox="0 0 3 2" preserveAspectRatio="none"><rect width="3" height="2" fill="#AA151B"/><rect y="0.5" width="3" height="1" fill="#F1BF00"/></svg></span><span class="name">Español</span></div>
+            <div class="langbtn"><span class="flag"><svg viewBox="0 0 5 3" preserveAspectRatio="none"><rect width="5" height="1" fill="#111"/><rect y="1" width="5" height="1" fill="#DD0000"/><rect y="2" width="5" height="1" fill="#FFCE00"/></svg></span><span class="name">Deutsch</span></div>
+          </div>
+          <div class="glabel next">Thème</div>
+          <div class="themerow">
+            <div><div class="tl">Thème sombre</div><div class="ts">Confort visuel en faible lumière</div></div>
+            <div class="switch on"><div class="knob"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTEXTE -->
+  <div class="col">
+    <div class="cap">Contexte d'inspection</div>
+    <div class="phone">
+      <div class="backdrop"></div>
+      <div class="sheet" style="max-height:92%">
+        <div class="grab"></div>
+        <div class="shead"><div><span class="eb">Contexte</span><div class="st" style="margin-top:3px">Adapter l'analyse à votre activité</div></div><span class="close"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6 L14 14 M14 6 L6 14"/></svg></span></div>
+        <div class="sbody">
+          <div class="steps">
+            <div class="stepdot on"><span class="n">1</span><span class="sl">Secteur</span></div>
+            <div class="stepbar"></div>
+            <div class="stepdot"><span class="n">2</span><span class="sl">Rôle</span></div>
+          </div>
+          <div class="glabel" style="margin-top:14px">Secteur d'activité</div>
+          <label class="opt sel"><span class="radio"></span><span class="otext"><span class="ot">Restauration et hôtellerie</span><span class="oh">Restaurant, cantine, hôtel, snack</span></span></label>
+          <label class="opt"><span class="radio"></span><span class="otext"><span class="ot">Production agroalimentaire</span><span class="oh">Usine de transformation, conditionnement, abattoir, laiterie</span></span></label>
+          <label class="opt"><span class="radio"></span><span class="otext"><span class="ot">Distribution alimentaire</span><span class="oh">Supermarché, entrepôt froid, transport réfrigéré</span></span></label>
+          <label class="opt"><span class="radio"></span><span class="otext"><span class="ot">Santé et soin</span><span class="oh">Hôpital, EHPAD, clinique, vétérinaire</span></span></label>
+          <label class="opt"><span class="radio"></span><span class="otext"><span class="ot">Pharma et laboratoires</span><span class="oh">Production pharmaceutique, salle blanche, cosmétique</span></span></label>
+        </div>
+        <div class="sfoot">
+          <button class="skip">Plus tard</button>
+          <button class="submit">Suivant ›</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

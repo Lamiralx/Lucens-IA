@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens — pop-ups (Moment · Historique · Feedback)</title>
+<style>
+  :root{
+    --primary:#0F3D4E; --text:#111827; --text2:#4B5563; --text3:#6B7280;
+    --bg:#FFFFFF; --bg2:#FAFBFC; --border:#E5E7EB; --hair:#EEF0F3;
+    --low:#2E7D32; --mid:#B7791F; --hi:#B42318;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EEF1F4;font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased;padding:30px 22px 60px}
+  .wrap{display:flex;gap:38px;justify-content:center;align-items:flex-start;flex-wrap:wrap;max-width:1320px;margin:0 auto}
+  .col{display:flex;flex-direction:column;align-items:center;gap:13px}
+  .cap{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#9aa3af}
+  .phone{width:390px;height:810px;background:#0e1722;border:1px solid #DDE1E6;border-radius:30px;overflow:hidden;box-shadow:0 18px 50px rgba(17,24,39,.16);position:relative}
+  .phone.light{background:#fff}
+  .backdrop{position:absolute;inset:0;background:rgba(8,12,18,.55)}
+
+  .sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.3);display:flex;flex-direction:column;max-height:95%}
+  .grab{width:38px;height:4px;border-radius:3px;background:#d3d8df;margin:9px auto 4px}
+  .shead{display:flex;align-items:flex-start;gap:10px;padding:6px 18px 13px;border-bottom:1px solid var(--border)}
+  .shead .eb{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3)}
+  .shead .st{font-size:18px;font-weight:800;letter-spacing:-.01em;margin-top:3px}
+  .shead .ss{font-size:12px;color:var(--text3);margin-top:3px}
+  .shead .close{margin-left:auto;width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;color:var(--text3);flex-shrink:0}
+  .shead .close svg{width:16px;height:16px}
+  .sbody{padding:15px 18px;overflow:auto}
+
+  .opt{display:flex;align-items:flex-start;gap:11px;padding:12px 13px;border:1px solid var(--border);border-radius:12px;background:#fff}
+  .opt+.opt{margin-top:8px}
+  .opt.sel{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)}
+  .radio{width:19px;height:19px;border-radius:50%;border:2px solid #cbd5e1;flex-shrink:0;margin-top:1px;position:relative}
+  .opt.sel .radio{border-color:var(--primary)}
+  .opt.sel .radio::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--primary)}
+  .otext{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .ot{font-size:14px;font-weight:600;line-height:1.25}
+  .oh{font-size:11.5px;color:var(--text3);line-height:1.35}
+
+  .sfoot{display:flex;align-items:center;gap:12px;padding:13px 18px;border-top:1px solid var(--border)}
+  .sfoot .skip{font-size:14px;font-weight:600;color:var(--text3);background:none;border:0}
+  .sfoot .submit{margin-left:auto;height:46px;padding:0 22px;border-radius:11px;background:var(--primary);color:#fff;font-size:14.5px;font-weight:700;border:0}
+  .noask{display:flex;align-items:center;gap:9px;padding:0 18px 15px;font-size:12.5px;color:var(--text3)}
+  .noask .box{width:18px;height:18px;border:1.6px solid #cbd5e1;border-radius:5px;flex-shrink:0}
+
+  /* Historique */
+  .histbar{display:flex;align-items:center;padding:calc(14px) 16px;border-bottom:1px solid var(--border)}
+  .histbar .ht{font-size:18px;font-weight:800}
+  .histbar .close{margin-left:auto;width:32px;height:32px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text3)}
+  .histbar .close svg{width:16px;height:16px}
+  .histlist{padding:13px 14px}
+  .hsec{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text3);margin:6px 3px 9px}
+  .hrow{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:13px;background:#fff}
+  .hrow+.hrow{margin-top:9px}
+  .hthumb{width:48px;height:48px;border-radius:10px;flex-shrink:0;background:#0b1622;position:relative;overflow:hidden;border:1px solid #0d1c2b}
+  .hthumb::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 58% 44%,rgba(96,180,230,.9),rgba(96,180,230,0) 58%)}
+  .hmeta{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+  .hname{font-size:14px;font-weight:600}
+  .hdate{font-size:12px;color:var(--text3)}
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:3px 9px 3px 7px;border-radius:999px;text-transform:uppercase;white-space:nowrap}
+  .pill .pd{width:6px;height:6px;border-radius:50%}
+  .pill-hi{color:var(--hi);background:rgba(180,35,24,.08)} .pill-hi .pd{background:var(--hi)}
+  .pill-mid{color:var(--mid);background:rgba(183,121,31,.09)} .pill-mid .pd{background:var(--mid)}
+  .pill-low{color:var(--low);background:rgba(46,125,50,.09)} .pill-low .pd{background:var(--low)}
+
+  /* Feedback */
+  .fbq{margin-top:17px}
+  .fbq:first-child{margin-top:2px}
+  .fbq .q{font-size:13.5px;font-weight:600;color:var(--text);margin-bottom:8px}
+  .fbseg{display:flex;gap:6px}
+  .fbseg .s{flex:1;text-align:center;font-size:12.5px;font-weight:700;padding:9px 4px;border-radius:9px;background:var(--bg2);border:1px solid var(--border);color:var(--text3)}
+  .fbseg .s.ok.on{background:var(--low);border-color:var(--low);color:#fff}
+  .fbseg .s.mid.on{background:var(--mid);border-color:var(--mid);color:#fff}
+  .fbseg .s.bad.on{background:var(--hi);border-color:var(--hi);color:#fff}
+  .fbcom{margin-top:18px}
+  .fbcom .q{font-size:13.5px;font-weight:600;margin-bottom:7px}
+  .fbcom textarea{width:100%;border:1px solid var(--border);border-radius:11px;padding:10px 12px;font-size:13px;font-family:inherit;color:var(--text2);resize:none;height:56px;background:var(--bg2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- MOMENT -->
+  <div class="col">
+    <div class="cap">Moment du cliché</div>
+    <div class="phone">
+      <div class="backdrop"></div>
+      <div class="sheet" style="max-height:84%">
+        <div class="grab"></div>
+        <div class="shead"><div><span class="eb">Contexte du cliché</span><div class="st">Cette photo a été prise…</div></div><span class="close"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6 L14 14 M14 6 L6 14"/></svg></span></div>
+        <div class="sbody">
+          <label class="opt sel"><span class="radio"></span><span class="otext"><span class="ot">Avant nettoyage</span><span class="oh">Contrôle initial · contamination attendue</span></span></label>
+          <label class="opt"><span class="radio"></span><span class="otext"><span class="ot">Après nettoyage</span><span class="oh">Validation · toute trace = défaut de protocole</span></span></label>
+          <label class="opt"><span class="radio"></span><span class="otext"><span class="ot">Contrôle de routine</span><span class="oh">Inspection périodique · hors nettoyage</span></span></label>
+          <label class="opt"><span class="radio"></span><span class="otext"><span class="ot">Suite à incident</span><span class="oh">Après alerte · investigation ciblée</span></span></label>
+        </div>
+        <div class="sfoot"><button class="skip">Sans précision</button><button class="submit">Lancer l'analyse</button></div>
+        <div class="noask"><span class="box"></span>Ne plus me demander</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORIQUE -->
+  <div class="col">
+    <div class="cap">Historique</div>
+    <div class="phone light">
+      <div class="histbar"><span class="ht">Historique</span><span class="close"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6 L14 14 M14 6 L6 14"/></svg></span></div>
+      <div class="histlist">
+        <div class="hsec">Aujourd'hui</div>
+        <div class="hrow"><div class="hthumb"></div><div class="hmeta"><span class="hname">Plan de travail</span><span class="hdate">14:02 · 1 zone</span></div><span class="pill pill-hi"><span class="pd"></span>Élevé</span></div>
+        <div class="hrow"><div class="hthumb"></div><div class="hmeta"><span class="hname">Évier cuisine</span><span class="hdate">09:30 · 2 zones</span></div><span class="pill pill-mid"><span class="pd"></span>Moyen</span></div>
+        <div class="hsec" style="margin-top:18px">Hier</div>
+        <div class="hrow"><div class="hthumb"></div><div class="hmeta"><span class="hname">Trancheuse</span><span class="hdate">17:10 · aucune zone</span></div><span class="pill pill-low"><span class="pd"></span>Faible</span></div>
+        <div class="hrow"><div class="hthumb"></div><div class="hmeta"><span class="hname">Chambre froide</span><span class="hdate">11:48 · 1 zone</span></div><span class="pill pill-mid"><span class="pd"></span>Moyen</span></div>
+        <div class="hrow"><div class="hthumb"></div><div class="hmeta"><span class="hname">Poignée de porte</span><span class="hdate">08:15 · 3 zones</span></div><span class="pill pill-hi"><span class="pd"></span>Élevé</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEEDBACK -->
+  <div class="col">
+    <div class="cap">Feedback</div>
+    <div class="phone">
+      <div class="backdrop"></div>
+      <div class="sheet" style="max-height:93%">
+        <div class="grab"></div>
+        <div class="shead"><div><span class="eb">Votre expertise</span><div class="st">Aidez Lucens à mieux voir</div><div class="ss">3 questions · 15 secondes</div></div><span class="close"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6 L14 14 M14 6 L6 14"/></svg></span></div>
+        <div class="sbody">
+          <div class="fbq"><div class="q">Toutes les taches sont repérées ?</div><div class="fbseg"><div class="s ok on">OK</div><div class="s mid">Moyen</div><div class="s bad">À revoir</div></div></div>
+          <div class="fbq"><div class="q">L'origine des résidus est-elle bonne ?</div><div class="fbseg"><div class="s ok">OK</div><div class="s mid on">Moyen</div><div class="s bad">À revoir</div></div></div>
+          <div class="fbq"><div class="q">Le niveau de risque vous semble juste ?</div><div class="fbseg"><div class="s ok on">Juste</div><div class="s mid">Décalé</div><div class="s bad">Faux</div></div></div>
+          <div class="fbcom"><div class="q">Commentaire (optionnel)</div><textarea placeholder="Ce qui pourrait être amélioré…"></textarea></div>
+        </div>
+        <div class="sfoot"><button class="skip">Passer</button><button class="submit">Envoyer</button></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

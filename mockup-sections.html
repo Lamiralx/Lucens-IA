@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens — styles de section</title>
+<style>
+  :root{
+    --primary:#0F3D4E; --signal:#B54A2A;
+    --text:#111827; --text2:#4B5563; --text3:#6B7280;
+    --bg:#FFFFFF; --bg2:#FAFBFC; --border:#E5E7EB; --hair:#EEF0F3;
+    --mid:#B7791F;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EEF1F4;font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased;padding:30px 24px 60px}
+  .wrap{display:flex;gap:50px;justify-content:center;align-items:flex-start;flex-wrap:wrap;max-width:980px;margin:0 auto}
+  .col{display:flex;flex-direction:column;align-items:center;gap:6px;width:360px}
+  .cap{font-size:13px;font-weight:700;color:#111827;margin-bottom:2px}
+  .sub{font-size:11.5px;color:#9aa3af;margin-bottom:12px;text-align:center}
+  .phone{width:360px;background:var(--bg);border:1px solid #DDE1E6;border-radius:26px;overflow:hidden;box-shadow:0 16px 44px rgba(17,24,39,.13)}
+  .scr{padding:18px 18px 20px}
+
+  .ana{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;border-top:3px solid var(--mid);box-shadow:0 1px 2px rgba(17,24,39,.05)}
+  .ana-img{height:150px;background:#0a1119;position:relative;border-bottom:1px solid var(--border)}
+  .ana-img::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 44% 50%,rgba(96,185,235,.9),rgba(96,185,235,0) 47%)}
+  .ana-img::after{content:'';position:absolute;left:33%;top:33%;width:86px;height:66px;border:2px solid var(--signal);border-radius:42% 55% 50% 45%;opacity:.9}
+  .verdict{display:flex;align-items:flex-end;gap:12px;padding:14px 16px 13px;border-bottom:1px solid var(--border)}
+  .vscore{margin-left:auto;display:flex;align-items:baseline;gap:1px}
+  .vscore b{font-size:23px;font-weight:800;letter-spacing:-.02em}
+  .vscore span{font-size:13px;color:var(--text3);font-weight:600}
+  .vrisk{font-size:23px;font-weight:800;letter-spacing:-.015em;line-height:1;color:var(--mid)}
+  .sec{padding:14px 16px}
+  .sec+.sec{border-top:1px solid var(--border)}
+  .stitle{font-size:16px;font-weight:700;line-height:1.25;color:var(--text)}
+  .sconf{font-size:12.5px;color:var(--text3);margin-top:2px}
+  .sbody{font-size:13.5px;line-height:1.45;color:var(--text2);margin-top:7px}
+  .saction{font-size:15px;font-weight:600;line-height:1.35;color:var(--text)}
+  .meas{padding:11px 16px;background:var(--bg2);border-top:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text3)}
+
+  /* ===== VARIANTE B : label lisible (casse normale) ===== */
+  .b .lbl{font-size:12.5px;font-weight:600;color:var(--text3);margin-bottom:5px;letter-spacing:0}
+  .b .verdict{flex-direction:column;align-items:stretch;gap:0}
+  .b .vtop{display:flex;align-items:flex-end;gap:12px}
+
+  /* ===== VARIANTE C : pictogramme + label ===== */
+  .c .lbl{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--text2);margin-bottom:6px}
+  .c .lbl svg{width:16px;height:16px;color:var(--primary);flex-shrink:0}
+  .c .verdict{flex-direction:column;align-items:stretch;gap:0}
+  .c .vtop{display:flex;align-items:flex-end;gap:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- VARIANTE B -->
+  <div class="col b">
+    <div class="cap">Option B — Label lisible</div>
+    <div class="sub">Casse normale, gris, lisible. Registre Stripe / Linear.</div>
+    <div class="phone"><div class="scr">
+      <div class="ana">
+        <div class="verdict">
+          <div class="lbl">Niveau de risque</div>
+          <div class="vtop"><div class="vrisk">Moyen</div><div class="vscore"><b>45</b><span>/100</span></div></div>
+        </div>
+        <div class="ana-img"></div>
+        <div class="sec">
+          <div class="lbl">Hypothèse principale</div>
+          <div class="stitle">Résidu de nettoyage probable</div>
+          <div class="sconf">Confiance modérée</div>
+          <div class="sbody">Signal compatible avec un film résiduel de nettoyage.</div>
+        </div>
+        <div class="sec">
+          <div class="lbl">Action recommandée</div>
+          <div class="saction">Re-rincer puis recontrôler la zone.</div>
+        </div>
+        <div class="meas">1 zone · 7,0 % de surface · signal moyen</div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- VARIANTE C -->
+  <div class="col c">
+    <div class="cap">Option C — Pictogramme + label</div>
+    <div class="sub">Icône fine pour scanner l'écran d'un coup d'œil. Registre Apple / iOS.</div>
+    <div class="phone"><div class="scr">
+      <div class="ana">
+        <div class="verdict">
+          <div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 4.5-3 7.5-8 9-5-1.5-8-4.5-8-9V7z"/></svg>Niveau de risque</div>
+          <div class="vtop"><div class="vrisk">Moyen</div><div class="vscore"><b>45</b><span>/100</span></div></div>
+        </div>
+        <div class="ana-img"></div>
+        <div class="sec">
+          <div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Hypothèse principale</div>
+          <div class="stitle">Résidu de nettoyage probable</div>
+          <div class="sconf">Confiance modérée</div>
+          <div class="sbody">Signal compatible avec un film résiduel de nettoyage.</div>
+        </div>
+        <div class="sec">
+          <div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>Action recommandée</div>
+          <div class="saction">Re-rincer puis recontrôler la zone.</div>
+        </div>
+        <div class="meas">1 zone · 7,0 % de surface · signal moyen</div>
+      </div>
+    </div></div>
+  </div>
+
+</div>
+</body>
+</html>

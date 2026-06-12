@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens — Rapport V194 (profondeur restaurée)</title>
+<style>
+  :root{
+    --primary:#0F3D4E; --signal:#B54A2A;
+    --ink-primary:#0C0E13; --ink-secondary:#3A4150; --ink-tertiary:#6B7280; --ink-dim:#969CAB;
+    --bg-page:#F4F6F8; --surface:#FFFFFF; --surface-soft:#FAFBFC;
+    --border:#E2E5EA; --hairline:rgba(12,14,19,0.07);
+    --shadow:0 1px 2px rgba(12,14,19,.04), 0 4px 18px rgba(12,14,19,.06);
+    --risk-low:#2E7D32; --risk-mid:#B7791F; --risk-high:#B42318;
+    --teal:#0E8C84;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#E4E7EC;font-family:var(--font);color:var(--ink-primary);-webkit-font-smoothing:antialiased;padding:30px 24px;display:flex;justify-content:center;gap:30px}
+  .phone{width:390px;background:var(--bg-page);border:1px solid #DDE1E6;border-radius:30px;overflow:hidden;box-shadow:0 18px 50px rgba(17,24,39,.15);display:flex;flex-direction:column;flex-shrink:0}
+  .phone-frame-cap{text-align:center;font-size:11px;color:#9aa3af;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+
+  /* Header */
+  .hdr{display:flex;align-items:center;gap:9px;padding:13px 17px 12px;background:#fff;border-bottom:1px solid var(--hairline);flex-shrink:0}
+  .hdr svg.mark{width:26px;height:26px;flex-shrink:0}
+  .hdr .lockup{display:flex;flex-direction:column;gap:1px}
+  .hdr .wm{font-weight:800;font-size:17px;color:var(--primary);letter-spacing:-.01em;line-height:1}
+  .hdr .tag{font-size:8px;font-weight:700;letter-spacing:.11em;color:var(--ink-tertiary);text-transform:uppercase}
+
+  /* Scrollable content */
+  .scr{padding:12px 14px 16px;display:flex;flex-direction:column;gap:9px}
+
+  /* ─── Bloc Verdict ─── */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:13px;box-shadow:var(--shadow)}
+  .verdict{padding:14px 16px 16px}
+  .verdict-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+  .verdict-top .lbl{font-size:12px;font-weight:600;color:var(--ink-tertiary)}
+  .verdict-top .score-num{font-size:26px;font-weight:800;color:var(--risk-high);line-height:1}
+  .verdict-top .score-suffix{font-size:13px;color:var(--ink-tertiary);font-weight:600}
+  .gauge{position:relative;height:9px;border-radius:5px;background:linear-gradient(90deg,rgba(46,125,50,0.45) 0%,rgba(46,125,50,0.45) 33.33%,rgba(232,165,69,0.55) 33.33%,rgba(232,165,69,0.55) 66.66%,rgba(180,35,24,0.50) 66.66%,rgba(180,35,24,0.50) 100%);margin-bottom:9px}
+  .gauge-marker{position:absolute;top:50%;left:78%;transform:translate(-50%,-50%);width:20px;height:20px;border-radius:50%;background:var(--risk-high);border:4px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.3);z-index:2}
+  .gauge-labels{display:flex;justify-content:space-between;font-size:10.5px;font-weight:600;color:var(--ink-tertiary);padding:0 2px}
+  .gauge-labels span.on{color:var(--risk-high);font-weight:700}
+
+  /* ─── Contexte d'inspection (NOUVEAU : montre les 8 dimensions activées) ─── */
+  .context-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;padding-top:13px;border-top:1px solid var(--hairline)}
+  .context-cell{display:flex;flex-direction:column;gap:2px}
+  .context-cell .l{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-tertiary)}
+  .context-cell .v{font-size:12px;font-weight:600;color:var(--ink-primary)}
+
+  /* ─── Image ─── */
+  .image-card{padding:0;overflow:hidden}
+  .image-toggle{display:flex;justify-content:center;padding:9px 12px 7px}
+  .image-seg{display:inline-flex;background:#EFF0F3;border-radius:8px;padding:2px}
+  .image-seg-btn{padding:4px 11px;font-size:11.5px;font-weight:500;color:var(--ink-tertiary);background:transparent;border:0;border-radius:6px;cursor:pointer}
+  .image-seg-btn.active{background:#fff;color:var(--ink-primary);font-weight:600;box-shadow:0 0.5px 2px rgba(0,0,0,.08)}
+  .image-wrap{position:relative;height:170px;background:#0a1119;overflow:hidden}
+  .image-wrap svg{position:absolute;inset:0;width:100%;height:100%}
+
+  /* ─── Analyse (3 sections séparées) ─── */
+  .sec{padding:13px 15px}
+  .sec-head{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+  .sec-ico{width:14px;height:14px;flex-shrink:0}
+  .sec-title{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-secondary)}
+  .sec-main{font-size:18px;font-weight:800;line-height:1.22;margin-bottom:5px;color:var(--risk-high)}
+  .sec-body{font-size:13px;color:var(--ink-secondary);line-height:1.45}
+  .sec-body b{color:var(--ink-primary);font-weight:700}
+  .sec-foot{font-size:11.5px;color:var(--ink-tertiary);line-height:1.45;margin-top:7px}
+  .sec-risque{position:relative;padding-left:18px}
+  .sec-risque::before{content:'';position:absolute;left:0;top:13px;bottom:13px;width:3px;background:var(--risk-high);border-radius:2px}
+
+  /* ─── Tableau Synthèse des zones ─── */
+  .deep{padding:13px 15px}
+  .deep-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .deep-title{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-secondary)}
+  .deep-badge{font-size:11px;font-weight:700;background:var(--ink-tertiary);color:#fff;padding:2px 8px;border-radius:10px;min-width:22px;text-align:center}
+  .ztable{width:100%;border-collapse:collapse;font-size:12.5px}
+  .ztable th{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-tertiary);text-align:left;padding:6px 4px;border-bottom:1px solid var(--hairline)}
+  .ztable td{padding:9px 4px;border-bottom:1px solid var(--hairline)}
+  .ztable tr:last-child td{border-bottom:0}
+  .ztable .cat-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+  .ztable .num{text-align:center}
+  .ztable .int{text-align:center}
+  .int-bagde{display:inline-block;padding:2px 8px;border-radius:100px;font-size:10.5px;font-weight:700}
+  .int-strong{background:rgba(180,35,24,.12);color:var(--risk-high)}
+  .int-mid{background:rgba(183,121,31,.12);color:var(--risk-mid)}
+  .int-low{background:rgba(46,125,50,.12);color:var(--risk-low)}
+
+  /* ─── Détails repliables ─── */
+  details.card-collapse{padding:0}
+  details.card-collapse > summary{padding:13px 15px;list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-secondary)}
+  details.card-collapse > summary::-webkit-details-marker{display:none}
+  details.card-collapse > summary .left{display:flex;align-items:center;gap:7px}
+  details.card-collapse > summary .left svg{width:14px;height:14px}
+  details.card-collapse > summary .chev{transition:transform .2s;color:var(--ink-tertiary)}
+  details[open].card-collapse > summary .chev{transform:rotate(180deg)}
+  details.card-collapse .collapse-body{padding:0 15px 13px;border-top:1px solid var(--hairline);padding-top:11px}
+
+  /* Définition list pour le raisonnement complet */
+  dl.reasoning{margin:0}
+  dl.reasoning dt{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-tertiary);margin-top:11px}
+  dl.reasoning dt:first-child{margin-top:0}
+  dl.reasoning dd{font-size:13px;color:var(--ink-secondary);line-height:1.45;margin:3px 0 0}
+  dl.reasoning dd b{color:var(--ink-primary);font-weight:700}
+
+  /* Référentiels HACCP */
+  .frameworks{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:9px}
+  .framework{background:rgba(14,140,132,.10);color:var(--teal);padding:4px 10px;border-radius:100px;font-size:11px;font-weight:700;border:1px solid rgba(14,140,132,.20)}
+
+  /* Point de vigilance */
+  .vigilance{background:rgba(232,165,69,.10);border:1px solid rgba(232,165,69,.30);border-left:3px solid var(--risk-mid);border-radius:8px;padding:11px 13px;display:flex;align-items:flex-start;gap:8px;font-size:12.5px;line-height:1.4;color:var(--ink-secondary)}
+  .vigilance svg{flex-shrink:0;color:var(--risk-mid);margin-top:1px}
+
+  /* Verif metrics */
+  .verif-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .verif-cell{background:var(--surface-soft);border:1px solid var(--hairline);border-radius:7px;padding:7px 9px}
+  .verif-cell .l{font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-tertiary)}
+  .verif-cell .v{font-size:13px;font-weight:600;color:var(--ink-primary);margin-top:1px}
+
+  /* Boutons */
+  .actions{display:flex;gap:10px;padding:0 14px 14px;margin-top:6px}
+  .btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:46px;border-radius:11px;font-size:14px;font-weight:600;border:1px solid transparent;cursor:pointer}
+  .btn-p{background:var(--primary);color:#fff}
+  .btn-s{background:#fff;color:var(--primary);border-color:var(--border)}
+  .btn svg{width:14px;height:14px}
+
+  /* Légende explicative à droite */
+  .legend-panel{width:400px;background:#fff;border-radius:14px;padding:24px;font-size:13px;line-height:1.55;color:var(--ink-secondary);height:fit-content;position:sticky;top:30px}
+  .legend-panel h2{font-size:16px;font-weight:800;color:var(--ink-primary);margin-bottom:8px}
+  .legend-panel h3{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-tertiary);font-weight:700;margin:16px 0 6px;border-top:1px solid var(--hairline);padding-top:12px}
+  .legend-panel h3:first-of-type{border-top:0;padding-top:0;margin-top:14px}
+  .legend-panel ul{list-style:none;padding:0;margin:0}
+  .legend-panel li{padding:3px 0 3px 16px;position:relative;font-size:12.5px}
+  .legend-panel li::before{content:'•';position:absolute;left:4px;color:var(--ink-tertiary)}
+  .legend-panel .scen{background:var(--surface-soft);border-left:3px solid var(--teal);padding:9px 11px;font-size:12px;margin:8px 0;border-radius:0 7px 7px 0;color:var(--ink-primary)}
+  .legend-panel code{background:#F0EFFC;padding:1px 5px;border-radius:3px;font-size:11.5px;color:#5E2EA0}
+</style>
+</head>
+<body>
+
+<div>
+  <div class="phone-frame-cap">V194 — Profondeur restaurée (rapport complet)</div>
+  <div class="phone">
+
+    <!-- Header LUCENS -->
+    <div class="hdr">
+      <svg class="mark" viewBox="0 0 96 96" fill="none"><g stroke="#0F3D4E" stroke-width="7" stroke-linecap="square"><path d="M0 24 V0 H24"/><path d="M72 0 H96 V24"/><path d="M96 72 V96 H72"/><path d="M24 96 H0 V72"/><circle cx="48" cy="48" r="20" stroke-width="4.5"/></g><circle cx="48" cy="48" r="8.5" fill="#B54A2A"/></svg>
+      <div class="lockup"><span class="wm">LUCENS</span><span class="tag">Résidus · Biofilms · Contaminants</span></div>
+    </div>
+
+    <div class="scr">
+
+      <!-- ═══ 1. VERDICT principal (niveau de risque + score + jauge + CONTEXTE d'inspection) ═══ -->
+      <div class="card verdict">
+        <div class="verdict-top">
+          <span class="lbl">Niveau de risque</span>
+          <span><span class="score-num">78</span><span class="score-suffix">/100</span></span>
+        </div>
+        <div class="gauge"><div class="gauge-marker"></div></div>
+        <div class="gauge-labels">
+          <span>Faible</span>
+          <span>Modéré</span>
+          <span class="on">Élevé</span>
+        </div>
+        <!-- NOUVEAU : on AFFICHE les dimensions activées (donnent le contexte du score) -->
+        <div class="context-row">
+          <div class="context-cell"><span class="l">Surface</span><span class="v">Plan de travail · food contact</span></div>
+          <div class="context-cell"><span class="l">Secteur</span><span class="v">Restauration</span></div>
+          <div class="context-cell"><span class="l">Moment</span><span class="v">Après nettoyage</span></div>
+          <div class="context-cell"><span class="l">Photo</span><span class="v">Bonne qualité</span></div>
+        </div>
+      </div>
+
+      <!-- ═══ 2. IMAGE avec toggle ═══ -->
+      <div class="card image-card">
+        <div class="image-toggle">
+          <div class="image-seg">
+            <button class="image-seg-btn active">Avec carto</button>
+            <button class="image-seg-btn">Source</button>
+          </div>
+        </div>
+        <div class="image-wrap">
+          <svg viewBox="0 0 380 170" preserveAspectRatio="none">
+            <defs><filter id="g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter></defs>
+            <g filter="url(#g)" fill="#5fb9e8"><ellipse cx="120" cy="80" rx="48" ry="30" opacity=".5"/><ellipse cx="260" cy="100" rx="32" ry="22" opacity=".45"/></g>
+            <rect x="78" y="50" width="84" height="60" rx="10" fill="none" stroke="#E06A3A" stroke-width="2.4"/>
+            <rect x="228" y="78" width="64" height="44" rx="10" fill="none" stroke="#E06A3A" stroke-width="2.4"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- ═══ 3. ORIGINE PROBABLE ═══ -->
+      <div class="card sec">
+        <div class="sec-head">
+          <svg class="sec-ico" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <span class="sec-title">Origine probable</span>
+        </div>
+        <div class="sec-main">Résidu de produit de nettoyage</div>
+        <div class="sec-body">Détergent ou désinfectant insuffisamment rincé après le nettoyage de fin de service.</div>
+      </div>
+
+      <!-- ═══ 4. RISQUE ASSOCIÉ ═══ -->
+      <div class="card sec sec-risque">
+        <div class="sec-head">
+          <svg class="sec-ico" viewBox="0 0 24 24" fill="none" stroke="var(--risk-high)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span class="sec-title">Risque associé</span>
+        </div>
+        <div class="sec-body"><b>Contamination croisée critique</b> : la surface est en contact direct avec les aliments. Le résidu de nettoyant se transfère aux denrées (préparation, dressage) ou via les ustensiles. Ingestion possible, réaction allergique chez les clients sensibles.</div>
+      </div>
+
+      <!-- ═══ 5. ACTION RECOMMANDÉE ═══ -->
+      <div class="card sec">
+        <div class="sec-head">
+          <svg class="sec-ico" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+          <span class="sec-title">Action recommandée</span>
+        </div>
+        <div class="sec-main" style="font-size:15px;color:var(--ink-primary)">Re-rincer abondamment à l'eau claire, puis revérifier sous UV avant remise en service.</div>
+        <div class="sec-foot">En cas de doute, confirmer par prélèvement de surface (ATP-mètre ou laboratoire microbiologique).</div>
+      </div>
+
+      <!-- ═══ 6. SYNTHÈSE DES ZONES DÉTECTÉES (table) ═══ -->
+      <div class="card deep">
+        <div class="deep-head">
+          <span class="deep-title">Synthèse des zones détectées</span>
+          <span class="deep-badge">2</span>
+        </div>
+        <table class="ztable">
+          <thead><tr><th>Catégorie</th><th class="num">Zones</th><th class="num">Surface</th><th class="int">Intensité</th></tr></thead>
+          <tbody>
+            <tr><td><span class="cat-dot" style="background:#38BDF8"></span>Chimique</td><td class="num">2</td><td class="num">8.4 %</td><td class="int"><span class="int-bagde int-strong">Forte</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ═══ 7. VERDICT DÉTAILLÉ PAR ZONE (collapsible) ═══ -->
+      <details class="card card-collapse">
+        <summary>
+          <span class="left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink-secondary)" stroke-width="2" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            Verdict détaillé par zone <span class="deep-badge" style="background:var(--teal);margin-left:4px">2</span>
+          </span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <div class="collapse-body">
+          <dl class="reasoning">
+            <dt>Zone 1 — Centre-gauche</dt>
+            <dd><b>Chimique</b> · Intensité forte · Surface 5.8 % · Confiance 0.82 · Signature azurants compatible avec détergent commercial</dd>
+            <dt>Zone 2 — Droite</dt>
+            <dd><b>Chimique</b> · Intensité forte · Surface 2.6 % · Confiance 0.78 · Forme uniforme, signature similaire à Zone 1</dd>
+          </dl>
+        </div>
+      </details>
+
+      <!-- ═══ 8. VOIR LE RAISONNEMENT COMPLET (collapsible) ═══ -->
+      <details class="card card-collapse">
+        <summary>
+          <span class="left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.9.8 1.5 1.8 1.5 2.8V18h5v-.5c0-1 .6-2 1.5-2.8A7 7 0 0 0 12 2z"/></svg>
+            Voir le raisonnement complet
+          </span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <div class="collapse-body">
+          <dl class="reasoning">
+            <dt>Logique de la surface</dt>
+            <dd>Plan de travail food-contact, après nettoyage de fin de service : tolérance ZÉRO sur les résidus chimiques (Codex CXC 1-1969 §5.2).</dd>
+            <dt>Logique du risque</dt>
+            <dd>2 zones distinctes de forte intensité, signature azurants : profil typique d'un rinçage incomplet (savon ou détergent commercial). En food-contact post-nettoyage = non-conformité directe.</dd>
+            <dt>Ce que la fluorescence suggère</dt>
+            <dd>Présence d'azurants optiques (additifs courants des nettoyants). La géométrie uniforme des zones renforce l'hypothèse résidu de nettoyant (vs résidu alimentaire qui aurait des formes plus irrégulières).</dd>
+            <dt>Ce qu'elle ne prouve pas</dt>
+            <dd>La nature exacte du nettoyant (chlore, ammonium quaternaire, savon doux) — seule une analyse chimique ciblée le confirmerait.</dd>
+            <dt>Suivi recommandé</dt>
+            <dd>Après re-rinçage, refaire un cliché UV : si signal résiduel persistant → contrôler le protocole de rinçage (volume d'eau, durée, séchage).</dd>
+          </dl>
+        </div>
+      </details>
+
+      <!-- ═══ 9. POINT DE VIGILANCE (artefact possible) ═══ -->
+      <div class="card" style="padding:13px 15px">
+        <div class="sec-head" style="margin-bottom:9px">
+          <svg class="sec-ico" viewBox="0 0 24 24" fill="none" stroke="var(--risk-mid)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span class="sec-title">Point de vigilance</span>
+        </div>
+        <div class="vigilance">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+          <span>Reflet métallique possible sur la zone centre-gauche. Si la surface est en inox brillant, faire un second cliché en biais de la lampe UV pour distinguer fluorescence réelle vs reflet.</span>
+        </div>
+      </div>
+
+      <!-- ═══ 10. RÉFÉRENTIELS HACCP APPLICABLES ═══ -->
+      <div class="card" style="padding:13px 15px">
+        <div class="sec-head" style="margin-bottom:9px">
+          <svg class="sec-ico" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span class="sec-title">Référentiels HACCP applicables</span>
+        </div>
+        <div class="frameworks">
+          <span class="framework">Codex CXC 1-1969 §5.2</span>
+          <span class="framework">ISO 22000:2018 §8.2</span>
+          <span class="framework">CEE 852/2004 Annexe II</span>
+        </div>
+        <div class="sec-foot">Ces référentiels imposent un contrôle visuel post-nettoyage sur surfaces food-contact. La présence de résidu chimique constitue une non-conformité documentable en audit.</div>
+      </div>
+
+      <!-- ═══ 11. CONTRÔLE DE DÉTECTION (collapsible — pour audit/expert) ═══ -->
+      <details class="card card-collapse">
+        <summary>
+          <span class="left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c1.66 0 3.22.45 4.56 1.24"/></svg>
+            Contrôle de détection
+          </span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <div class="collapse-body">
+          <div class="verif-grid">
+            <div class="verif-cell"><div class="l">Cellules initiales</div><div class="v">147</div></div>
+            <div class="verif-cell"><div class="l">Après filtre substrat</div><div class="v">128</div></div>
+            <div class="verif-cell"><div class="l">Après nettoyage morpho</div><div class="v">118</div></div>
+            <div class="verif-cell"><div class="l">Après croissance</div><div class="v">132</div></div>
+            <div class="verif-cell"><div class="l">Couverture finale</div><div class="v">8.4 %</div></div>
+            <div class="verif-cell"><div class="l">Qualité photo</div><div class="v">Bonne (94/100)</div></div>
+          </div>
+        </div>
+      </details>
+
+    </div>
+
+    <!-- Boutons -->
+    <div class="actions">
+      <button class="btn btn-p"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Générer le rapport</button>
+      <button class="btn btn-s"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v4h4"/></svg>Nouvelle analyse</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Panneau explicatif -->
+<div class="legend-panel">
+  <h2>Scénario démontré</h2>
+  <div class="scen">
+    Inspection cuisine restaurant · plan de travail food-contact · après le nettoyage de fin de service · détergent insuffisamment rincé · 2 zones forte intensité · score 78/100 ÉLEVÉ
+  </div>
+
+  <h3>Les 8 dimensions actives sur ce verdict</h3>
+  <ul>
+    <li><b>Famille</b> : chimique (azurants)</li>
+    <li><b>Surface</b> : <code>food_contact</code></li>
+    <li><b>Secteur</b> : restauration</li>
+    <li><b>Moment</b> : après nettoyage</li>
+    <li><b>Rôle utilisateur</b> : responsable</li>
+    <li><b>Intensité</b> : forte</li>
+    <li><b>Zones</b> : 2</li>
+    <li><b>Analysabilité</b> : analysable (photo bonne)</li>
+  </ul>
+  <p style="margin-top:8px;font-size:12px">Le même signal bleu serait classé <b>faible</b> en <code>low_risk</code> + routine, et <b>très élevé</b> en hôpital + zone critique. Cette page le montre.</p>
+
+  <h3>Couches d'information (du coup d'œil à l'expert)</h3>
+  <ul>
+    <li><b>1-5</b> Coup d'œil (3 secondes) — niveau, image, Origine/Risque/Action</li>
+    <li><b>6</b> Synthèse zones — tableau direct</li>
+    <li><b>7-8</b> Détail par zone + raisonnement — repliable (mode auditeur)</li>
+    <li><b>9-10</b> Vigilance + HACCP — toujours visible (impose documentation)</li>
+    <li><b>11</b> Contrôle de détection — repliable (mode expert)</li>
+  </ul>
+
+  <h3>Différences vs V193</h3>
+  <ul>
+    <li>Le <b>bloc Verdict</b> affiche désormais les <b>4 dimensions de contexte</b> qui justifient le score</li>
+    <li><b>Tableau zones</b>, <b>Verdict par zone</b>, <b>Raisonnement</b>, <b>Référentiels HACCP</b>, <b>Vigilance</b>, <b>Contrôle de détection</b> — tous présents</li>
+    <li>Hiérarchie : coup d'œil en haut, détail dépliable en bas — chacun trouve son niveau</li>
+  </ul>
+
+  <p style="margin-top:14px;color:var(--ink-tertiary);font-size:11px">Mockup statique pour validation. Si OK, je l'intègre dans <code>index.html</code> en remplaçant la V194 actuelle (qui restaure la profondeur mais sans bloc Contexte d'inspection ni styling des cartes "Vigilance/HACCP").</p>
+</div>
+
+</body>
+</html>

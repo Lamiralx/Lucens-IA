@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens — Accueil redesign (proposition)</title>
+<style>
+  :root{
+    --primary:#0F3D4E; --ink:#111827; --ink2:#4B5563; --ink3:#6B7280;
+    --bg:#FFFFFF; --bg2:#F7F8FA; --border:#E6E8EC; --hair:#EFF1F4;
+    --low:#2E7D32; --mid:#B7791F; --hi:#B42318;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EAEDF1;font-family:var(--font);color:var(--ink);-webkit-font-smoothing:antialiased;padding:30px 22px 56px}
+  .wrap{display:flex;gap:40px;justify-content:center;align-items:flex-start;flex-wrap:wrap;max-width:980px;margin:0 auto}
+  .col{display:flex;flex-direction:column;align-items:center;gap:12px}
+  .cap{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#9aa3af}
+  .phone{width:390px;height:822px;background:#fff;border:1px solid #DBDFE4;border-radius:32px;overflow:hidden;box-shadow:0 20px 54px rgba(17,24,39,.15);position:relative;display:flex;flex-direction:column}
+
+  /* ─── Barre de nav CENTRÉE (sensation app, pas page web) ─── */
+  .nav{height:56px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--hair);flex-shrink:0;position:relative}
+  .nav .wm{display:flex;align-items:center;gap:8px;font-weight:800;font-size:17px;letter-spacing:.01em;color:var(--primary)}
+  .nav .mark{width:21px;height:21px;flex-shrink:0}
+  .nav .back{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:var(--ink2)}
+  .nav .back svg{width:21px;height:21px}
+  .nav .title{font-weight:800;font-size:17px;letter-spacing:-.01em}
+
+  .body{flex:1;display:flex;flex-direction:column;padding:18px 17px 0;gap:15px;min-height:0}
+
+  /* Actions (couleurs PLEINES, zéro dégradé) */
+  .acts{display:flex;flex-direction:column;gap:11px;flex-shrink:0}
+  .btn{height:58px;border-radius:15px;display:flex;align-items:center;justify-content:center;gap:9px;font-size:16px;font-weight:700;border:1.5px solid transparent}
+  .btn svg{width:20px;height:20px}
+  .btn-p{background:var(--primary);color:#fff}
+  .btn-s{background:#fff;color:var(--primary);border-color:#CBD5E1}
+
+  /* Section "Dernières inspections" — ÉLARGIE et DOMINANTE */
+  .sechead{display:flex;align-items:baseline;justify-content:space-between;padding:0 2px;flex-shrink:0}
+  .sechead .t{font-size:15.5px;font-weight:700}
+  .sechead .a{font-size:13px;font-weight:600;color:var(--primary)}
+  .insp{background:#fff;border:1px solid var(--border);border-radius:18px;overflow:hidden;flex:1;min-height:0;display:flex;flex-direction:column}
+  .irow{display:flex;align-items:center;gap:13px;padding:14px 15px;flex:1}
+  .irow+.irow{border-top:1px solid var(--hair)}
+  .ithumb{width:52px;height:52px;border-radius:13px;background:#0c1825;flex-shrink:0;position:relative;overflow:hidden;border:1px solid #102234}
+  .ithumb .spot{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;background:#5cb6e8}
+  .imeta{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+  .iname{font-size:15px;font-weight:700;letter-spacing:-.01em}
+  .isub{font-size:12.5px;color:var(--ink3)}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;padding:5px 11px 5px 9px;border-radius:999px;text-transform:uppercase;white-space:nowrap;letter-spacing:.02em}
+  .pill .pd{width:7px;height:7px;border-radius:50%}
+  .pill-hi{color:var(--hi);background:#FBEAE8}.pill-hi .pd{background:var(--hi)}
+  .pill-mid{color:var(--mid);background:#FBF3E3}.pill-mid .pd{background:var(--mid)}
+  .pill-low{color:var(--low);background:#E8F2E9}.pill-low .pd{background:var(--low)}
+
+  /* "En savoir plus" — UNE seule ligne premium → page dédiée */
+  .more{display:flex;align-items:center;gap:13px;padding:15px 16px;background:#fff;border:1px solid var(--border);border-radius:16px;flex-shrink:0;margin-bottom:14px}
+  .more .ic{width:38px;height:38px;border-radius:11px;background:var(--bg2);display:flex;align-items:center;justify-content:center;color:var(--primary);flex-shrink:0}
+  .more .ic svg{width:20px;height:20px}
+  .more .ml{flex:1;min-width:0}
+  .more .mt{font-size:15px;font-weight:700}
+  .more .ms{font-size:12.5px;color:var(--ink3);margin-top:1px}
+  .more .chev{color:#C2C9D2;font-size:20px}
+
+  /* Barre du bas (teal plein, conservée) */
+  .tab{height:74px;background:var(--primary);display:flex;align-items:flex-start;justify-content:space-around;padding-top:11px;flex-shrink:0}
+  .tabi{display:flex;flex-direction:column;align-items:center;gap:4px;color:rgba(255,255,255,.78)}
+  .tabi svg{width:21px;height:21px}
+  .tabi span{font-size:11px;font-weight:600}
+
+  /* ─── Page "En savoir plus" : zones dédiées ─── */
+  .page{flex:1;display:flex;flex-direction:column;padding:18px 17px 0;gap:13px;background:var(--bg2);min-height:0}
+  .topic{background:#fff;border:1px solid var(--border);border-radius:18px;padding:17px 17px;display:flex;align-items:flex-start;gap:14px}
+  .topic .tic{width:44px;height:44px;border-radius:13px;background:#F0F4F5;display:flex;align-items:center;justify-content:center;color:var(--primary);flex-shrink:0}
+  .topic .tic svg{width:23px;height:23px}
+  .topic .tx{flex:1;min-width:0}
+  .topic .tt{font-size:16px;font-weight:800;letter-spacing:-.01em}
+  .topic .td{font-size:13px;line-height:1.45;color:var(--ink2);margin-top:4px}
+  .topic .tchev{color:#C2C9D2;font-size:22px;align-self:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ACCUEIL -->
+  <div class="col">
+    <div class="cap">Accueil — épuré, premium, app</div>
+    <div class="phone">
+      <div class="nav"><span class="wm"><svg class="mark" viewBox="0 0 96 96" fill="none"><g stroke="#0F3D4E" stroke-width="8" stroke-linecap="square"><path d="M0 26 V0 H26"/><path d="M70 0 H96 V26"/><path d="M96 70 V96 H70"/><path d="M26 96 H0 V70"/><circle cx="48" cy="48" r="20" stroke-width="5"/></g><circle cx="48" cy="48" r="8.5" fill="#B54A2A"/></svg>LUCENS</span></div>
+      <div class="body">
+        <div class="acts">
+          <div class="btn btn-p"><svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.5" cy="9.5" r="6"/><path d="M14 14l5 5"/></svg>Analyser en direct</div>
+          <div class="btn btn-s"><svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15l4-4 3 3 4-5 3 4"/><rect x="3" y="4" width="16" height="14" rx="2"/></svg>Importer une image</div>
+        </div>
+        <div class="sechead"><span class="t">Dernières inspections</span><span class="a">Tout voir</span></div>
+        <div class="insp">
+          <div class="irow"><div class="ithumb"><span class="spot"></span></div><div class="imeta"><span class="iname">Plan de travail</span><span class="isub">cuisine · il y a 2 h · 5 zones</span></div><span class="pill pill-hi"><span class="pd"></span>Élevé</span></div>
+          <div class="irow"><div class="ithumb"><span class="spot"></span></div><div class="imeta"><span class="iname">Chambre froide</span><span class="isub">stockage · hier · 2 zones</span></div><span class="pill pill-mid"><span class="pd"></span>Moyen</span></div>
+          <div class="irow"><div class="ithumb"><span class="spot"></span></div><div class="imeta"><span class="iname">Trancheuse</span><span class="isub">découpe · hier · aucune zone</span></div><span class="pill pill-low"><span class="pd"></span>Faible</span></div>
+        </div>
+        <div class="more"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-5M12 8h.01"/></svg></span><div class="ml"><div class="mt">En savoir plus</div><div class="ms">Pourquoi Lucens · Comment ça marche · Précautions</div></div><span class="chev">›</span></div>
+      </div>
+      <div class="tab">
+        <div class="tabi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v4h4"/><path d="M12 7.5V12l3.2 1.9"/></svg><span>Historique</span></div>
+        <div class="tabi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg><span>Contexte</span></div>
+        <div class="tabi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Réglages</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE EN SAVOIR PLUS -->
+  <div class="col">
+    <div class="cap">Page « En savoir plus » — zones dédiées</div>
+    <div class="phone">
+      <div class="nav"><span class="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></span><span class="title">En savoir plus</span></div>
+      <div class="page">
+        <div class="topic"><span class="tic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span><div class="tx"><div class="tt">Pourquoi Lucens IA</div><div class="td">Ce que révèle l'UV-A 365 nm : biofilms, résidus organiques, traces chimiques invisibles à l'œil nu.</div></div><span class="tchev">›</span></div>
+        <div class="topic"><span class="tic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span><div class="tx"><div class="tt">Comment ça marche</div><div class="td">Cadrer, analyser, lire le verdict en 3 secondes. Calibration adaptée à votre éclairage.</div></div><span class="tchev">›</span></div>
+        <div class="topic"><span class="tic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></span><div class="tx"><div class="tt">Précautions d'usage</div><div class="td">Indice fluorescent ≠ preuve. Confirmation ATP/labo en cas de doute. Limites de l'inspection visuelle.</div></div><span class="tchev">›</span></div>
+      </div>
+      <div class="tab">
+        <div class="tabi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v4h4"/><path d="M12 7.5V12l3.2 1.9"/></svg><span>Historique</span></div>
+        <div class="tabi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg><span>Contexte</span></div>
+        <div class="tabi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Réglages</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup v3 — L'attente = le rapport en train de naître (V271)</title>
+<style>
+:root{
+  --accent:#0F3D4E; --accent-hi:#0A2C39;
+  --ink-primary:#111827; --ink-secondary:#4B5563; --ink-tertiary:#6B7280; --ink-dim:#9CA3AF;
+  --surface-page:#FFFFFF; --surface-mid:#F7F8FA; --surface-hi:#FFFFFF;
+  --border:#E5E7EB; --border-hi:#D1D5DB;
+  --risk-hi:#B42318; --risk-hi-soft:rgba(180,35,24,.08); --risk-hi-edge:rgba(180,35,24,.28);
+  --risk-mid:#B7791F; --lucens-signature:#B54A2A;
+  --font-body:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+}
+.dark{
+  --accent:#5AA6BC; --accent-hi:#7FBCCD;
+  --ink-primary:#F3F4F6; --ink-secondary:#C7CBD1; --ink-tertiary:#9CA3AF; --ink-dim:#6B7280;
+  --surface-page:#06070A; --surface-mid:#14161C; --surface-hi:#0E1014;
+  --border:#252A33; --border-hi:#333A45;
+  --risk-hi:#E85A4A; --risk-hi-soft:rgba(232,90,74,.10); --risk-hi-edge:rgba(232,90,74,.32);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#E8EAEE;font-family:var(--font-body);padding:24px;color:#111827}
+h1{font-size:18px;font-weight:700;margin-bottom:4px}
+.sub{font-size:13px;color:#4B5563;margin-bottom:20px;max-width:1020px;line-height:1.5}
+.toggle{position:fixed;top:16px;right:16px;z-index:10;height:40px;padding:0 16px;border-radius:12px;
+  border:1px solid #D1D5DB;background:#fff;font:600 13px var(--font-body);cursor:pointer}
+.row{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;margin-bottom:28px}
+.col{display:flex;flex-direction:column;gap:10px}
+.lbl{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#4B5563}
+.notes{width:390px;font-size:12px;line-height:1.55;color:#374151;background:#fff;border:1px solid #D1D5DB;border-radius:12px;padding:12px 14px}
+.notes b{color:#111827}
+.notes li{margin:0 0 6px 16px}
+
+/* photo UV simulée */
+.uv{background:#0e1117;background-image:
+  radial-gradient(circle at 58% 42%, rgba(120,210,255,.92) 0%, rgba(120,210,255,0) 34%),
+  radial-gradient(circle at 30% 70%, rgba(150,255,180,.5) 0%, rgba(150,255,180,0) 22%)}
+
+/* ═══ PORTRAIT 390×760 ═══ */
+.phone{width:390px;height:760px;border-radius:28px;overflow:hidden;border:1px solid #C5C9D0;
+  background:var(--surface-page);display:flex;flex-direction:column;padding:0 16px;box-shadow:0 12px 32px rgba(0,0,0,.10)}
+.brand{display:flex;flex-direction:column;align-items:center;gap:5px;padding:46px 0 22px;text-align:center}
+.wordmark{font-weight:800;font-size:23px;letter-spacing:-0.01em;line-height:1;color:var(--accent)}
+.wordmark::after{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;
+  background:var(--lucens-signature);margin-left:5px;vertical-align:.16em}
+.tagline{font-weight:600;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-tertiary)}
+.instr{background:var(--surface-hi);border:1px solid var(--border);border-radius:16px;overflow:hidden;
+  display:flex;flex-direction:column}
+.instr .img{height:200px;width:100%}
+.instr .ctx{padding:12px 16px;display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+  border-bottom:1px solid var(--border)}
+.instr .zone{font-size:14px;font-weight:600;color:var(--ink-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.instr .moment{font-size:12px;font-weight:500;color:var(--ink-tertiary);flex-shrink:0}
+.instr .prog{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.bar{height:4px;background:var(--border);border-radius:999px;overflow:hidden}
+.bar i{display:block;height:100%;width:54%;background:var(--accent);border-radius:999px;transition:width .6s}
+.etape{font-size:12px;font-weight:500;color:var(--ink-tertiary);font-variant-numeric:tabular-nums}
+.step{font-size:18px;font-weight:700;letter-spacing:-0.01em;line-height:1.3;color:var(--ink-primary)}
+.brief{margin-top:12px;background:var(--surface-mid);border:1px solid var(--border);border-radius:12px;padding:14px}
+.brief .e{font-size:10px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:var(--ink-tertiary);margin-bottom:6px}
+.brief .t{font-size:14px;font-weight:400;line-height:1.5;color:var(--ink-secondary)}
+.cancel{margin-top:auto;margin-bottom:20px;height:46px;border-radius:12px;flex-shrink:0;
+  background:var(--surface-hi);border:1px solid var(--border);color:var(--ink-secondary);
+  font:600 14px var(--font-body);display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.cancel svg{width:20px;height:20px}
+
+/* ═══ PAYSAGE 667×375 ═══ */
+.land{width:667px;height:375px;border-radius:22px;overflow:hidden;border:1px solid #C5C9D0;
+  background:var(--surface-page);display:grid;grid-template-columns:45% 1fr;column-gap:16px;
+  padding:16px;box-shadow:0 12px 32px rgba(0,0,0,.10)}
+.land .instr{height:100%}
+.land .instr .img{flex:1;min-height:0;height:auto}
+.land .right{display:flex;flex-direction:column;min-height:0}
+.land .brand{padding:2px 0 12px}
+.land .wordmark{font-size:20px}
+.land .prog2{background:var(--surface-hi);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+  display:flex;flex-direction:column;gap:9px}
+.land .step{font-size:16px}
+.land .brief{margin-top:10px;padding:11px 14px}
+.land .brief .t{font-size:13px}
+.land .cancel{margin-bottom:0;height:42px;font-size:13px}
+</style>
+</head>
+<body>
+<button class="toggle" onclick="document.querySelectorAll('.phone,.land').forEach(p=>p.classList.toggle('dark'))">☼ / ☾ Basculer le thème</button>
+<h1>V271 v3 — l'attente est le rapport en train de naître</h1>
+<p class="sub">Ligne directrice : <b>chaque élément répond à une question de l'inspecteur</b> —
+« qu'est-ce qui est analysé ? » (la photo, plein cadre, avec zone et moment) ·
+« où en est-on ? » (barre + étape nommée) · « qu'est-ce que j'en tire ? » (un réflexe terrain de son secteur) ·
+« et si je me suis trompé ? » (Annuler). Rien d'autre n'a le droit d'exister sur cet écran.
+La carte instrument reprend l'idiome exact de l'écran Résultats (image en tête, contenu dessous) :
+au rendu, la progression est remplacée <i>in place</i> par le verdict — continuité Live View → attente → rapport.</p>
+
+<div class="row">
+  <div class="col">
+    <div class="lbl">Portrait — 390×760</div>
+    <div class="phone">
+      <div class="brand">
+        <span class="wordmark">LUCENS</span>
+        <span class="tagline">Résidus · Biofilms · Contaminants</span>
+      </div>
+      <div class="instr" role="status" aria-live="polite">
+        <div class="img uv"></div>
+        <div class="ctx">
+          <span class="zone">Plan de travail inox</span>
+          <span class="moment">Après nettoyage</span>
+        </div>
+        <div class="prog">
+          <div class="bar"><i></i></div>
+          <div class="etape">Étape 5 / 7</div>
+          <div class="step">Analyse par Lucens IA</div>
+        </div>
+      </div>
+      <div class="brief" aria-live="polite">
+        <div class="e">Réflexe terrain — Agro</div>
+        <div class="t">Trace cyan brillante sur inox après nettoyage = détergent ou azurant mal rincé. Refaire un rinçage à l'eau claire 5 min.</div>
+      </div>
+      <button class="cancel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        Annuler l'analyse
+      </button>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="lbl">Réponses aux 4 questions</div>
+    <div class="notes">
+      <li><b>Logo central</b> : conforme à la définition — wordmark LUCENS seul (point cuivre statique, zéro glow/pulse) + « Résidus · Biofilms · Contaminants » dessous</li>
+      <li><b>« Le saviez-vous » n'était pas suffisant</b> : le label trivialisait un contenu expert. L'eyebrow devient la CATÉGORIE du conseil (« RÉFLEXE TERRAIN — AGRO », « PROTOCOLE PHOTO »…) — champ source déjà présent dans les données. Un briefing professionnel, pas une anecdote</li>
+      <li><b>La photo devient l'écran</b> : c'est ELLE qu'on analyse. Grande zone sombre = continuité avec le Live View (pénombre), anti-éblouissement, et le « ça travaille sur MA surface » est immédiat</li>
+      <li><b>Ni trop ni trop peu</b> : 4 questions → 4 éléments + la marque. Supprimés : % chiffré (synthétique), footer Codex, double focal, tip flottant</li>
+      <li><b>In-place morph</b> : au rendu, le bloc progression devient le verdict (même carte, même position) — l'attente EST le rapport en gestation</li>
+    </div>
+    <div class="lbl" style="margin-top:14px">États (inchangés depuis v2)</div>
+    <div class="notes">
+      <li><b>+45 s</b> : le briefing devient « TOUJOURS EN COURS — connexion lente probable, l'analyse continue »</li>
+      <li><b>Annuler</b> : 2 temps — tap 1 → « Confirmer l'annulation ? » (tokens risque), retour auto 3 s</li>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col">
+    <div class="lbl">Paysage — 667×375 (l'actuel est cassé : chevauchements + bouton coupé)</div>
+    <div class="land">
+      <div class="instr" role="status" aria-live="polite">
+        <div class="img uv"></div>
+        <div class="ctx">
+          <span class="zone">Plan de travail inox</span>
+          <span class="moment">Après nettoyage</span>
+        </div>
+      </div>
+      <div class="right">
+        <div class="brand">
+          <span class="wordmark">LUCENS</span>
+          <span class="tagline">Résidus · Biofilms · Contaminants</span>
+        </div>
+        <div class="prog2">
+          <div class="bar"><i></i></div>
+          <div class="etape">Étape 5 / 7</div>
+          <div class="step">Analyse par Lucens IA</div>
+        </div>
+        <div class="brief">
+          <div class="e">Réflexe terrain — Agro</div>
+          <div class="t">Trace cyan brillante sur inox après nettoyage = détergent mal rincé. Re-rincer à l'eau claire 5 min.</div>
+        </div>
+        <button class="cancel" style="margin-top:auto">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          Annuler l'analyse
+        </button>
+      </div>
+    </div>
+    <div class="notes" style="width:667px">
+      <li><b>Même grille que l'accueil paysage V217</b> (45 % / 55 %) : photo pleine hauteur à gauche, marque + progression + briefing + Annuler à droite — aucun chevauchement, tout visible sans scroll</li>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens — Live View (actuel)</title>
+<style>
+  :root{--primary:#0F3D4E;--signal:#B54A2A;--font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EEF1F4;font-family:var(--font);color:#111827;-webkit-font-smoothing:antialiased;padding:30px 22px 56px}
+  .row{display:flex;gap:40px;justify-content:center;align-items:flex-start;flex-wrap:wrap;max-width:920px;margin:0 auto}
+  .col{display:flex;flex-direction:column;align-items:center;gap:12px}
+  .cap{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#9aa3af}
+  .phone{width:390px;height:800px;border-radius:30px;overflow:hidden;box-shadow:0 18px 50px rgba(17,24,39,.18);position:relative;
+         background:radial-gradient(120% 90% at 50% 35%,#11202c 0%,#0a131b 55%,#060b11 100%)}
+  /* scène caméra : surface sous UV + fluorescences */
+  .scene{position:absolute;inset:0}
+  .scene svg{position:absolute;inset:0;width:100%;height:100%}
+  /* top bar */
+  .topbar{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:10px;padding:16px 14px;z-index:5}
+  .ibtn{width:38px;height:38px;border-radius:50%;background:rgba(10,16,22,.55);border:1px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+  .ibtn svg{width:18px;height:18px}
+  .banner{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;height:34px;border-radius:999px;background:rgba(10,16,22,.55);border:1px solid rgba(255,255,255,.14);color:#fff;font-size:13px;font-weight:600}
+  .banner .bdot{width:7px;height:7px;border-radius:50%;background:#9aa7b2}
+  /* viseur */
+  .cross{position:absolute;top:46%;left:50%;transform:translate(-50%,-50%);width:62px;height:62px;z-index:4}
+  .cross::before,.cross::after{content:'';position:absolute;border:2px solid rgba(255,255,255,.7);width:16px;height:16px}
+  .cross .c1{position:absolute;top:0;left:0;border-right:0;border-bottom:0;width:16px;height:16px;border:2px solid rgba(255,255,255,.7);border-right:0;border-bottom:0}
+  .cdot{position:absolute;top:50%;left:50%;width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.85);transform:translate(-50%,-50%)}
+  .corner{position:absolute;width:15px;height:15px;border:2px solid rgba(255,255,255,.7)}
+  .corner.tl{top:0;left:0;border-right:0;border-bottom:0}
+  .corner.tr{top:0;right:0;border-left:0;border-bottom:0}
+  .corner.bl{bottom:0;left:0;border-right:0;border-top:0}
+  .corner.br{bottom:0;right:0;border-left:0;border-top:0}
+  /* bottom : ANALYSER */
+  .bottombar{position:absolute;left:0;right:0;bottom:0;padding:0 20px calc(22px) ;display:flex;flex-direction:column;align-items:center;gap:12px;z-index:5}
+  .analyze{width:100%;height:56px;border-radius:16px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;gap:9px;font-size:15px;font-weight:700;letter-spacing:.02em;box-shadow:0 6px 20px rgba(15,61,78,.5)}
+  .analyze svg{width:20px;height:20px}
+  /* drawer */
+  .drawer{position:absolute;left:0;right:0;bottom:0;background:#0e1722;border-radius:20px 20px 0 0;border-top:1px solid rgba(255,255,255,.10);padding:14px 18px 20px;z-index:6;color:#e6eaf0}
+  .grab{width:36px;height:4px;border-radius:3px;background:rgba(255,255,255,.25);margin:0 auto 12px}
+  .drow{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+  .drow+.drow{border-top:1px solid rgba(255,255,255,.08)}
+  .dlabel{font-size:14.5px;font-weight:600}
+  .dsub{font-size:11.5px;color:#9aa7b2;margin-top:2px}
+  .toggle{width:46px;height:27px;border-radius:999px;background:#2E7D32;position:relative;flex-shrink:0}
+  .toggle .k{position:absolute;top:3px;left:22px;width:21px;height:21px;border-radius:50%;background:#fff}
+  .stepper{display:flex;align-items:center;gap:0;border:1px solid rgba(255,255,255,.18);border-radius:10px;overflow:hidden}
+  .stepper button{width:34px;height:34px;background:rgba(255,255,255,.06);color:#fff;border:0;font-size:18px}
+  .stepper .v{width:44px;text-align:center;font-size:14px;font-weight:700}
+  .calbtns{display:flex;gap:8px}
+  .calbtn{padding:8px 14px;border-radius:9px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:#fff;font-size:12.5px;font-weight:600}
+  .readout{text-align:center;font-size:12.5px;color:#9aa7b2;padding-top:12px;border-top:1px solid rgba(255,255,255,.08);margin-top:6px}
+  .hint{font-size:11.5px;color:#7f8b97;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="row">
+
+  <!-- VUE SCAN -->
+  <div class="col">
+    <div class="cap">Live View — vue scan</div>
+    <div class="phone">
+      <div class="scene">
+        <svg viewBox="0 0 390 800" preserveAspectRatio="none">
+          <defs><filter id="gl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="13"/></filter></defs>
+          <g filter="url(#gl)" fill="#5cb2ec">
+            <path d="M120 300 C108 268 150 250 188 256 C214 260 222 300 210 332 C200 360 150 358 130 340 C112 322 128 314 120 300 Z" opacity=".5"/>
+            <path d="M250 470 C242 450 268 436 292 442 C312 447 318 470 308 492 C300 510 274 504 262 498 C250 492 254 480 250 470 Z" opacity=".46"/>
+          </g>
+          <g fill="none" stroke="#E06A3A" stroke-width="2.2" stroke-linejoin="round">
+            <path d="M120 300 C108 268 150 250 188 256 C214 260 222 300 210 332 C200 360 150 358 130 340 C112 322 128 314 120 300 Z"/>
+            <path d="M250 470 C242 450 268 436 292 442 C312 447 318 470 308 492 C300 510 274 504 262 498 C250 492 254 480 250 470 Z"/>
+          </g>
+        </svg>
+      </div>
+      <div class="topbar">
+        <span class="ibtn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15 L7 10 L12 5"/></svg></span>
+        <span class="banner"><span class="bdot"></span>Visez une zone</span>
+        <span class="ibtn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="3.5" y1="6.5" x2="16.5" y2="6.5"/><circle cx="12.5" cy="6.5" r="2.2"/><line x1="3.5" y1="13.5" x2="16.5" y2="13.5"/><circle cx="7.5" cy="13.5" r="2.2"/></svg></span>
+      </div>
+      <div class="cross"><span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span><span class="cdot"></span></div>
+      <div class="bottombar">
+        <div class="analyze"><svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.5" cy="9.5" r="6"/><path d="M14 14l5 5"/><path d="M9.5 6.5v6M6.5 9.5h6" opacity=".55"/></svg>ANALYSER</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIROIR RÉGLAGES -->
+  <div class="col">
+    <div class="cap">Live View — tiroir réglages</div>
+    <div class="phone">
+      <div class="scene">
+        <svg viewBox="0 0 390 800" preserveAspectRatio="none">
+          <defs><filter id="gl2" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="13"/></filter></defs>
+          <g filter="url(#gl2)" fill="#5cb2ec"><path d="M120 240 C108 208 150 190 188 196 C214 200 222 240 210 272 C200 300 150 298 130 280 C112 262 128 254 120 240 Z" opacity=".5"/></g>
+          <g fill="none" stroke="#E06A3A" stroke-width="2.2"><path d="M120 240 C108 208 150 190 188 196 C214 200 222 240 210 272 C200 300 150 298 130 280 C112 262 128 254 120 240 Z"/></g>
+        </svg>
+      </div>
+      <div class="topbar">
+        <span class="ibtn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15 L7 10 L12 5"/></svg></span>
+        <span class="banner"><span class="bdot" style="background:#E0A93B"></span>Fluorescence détectée</span>
+        <span class="ibtn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="3.5" y1="6.5" x2="16.5" y2="6.5"/><circle cx="12.5" cy="6.5" r="2.2"/><line x1="3.5" y1="13.5" x2="16.5" y2="13.5"/><circle cx="7.5" cy="13.5" r="2.2"/></svg></span>
+      </div>
+      <div class="drawer">
+        <div class="grab"></div>
+        <div class="drow"><div><div class="dlabel">Cartographie</div><div class="dsub">Repérage visuel des zones</div></div><div class="toggle"><div class="k"></div></div></div>
+        <div class="drow"><div class="dlabel">Sensibilité</div><div class="stepper"><button>−</button><span class="v">65</span><button>+</button></div></div>
+        <div class="hint">Équilibrée — détection standard</div>
+        <div class="drow"><div><div class="dlabel">Calibration</div><div class="dsub">Choisissez une méthode</div></div><div class="calbtns"><span class="calbtn">Zone propre</span><span class="calbtn">Carte Lucens</span></div></div>
+        <div class="readout">2 zones&nbsp;·&nbsp;7,0&nbsp;% de surface</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

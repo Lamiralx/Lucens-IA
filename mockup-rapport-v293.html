@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens — Rapport : hiérarchie typographique (V293 proposition)</title>
+<style>
+  :root{
+    --accent:#0F3D4E; --accent-hi:#0A2C39; --signature:#B54A2A;
+    --ink:#111827; --ink2:#4B5563; --ink3:#6B7280; --ink-dim:#9CA3AF;
+    --page:#FFFFFF; --mid:#F7F8FA; --border:#E5E7EB; --border-hi:#D1D5DB;
+    --low:#2E7D32; --risk-mid:#B7791F; --hi:#B42318;
+    --risk-mid-soft:rgba(183,121,31,0.12); --risk-mid-edge:rgba(183,121,31,0.45);
+    --accent-soft:rgba(15,61,78,0.07); --signature-soft:rgba(181,74,42,0.10);
+    --r-sm:6px; --r-md:12px; --r-lg:16px; --r-xl:24px;
+    --font:-apple-system,'Inter','SF Pro',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:#E7E9EE;color:var(--ink);
+    -webkit-font-smoothing:antialiased;padding:30px 20px;display:flex;
+    flex-wrap:wrap;gap:30px;justify-content:center;align-items:flex-start}
+  .col{display:flex;flex-direction:column;align-items:center;gap:12px;width:392px}
+  .cap{font-size:12px;font-weight:700;letter-spacing:.03em;color:#4B5563;text-align:center;line-height:1.4}
+  .cap small{display:block;font-weight:500;color:#8a8f99;font-size:11px;letter-spacing:0;margin-top:2px}
+  .a4{width:392px;background:#fff;border-radius:8px;box-shadow:0 18px 50px rgba(0,0,0,.16);
+    padding:26px 28px 22px;border:1px solid var(--border);display:flex;flex-direction:column}
+
+  /* shared head */
+  .r-head{display:flex;align-items:center;gap:9px;margin-bottom:16px}
+  .r-logo{width:24px;height:24px;border:1.6px solid var(--accent);border-radius:3px;position:relative}
+  .r-logo::before{content:'';position:absolute;inset:0;margin:auto;width:7px;height:7px;border:1.2px solid var(--accent);border-radius:50%}
+  .r-logo::after{content:'';position:absolute;inset:0;margin:auto;width:3px;height:3px;background:var(--signature);border-radius:50%}
+  .r-brand{font-size:16px;font-weight:800;letter-spacing:.02em;color:var(--accent);line-height:1}
+  .r-tag{font-size:7.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-top:3px}
+
+  /* slim images */
+  .r-imgs{display:flex;gap:8px;margin-bottom:6px}
+  .r-imgbox{flex:1;text-align:center}
+  .r-img{height:84px;border-radius:5px;border:1px solid var(--border);position:relative;overflow:hidden;background:#0a1119}
+  .r-img .ana{position:absolute;inset:0}
+  .r-bar{position:absolute;top:24%;left:22%;right:16%;height:9px;border-radius:3px;background:#6fb9e8;box-shadow:0 0 6px 1px rgba(110,185,232,.5);outline:1.4px solid var(--signature);outline-offset:1px}
+  .r-dot{position:absolute;width:7px;height:7px;border-radius:50%;background:#dbb46b;outline:1.3px solid var(--signature)}
+
+  /* ============ AVANT (état actuel V292) ============ */
+  .av .r-cap{font-size:8.5px;font-weight:600;color:var(--ink3);margin-top:5px}
+  .av .r-legend{font-size:8.5px;color:var(--ink3);margin:7px 0 16px;display:flex;align-items:center;gap:6px}
+  .av .r-legend i{width:7px;height:7px;border-radius:50%;border:1.4px solid var(--signature);display:inline-block}
+  .av .r-block{margin-bottom:15px}
+  .av .r-blabel{font-size:9px;color:var(--ink3);margin-bottom:4px}
+  .av .r-title{font-size:18px;font-weight:800;color:var(--risk-mid);line-height:1.15;margin-bottom:5px}
+  .av .r-expl{font-size:10px;font-weight:500;color:var(--ink2);line-height:1.5}
+  .av .r-atext{font-size:13px;font-weight:700;color:var(--ink);line-height:1.4}
+  .av .r-verify{font-size:9px;color:var(--ink3);margin-top:4px}
+
+  /* ============ SYSTÈME COMMUN AUX PROPOSITIONS ============ */
+  .r-cap{font-size:10px;font-weight:600;color:var(--ink3);margin-top:5px;text-align:center}
+  .legend{font-size:10px;color:var(--ink3);margin:8px 0 4px;display:flex;align-items:center;gap:6px}
+  .legend i{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--signature);display:inline-block}
+
+  .risk-row{display:flex;gap:4px;margin:14px 0 18px}
+  .risk-row span{flex:1;text-align:center;font-size:10px;font-weight:700;letter-spacing:.02em;
+    padding:7px 0;border-radius:5px;border:1px solid var(--border);color:var(--ink3);background:var(--mid)}
+  .risk-row span.on{background:var(--risk-mid);border-color:var(--risk-mid);color:#fff}
+
+  /* section label = canon Résultats : 12 / 700 / +0.04em / UPPERCASE + icône 14 */
+  .sec-label{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;
+    letter-spacing:.04em;text-transform:uppercase;line-height:1;margin-bottom:7px}
+  .sec-label svg{width:14px;height:14px;flex:0 0 auto}
+  .lbl-origin{color:var(--signature)}
+  .lbl-risk{color:var(--risk-mid)}
+  .lbl-action{color:var(--accent)}
+
+  /* corps unique : 13 / 1.55 */
+  .body{font-size:13px;font-weight:450;color:var(--ink2);line-height:1.55}
+  .body-strong{font-size:13px;font-weight:600;color:var(--ink);line-height:1.5}
+  .verdict{font-size:18px;font-weight:700;color:var(--risk-mid);line-height:1.2;letter-spacing:-.01em;margin:0 0 6px}
+  .fine{font-size:11px;color:var(--ink3);line-height:1.5;margin-top:6px;display:flex;gap:5px}
+  .fine svg{width:11px;height:11px;flex:0 0 auto;margin-top:2px;color:var(--ink-dim)}
+
+  /* ---- Proposition A : éditorial hairline ---- */
+  .pa .sect{padding:15px 0}
+  .pa .sect+.sect{border-top:1px solid var(--border)}
+  .pa .sect:first-of-type{padding-top:6px}
+
+  /* ---- Hybride retenu : sobriété A (filets) + panneau ambre du risque ---- */
+  .ph .sect{padding:15px 0}
+  .ph .sect+.sect{border-top:1px solid var(--border)}
+  .ph .sect:first-of-type{padding-top:6px}
+  .ph .risk-panel{margin-top:2px}
+
+  /* ---- Panneau ambre du risque (partagé B + Hybride) ---- */
+  .risk-panel{background:var(--risk-mid-soft);border:1px solid var(--risk-mid-edge);
+    border-left:3px solid var(--risk-mid);border-radius:var(--r-md);padding:13px 14px}
+  .risk-panel .body{color:#7a5410}
+
+  /* ---- Proposition B : pastilles d'icônes ---- */
+  .pb .sect{margin-bottom:14px}
+  .pb .risk-panel{margin:4px 0 14px}
+  .pb .action-chip{display:flex;gap:11px;align-items:flex-start}
+  .pb .chip{width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);
+    display:flex;align-items:center;justify-content:center;flex:0 0 auto;margin-top:1px}
+  .pb .chip svg{width:15px;height:15px}
+  .pb .origin-chip{display:flex;gap:11px;align-items:flex-start;margin-bottom:14px}
+  .pb .chip-orig{width:26px;height:26px;border-radius:50%;background:var(--signature-soft);color:var(--signature);
+    display:flex;align-items:center;justify-content:center;flex:0 0 auto;margin-top:2px}
+  .pb .chip-orig svg{width:15px;height:15px}
+</style>
+</head>
+<body>
+
+  <!-- ============ COLONNE 1 — AVANT ============ -->
+  <div class="col">
+    <div class="cap">AVANT — état actuel<small>5 tailles · 4 graisses · risque en gris</small></div>
+    <div class="a4 av">
+      <div class="r-head"><div class="r-logo"></div><div><div class="r-brand">LUCENS</div><div class="r-tag">Résidus · Biofilms · Contaminants</div></div></div>
+      <div class="r-imgs">
+        <div class="r-imgbox"><div class="r-img"><div class="ana" style="background:radial-gradient(50px 30px at 50% 35%, rgba(70,130,200,.22), transparent 70%),#10151d"></div></div><div class="r-cap">Original image</div></div>
+        <div class="r-imgbox"><div class="r-img"><div class="ana" style="background:#0a1119"></div><div class="r-bar"></div><div class="r-dot" style="left:44%;top:64%"></div></div><div class="r-cap">Analyzed image</div></div>
+      </div>
+      <div class="r-legend"><i></i> Fluorescent area detected</div>
+
+      <div class="r-block">
+        <div class="r-blabel">Probable origin</div>
+        <div class="r-title">CIP detergent residue suspected</div>
+        <div class="r-expl">Saturated blue-cyan speckle along upper internal wall: incomplete final rinse likely.</div>
+      </div>
+      <div class="r-block">
+        <div class="r-blabel">Associated risk</div>
+        <div class="r-expl" style="font-size:11px">Chemical carry-over into next batch; possible ATP false negative masking organic load.</div>
+      </div>
+      <div class="r-block">
+        <div class="r-blabel">Recommended action</div>
+        <div class="r-atext">Re-rinse the internal wall with clear water until cyan disappears under UV.</div>
+        <div class="r-verify">Conductivity check on final rinse water; ATP swab on the upper wall band per ISO 18593.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ COLONNE — HYBRIDE RETENU ============ -->
+  <div class="col">
+    <div class="cap" style="color:var(--accent)">★ HYBRIDE — direction retenue<small>sobriété A (filets) + panneau ambre sur le risque</small></div>
+    <div class="a4 ph" style="box-shadow:0 18px 50px rgba(15,61,78,.20);border-color:var(--border-hi)">
+      <div class="r-head"><div class="r-logo"></div><div><div class="r-brand">LUCENS</div><div class="r-tag">Résidus · Biofilms · Contaminants</div></div></div>
+      <div class="r-imgs">
+        <div class="r-imgbox"><div class="r-img"><div class="ana" style="background:radial-gradient(50px 30px at 50% 35%, rgba(70,130,200,.22), transparent 70%),#10151d"></div></div><div class="r-cap">Original image</div></div>
+        <div class="r-imgbox"><div class="r-img"><div class="ana" style="background:#0a1119"></div><div class="r-bar"></div><div class="r-dot" style="left:44%;top:64%"></div></div><div class="r-cap">Analyzed image</div></div>
+      </div>
+      <div class="legend"><i></i> Fluorescent area detected</div>
+
+      <div class="risk-row"><span>Low</span><span class="on">Moderate</span><span>High</span></div>
+
+      <div class="sect">
+        <div class="sec-label lbl-origin"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="5.2"/><circle cx="7" cy="7" r="1.3" fill="currentColor" stroke="none"/></svg>Probable origin</div>
+        <div class="verdict">CIP detergent residue suspected</div>
+        <div class="body">Saturated blue-cyan speckle along the upper internal wall: incomplete final rinse likely.</div>
+      </div>
+
+      <div class="sect">
+        <div class="risk-panel">
+          <div class="sec-label lbl-risk"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 1.7 12.7 12 1.3 12Z"/><line x1="7" y1="5.4" x2="7" y2="8.4" stroke-linecap="round"/><circle cx="7" cy="10.3" r="0.7" fill="currentColor" stroke="none"/></svg>Associated risk</div>
+          <div class="body">Chemical carry-over into next batch; possible ATP false negative masking organic load.</div>
+        </div>
+      </div>
+
+      <div class="sect">
+        <div class="sec-label lbl-action"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.6 7.4 5.7 10.5 11.4 3.8"/></svg>Recommended action</div>
+        <div class="body-strong">Re-rinse the internal wall with clear water until cyan disappears under UV.</div>
+        <div class="fine"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 3.5 9 7 5 10.5"/></svg><span>Conductivity check on final rinse water; ATP swab on the upper wall band per ISO 18593.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ COLONNE 2 — PROPOSITION A ============ -->
+  <div class="col">
+    <div class="cap">PROPOSITION A — éditorial<small>1 héros · 3 sections jumelles · hairlines</small></div>
+    <div class="a4 pa">
+      <div class="r-head"><div class="r-logo"></div><div><div class="r-brand">LUCENS</div><div class="r-tag">Résidus · Biofilms · Contaminants</div></div></div>
+      <div class="r-imgs">
+        <div class="r-imgbox"><div class="r-img"><div class="ana" style="background:radial-gradient(50px 30px at 50% 35%, rgba(70,130,200,.22), transparent 70%),#10151d"></div></div><div class="r-cap">Original image</div></div>
+        <div class="r-imgbox"><div class="r-img"><div class="ana" style="background:#0a1119"></div><div class="r-bar"></div><div class="r-dot" style="left:44%;top:64%"></div></div><div class="r-cap">Analyzed image</div></div>
+      </div>
+      <div class="legend"><i></i> Fluorescent area detected</div>
+
+      <div class="risk-row"><span>Low</span><span class="on">Moderate</span><span>High</span></div>
+
+      <div class="sect">
+        <div class="sec-label lbl-origin"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="5.2"/><circle cx="7" cy="7" r="1.3" fill="currentColor" stroke="none"/></svg>Probable origin</div>
+        <div class="verdict">CIP detergent residue suspected</div>
+        <div class="body">Saturated blue-cyan speckle along the upper internal wall: incomplete final rinse likely.</div>
+      </div>
+
+      <div class="sect">
+        <div class="sec-label lbl-risk"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 1.7 12.7 12 1.3 12Z"/><line x1="7" y1="5.4" x2="7" y2="8.4" stroke-linecap="round"/><circle cx="7" cy="10.3" r="0.7" fill="currentColor" stroke="none"/></svg>Associated risk</div>
+        <div class="body">Chemical carry-over into next batch; possible ATP false negative masking organic load.</div>
+      </div>
+
+      <div class="sect">
+        <div class="sec-label lbl-action"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.6 7.4 5.7 10.5 11.4 3.8"/></svg>Recommended action</div>
+        <div class="body-strong">Re-rinse the internal wall with clear water until cyan disappears under UV.</div>
+        <div class="fine"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 3.5 9 7 5 10.5"/></svg><span>Conductivity check on final rinse water; ATP swab on the upper wall band per ISO 18593.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ COLONNE 3 — PROPOSITION B ============ -->
+  <div class="col">
+    <div class="cap">PROPOSITION B — risque mis en avant<small>même système + panneau ambre = avertissement</small></div>
+    <div class="a4 pb">
+      <div class="r-head"><div class="r-logo"></div><div><div class="r-brand">LUCENS</div><div class="r-tag">Résidus · Biofilms · Contaminants</div></div></div>
+      <div class="r-imgs">
+        <div class="r-imgbox"><div class="r-img"><div class="ana" style="background:radial-gradient(50px 30px at 50% 35%, rgba(70,130,200,.22), transparent 70%),#10151d"></div></div><div class="r-cap">Original image</div></div>
+        <div class="r-imgbox"><div class="r-img"><div class="ana" style="background:#0a1119"></div><div class="r-bar"></div><div class="r-dot" style="left:44%;top:64%"></div></div><div class="r-cap">Analyzed image</div></div>
+      </div>
+      <div class="legend"><i></i> Fluorescent area detected</div>
+
+      <div class="risk-row"><span>Low</span><span class="on">Moderate</span><span>High</span></div>
+
+      <div class="sect origin-chip">
+        <div class="chip-orig"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="5.2"/><circle cx="7" cy="7" r="1.3" fill="currentColor" stroke="none"/></svg></div>
+        <div>
+          <div class="sec-label lbl-origin" style="margin-bottom:5px">Probable origin</div>
+          <div class="verdict">CIP detergent residue suspected</div>
+          <div class="body">Saturated blue-cyan speckle along the upper internal wall: incomplete final rinse likely.</div>
+        </div>
+      </div>
+
+      <div class="risk-panel">
+        <div class="sec-label lbl-risk"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 1.7 12.7 12 1.3 12Z"/><line x1="7" y1="5.4" x2="7" y2="8.4" stroke-linecap="round"/><circle cx="7" cy="10.3" r="0.7" fill="currentColor" stroke="none"/></svg>Associated risk</div>
+        <div class="body">Chemical carry-over into next batch; possible ATP false negative masking organic load.</div>
+      </div>
+
+      <div class="sect action-chip">
+        <div class="chip"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.6 7.4 5.7 10.5 11.4 3.8"/></svg></div>
+        <div>
+          <div class="sec-label lbl-action" style="margin-bottom:5px">Recommended action</div>
+          <div class="body-strong">Re-rinse the internal wall with clear water until cyan disappears under UV.</div>
+          <div class="fine"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 3.5 9 7 5 10.5"/></svg><span>Conductivity check on final rinse water; ATP swab on the upper wall band per ISO 18593.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

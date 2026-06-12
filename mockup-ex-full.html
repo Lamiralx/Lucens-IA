@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens — page d'analyse complète</title>
+<style>
+  :root{
+    --primary:#0F3D4E; --signal:#B54A2A; --text:#111827; --text2:#4B5563; --text3:#6B7280;
+    --bg:#FFFFFF; --bg2:#FAFBFC; --border:#E5E7EB; --hair:#EEF0F3;
+    --low:#2E7D32; --mid:#B7791F; --hi:#B42318;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EEF1F4;font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased;padding:30px 24px 56px;display:flex;justify-content:center}
+  .frame{display:flex;flex-direction:column;align-items:center;gap:12px}
+  .cap{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#9aa3af}
+  .phone{width:390px;height:838px;background:#fff;border:1px solid #DDE1E6;border-radius:30px;overflow:hidden;box-shadow:0 18px 50px rgba(17,24,39,.15);display:flex;flex-direction:column}
+
+  .hdr{display:flex;align-items:center;gap:9px;padding:16px 17px 13px;border-bottom:1px solid var(--border);flex-shrink:0}
+  .mark{width:27px;height:27px}
+  .wm{font-weight:800;font-size:18px;color:var(--primary);letter-spacing:-.01em;line-height:1}
+  .tag{font-size:8px;font-weight:700;letter-spacing:.11em;color:var(--text3);text-transform:uppercase}
+  .lock{display:flex;flex-direction:column;gap:2px}
+  .hclose{margin-left:auto;width:30px;height:30px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text3)}
+  .hclose svg{width:15px;height:15px}
+
+  .scr{flex:1;overflow:auto;padding:15px 16px}
+  .ana{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;border-top:3px solid var(--hi)}
+
+  .vseg{padding:13px 15px}
+  .vtop{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
+  .vtop .l{font-size:11.5px;font-weight:600;color:var(--text3)}
+  .score{font-size:14px;font-weight:700;color:var(--text3)}
+  .score b{font-size:19px;font-weight:800;color:var(--hi)}
+  .seg{display:flex;gap:5px}
+  .seg .s{flex:1;text-align:center;font-size:12px;font-weight:700;padding:8px 4px;border-radius:8px;background:var(--bg2);border:1px solid var(--border);color:var(--text3)}
+  .seg .s.on{background:var(--hi);border-color:var(--hi);color:#fff}
+
+  .img{height:188px;position:relative;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:#070d14;overflow:hidden}
+  .img svg{position:absolute;inset:0;width:100%;height:100%}
+  .legend{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text3);padding:9px 15px 0}
+  .legend .dot{width:10px;height:10px;border:2px solid var(--signal);border-radius:50%;flex-shrink:0}
+
+  .sec{padding:13px 15px}
+  .sec.b{border-top:1px solid var(--border)}
+  .flabel{font-size:12px;font-weight:600;color:var(--text3)}
+  .ftitle{font-size:20px;font-weight:800;letter-spacing:-.01em;margin-top:6px;line-height:1.18;color:var(--hi)}
+  .fexpl{font-size:12.5px;color:var(--text2);line-height:1.45;margin-top:6px}
+  .frisk{font-size:12.5px;color:var(--text2);line-height:1.45;margin-top:6px}
+  .frisk b{font-weight:700;color:var(--text)}
+  .faction{font-size:14.5px;font-weight:600;line-height:1.35;margin-top:6px}
+  .fverify{font-size:12px;color:var(--text3);line-height:1.4;margin-top:7px}
+
+  .actions{display:flex;gap:10px;padding:11px 16px;border-top:1px solid var(--border);flex-shrink:0}
+  .btn{flex:1;display:flex;align-items:center;justify-content:center;height:48px;border-radius:12px;font-size:14px;font-weight:600;border:1px solid transparent}
+  .btn-p{background:var(--primary);color:#fff}
+  .btn-s{background:#fff;color:var(--primary);border-color:#CBD5E1}
+
+  .nav{display:flex;border-top:1px solid var(--border);background:#fff;padding:8px 0 11px;flex-shrink:0}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--text3)}
+  .tab svg{width:19px;height:19px}
+  .tab span{font-size:9.5px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="cap">Page d'analyse — complète (cas organique)</div>
+  <div class="phone">
+
+    <div class="hdr">
+      <svg class="mark" viewBox="0 0 96 96" fill="none"><g stroke="#0F3D4E" stroke-width="7" stroke-linecap="square"><path d="M0 24 V0 H24"/><path d="M72 0 H96 V24"/><path d="M96 72 V96 H72"/><path d="M24 96 H0 V72"/><circle cx="48" cy="48" r="20" stroke-width="4.5"/></g><circle cx="48" cy="48" r="8.5" fill="#B54A2A"/></svg>
+      <div class="lock"><span class="wm">LUCENS</span><span class="tag">Résidus · Biofilms · Contaminants</span></div>
+      <span class="hclose"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6 L14 14 M14 6 L6 14"/></svg></span>
+    </div>
+
+    <div class="scr">
+      <div class="ana">
+        <div class="vseg">
+          <div class="vtop"><span class="l">Niveau de risque</span><span class="score"><b>78</b> / 100</span></div>
+          <div class="seg"><div class="s">Faible</div><div class="s">Modéré</div><div class="s on">Élevé</div></div>
+        </div>
+        <div class="img">
+          <svg viewBox="0 0 358 188" preserveAspectRatio="none">
+            <defs><filter id="g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7"/></filter></defs>
+            <g filter="url(#g)" fill="#bfe05a">
+              <path d="M52 72 C44 50 68 36 94 38 C112 40 116 28 134 33 C154 40 160 60 152 78 C147 92 164 96 157 114 C150 133 122 130 108 138 C95 146 75 141 66 125 C57 109 64 100 55 91 Z" opacity=".56"/>
+              <path d="M196 104 C192 90 206 80 222 82 C236 84 241 74 258 78 C275 82 283 96 276 110 C271 121 282 126 275 138 C268 150 249 143 238 147 C226 151 213 153 204 142 C196 134 200 125 198 117 Z" opacity=".54"/>
+              <path d="M104 138 C101 127 113 118 126 119 C137 120 141 113 150 121 C159 129 157 140 149 145 C143 150 146 156 138 160 C129 165 119 159 111 157 C102 155 107 147 104 138 Z" opacity=".48"/>
+            </g>
+            <g fill="none" stroke="#E06A3A" stroke-width="2.1" stroke-linejoin="round">
+              <path d="M52 72 C44 50 68 36 94 38 C112 40 116 28 134 33 C154 40 160 60 152 78 C147 92 164 96 157 114 C150 133 122 130 108 138 C95 146 75 141 66 125 C57 109 64 100 55 91 Z"/>
+              <path d="M196 104 C192 90 206 80 222 82 C236 84 241 74 258 78 C275 82 283 96 276 110 C271 121 282 126 275 138 C268 150 249 143 238 147 C226 151 213 153 204 142 C196 134 200 125 198 117 Z"/>
+              <path d="M104 138 C101 127 113 118 126 119 C137 120 141 113 150 121 C159 129 157 140 149 145 C143 150 146 156 138 160 C129 165 119 159 111 157 C102 155 107 147 104 138 Z"/>
+            </g>
+          </svg>
+        </div>
+        <div class="legend"><span class="dot"></span>Zone détectée par Lucens</div>
+        <div class="sec b">
+          <div class="flabel">Origine probable</div>
+          <div class="ftitle">Matière organique</div>
+          <div class="fexpl">Résidu alimentaire, graisse ou protéine.</div>
+        </div>
+        <div class="sec b">
+          <div class="flabel">Risque associé</div>
+          <div class="frisk">Nourrit les bactéries : risque de contamination des aliments (<b>Listeria</b>, salmonelle).</div>
+        </div>
+        <div class="sec b">
+          <div class="flabel">Action recommandée</div>
+          <div class="faction">Nettoyer et désinfecter, puis recontrôler.</div>
+          <div class="fverify">En cas de doute, confirmer par prélèvement (ATP ou laboratoire).</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <div class="btn btn-p">Générer le rapport</div>
+      <div class="btn btn-s">Nouvelle analyse</div>
+    </div>
+    <div class="nav">
+      <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v4h4"/><path d="M12 7.5V12l3.2 1.9"/></svg><span>Historique</span></div>
+      <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg><span>Contexte</span></div>
+      <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Réglages</span></div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

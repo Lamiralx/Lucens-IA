@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens — repère de risque discret sur la photo</title>
+<style>
+  :root{
+    --mid:#B7791F; --midbright:#E0A93B;
+    --text:#111827; --text3:#6B7280; --border:#E5E7EB;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EEF1F4;font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased;padding:34px 24px 64px}
+  .stage{max-width:430px;margin:0 auto;display:flex;flex-direction:column;gap:26px}
+  .opt .cap{font-size:13px;font-weight:700;color:#111827;margin-bottom:2px}
+  .opt .sub{font-size:11.5px;color:#9aa3af;margin-bottom:10px}
+
+  .img{width:100%;height:250px;background:#0a1119;position:relative;overflow:hidden;border:1px solid var(--border)}
+  .img::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 44% 48%,rgba(96,185,235,.88),rgba(96,185,235,0) 50%)}
+  .img::after{content:'';position:absolute;left:30%;top:32%;width:120px;height:92px;border:2px solid #B54A2A;border-radius:42% 55% 50% 45%;opacity:.9}
+
+  /* A — point seul */
+  .a-dot{position:absolute;right:13px;bottom:13px;width:13px;height:13px;border-radius:50%;background:var(--mid);box-shadow:0 0 0 2.5px rgba(255,255,255,.92),0 2px 6px rgba(0,0,0,.45);z-index:2}
+
+  /* B — pastille translucide point + mot */
+  .b-pill{position:absolute;right:12px;bottom:12px;display:flex;align-items:center;gap:7px;background:rgba(12,17,24,.60);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 11px 5px 9px;z-index:2}
+  .b-pill .d{width:8px;height:8px;border-radius:50%;background:var(--midbright)}
+  .b-pill span{font-size:11.5px;font-weight:700;color:#fff;letter-spacing:.01em}
+
+  /* C — liseré bas coloré + mot */
+  .c-wrap{border-bottom:4px solid var(--mid)}
+  .c-label{position:absolute;right:13px;bottom:13px;font-size:11px;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.7);letter-spacing:.02em;z-index:2}
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <div class="opt">
+    <div class="cap">A — Point coloré seul</div>
+    <div class="sub">Le plus discret. La couleur dit le risque (vert/ambre/rouge).</div>
+    <div class="img"><div class="a-dot"></div></div>
+  </div>
+
+  <div class="opt">
+    <div class="cap">B — Pastille translucide · point + mot</div>
+    <div class="sub">Se fond dans la photo sombre. Couleur + mot, sans carte blanche.</div>
+    <div class="img"><div class="b-pill"><span class="d"></span><span>Modéré</span></div></div>
+  </div>
+
+  <div class="opt">
+    <div class="cap">C — Liseré bas coloré + mot</div>
+    <div class="sub">La couleur fait partie du cadre de l'image. Intégré, pas posé dessus.</div>
+    <div class="img c-wrap"><div class="c-label">Modéré</div></div>
+  </div>
+
+</div>
+</body>
+</html>

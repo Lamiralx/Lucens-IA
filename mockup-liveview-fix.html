@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens — Live View corrigé</title>
+<style>
+  :root{--primary:#0F3D4E;--font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EEF1F4;font-family:var(--font);color:#111827;-webkit-font-smoothing:antialiased;padding:30px 22px 56px}
+  .wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:34px;align-items:center}
+  .row{display:flex;gap:40px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+  .col{display:flex;flex-direction:column;align-items:center;gap:11px}
+  .cap{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#9aa3af}
+  .phone{width:360px;height:720px;border-radius:30px;overflow:hidden;box-shadow:0 18px 50px rgba(17,24,39,.18);position:relative;
+         background:radial-gradient(120% 90% at 50% 35%,#11202c 0%,#0a131b 55%,#060b11 100%)}
+  .scene svg{position:absolute;inset:0;width:100%;height:100%}
+  .topbar{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:9px;padding:15px 13px;z-index:5}
+  .ibtn{width:36px;height:36px;border-radius:50%;background:rgba(10,16,22,.55);border:1px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+  .ibtn svg{width:17px;height:17px}
+  .banner{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;height:34px;border-radius:999px;background:rgba(10,16,22,.6);border:1px solid rgba(255,255,255,.14);color:#fff;font-size:12.5px;font-weight:600;padding:0 12px}
+  .banner .ic{width:15px;height:15px;flex-shrink:0;display:block}
+  .banner.ok{background:rgba(20,60,40,.7);border-color:rgba(46,125,50,.5)} .banner.ok .ic{color:#5bd47e}
+  .banner.amber .ic{color:#E0A93B}
+  .banner.warn{background:rgba(70,28,24,.72);border-color:rgba(180,35,24,.5)} .banner.warn .ic{color:#ff6b52}
+  .banner.neutral .ic{color:#cbd5e1}
+  .bdot{width:7px;height:7px;border-radius:50%}
+  .analyze{position:absolute;left:20px;right:20px;bottom:22px;height:56px;border-radius:16px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;gap:9px;font-size:15px;font-weight:700;box-shadow:0 6px 20px rgba(15,61,78,.5);z-index:5}
+  .analyze.dim{opacity:.4}
+  .analyze svg{width:20px;height:20px}
+  /* calibration */
+  .cross{position:absolute;top:44%;left:50%;transform:translate(-50%,-50%);width:74px;height:74px;z-index:4}
+  .corner{position:absolute;width:17px;height:17px;border:2px solid rgba(255,255,255,.85)}
+  .corner.tl{top:0;left:0;border-right:0;border-bottom:0}.corner.tr{top:0;right:0;border-left:0;border-bottom:0}
+  .corner.bl{bottom:0;left:0;border-right:0;border-top:0}.corner.br{bottom:0;right:0;border-left:0;border-top:0}
+  .callabel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:10px;font-weight:800;letter-spacing:.1em;color:rgba(255,255,255,.9)}
+  .calinstr{position:absolute;top:calc(44% + 60px);left:0;right:0;text-align:center;color:#fff;font-size:13px;font-weight:600;z-index:4;text-shadow:0 1px 4px rgba(0,0,0,.6)}
+  .calbanner{position:absolute;top:62px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;background:rgba(15,61,78,.85);border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:7px 14px;color:#fff;font-size:12px;font-weight:600;z-index:5}
+  .calbanner .d{width:7px;height:7px;border-radius:50%;background:#5AA6BC;animation:none}
+  /* états */
+  .states{width:100%;max-width:430px;background:#fff;border:1px solid #E5E7EB;border-radius:16px;padding:18px;box-shadow:0 6px 22px rgba(17,24,39,.07)}
+  .states h3{font-size:13px;font-weight:700;margin-bottom:3px}
+  .states p{font-size:11.5px;color:#9aa3af;margin-bottom:14px}
+  .strow{display:flex;align-items:center;gap:13px;padding:9px 0}
+  .strow+.strow{border-top:1px solid #EEF0F3}
+  .stbanner{display:inline-flex;align-items:center;gap:8px;height:32px;border-radius:999px;padding:0 13px;font-size:12.5px;font-weight:600;color:#fff;background:#0e1722;flex-shrink:0;min-width:212px}
+  .stbanner svg{width:15px;height:15px;flex-shrink:0}
+  .stbanner.ok{background:#1c4a2f} .stbanner.ok svg{color:#5bd47e}
+  .stbanner.warn{background:#4a1c18} .stbanner.warn svg{color:#ff6b52}
+  .stbanner.amber svg{color:#E0A93B}
+  .stbanner.neutral svg{color:#cbd5e1}
+  .sttrig{font-size:12px;color:#4B5563}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="row">
+    <!-- SCAN CORRIGÉ -->
+    <div class="col">
+      <div class="cap">Scan corrigé — sans viseur, bandeau coach</div>
+      <div class="phone">
+        <div class="scene"><svg viewBox="0 0 360 720" preserveAspectRatio="none"><defs><filter id="g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="12"/></filter></defs>
+          <g filter="url(#g)" fill="#5cb2ec"><path d="M110 280 C98 250 138 232 174 238 C198 242 206 280 195 310 C186 336 138 334 120 318 C103 302 118 294 110 280 Z" opacity=".5"/><path d="M232 440 C224 421 248 408 270 414 C289 419 295 440 286 460 C278 477 254 472 243 466 C232 460 236 449 232 440 Z" opacity=".45"/></g>
+          <g fill="none" stroke="#E06A3A" stroke-width="2.1"><path d="M110 280 C98 250 138 232 174 238 C198 242 206 280 195 310 C186 336 138 334 120 318 C103 302 118 294 110 280 Z"/><path d="M232 440 C224 421 248 408 270 414 C289 419 295 440 286 460 C278 477 254 472 243 466 C232 460 236 449 232 440 Z"/></g></svg></div>
+        <div class="topbar">
+          <span class="ibtn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15 L7 10 L12 5"/></svg></span>
+          <span class="banner amber"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="12" r="6"/></svg>Fluorescence détectée</span>
+          <span class="ibtn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="3.5" y1="6.5" x2="16.5" y2="6.5"/><circle cx="12.5" cy="6.5" r="2.2"/><line x1="3.5" y1="13.5" x2="16.5" y2="13.5"/><circle cx="7.5" cy="13.5" r="2.2"/></svg></span>
+        </div>
+        <div class="analyze"><svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.5" cy="9.5" r="6"/><path d="M14 14l5 5"/></svg>ANALYSER</div>
+      </div>
+    </div>
+
+    <!-- CALIBRATION -->
+    <div class="col">
+      <div class="cap">Calibration — le viseur revient ici</div>
+      <div class="phone">
+        <div class="scene"><svg viewBox="0 0 360 720" preserveAspectRatio="none"></svg></div>
+        <div class="topbar">
+          <span class="ibtn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6 L14 14 M14 6 L6 14"/></svg></span>
+          <span style="flex:1"></span>
+          <span class="ibtn"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="3.5" y1="6.5" x2="16.5" y2="6.5"/><circle cx="12.5" cy="6.5" r="2.2"/><line x1="3.5" y1="13.5" x2="16.5" y2="13.5"/><circle cx="7.5" cy="13.5" r="2.2"/></svg></span>
+        </div>
+        <div class="cross"><span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span><span class="callabel">CAL</span></div>
+        <div class="calinstr">Touchez une zone propre</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÉTATS DU BANDEAU -->
+  <div class="states">
+    <h3>Bandeau — guidage réaliste, en contexte</h3>
+    <p>Pas de « éteignez la lumière » (impossible en usine). La calibration s'adapte à VOTRE éclairage. Le bandeau ne guide que sur du concret, et montre la détection.</p>
+    <div class="strow"><span class="stbanner neutral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18"/><path d="M7 8l-4 4 4 4M17 8l4 4-4 4"/></svg>Balayez la surface</span><span class="sttrig">État de repos — on cherche</span></div>
+    <div class="strow"><span class="stbanner neutral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M21 3l-7 7"/><path d="M9 21H3v-6M3 21l7-7"/></svg>Approchez-vous</span><span class="sttrig">Trop loin → signal trop petit</span></div>
+    <div class="strow"><span class="stbanner neutral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.4"/></svg>Stabilisez l'appareil</span><span class="sttrig">Bougé/flou → capture inexploitable</span></div>
+    <div class="strow"><span class="stbanner neutral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v3M12 19v3M4 12H1M23 12h-3M5.5 5.5l1.8 1.8M16.7 16.7l1.8 1.8M18.5 5.5l-1.8 1.8M7.3 16.7l-1.8 1.8"/></svg>Reflet · changez d'angle</span><span class="sttrig">Reflet sur inox/verre → fausse piste</span></div>
+    <div class="strow"><span class="stbanner amber"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="12" r="6"/></svg>Fluorescence détectée</span><span class="sttrig">Signal repéré → on peut ANALYSER</span></div>
+  </div>
+
+</div>
+</body>
+</html>

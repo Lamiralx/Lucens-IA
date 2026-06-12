@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens — encerclé vs coloriage</title>
+<style>
+  :root{--signal:#B54A2A;--font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EEF1F4;font-family:var(--font);color:#111827;-webkit-font-smoothing:antialiased;padding:34px 24px 60px}
+  .row{display:flex;gap:34px;justify-content:center;align-items:flex-start;flex-wrap:wrap;max-width:880px;margin:0 auto}
+  .col{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .cap{font-size:13px;font-weight:700;color:#111827}
+  .sub{font-size:11.5px;color:#9aa3af;margin-bottom:4px;text-align:center;max-width:360px}
+  .img{width:380px;height:280px;background:#070d14;border:1px solid #DDE1E6;border-radius:14px;position:relative;overflow:hidden}
+  .img svg{position:absolute;inset:0;width:100%;height:100%}
+</style>
+</head>
+<body>
+<div class="row">
+
+  <div class="col">
+    <div class="cap">Encerclé — contour seul</div>
+    <div class="sub">On voit la fluorescence réelle dessous. Précis, discret.</div>
+    <div class="img">
+      <svg viewBox="0 0 380 280" preserveAspectRatio="none">
+        <defs><filter id="g1" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="8"/></filter></defs>
+        <g filter="url(#g1)" fill="#5cb2ec">
+          <path d="M62 84 C56 64 74 50 96 52 C110 53 114 42 128 47 C144 52 150 68 144 84 C140 96 154 100 149 114 C144 130 122 128 112 136 C102 144 86 140 78 127 C70 114 76 108 68 101 C61 94 67 92 62 84 Z" opacity=".62"/>
+          <path d="M182 150 C178 138 189 128 204 131 C216 133 221 123 236 127 C251 131 259 143 253 156 C248 166 258 171 252 182 C245 193 229 187 219 190 C208 194 196 196 188 187 C181 180 184 173 182 166 Z" opacity=".6"/>
+          <path d="M100 226 C97 215 107 207 119 208 C129 209 133 203 141 210 C149 217 147 227 140 232 C134 237 137 242 130 246 C122 250 113 245 106 243 C98 241 102 234 100 226 Z" opacity=".55"/>
+          <path d="M286 92 C284 85 291 80 299 81 C307 82 311 88 308 95 C306 102 297 102 291 100 C286 98 288 96 286 92 Z" opacity=".5"/>
+        </g>
+        <g fill="none" stroke="#E06A3A" stroke-width="2.2" stroke-linejoin="round">
+          <path d="M62 84 C56 64 74 50 96 52 C110 53 114 42 128 47 C144 52 150 68 144 84 C140 96 154 100 149 114 C144 130 122 128 112 136 C102 144 86 140 78 127 C70 114 76 108 68 101 C61 94 67 92 62 84 Z"/>
+          <path d="M182 150 C178 138 189 128 204 131 C216 133 221 123 236 127 C251 131 259 143 253 156 C248 166 258 171 252 182 C245 193 229 187 219 190 C208 194 196 196 188 187 C181 180 184 173 182 166 Z"/>
+          <path d="M100 226 C97 215 107 207 119 208 C129 209 133 203 141 210 C149 217 147 227 140 232 C134 237 137 242 130 246 C122 250 113 245 106 243 C98 241 102 234 100 226 Z"/>
+          <path d="M286 92 C284 85 291 80 299 81 C307 82 311 88 308 95 C306 102 297 102 291 100 C286 98 288 96 286 92 Z"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="cap">Coloriage — zone remplie</div>
+    <div class="sub">Remplissage cuivre translucide + fin contour. Plus affirmé, l'étendue saute aux yeux.</div>
+    <div class="img">
+      <svg viewBox="0 0 380 280" preserveAspectRatio="none">
+        <defs><filter id="g2" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="8"/></filter></defs>
+        <g filter="url(#g2)" fill="#5cb2ec">
+          <path d="M62 84 C56 64 74 50 96 52 C110 53 114 42 128 47 C144 52 150 68 144 84 C140 96 154 100 149 114 C144 130 122 128 112 136 C102 144 86 140 78 127 C70 114 76 108 68 101 C61 94 67 92 62 84 Z" opacity=".62"/>
+          <path d="M182 150 C178 138 189 128 204 131 C216 133 221 123 236 127 C251 131 259 143 253 156 C248 166 258 171 252 182 C245 193 229 187 219 190 C208 194 196 196 188 187 C181 180 184 173 182 166 Z" opacity=".6"/>
+          <path d="M100 226 C97 215 107 207 119 208 C129 209 133 203 141 210 C149 217 147 227 140 232 C134 237 137 242 130 246 C122 250 113 245 106 243 C98 241 102 234 100 226 Z" opacity=".55"/>
+          <path d="M286 92 C284 85 291 80 299 81 C307 82 311 88 308 95 C306 102 297 102 291 100 C286 98 288 96 286 92 Z" opacity=".5"/>
+        </g>
+        <g fill="rgba(224,106,58,.34)" stroke="#E06A3A" stroke-width="1.8" stroke-linejoin="round">
+          <path d="M62 84 C56 64 74 50 96 52 C110 53 114 42 128 47 C144 52 150 68 144 84 C140 96 154 100 149 114 C144 130 122 128 112 136 C102 144 86 140 78 127 C70 114 76 108 68 101 C61 94 67 92 62 84 Z"/>
+          <path d="M182 150 C178 138 189 128 204 131 C216 133 221 123 236 127 C251 131 259 143 253 156 C248 166 258 171 252 182 C245 193 229 187 219 190 C208 194 196 196 188 187 C181 180 184 173 182 166 Z"/>
+          <path d="M100 226 C97 215 107 207 119 208 C129 209 133 203 141 210 C149 217 147 227 140 232 C134 237 137 242 130 246 C122 250 113 245 106 243 C98 241 102 234 100 226 Z"/>
+          <path d="M286 92 C284 85 291 80 299 81 C307 82 311 88 308 95 C306 102 297 102 291 100 C286 98 288 96 286 92 Z"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

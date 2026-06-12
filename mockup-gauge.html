@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens — jauge de risque</title>
+<style>
+  :root{
+    --primary:#0F3D4E; --signal:#B54A2A;
+    --text:#111827; --text2:#4B5563; --text3:#6B7280;
+    --bg:#FFFFFF; --bg2:#FAFBFC; --border:#E5E7EB; --hair:#EEF0F3;
+    --low:#2E7D32; --mid:#B7791F; --hi:#B42318;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EEF1F4;font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased;padding:32px 24px 64px}
+  .stage{max-width:470px;margin:0 auto;display:flex;flex-direction:column;gap:30px}
+  .cap{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#9aa3af;margin-bottom:11px;text-align:center}
+
+  .ana{background:#fff;border:1px solid var(--border);border-radius:18px;overflow:hidden;border-top:3px solid var(--mid);box-shadow:0 8px 26px rgba(17,24,39,.09)}
+  .slbl{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--text2)}
+  .slbl svg{width:17px;height:17px;color:var(--primary);flex-shrink:0}
+  .sec{padding:16px 18px}
+  .sec+.sec{border-top:1px solid var(--border)}
+  /* titre d'hypothèse coloré au niveau de risque */
+  .stitle{font-size:18px;font-weight:700;line-height:1.22;margin-top:9px;color:var(--mid)}
+  .sconf{font-size:12.5px;color:var(--text3);margin-top:3px}
+  .sbody{font-size:14px;line-height:1.46;color:var(--text2);margin-top:8px}
+  .saction{font-size:15px;font-weight:600;line-height:1.35;margin-top:8px}
+
+  /* ===== OPTION A : jauge en arc ===== */
+  .vA{display:flex;align-items:center;gap:18px;padding:16px 18px 14px;border-bottom:1px solid var(--border)}
+  .arc{flex-shrink:0;width:152px}
+  .arc svg{width:152px;height:auto;display:block}
+  .arc .ends{display:flex;justify-content:space-between;margin-top:-6px;padding:0 4px}
+  .arc .ends span{font-size:10px;font-weight:700;color:var(--text3)}
+  .arc .ends .e-hi{color:var(--hi)} .arc .ends .e-lo{color:var(--low)}
+  .vAtext{display:flex;flex-direction:column;gap:4px}
+  .vAtext .lab{font-size:12.5px;font-weight:600;color:var(--text3)}
+  .vAtext .word{font-size:26px;font-weight:800;letter-spacing:-.015em;line-height:1;color:var(--mid)}
+  .vAtext .score{font-size:13px;font-weight:600;color:var(--text3)}
+  .vAtext .score b{color:var(--text);font-size:15px;font-weight:800}
+
+  /* ===== OPTION B : jauge segmentée ===== */
+  .vB{padding:16px 18px 16px;border-bottom:1px solid var(--border)}
+  .vBtop{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:11px}
+  .vBtop .lab{font-size:12.5px;font-weight:600;color:var(--text3)}
+  .vBtop .score{font-size:13px;font-weight:600;color:var(--text3)}
+  .vBtop .score b{color:var(--text);font-size:15px;font-weight:800}
+  .seg{display:flex;gap:5px}
+  .seg .s{flex:1;text-align:center;font-size:12.5px;font-weight:700;padding:9px 4px;border-radius:9px;background:var(--bg2);border:1px solid var(--border);color:var(--text3)}
+  .seg .s.on-lo{background:rgba(46,125,50,.12);border-color:var(--low);color:var(--low)}
+  .seg .s.on-mid{background:var(--mid);border-color:var(--mid);color:#fff}
+  .seg .s.on-hi{background:rgba(180,35,24,.12);border-color:var(--hi);color:var(--hi)}
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <!-- OPTION A -->
+  <div>
+    <div class="cap">Option A — Jauge en arc (cadran)</div>
+    <div class="ana">
+      <div class="vA">
+        <div class="arc">
+          <svg viewBox="0 0 160 104" fill="none">
+            <!-- zones -->
+            <path d="M14 84 A66 66 0 0 1 45 28" stroke="#2E7D32" stroke-width="11" stroke-linecap="round"/>
+            <path d="M49 25.7 A66 66 0 0 1 111 25.7" stroke="#B7791F" stroke-width="11" stroke-linecap="round"/>
+            <path d="M115 28 A66 66 0 0 1 146 84" stroke="#B42318" stroke-width="11" stroke-linecap="round"/>
+            <!-- aiguille à 45/100 -->
+            <line x1="80" y1="84" x2="71" y2="27.5" stroke="#111827" stroke-width="3.2" stroke-linecap="round"/>
+            <circle cx="80" cy="84" r="5.2" fill="#111827"/>
+            <circle cx="80" cy="84" r="2" fill="#fff"/>
+          </svg>
+          <div class="ends"><span class="e-lo">Faible</span><span class="e-hi">Élevé</span></div>
+        </div>
+        <div class="vAtext">
+          <span class="lab">Niveau de risque</span>
+          <span class="word">Moyen</span>
+          <span class="score"><b>45</b> / 100</span>
+        </div>
+      </div>
+      <div class="sec">
+        <div class="slbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Hypothèse principale</div>
+        <div class="stitle">Résidu de nettoyage probable</div>
+        <div class="sconf">Confiance modérée</div>
+        <div class="sbody">Signal compatible avec un film résiduel de nettoyage.</div>
+      </div>
+      <div class="sec">
+        <div class="slbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>Action recommandée</div>
+        <div class="saction">Re-rincer puis recontrôler la zone.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPTION B -->
+  <div>
+    <div class="cap">Option B — Jauge segmentée (Faible · Moyen · Élevé)</div>
+    <div class="ana">
+      <div class="vB">
+        <div class="vBtop"><span class="lab">Niveau de risque</span><span class="score"><b>45</b> / 100</span></div>
+        <div class="seg">
+          <div class="s">Faible</div>
+          <div class="s on-mid">Moyen</div>
+          <div class="s">Élevé</div>
+        </div>
+      </div>
+      <div class="sec">
+        <div class="slbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Hypothèse principale</div>
+        <div class="stitle">Résidu de nettoyage probable</div>
+        <div class="sconf">Confiance modérée</div>
+        <div class="sbody">Signal compatible avec un film résiduel de nettoyage.</div>
+      </div>
+      <div class="sec">
+        <div class="slbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>Action recommandée</div>
+        <div class="saction">Re-rincer puis recontrôler la zone.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

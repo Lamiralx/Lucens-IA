@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens — styles de cartographie</title>
+<style>
+  :root{
+    --primary:#0F3D4E; --signal:#B54A2A; --text:#111827; --text2:#4B5563; --text3:#6B7280;
+    --bg:#FFFFFF; --border:#E5E7EB; --mid:#B7791F; --hi:#B42318;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EEF1F4;font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased;padding:30px 24px 56px}
+  .grid{max-width:780px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .card{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 6px 22px rgba(17,24,39,.08)}
+  .photo{height:230px;background:#070d14;position:relative;overflow:hidden}
+  .photo .glow{position:absolute;inset:0;background:radial-gradient(ellipse 38% 40% at 44% 49%,rgba(96,185,235,.92),rgba(70,140,190,.25) 48%,rgba(70,140,190,0) 68%)}
+  .photo svg{position:absolute;inset:0;width:100%;height:100%}
+  .lbl{padding:13px 15px}
+  .lbl .t{font-size:13.5px;font-weight:700}
+  .lbl .s{font-size:11.5px;color:var(--text3);margin-top:3px;line-height:1.4}
+  .tagnum{fill:#fff;font:700 13px var(--font)}
+</style>
+</head>
+<body>
+<div class="grid">
+
+  <!-- A — Contour + numéro -->
+  <div class="card">
+    <div class="photo">
+      <div class="glow"></div>
+      <svg viewBox="0 0 340 230" preserveAspectRatio="none">
+        <path d="M100 112 C96 88 116 70 148 69 C182 68 218 82 222 108 C226 136 200 162 162 164 C122 166 104 148 100 112 Z" fill="none" stroke="#E06A3A" stroke-width="2.4"/>
+      </svg>
+      <svg viewBox="0 0 340 230"><circle cx="218" cy="82" r="13" fill="#B54A2A"/><text x="218" y="87" text-anchor="middle" class="tagnum">1</text></svg>
+    </div>
+    <div class="lbl"><div class="t">A — Contour + numéro</div><div class="s">Le tracé épouse la zone. Sobre, précis, médical.</div></div>
+  </div>
+
+  <!-- B — Masque segmenté -->
+  <div class="card">
+    <div class="photo">
+      <div class="glow"></div>
+      <svg viewBox="0 0 340 230" preserveAspectRatio="none">
+        <path d="M100 112 C96 88 116 70 148 69 C182 68 218 82 222 108 C226 136 200 162 162 164 C122 166 104 148 100 112 Z" fill="rgba(224,106,58,.30)" stroke="#E06A3A" stroke-width="2.2"/>
+      </svg>
+      <svg viewBox="0 0 340 230"><circle cx="218" cy="82" r="13" fill="#B54A2A"/><text x="218" y="87" text-anchor="middle" class="tagnum">1</text></svg>
+    </div>
+    <div class="lbl"><div class="t">B — Masque segmenté</div><div class="s">Surface remplie : montre l'étendue exacte. Look « segmentation IA ».</div></div>
+  </div>
+
+  <!-- C — Carte d'intensité (heatmap) -->
+  <div class="card">
+    <div class="photo">
+      <div class="glow"></div>
+      <svg viewBox="0 0 340 230" preserveAspectRatio="none">
+        <defs><radialGradient id="heat" cx="45%" cy="48%" r="62%">
+          <stop offset="0%" stop-color="#E02818" stop-opacity=".72"/>
+          <stop offset="42%" stop-color="#E08A1F" stop-opacity=".5"/>
+          <stop offset="100%" stop-color="#E0B81F" stop-opacity="0"/>
+        </radialGradient></defs>
+        <path d="M100 112 C96 88 116 70 148 69 C182 68 218 82 222 108 C226 136 200 162 162 164 C122 166 104 148 100 112 Z" fill="url(#heat)"/>
+      </svg>
+    </div>
+    <div class="lbl"><div class="t">C — Carte d'intensité</div><div class="s">Dégradé chaud = signal fort. Scientifique, mais peut dramatiser.</div></div>
+  </div>
+
+  <!-- D — Repère viseur (brackets) + label -->
+  <div class="card">
+    <div class="photo">
+      <div class="glow"></div>
+      <svg viewBox="0 0 340 230" preserveAspectRatio="none" fill="none" stroke="#E06A3A" stroke-width="2.6" stroke-linecap="round">
+        <path d="M96 84 V66 H114"/><path d="M210 66 H228 V84"/><path d="M228 150 V168 H210"/><path d="M114 168 H96 V150"/>
+      </svg>
+      <svg viewBox="0 0 340 230"><rect x="96" y="172" width="74" height="20" rx="5" fill="#0F3D4E"/><text x="106" y="186" class="tagnum" style="font-size:11px">Zone 1</text></svg>
+    </div>
+    <div class="lbl"><div class="t">D — Repère viseur + label</div><div class="s">Crochets façon viseur (l'ADN du logo Lucens). « Verrouillé sur la cible ».</div></div>
+  </div>
+
+</div>
+</body>
+</html>

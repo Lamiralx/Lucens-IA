@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Lucens — rapport refondu</title>
+<style>
+  :root{
+    --primary:#0F3D4E; --signal:#B54A2A;
+    --text:#111827; --text2:#4B5563; --text3:#6B7280;
+    --border:#E5E7EB; --hair:#EEF0F3; --bg2:#FAFBFC;
+    --low:#2E7D32; --mid:#B7791F; --hi:#B42318;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#E4E7EC;font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased;padding:30px;display:flex;justify-content:center}
+  .a4{width:760px;height:1075px;background:#fff;box-shadow:0 12px 40px rgba(17,24,39,.18);padding:46px 50px 38px;position:relative;display:flex;flex-direction:column}
+
+  /* en-tête */
+  .rhead{display:flex;align-items:flex-start;justify-content:space-between}
+  .brand{display:flex;align-items:center;gap:11px}
+  .brand svg{width:30px;height:30px}
+  .brand .wm{font-size:21px;font-weight:800;color:var(--primary);letter-spacing:-.01em;line-height:1}
+  .brand .tg{font-size:8px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--text3);margin-top:3px}
+  .rhead .ttl{text-align:right}
+  .rhead .ttl .t{font-size:19px;font-weight:700;color:var(--text);letter-spacing:-.01em}
+  .rhead .ttl .r{font-size:11px;color:var(--text3);font-weight:600;margin-top:3px}
+
+  /* traçabilité */
+  .trace{display:flex;border:1px solid var(--border);border-radius:9px;background:var(--bg2);margin-top:22px;overflow:hidden}
+  .tc{flex:1;padding:9px 13px}
+  .tc+.tc{border-left:1px solid var(--border)}
+  .tc .l{font-size:8px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3)}
+  .tc .v{font-size:12.5px;font-weight:600;color:var(--text);margin-top:3px}
+
+  /* verdict — barre de risque segmentée */
+  .verdict{margin-top:22px}
+  .verdict .vlab{font-size:11px;font-weight:600;color:var(--text3);margin-bottom:8px}
+  .seg{display:flex;gap:6px;max-width:380px}
+  .seg .s{flex:1;text-align:center;font-size:13px;font-weight:700;padding:11px 4px;border-radius:9px;background:var(--bg2);border:1px solid var(--border);color:var(--text3)}
+  .seg .s.on{background:var(--mid);border-color:var(--mid);color:#fff}
+  .verdict .vconcl{font-size:13px;color:var(--text2);margin-top:12px}
+  .verdict .vconcl b{color:var(--text);font-weight:700}
+  /* point discret sur l'image analysée (reconnaissance en vignette) */
+  .pdot{position:absolute;right:11px;bottom:11px;width:12px;height:12px;border-radius:50%;background:var(--mid);box-shadow:0 0 0 2.3px rgba(255,255,255,.92),0 2px 5px rgba(0,0,0,.4)}
+
+  /* preuve */
+  .sectlbl{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin:26px 0 10px}
+  .imgs{display:flex;gap:13px}
+  .iw{flex:1;display:flex;flex-direction:column;align-items:center}
+  .img{width:100%;height:270px;background:#0a1119;border:1px solid var(--border);position:relative;overflow:hidden}
+  .img.ana::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 44% 48%,rgba(96,185,235,.85),rgba(96,185,235,0) 50%)}
+  .img.ana::after{content:'';position:absolute;left:31%;top:33%;width:118px;height:90px;border:2px solid var(--signal);border-radius:42% 55% 50% 45%;opacity:.92}
+  .img.orig::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 44% 48%,rgba(70,120,150,.32),rgba(70,120,150,0) 56%)}
+  .ilab{font-size:11px;font-weight:600;color:var(--text2);margin-top:8px}
+  .legend{display:flex;align-items:center;gap:7px;font-size:10.5px;color:var(--text3);margin-top:11px}
+  .legend .dot{width:11px;height:11px;border:2px solid var(--signal);border-radius:50%;flex-shrink:0}
+
+  /* constat + action */
+  .findings{margin-top:26px}
+  .fblock+.fblock{margin-top:22px}
+  .flabel{font-size:12px;font-weight:600;color:var(--text3)}
+  .ftitle{font-size:22px;font-weight:800;line-height:1.18;margin-top:8px;color:var(--mid);letter-spacing:-.01em}
+  .fexpl{font-size:13.5px;color:var(--text2);line-height:1.45;margin-top:6px}
+  .faction{font-size:16px;font-weight:600;color:var(--text);line-height:1.35;margin-top:8px}
+  .fverify{font-size:12.5px;color:var(--text3);line-height:1.4;margin-top:8px}
+
+  /* pied */
+  .rfoot{margin-top:34px;padding-top:13px;border-top:1px solid var(--border)}
+  .rfoot .meth{font-size:9.5px;color:var(--text3);line-height:1.45}
+  .rfoot .disc{font-size:9px;color:#9aa2ad;line-height:1.4;margin-top:5px}
+  .sign{display:flex;justify-content:space-between;align-items:flex-end;margin-top:16px;border-top:1px solid var(--border);padding-top:11px}
+  .sign .sigbox{font-size:10px;color:var(--text3)}
+  .sign .sigline{width:180px;border-bottom:1px solid #c8ced6;height:20px;margin-top:4px}
+  .sign .pg{font-size:9px;color:var(--text3);text-align:right}
+</style>
+</head>
+<body>
+  <div class="a4">
+
+    <!-- EN-TÊTE -->
+    <div class="rhead">
+      <div class="brand">
+        <svg viewBox="0 0 96 96" fill="none"><g stroke="#0F3D4E" stroke-width="7" stroke-linecap="square"><path d="M0 24 V0 H24"/><path d="M72 0 H96 V24"/><path d="M96 72 V96 H72"/><path d="M24 96 H0 V72"/><circle cx="48" cy="48" r="20" stroke-width="4.5"/></g><circle cx="48" cy="48" r="8.5" fill="#B54A2A"/></svg>
+        <div><div class="wm">LUCENS</div><div class="tg">Résidus · Biofilms · Contaminants</div></div>
+      </div>
+    </div>
+
+    <!-- TRAÇABILITÉ -->
+    <div class="trace">
+      <div class="tc"><div class="l">Zone inspectée</div><div class="v">Plan de travail</div></div>
+      <div class="tc"><div class="l">Date & heure</div><div class="v">6 juin 2026, 14:02</div></div>
+    </div>
+
+    <!-- VERDICT -->
+    <div class="verdict">
+      <div class="vlab">Niveau de risque</div>
+      <div class="seg"><div class="s">Faible</div><div class="s on">Modéré</div><div class="s">Élevé</div></div>
+    </div>
+
+    <!-- PREUVE -->
+    <div class="sectlbl">Constat visuel</div>
+    <div class="imgs">
+      <div class="iw"><div class="img orig"></div><div class="ilab">Image originale</div></div>
+      <div class="iw"><div class="img ana"><div class="pdot"></div></div><div class="ilab">Image analysée</div></div>
+    </div>
+    <div class="legend"><span class="dot"></span>Zone fluorescente détectée</div>
+
+    <!-- CONSTAT + ACTION -->
+    <div class="findings">
+      <div class="fblock">
+        <div class="flabel">Origine probable</div>
+        <div class="ftitle">Résidu de produit de nettoyage</div>
+        <div class="fexpl">Savon, détergent ou agent chimique insuffisamment rincé après nettoyage.</div>
+      </div>
+      <div class="fblock">
+        <div class="flabel">Action recommandée</div>
+        <div class="faction">Re-rincer puis recontrôler la zone.</div>
+        <div class="fverify">En cas de doute, confirmer par prélèvement de surface (ATP ou laboratoire).</div>
+      </div>
+    </div>
+
+    <!-- PIED -->
+    <div class="rfoot">
+      <div class="disc">Résultat fourni à titre d'aide à l'interprétation, à confirmer selon les procédures internes applicables.</div>
+    </div>
+
+  </div>
+</body>
+</html>

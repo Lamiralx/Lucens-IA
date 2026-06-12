@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Lucens — rapport actuel (recréation fidèle)</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#E4E7EC;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;padding:30px;display:flex;justify-content:center}
+  .a4{width:760px;height:1075px;background:#fff;box-shadow:0 12px 40px rgba(17,24,39,.18);padding:64px 64px 40px;position:relative}
+  .title{font-size:25px;font-weight:700;color:#14181f;letter-spacing:-.01em}
+  .meta{display:flex;justify-content:space-between;align-items:baseline;margin-top:11px;font-size:13px;color:#6e7682}
+  .rule{height:1px;background:#e1e4e9;margin:13px 0 28px}
+  .imgs{display:flex;gap:14px}
+  .imgwrap{flex:1;display:flex;flex-direction:column;align-items:center}
+  .img{width:100%;height:300px;background:#0a1119;border:1px solid #e6e9ee;position:relative;overflow:hidden}
+  .img.ana::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 44% 48%,rgba(96,185,235,.85),rgba(96,185,235,0) 50%)}
+  .img.ana::after{content:'';position:absolute;left:30%;top:33%;width:120px;height:92px;border:2px solid #B54A2A;border-radius:42% 55% 50% 45%;opacity:.9}
+  .img.orig::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 44% 48%,rgba(70,120,150,.35),rgba(70,120,150,0) 55%)}
+  .imglab{font-size:11px;color:#828a96;margin-top:9px}
+  .risk{margin-top:34px;font-size:18px;font-weight:700;color:#14181f}
+  .risk b{color:#D97706}
+  .concl{margin-top:13px;font-size:15px;color:#373e4a}
+  .disc{position:absolute;left:64px;right:64px;bottom:34px;font-size:9px;color:#969eaa;line-height:1.4}
+</style>
+</head>
+<body>
+  <div class="a4">
+    <div class="title">Rapport d'analyse</div>
+    <div class="meta"><span>6 juin 2026</span><span>Zone inspectée : Plan de travail</span></div>
+    <div class="rule"></div>
+
+    <div class="imgs">
+      <div class="imgwrap"><div class="img orig"></div><div class="imglab">Image originale</div></div>
+      <div class="imgwrap"><div class="img ana"></div><div class="imglab">Image analysée</div></div>
+    </div>
+
+    <div class="risk">Risque : <b>modéré</b></div>
+    <div class="concl">Signal fluorescent modéré détecté.</div>
+
+    <div class="disc">Résultat fourni à titre d'aide à l'interprétation, à confirmer selon les procédures internes applicables.</div>
+  </div>
+</body>
+</html>

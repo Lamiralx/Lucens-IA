@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens — Rapport V188.8 (proposition design)</title>
+<style>
+  :root{
+    --primary:#0F3D4E; --signal:#B54A2A;
+    --ink-primary:#0C0E13; --ink-secondary:#3A4150; --ink-tertiary:#6B7280; --ink-dim:#969CAB;
+    --bg-page:#F4F6F8;
+    --surface:#FFFFFF; --surface-soft:#FAFBFC;
+    --border:#E2E5EA; --hairline:rgba(12,14,19,0.07);
+    --shadow:0 1px 2px rgba(12,14,19,.04), 0 4px 18px rgba(12,14,19,.06);
+    --risk-low:#2E7D32; --risk-mid:#B7791F; --risk-high:#B42318;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#E4E7EC;font-family:var(--font);color:var(--ink-primary);-webkit-font-smoothing:antialiased;padding:30px 24px;display:flex;justify-content:center;gap:40px;flex-wrap:wrap}
+  .cap{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#9aa3af;text-align:center;margin-bottom:10px}
+  .phone{width:390px;height:844px;background:var(--bg-page);border:1px solid #DDE1E6;border-radius:30px;overflow:hidden;box-shadow:0 18px 50px rgba(17,24,39,.15);display:flex;flex-direction:column}
+
+  /* ─── Header LUCENS standard (= celui de toute l'app) ─── */
+  /* Pas de ✕ fermeture (redondant : clic logo = retour accueil, pattern Stripe/GitHub).
+     Pas de tab bar en bas non plus (focus sur le verdict + 2 actions clés).
+     Un seul en-tête, déjà identitaire et navigable. */
+  .hdr{display:flex;align-items:center;gap:9px;padding:13px 17px 12px;background:#fff;border-bottom:1px solid var(--hairline);flex-shrink:0;cursor:pointer}
+  .hdr-mark{width:26px;height:26px;flex-shrink:0}
+  .hdr-lockup{display:flex;flex-direction:column;gap:1px}
+  .hdr-wm{font-weight:800;font-size:17px;color:var(--primary);letter-spacing:-.01em;line-height:1}
+  .hdr-tag{font-size:8px;font-weight:700;letter-spacing:.11em;color:var(--ink-tertiary);text-transform:uppercase}
+
+  /* ─── Contenu scrollable ─── */
+  /* IMPORTANT : flex-shrink:0 sur les enfants pour qu'ils gardent leur hauteur
+     naturelle. Sans ça, les flex children seraient SHRINKÉS pour rentrer dans
+     .scr → combiné à overflow:hidden des cartes (rayon des coins) → contenu
+     coupé (ex. texte ATP clippé en bas en DE). Avec flex-shrink:0, .scr scrolle
+     proprement quand le contenu dépasse (peut arriver avec IA verbeuse en DE). */
+  .scr{flex:1;overflow:auto;padding:12px 14px 10px;display:flex;flex-direction:column;gap:10px;min-height:0}
+  .scr > *{flex-shrink:0}
+
+  /* ───────── BLOC 1 — VERDICT (le plus dominant) ───────── */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:13px;box-shadow:var(--shadow);overflow:hidden}
+  .verdict{padding:14px 16px 16px}
+  .verdict-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+  .verdict-top .lbl{font-size:12px;font-weight:600;color:var(--ink-tertiary);text-transform:none;letter-spacing:0}
+  .verdict-top .score{display:inline-flex;align-items:baseline;gap:3px}
+  .verdict-top .score-num{font-size:26px;font-weight:800;color:var(--risk-high);line-height:1}
+  .verdict-top .score-suffix{font-size:13px;color:var(--ink-tertiary);font-weight:600}
+
+  /* Jauge slim style Apple Health : barre fine 8px, 3 segments, marqueur sur position active */
+  .gauge{position:relative;height:8px;border-radius:6px;background:linear-gradient(90deg,#DCEAD9 0%,#DCEAD9 33.33%,#F0E0C2 33.33%,#F0E0C2 66.66%,#F0D0CB 66.66%,#F0D0CB 100%);margin-bottom:9px}
+  /* Marqueur de position (cercle gros sur le segment actif) */
+  .gauge-marker{position:absolute;top:50%;left:78%;transform:translate(-50%,-50%);width:18px;height:18px;border-radius:50%;background:var(--risk-high);border:3px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.25);z-index:2}
+  .gauge-labels{display:flex;justify-content:space-between;font-size:10.5px;font-weight:600;color:var(--ink-tertiary);padding:0 2px}
+  .gauge-labels span{flex:1;text-align:center}
+  .gauge-labels span:first-child{text-align:left}
+  .gauge-labels span:last-child{text-align:right}
+  .gauge-labels span.on{color:var(--risk-high)}
+
+  /* ───────── BLOC 2 — IMAGE (segmented control iOS + edge-to-edge) ───────── */
+  .image-card{display:flex;flex-direction:column}
+  /* Segmented control style iOS : pilule grise avec 2 segments, actif en blanc */
+  .image-toggle-wrap{display:flex;justify-content:center;padding:10px 12px 10px}
+  .image-seg{display:inline-flex;background:#EFF0F3;border-radius:9px;padding:2px;gap:0}
+  .image-seg-btn{padding:6px 14px;font-size:12.5px;font-weight:500;color:var(--ink-tertiary);background:transparent;border:0;border-radius:7px;cursor:pointer;transition:all .15s ease-out;font-family:var(--font);letter-spacing:-.005em}
+  .image-seg-btn.active{background:#fff;color:var(--ink-primary);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.07), 0 0 0 .5px rgba(0,0,0,.04)}
+  .image-wrap{position:relative;height:175px;background:#0a1119;overflow:hidden}
+  /* Mobile compact : image 150 px pour absorber l'overhead des langues verbeuses
+     (DE peut générer 1-2 lignes de plus que FR sur description/risque/ATP). */
+  @media (max-width: 480px) {
+    .image-wrap{height:150px}
+    .sec{padding:13px 16px 14px}
+    .verdict{padding:13px 16px 14px}
+  }
+  .image-wrap svg{position:absolute;inset:0;width:100%;height:100%}
+  /* Pas de légende ni de pastille sur l'image. L'image parle d'elle-même
+     (orange = fluorescence détectée), l'identification se lit immédiatement
+     en dessous dans le bloc « Origine probable ». Pattern Apple Photos / iAuditor. */
+
+  /* ───────── BLOC 3 — ANALYSE (3 sections en UNE carte avec hairlines) ───────── */
+  /* Padding sections AÉRÉ : 15px top + 16px bottom pour qu'aucun texte (même
+     en 2 lignes) ne chevauche jamais la bordure. */
+  .analyse{display:flex;flex-direction:column}
+  .sec{padding:15px 16px 16px}
+  .sec + .sec{border-top:1px solid var(--hairline)}
+  .sec-head{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+  .sec-ico{width:14px;height:14px;flex-shrink:0;color:var(--ink-tertiary)}
+  .sec-title{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-secondary)}
+  .sec-main{font-size:16px;font-weight:700;color:var(--ink-primary);line-height:1.22;margin-bottom:5px}
+
+  /* V188.8b — COULEUR PAR SECTION (cohérence sémantique avec la sévérité)
+     Le titre du verdict (Matière organique) reprend la couleur du risque
+     pour réinforcer la chaîne « 78 rouge → titre rouge ». Les icônes sont
+     color-codées par signification (instrumentation / vigilance / action). */
+  .sec-origine .sec-ico{color:var(--primary)}
+  .sec-origine .sec-main{color:var(--risk-high)}
+  .sec-risque .sec-ico{color:var(--risk-high)}
+  .sec-action .sec-ico{color:var(--primary)}
+  .sec-body{font-size:13px;color:var(--ink-secondary);line-height:1.45}
+  .sec-body b{color:var(--ink-primary);font-weight:700}
+  .sec-foot{font-size:11.5px;color:var(--ink-tertiary);line-height:1.45;margin-top:7px}
+
+  /* Accent latéral pour la section Risque (codé HACCP : rouge = vigilance) */
+  .sec-risque{position:relative;padding-left:18px}
+  .sec-risque::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:3px;background:var(--risk-high);border-radius:2px}
+
+  /* ───────── Boutons ───────── */
+  /* Air ajouté en haut pour que les boutons respirent depuis la carte « Analyse ». */
+  .actions{display:flex;gap:10px;padding:0 14px 14px;margin-top:8px}
+  .btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:46px;border-radius:11px;font-size:14px;font-weight:600;border:1px solid transparent;cursor:pointer}
+  .btn-p{background:var(--primary);color:#fff}
+  .btn-s{background:#fff;color:var(--primary);border-color:var(--border)}
+  .btn svg{width:14px;height:14px}
+
+  /* ───────── Barre de navigation du bas ───────── */
+  .nav{display:flex;padding:8px 0 11px;background:#fff;border-top:1px solid var(--hairline);flex-shrink:0}
+  .nav .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--ink-tertiary)}
+  .nav .tab svg{width:19px;height:19px}
+  .nav .tab span{font-size:9.5px;font-weight:600}
+
+  /* ───────── Légende explicative à droite ───────── */
+  .legend-panel{width:340px;background:#fff;border-radius:14px;padding:24px;font-size:13px;line-height:1.55;color:var(--ink-secondary)}
+  .legend-panel h2{font-size:15px;font-weight:800;color:var(--ink-primary);margin-bottom:10px}
+  .legend-panel h3{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-tertiary);font-weight:700;margin:14px 0 5px}
+  .legend-panel ul{list-style:none;padding:0;margin:0}
+  .legend-panel li{padding:3px 0 3px 18px;position:relative}
+  .legend-panel li::before{content:'•';position:absolute;left:5px;color:var(--ink-tertiary)}
+  .legend-panel .ref{font-size:11px;color:var(--ink-tertiary)}
+</style>
+</head>
+<body>
+
+<div>
+  <div class="cap">V188.8 — rapport refondu (proposition)</div>
+  <div class="phone">
+
+    <!-- En-tête LUCENS standard de l'app — le clic dessus ramène à l'accueil
+         (rôle implicite de "home link", pattern Stripe / GitHub).
+         Pas de bouton ✕ séparé, pas de tab bar en bas. -->
+    <div class="hdr" role="link" tabindex="0" aria-label="Retour à l'accueil">
+      <svg class="hdr-mark" viewBox="0 0 96 96" fill="none"><g stroke="#0F3D4E" stroke-width="7" stroke-linecap="square"><path d="M0 24 V0 H24"/><path d="M72 0 H96 V24"/><path d="M96 72 V96 H72"/><path d="M24 96 H0 V72"/><circle cx="48" cy="48" r="20" stroke-width="4.5"/></g><circle cx="48" cy="48" r="8.5" fill="#B54A2A"/></svg>
+      <div class="hdr-lockup"><span class="hdr-wm">LUCENS</span><span class="hdr-tag">Résidus · Biofilms · Contaminants</span></div>
+    </div>
+
+    <div class="scr">
+
+      <!-- ═══════ BLOC 1 — VERDICT (Niveau de risque + score + jauge slim) ═══════ -->
+      <div class="card verdict">
+        <div class="verdict-top">
+          <span class="lbl">Niveau de risque</span>
+          <span class="score"><span class="score-num">78</span><span class="score-suffix">/100</span></span>
+        </div>
+        <div class="gauge">
+          <div class="gauge-marker"></div>
+        </div>
+        <div class="gauge-labels">
+          <span>Faible</span>
+          <span>Modéré</span>
+          <span class="on">Élevé</span>
+        </div>
+      </div>
+
+      <!-- ═══════ BLOC 2 — IMAGE (tabs discrets + image edge-to-edge + légende) ═══════ -->
+      <div class="card image-card">
+        <div class="image-toggle-wrap">
+          <div class="image-seg" role="tablist" aria-label="Affichage de l'image">
+            <button type="button" class="image-seg-btn active" role="tab" aria-selected="true">Avec carto</button>
+            <button type="button" class="image-seg-btn" role="tab" aria-selected="false">Source</button>
+          </div>
+        </div>
+        <div class="image-wrap">
+          <svg viewBox="0 0 380 175" preserveAspectRatio="none">
+            <defs><filter id="g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="8"/></filter></defs>
+            <g filter="url(#g)" fill="#7fb95e">
+              <path d="M70 65 C55 35 110 28 140 35 C170 42 175 60 165 80 C155 105 170 115 155 130 C130 150 90 140 75 115 C65 95 75 80 70 65 Z" opacity=".55"/>
+              <path d="M230 60 C220 45 250 40 270 48 C290 56 290 75 280 85 C270 95 280 105 265 110 C250 115 235 105 230 90 Z" opacity=".48"/>
+            </g>
+            <g fill="none" stroke="#E06A3A" stroke-width="2.4" stroke-linejoin="round">
+              <path d="M70 65 C55 35 110 28 140 35 C170 42 175 60 165 80 C155 105 170 115 155 130 C130 150 90 140 75 115 C65 95 75 80 70 65 Z"/>
+              <path d="M230 60 C220 45 250 40 270 48 C290 56 290 75 280 85 C270 95 280 105 265 110 C250 115 235 105 230 90 Z"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <!-- ═══════ BLOC 3 — ANALYSE (Origine / Risque / Action dans UNE carte, séparées par hairlines) ═══════ -->
+      <div class="card analyse">
+
+        <div class="sec sec-origine">
+          <div class="sec-head">
+            <svg class="sec-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <span class="sec-title">Origine probable</span>
+          </div>
+          <div class="sec-main">Matière organique</div>
+          <div class="sec-body">Résidu alimentaire, graisse ou protéine.</div>
+        </div>
+
+        <div class="sec sec-risque">
+          <div class="sec-head">
+            <svg class="sec-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span class="sec-title">Risque associé</span>
+          </div>
+          <div class="sec-body">Nourrit les bactéries : risque de contamination des aliments (<b>Listeria</b>, <b>salmonelle</b>).</div>
+        </div>
+
+        <div class="sec sec-action">
+          <div class="sec-head">
+            <svg class="sec-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+            <span class="sec-title">Action recommandée</span>
+          </div>
+          <div class="sec-main">Nettoyer et désinfecter, puis recontrôler.</div>
+          <div class="sec-foot">En cas de doute, confirmer par prélèvement (ATP ou laboratoire).</div>
+        </div>
+
+      </div>
+
+      <!-- Boutons d'action -->
+      <div class="actions">
+        <button class="btn btn-p">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Générer le rapport
+        </button>
+        <button class="btn btn-s">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v4h4"/></svg>
+          Nouvelle analyse
+        </button>
+      </div>
+
+    </div>
+
+    <!-- V188.8 — Tab bar Historique/Contexte/Réglages RETIRÉE sur l'écran rapport.
+         Pattern modal/sheet : focus total sur le verdict + 2 actions clés.
+         Pour revenir à l'accueil → croix ✕ dans le header. -->
+
+  </div>
+</div>
+
+<!-- Panneau de légende explicatif (pour évaluation) -->
+<div class="legend-panel">
+  <h2>Décisions de design</h2>
+  <p>Cette proposition élimine les défauts identifiés dans V188.7 et s'aligne sur Linear / Things / iAuditor / Apple Health.</p>
+
+  <h3>3 macro-blocs (au lieu de 6)</h3>
+  <ul>
+    <li><b>Verdict</b> : score + jauge slim = un seul bloc</li>
+    <li><b>Image</b> : tabs discrets + image edge-to-edge</li>
+    <li><b>Analyse</b> : 3 sections (Origine / Risque / Action) dans UNE carte séparées par hairlines</li>
+  </ul>
+
+  <h3>Suppressions vs V188.7</h3>
+  <ul>
+    <li>Plus de pills boutonnées Faible/Modéré/Élevé (faux boutons)</li>
+    <li>Plus de toggle CAPS bold full-width</li>
+    <li>Plus de filet rouge en haut de carte</li>
+    <li>Titre « Matière organique » plus en rouge → encre normale</li>
+    <li>Image plus en border-radius dans carte</li>
+  </ul>
+
+  <h3>Hiérarchie d'information</h3>
+  <ul>
+    <li>Rouge utilisé UNE seule fois (score + marqueur de jauge)</li>
+    <li>Titres de section en CAPS courts avec icône → reconnaissance instantanée</li>
+    <li>Bord rouge sur "Risque associé" (signal HACCP)</li>
+    <li>Fond de page gris très clair → cartes blanches gagnent en présence</li>
+  </ul>
+
+  <h3>Références appliquées</h3>
+  <ul>
+    <li>Jauge slim type Apple Health</li>
+    <li>Tabs minimalistes type Linear / Notion</li>
+    <li>Cartes blanches sur fond gris type Stripe</li>
+    <li>Titres de section en CAPS type iAuditor</li>
+    <li>Image edge-to-edge type Things / Apple</li>
+  </ul>
+
+  <p class="ref">Mockup statique — pas encore intégré dans index.html. Tu valides ou tu corriges avant que je code.</p>
+</div>
+
+</body>
+</html>

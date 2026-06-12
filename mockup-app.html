@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lucens — aperçu responsive (plein écran)</title>
+<style>
+  :root{
+    --primary:#0F3D4E; --signal:#B54A2A;
+    --text:#111827; --text2:#4B5563; --text3:#6B7280;
+    --bg:#FFFFFF; --bg2:#FAFBFC; --border:#E5E7EB; --hair:#EEF0F3;
+    --low:#2E7D32; --mid:#B7791F; --hi:#B42318;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
+    --safe-b:env(safe-area-inset-bottom,0px);
+    --safe-t:env(safe-area-inset-top,0px);
+    --safe-l:env(safe-area-inset-left,0px);
+    --safe-r:env(safe-area-inset-right,0px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--bg);font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden;height:100dvh;display:flex;flex-direction:column}
+
+  /* barre de démo (habillage hors design réel) */
+  .demobar{flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:10px;background:#0f1720;padding:6px 12px;padding-top:calc(6px + var(--safe-t))}
+  .demobar .lbl{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#64748b}
+  .demobar .seg{display:flex;background:rgba(255,255,255,.09);border-radius:999px;padding:3px}
+  .demobar .seg button{border:0;background:none;color:#cbd5e1;font-family:inherit;font-weight:700;font-size:12px;padding:5px 14px;border-radius:999px;cursor:pointer}
+  .demobar .seg button.sel{background:#fff;color:var(--primary)}
+
+  .screens{flex:1;min-height:0;position:relative}
+  .screen{display:none;height:100%;flex-direction:column;
+          padding-left:var(--safe-l);padding-right:var(--safe-r)}
+  .screen.on{display:flex}
+
+  /* ── en-tête ── */
+  .appbar{display:flex;align-items:center;gap:9px;padding:12px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+  .mark{width:27px;height:27px;flex-shrink:0}
+  .wm{font-weight:800;font-size:19px;letter-spacing:-.01em;color:var(--primary);line-height:1}
+  .tag{font-size:8px;font-weight:700;letter-spacing:.11em;color:var(--text3);text-transform:uppercase}
+  .lock{display:flex;flex-direction:column;gap:2px}
+  .appbar-r{margin-left:auto;font-size:11px;font-weight:700;letter-spacing:.11em;color:var(--text3);text-transform:uppercase}
+
+  .view{flex:1;overflow:auto;-webkit-overflow-scrolling:touch}
+
+  /* ── barre du bas ── */
+  .botnav{display:flex;border-top:1px solid var(--border);background:#fff;flex-shrink:0;
+          padding:8px 0 calc(8px + var(--safe-b))}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--text3);background:none;border:0;font-family:inherit}
+  .tab svg{width:20px;height:20px;display:block}
+  .tab span{font-size:10px;font-weight:600}
+
+  /* ── boutons ── */
+  .btn{display:flex;align-items:center;justify-content:center;height:52px;border-radius:12px;font-size:15px;font-weight:600;border:1px solid transparent;width:100%;font-family:inherit;cursor:pointer}
+  .btn-p{background:var(--primary);color:#fff}
+  .btn-s{background:#fff;color:var(--primary);border-color:#CBD5E1}
+
+  /* ── labels de section (Option C) ── */
+  .slbl{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--text2)}
+  .slbl svg{width:17px;height:17px;color:var(--primary);flex-shrink:0}
+  .eyebrow{font-size:12px;font-weight:600;color:var(--text3)}
+
+  /* ════ ACCUEIL ════ */
+  .home-pad{padding:0 18px 22px}
+  .lead{font-size:15px;line-height:1.45;color:var(--text2);text-align:center;max-width:340px;margin:18px auto 0}
+  .actions{display:flex;flex-direction:column;gap:11px;margin-top:18px}
+  .bene{font-size:13px;color:var(--text3);text-align:center;margin-top:14px}
+  .secbar{display:flex;align-items:center;justify-content:space-between;margin:24px 2px 9px}
+  .seeall{font-size:12px;font-weight:600;color:var(--primary)}
+  .card{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden}
+  .row{display:flex;align-items:center;gap:12px;padding:11px 13px}
+  .row+.row{border-top:1px solid var(--hair)}
+  .thumb{width:46px;height:46px;border-radius:10px;flex-shrink:0;background:#0b1622;position:relative;overflow:hidden;border:1px solid #0d1c2b}
+  .thumb::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 58% 44%,rgba(96,180,230,.9),rgba(96,180,230,0) 58%)}
+  .rmeta{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+  .rt{font-size:14px;font-weight:600}
+  .rs{font-size:12px;color:var(--text3)}
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:3px 9px 3px 7px;border-radius:999px;text-transform:uppercase;white-space:nowrap}
+  .pill .pd{width:6px;height:6px;border-radius:50%}
+  .pill-hi{color:var(--hi);background:rgba(180,35,24,.08)} .pill-hi .pd{background:var(--hi)}
+  .pill-mid{color:var(--mid);background:rgba(183,121,31,.09)} .pill-mid .pd{background:var(--mid)}
+  .pill-low{color:var(--low);background:rgba(46,125,50,.09)} .pill-low .pd{background:var(--low)}
+  .navrow{display:flex;align-items:center;justify-content:space-between;padding:13px;font-size:14px;font-weight:600}
+  .navrow+.navrow{border-top:1px solid var(--hair)}
+  .chev{color:#c8ced6;font-size:18px}
+
+  /* ════ ANALYSE ════ */
+  .ana-pad{padding:16px 16px 18px}
+  .ana{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;border-top:3px solid var(--mid);box-shadow:0 1px 2px rgba(17,24,39,.05)}
+  /* badge jauge intégré, coin bas-droit de l'image */
+  .badge{position:absolute;right:10px;bottom:10px;background:#fff;border-radius:11px;box-shadow:0 4px 14px rgba(0,0,0,.30);padding:7px 11px 6px 9px;display:flex;align-items:center;gap:9px}
+  .badge .mini{width:46px;flex-shrink:0}
+  .badge .mini svg{width:100%;display:block}
+  .badge .bt{display:flex;flex-direction:column}
+  .badge .bt .l{font-size:8px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--text3)}
+  .badge .bt .w{font-size:15px;font-weight:800;color:var(--mid);line-height:1.12}
+  .badge .bt .s{font-size:10px;color:var(--text3);font-weight:600}
+  .img{background:#0a1119;position:relative;border-bottom:1px solid var(--border);height:min(46vh,272px)}
+  .img::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 44% 50%,rgba(96,185,235,.92),rgba(96,185,235,0) 46%)}
+  .img::after{content:'';position:absolute;left:34%;top:33%;width:30%;height:42%;border:2px solid var(--signal);border-radius:42% 55% 50% 45%;opacity:.9}
+  .sec{padding:15px 16px}
+  .sec+.sec{border-top:1px solid var(--border)}
+  .stitle{font-size:17px;font-weight:700;line-height:1.25;margin-top:8px;color:var(--mid)}
+  .sconf{font-size:12.5px;color:var(--text3);margin-top:3px}
+  .sbody{font-size:14px;line-height:1.46;color:var(--text2);margin-top:8px}
+  .saction{font-size:15px;font-weight:600;line-height:1.35;margin-top:8px}
+  .actionbar{display:flex;gap:10px;padding:10px 16px;border-top:1px solid var(--border);background:#fff;flex-shrink:0}
+  .actionbar .btn{height:48px;font-size:14.5px}
+
+  /* ════ PAYSAGE ════ */
+  @media (orientation:landscape) and (max-height:560px){
+    .appbar{padding:9px 18px}
+    .home-pad{display:flex;gap:20px;padding:14px 18px;height:100%}
+    .home-left{flex:1;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--border);padding-right:20px}
+    .home-left .lead{margin:0;text-align:left;max-width:none}
+    .home-left .actions{margin-top:16px}
+    .home-left .bene{text-align:left;margin-top:13px}
+    .home-right{flex:1;overflow:auto}
+    .home-right .secbar:first-child{margin-top:0}
+
+    .ana-pad{padding:0;height:100%}
+    .ana{height:100%;border:0;border-top:3px solid var(--mid);border-radius:0;display:flex;box-shadow:none}
+    .ana-grid{display:flex;width:100%}
+    .img{height:auto;align-self:stretch;flex:0 0 46%;border-bottom:0;border-right:1px solid var(--border)}
+    .ana-col{flex:1;display:flex;flex-direction:column;min-width:0}
+    .badge{right:8px;bottom:8px;padding:6px 9px 5px 8px;gap:7px}
+    .badge .mini{width:40px}
+    .badge .bt .w{font-size:13px}
+    .sec{padding:11px 18px}
+    .sec:last-child{border-bottom:0}
+    .stitle{font-size:15px;margin-top:6px}
+    .sbody{font-size:12.5px;margin-top:6px}
+    .saction{font-size:14px}
+    .botnav{padding:7px 0 calc(7px + var(--safe-b))}
+  }
+
+</style>
+</head>
+<body>
+
+<div class="demobar">
+  <span class="lbl">Aperçu</span>
+  <div class="seg">
+    <button id="t-home" class="sel" onclick="show('home')">Accueil</button>
+    <button id="t-ana" onclick="show('ana')">Analyse</button>
+  </div>
+</div>
+
+<div class="screens">
+
+<!-- ════ ACCUEIL ════ -->
+<section class="screen on" id="home">
+  <div class="appbar">
+    <svg class="mark" viewBox="0 0 96 96" fill="none"><g stroke="#0F3D4E" stroke-width="7" stroke-linecap="square"><path d="M0 24 V0 H24"/><path d="M72 0 H96 V24"/><path d="M96 72 V96 H72"/><path d="M24 96 H0 V72"/><circle cx="48" cy="48" r="20" stroke-width="4.5"/></g><circle cx="48" cy="48" r="8.5" fill="#B54A2A"/></svg>
+    <div class="lock"><span class="wm">LUCENS</span><span class="tag">Résidus · Biofilms · Contaminants</span></div>
+  </div>
+  <div class="view">
+    <div class="home-pad">
+      <div class="home-left">
+        <p class="lead">Repérez en direct les zones à risque et les résidus invisibles à l'œil nu.</p>
+        <div class="actions">
+          <div class="btn btn-p">Analyser en direct</div>
+          <div class="btn btn-s">Importer une image</div>
+        </div>
+        <p class="bene">Résidus invisibles • Risque évalué • Rapport visuel</p>
+      </div>
+      <div class="home-right">
+        <div class="secbar"><span class="eyebrow">Dernières inspections</span><span class="seeall">Tout voir</span></div>
+        <div class="card">
+          <div class="row"><div class="thumb"></div><div class="rmeta"><span class="rt">Plan de travail B</span><span class="rs">Aujourd'hui · 14:02</span></div><span class="pill pill-hi"><span class="pd"></span>Élevé</span></div>
+          <div class="row"><div class="thumb"></div><div class="rmeta"><span class="rt">Évier cuisine</span><span class="rs">Hier · 09:30</span></div><span class="pill pill-mid"><span class="pd"></span>Moyen</span></div>
+          <div class="row"><div class="thumb"></div><div class="rmeta"><span class="rt">Trancheuse</span><span class="rs">2 juin · 17:10</span></div><span class="pill pill-low"><span class="pd"></span>Faible</span></div>
+        </div>
+        <div class="secbar"><span class="eyebrow">En savoir plus</span></div>
+        <div class="card">
+          <div class="navrow">Pourquoi Lucens IA <span class="chev">›</span></div>
+          <div class="navrow">Comment ça marche <span class="chev">›</span></div>
+          <div class="navrow">Précautions d'usage <span class="chev">›</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <nav class="botnav">
+    <button class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v4h4"/><path d="M12 7.5V12l3.2 1.9"/></svg><span>Historique</span></button>
+    <button class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg><span>Contexte</span></button>
+    <button class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Réglages</span></button>
+  </nav>
+</section>
+
+<!-- ════ ANALYSE ════ -->
+<section class="screen" id="ana">
+  <div class="appbar">
+    <svg class="mark" viewBox="0 0 96 96" fill="none"><g stroke="#0F3D4E" stroke-width="7" stroke-linecap="square"><path d="M0 24 V0 H24"/><path d="M72 0 H96 V24"/><path d="M96 72 V96 H72"/><path d="M24 96 H0 V72"/><circle cx="48" cy="48" r="20" stroke-width="4.5"/></g><circle cx="48" cy="48" r="8.5" fill="#B54A2A"/></svg>
+    <div class="lock"><span class="wm">LUCENS</span><span class="tag">Résidus · Biofilms · Contaminants</span></div>
+    <span class="appbar-r">Rapport</span>
+  </div>
+  <div class="view">
+    <div class="ana-pad">
+      <div class="ana">
+        <div class="ana-grid">
+          <div class="img">
+            <div class="badge">
+              <div class="mini"><svg viewBox="0 0 160 92" fill="none"><path d="M14 84 A66 66 0 0 1 45 28" stroke="#2E7D32" stroke-width="12" stroke-linecap="round"/><path d="M49 25.7 A66 66 0 0 1 111 25.7" stroke="#B7791F" stroke-width="12" stroke-linecap="round"/><path d="M115 28 A66 66 0 0 1 146 84" stroke="#B42318" stroke-width="12" stroke-linecap="round"/><line x1="80" y1="84" x2="71" y2="27.5" stroke="#111827" stroke-width="3.6" stroke-linecap="round"/><circle cx="80" cy="84" r="5.6" fill="#111827"/><circle cx="80" cy="84" r="2" fill="#fff"/></svg></div>
+              <div class="bt"><span class="l">Niveau de risque</span><span class="w">Moyen</span><span class="s">45 / 100</span></div>
+            </div>
+          </div>
+          <div class="ana-col">
+            <div class="sec">
+              <div class="slbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Hypothèse principale</div>
+              <div class="stitle">Résidu de nettoyage probable</div>
+              <div class="sconf">Confiance modérée</div>
+              <div class="sbody">Signal compatible avec un film résiduel de nettoyage.</div>
+            </div>
+            <div class="sec">
+              <div class="slbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>Action recommandée</div>
+              <div class="saction">Re-rincer puis recontrôler la zone.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="actionbar">
+    <div class="btn btn-p">Générer le rapport</div>
+    <div class="btn btn-s">Nouvelle analyse</div>
+  </div>
+  <nav class="botnav">
+    <button class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v4h4"/><path d="M12 7.5V12l3.2 1.9"/></svg><span>Historique</span></button>
+    <button class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg><span>Contexte</span></button>
+    <button class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Réglages</span></button>
+  </nav>
+</section>
+
+</div><!-- /.screens -->
+
+<script>
+  function show(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on', s.id===id));
+    document.getElementById('t-home').classList.toggle('sel', id==='home');
+    document.getElementById('t-ana').classList.toggle('sel', id==='ana');
+    window.scrollTo(0,0);
+  }
+</script>
+</body>
+</html>

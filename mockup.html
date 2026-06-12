@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens — maquette blocs v3</title>
+<style>
+  :root{
+    --primary:#0F3D4E; --signal:#B54A2A;
+    --text:#111827; --text2:#4B5563; --text3:#6B7280;
+    --bg:#FFFFFF; --bg2:#FAFBFC; --border:#E5E7EB; --hair:#EEF0F3;
+    --low:#2E7D32; --mid:#B7791F; --hi:#B42318;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EEF1F4;font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased;padding:34px 24px 60px}
+  .wrap{display:flex;gap:46px;justify-content:center;align-items:flex-start;flex-wrap:wrap;max-width:1000px;margin:0 auto}
+  .col{display:flex;flex-direction:column;align-items:center;gap:14px}
+  .cap{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#9aa3af}
+  .phone{width:390px;background:var(--bg);border:1px solid #DDE1E6;border-radius:30px;overflow:hidden;box-shadow:0 18px 50px rgba(17,24,39,.13)}
+  .scr{padding:0 20px 22px}
+
+  .hdr{display:flex;align-items:center;gap:9px;padding:18px 20px 14px;border-bottom:1px solid var(--border)}
+  .mark{width:30px;height:30px;flex-shrink:0}
+  .wm{font-weight:800;font-size:21px;letter-spacing:-.01em;color:var(--primary);line-height:1}
+  .tag{font-size:8.5px;font-weight:700;letter-spacing:.12em;color:var(--text3);text-transform:uppercase}
+  .lock{display:flex;flex-direction:column;gap:2px}
+  .hdr-r{margin-left:auto;font-size:11.5px;font-weight:700;letter-spacing:.12em;color:var(--text3);text-transform:uppercase}
+
+  /* en-tête de liste accueil : label simple lisible */
+  .eyebrow{font-size:12px;font-weight:600;letter-spacing:0;color:var(--text3)}
+  /* label de section avec pictogramme (Option C) — carte d'analyse */
+  .slbl{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--text2)}
+  .slbl svg{width:16px;height:16px;color:var(--primary);flex-shrink:0}
+
+  /* ACCUEIL */
+  .lead{font-size:14px;line-height:1.45;color:var(--text2);text-align:center;max-width:330px;margin:18px auto 0}
+  .btn{display:flex;align-items:center;justify-content:center;height:52px;border-radius:12px;font-size:15px;font-weight:600;width:100%;cursor:pointer;border:1px solid transparent}
+  .btn-p{background:var(--primary);color:#fff}
+  .btn-s{background:#fff;color:var(--primary);border-color:#CBD5E1}
+  .actions{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+  .bene{font-size:13px;color:var(--text3);text-align:center;margin-top:14px}
+  .secbar{display:flex;align-items:center;justify-content:space-between;margin:24px 1px 9px}
+  .seeall{font-size:12px;font-weight:600;color:var(--primary)}
+  .card{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden}
+  .row{display:flex;align-items:center;gap:12px;padding:11px 13px}
+  .row+.row{border-top:1px solid var(--hair)}
+  .thumb{width:48px;height:48px;border-radius:10px;flex-shrink:0;background:#0b1622;position:relative;overflow:hidden;border:1px solid #0d1c2b}
+  .thumb::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 58% 44%,rgba(96,180,230,.9),rgba(96,180,230,0) 58%)}
+  .rmeta{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+  .rt{font-size:14px;font-weight:600;color:var(--text)}
+  .rs{font-size:12px;color:var(--text3)}
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;letter-spacing:.02em;padding:3px 9px 3px 7px;border-radius:999px;text-transform:uppercase;white-space:nowrap}
+  .pill .pd{width:6px;height:6px;border-radius:50%}
+  .pill-hi{color:var(--hi);background:rgba(180,35,24,.08)} .pill-hi .pd{background:var(--hi)}
+  .pill-mid{color:var(--mid);background:rgba(183,121,31,.09)} .pill-mid .pd{background:var(--mid)}
+  .pill-low{color:var(--low);background:rgba(46,125,50,.09)} .pill-low .pd{background:var(--low)}
+  .chev{color:#c8ced6;font-size:18px}
+  .navrow{display:flex;align-items:center;justify-content:space-between;padding:13px 13px;font-size:14px;font-weight:600;color:var(--text)}
+  .navrow+.navrow{border-top:1px solid var(--hair)}
+
+  /* ── BLOC ANALYSE — maîtrisé ── */
+  .ana{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-top:18px;
+       border-top:3px solid var(--mid);box-shadow:0 1px 2px rgba(17,24,39,.05)}
+  /* 1. verdict : blanc, sobre. La couleur = le mot + le filet du haut. */
+  .ana-verdict{display:flex;align-items:center;gap:16px;padding:14px 16px;border-bottom:1px solid var(--border)}
+  .gauge{flex-shrink:0;width:144px}
+  .gauge svg{width:100%;height:auto;display:block}
+  .gauge .ends{display:flex;justify-content:space-between;margin-top:-5px;padding:0 5px}
+  .gauge .ends span{font-size:10px;font-weight:700}
+  .gauge .ends .lo{color:var(--low)} .gauge .ends .hi{color:var(--hi)}
+  .vinfo{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .vlab{font-size:12.5px;font-weight:600;color:var(--text3)}
+  .vrisk{font-size:24px;font-weight:800;letter-spacing:-.015em;line-height:1.05;color:var(--mid)}
+  .vscore{font-size:13px;color:var(--text3);font-weight:600}
+  .vscore b{color:var(--text);font-size:15px;font-weight:800}
+  /* 2. preuve */
+  .ana-img{height:176px;background:#0a1119;position:relative;border-bottom:1px solid var(--border)}
+  .ana-img::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 44% 50%,rgba(96,185,235,.92),rgba(96,185,235,0) 46%)}
+  .ana-img::after{content:'';position:absolute;left:32%;top:34%;width:98px;height:76px;border:2px solid var(--signal);border-radius:42% 55% 50% 45%;opacity:.9}
+  /* 3/4 sections : blanches, hiérarchie typo nette */
+  .sec{padding:15px 16px}
+  .sec+.sec{border-top:1px solid var(--border)}
+  .stitle{font-size:16px;font-weight:700;color:var(--mid);line-height:1.25;margin-top:8px}
+  .sconf{font-size:12.5px;color:var(--text3);margin-top:2px}
+  .sbody{font-size:13.5px;line-height:1.46;color:var(--text2);margin-top:8px}
+  /* action : pas de fond teinté. Label + picto sur le label, texte clair. */
+  .saction{font-size:15px;font-weight:600;color:var(--text);line-height:1.35;margin-top:9px}
+
+  /* ── BARRE DU BAS — sobre, 3 onglets ── */
+  .nav{display:flex;border-top:1px solid var(--border);background:#fff;padding:9px 0 11px}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text3)}
+  .tab svg{width:20px;height:20px;display:block}
+  .tab span{font-size:10px;font-weight:600;letter-spacing:.01em}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ACCUEIL -->
+  <div class="col">
+    <div class="cap">Accueil</div>
+    <div class="phone">
+      <div class="hdr">
+        <svg class="mark" viewBox="0 0 96 96" fill="none"><g stroke="#0F3D4E" stroke-width="7" stroke-linecap="square"><path d="M0 24 V0 H24"/><path d="M72 0 H96 V24"/><path d="M96 72 V96 H72"/><path d="M24 96 H0 V72"/><circle cx="48" cy="48" r="20" stroke-width="4.5"/></g><circle cx="48" cy="48" r="8.5" fill="#B54A2A"/></svg>
+        <div class="lock"><span class="wm">LUCENS</span><span class="tag">Résidus · Biofilms · Contaminants</span></div>
+      </div>
+      <div class="scr">
+        <p class="lead">Repérez en direct les zones à risque et les résidus invisibles à l'œil nu.</p>
+        <div class="actions">
+          <div class="btn btn-p">Analyser en direct</div>
+          <div class="btn btn-s">Importer une image</div>
+        </div>
+        <p class="bene">Résidus invisibles • Risque évalué • Rapport visuel</p>
+        <div class="secbar"><span class="eyebrow">Dernières inspections</span><span class="seeall">Tout voir</span></div>
+        <div class="card">
+          <div class="row"><div class="thumb"></div><div class="rmeta"><span class="rt">Plan de travail B</span><span class="rs">Aujourd'hui · 14:02</span></div><span class="pill pill-hi"><span class="pd"></span>Élevé</span></div>
+          <div class="row"><div class="thumb"></div><div class="rmeta"><span class="rt">Évier cuisine</span><span class="rs">Hier · 09:30</span></div><span class="pill pill-mid"><span class="pd"></span>Moyen</span></div>
+          <div class="row"><div class="thumb"></div><div class="rmeta"><span class="rt">Trancheuse</span><span class="rs">2 juin · 17:10</span></div><span class="pill pill-low"><span class="pd"></span>Faible</span></div>
+        </div>
+        <div class="secbar"><span class="eyebrow">En savoir plus</span></div>
+        <div class="card">
+          <div class="navrow">Pourquoi Lucens IA <span class="chev">›</span></div>
+          <div class="navrow">Comment ça marche <span class="chev">›</span></div>
+          <div class="navrow">Précautions d'usage <span class="chev">›</span></div>
+        </div>
+      </div>
+      <div class="nav">
+        <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v4h4"/><path d="M12 7.5V12l3.2 1.9"/></svg><span>Historique</span></div>
+        <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg><span>Contexte</span></div>
+        <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Réglages</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANALYSE -->
+  <div class="col">
+    <div class="cap">Analyse</div>
+    <div class="phone">
+      <div class="hdr">
+        <svg class="mark" viewBox="0 0 96 96" fill="none"><g stroke="#0F3D4E" stroke-width="7" stroke-linecap="square"><path d="M0 24 V0 H24"/><path d="M72 0 H96 V24"/><path d="M96 72 V96 H72"/><path d="M24 96 H0 V72"/><circle cx="48" cy="48" r="20" stroke-width="4.5"/></g><circle cx="48" cy="48" r="8.5" fill="#B54A2A"/></svg>
+        <div class="lock"><span class="wm">LUCENS</span><span class="tag">Résidus · Biofilms · Contaminants</span></div>
+        <span class="hdr-r">Rapport</span>
+      </div>
+      <div class="scr">
+        <div class="ana">
+          <div class="ana-verdict">
+            <div class="gauge">
+              <svg viewBox="0 0 160 104" fill="none">
+                <path d="M14 84 A66 66 0 0 1 45 28" stroke="#2E7D32" stroke-width="11" stroke-linecap="round"/>
+                <path d="M49 25.7 A66 66 0 0 1 111 25.7" stroke="#B7791F" stroke-width="11" stroke-linecap="round"/>
+                <path d="M115 28 A66 66 0 0 1 146 84" stroke="#B42318" stroke-width="11" stroke-linecap="round"/>
+                <line x1="80" y1="84" x2="71" y2="27.5" stroke="#111827" stroke-width="3.2" stroke-linecap="round"/>
+                <circle cx="80" cy="84" r="5.2" fill="#111827"/><circle cx="80" cy="84" r="2" fill="#fff"/>
+              </svg>
+              <div class="ends"><span class="lo">Faible</span><span class="hi">Élevé</span></div>
+            </div>
+            <div class="vinfo">
+              <span class="vlab">Niveau de risque</span>
+              <span class="vrisk">Moyen</span>
+              <span class="vscore"><b>45</b> / 100</span>
+            </div>
+          </div>
+          <div class="ana-img"></div>
+          <div class="sec">
+            <div class="slbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Hypothèse principale</div>
+            <div class="stitle">Résidu de nettoyage probable</div>
+            <div class="sconf">Confiance modérée</div>
+            <div class="sbody">Signal compatible avec un film résiduel de nettoyage.</div>
+          </div>
+          <div class="sec">
+            <div class="slbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>Action recommandée</div>
+            <div class="saction">Re-rincer puis recontrôler la zone.</div>
+          </div>
+        </div>
+        <div class="actions">
+          <div class="btn btn-p">Générer le rapport</div>
+          <div class="btn btn-s">Nouvelle analyse</div>
+        </div>
+      </div>
+      <div class="nav">
+        <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v4h4"/><path d="M12 7.5V12l3.2 1.9"/></svg><span>Historique</span></div>
+        <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg><span>Contexte</span></div>
+        <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Réglages</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

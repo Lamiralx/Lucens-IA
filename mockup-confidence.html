@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucens — termes de confiance</title>
+<style>
+  :root{
+    --primary:#0F3D4E; --text:#111827; --text2:#4B5563; --text3:#6B7280;
+    --bg:#FFFFFF; --bg2:#FAFBFC; --border:#E5E7EB; --mid:#B7791F;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EEF1F4;font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased;padding:34px 24px 64px}
+  .stage{max-width:420px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+  .opt .cap{font-size:13px;font-weight:700;color:#111827}
+  .opt .sub{font-size:11.5px;color:#9aa3af;margin:2px 0 9px}
+
+  .card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px 17px;box-shadow:0 4px 16px rgba(17,24,39,.06)}
+  .slbl{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;color:var(--text2)}
+  .slbl svg{width:16px;height:16px;color:var(--primary)}
+  .ftitle{font-size:19px;font-weight:800;color:var(--mid);letter-spacing:-.01em;margin-top:7px;line-height:1.18}
+  .fexpl{font-size:13px;color:var(--text2);line-height:1.45;margin-top:5px}
+
+  /* A — texte plat */
+  .cfA{font-size:12.5px;color:var(--text3);margin-top:10px}
+
+  /* B — indicateur à 3 niveaux + mot plain */
+  .cfB{display:flex;align-items:center;gap:9px;margin-top:11px}
+  .cfB .l{font-size:11.5px;font-weight:600;color:var(--text3)}
+  .cfB .dots{display:flex;gap:4px}
+  .cfB .dots i{width:18px;height:5px;border-radius:3px;background:var(--border)}
+  .cfB .dots i.on{background:var(--mid)}
+  .cfB .w{font-size:12.5px;font-weight:700;color:var(--text)}
+
+  /* C — tournée vers l'action */
+  .cfC{display:flex;align-items:flex-start;gap:8px;margin-top:11px;padding-top:10px;border-top:1px solid var(--border)}
+  .cfC svg{width:15px;height:15px;color:var(--mid);flex-shrink:0;margin-top:1px}
+  .cfC span{font-size:12.5px;color:var(--text2);line-height:1.4}
+  .cfC b{color:var(--text);font-weight:700}
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <div class="opt">
+    <div class="cap">A — Actuel : texte plat</div>
+    <div class="sub">« Confiance modérée ». Abstrait, ne dit pas quoi en faire.</div>
+    <div class="card">
+      <div class="slbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Hypothèse principale</div>
+      <div class="ftitle">Résidu de produit de nettoyage</div>
+      <div class="fexpl">Savon, détergent ou agent chimique insuffisamment rincé.</div>
+      <div class="cfA">Confiance modérée</div>
+    </div>
+  </div>
+
+  <div class="opt">
+    <div class="cap">B — Indicateur à 3 niveaux + mot simple</div>
+    <div class="sub">Lecture d'un coup d'œil. « Faible / Moyenne / Forte » plutôt que « modérée ».</div>
+    <div class="card">
+      <div class="slbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Hypothèse principale</div>
+      <div class="ftitle">Résidu de produit de nettoyage</div>
+      <div class="fexpl">Savon, détergent ou agent chimique insuffisamment rincé.</div>
+      <div class="cfB"><span class="l">Confiance</span><span class="dots"><i class="on"></i><i class="on"></i><i></i></span><span class="w">Moyenne</span></div>
+    </div>
+  </div>
+
+  <div class="opt">
+    <div class="cap">C — Tournée vers l'action</div>
+    <div class="sub">La confiance dit quoi faire : agir, ou confirmer.</div>
+    <div class="card">
+      <div class="slbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Hypothèse principale</div>
+      <div class="ftitle">Résidu de produit de nettoyage</div>
+      <div class="fexpl">Savon, détergent ou agent chimique insuffisamment rincé.</div>
+      <div class="cfC"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><span><b>Confiance moyenne</b> — à confirmer par un second contrôle.</span></div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

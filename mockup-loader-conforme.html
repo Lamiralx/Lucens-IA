@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup v2 — Loader conforme + fond (proposition V271)</title>
+<style>
+/* ═══ Tokens Lucens (extraits d'index.html :root) ═══ */
+:root{
+  --accent:#0F3D4E; --accent-hi:#0A2C39;
+  --ink-primary:#111827; --ink-secondary:#4B5563; --ink-tertiary:#6B7280; --ink-dim:#9CA3AF;
+  --surface-page:#FFFFFF; --surface-mid:#F7F8FA; --surface-hi:#FFFFFF;
+  --border:#E5E7EB; --border-hi:#D1D5DB;
+  --risk-hi:#B42318; --risk-hi-soft:rgba(180,35,24,.08); --risk-hi-edge:rgba(180,35,24,.28);
+  --risk-mid:#B7791F; --lucens-signature:#B54A2A;
+  --font-body:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+}
+.dark{
+  --accent:#5AA6BC; --accent-hi:#7FBCCD;
+  --ink-primary:#F3F4F6; --ink-secondary:#C7CBD1; --ink-tertiary:#9CA3AF; --ink-dim:#6B7280;
+  --surface-page:#06070A; --surface-mid:#14161C; --surface-hi:#0E1014;
+  --border:#252A33; --border-hi:#333A45;
+  --risk-hi:#E85A4A; --risk-hi-soft:rgba(232,90,74,.10); --risk-hi-edge:rgba(232,90,74,.32);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#E8EAEE;font-family:var(--font-body);padding:24px;color:#111827}
+h1{font-size:18px;font-weight:700;margin-bottom:4px}
+.sub{font-size:13px;color:#4B5563;margin-bottom:20px;max-width:980px;line-height:1.5}
+.toggle{position:fixed;top:16px;right:16px;z-index:10;height:40px;padding:0 16px;border-radius:12px;
+  border:1px solid #D1D5DB;background:#fff;font:600 13px var(--font-body);cursor:pointer}
+.row{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+.col{display:flex;flex-direction:column;gap:10px}
+.lbl{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#4B5563}
+.lbl.bad::before{content:'✕ ';color:#B42318}
+.lbl.good::before{content:'✓ ';color:#2E7D32}
+.lbl.var::before{content:'⟳ ';color:#B7791F}
+.notes{width:390px;font-size:12px;line-height:1.55;color:#374151;background:#fff;border:1px solid #D1D5DB;border-radius:12px;padding:12px 14px}
+.notes b{color:#111827}
+.notes li{margin:0 0 6px 16px}
+
+/* ═══ Cadre téléphone ═══ */
+.phone{width:390px;height:760px;border-radius:28px;overflow:hidden;border:1px solid #C5C9D0;
+  background:var(--surface-page);position:relative;display:flex;flex-direction:column;box-shadow:0 12px 32px rgba(0,0,0,.10)}
+
+/* ═════════ AVANT — reproduction fidèle de l'écran actuel ═════════ */
+.av{padding:64px 16px 24px;display:grid;grid-template-rows:auto auto 1fr auto auto;justify-items:center;gap:24px;height:100%}
+.av-wordmark{font-weight:800;font-size:22px;letter-spacing:-0.022em;color:var(--ink-primary)}
+.av-wordmark::after{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;
+  background:var(--lucens-signature);margin-left:5px;vertical-align:.16em;
+  box-shadow:0 0 8px rgba(181,74,42,.45);animation:pulse 3.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.av-card{width:100%;background:var(--surface-hi);border:1px solid var(--border);border-radius:16px;
+  padding:34px 24px;box-shadow:0 1px 2px rgba(17,24,39,.05),0 2px 8px rgba(17,24,39,.06);
+  display:flex;flex-direction:column;gap:16px;text-align:center}
+.av-title{font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-tertiary)}
+.av-bar{height:4px;background:var(--border);border-radius:999px;overflow:hidden}
+.av-bar i{display:block;height:100%;width:54%;background:var(--accent);border-radius:999px}
+.av-meta{display:inline-flex;align-items:baseline;justify-content:center;gap:8px;
+  font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-tertiary)}
+.av-pct{font-size:64px;font-weight:700;color:var(--accent);letter-spacing:-0.03em;line-height:1}
+.av-pctsign{font-size:22px;color:var(--ink-tertiary)}
+.av-step{font-size:16px;font-weight:500;color:var(--ink-primary)}
+.av-tip{text-align:center;align-self:center;padding:0 8px}
+.av-tip-text{font-size:15px;color:var(--ink-secondary);line-height:1.55}
+.av-tip-src{margin-top:10px;font-size:10px;font-weight:500;letter-spacing:.10em;text-transform:uppercase;color:var(--ink-dim)}
+.av-cancel{align-self:center;padding:12px 28px;background:rgba(208,72,72,.12);border:1.5px solid #d04848;
+  border-radius:12px;color:#d04848;font:600 13px var(--font-body);display:inline-flex;align-items:center;gap:8px;
+  box-shadow:0 2px 12px rgba(208,72,72,.15);cursor:pointer}
+.av-cancel::before{content:'✕';font-weight:700}
+.av-foot{font-size:9.5px;font-weight:500;letter-spacing:.10em;text-transform:uppercase;color:var(--ink-dim);text-align:center}
+
+/* ═════════ APRÈS v2 — conforme LOI + corrections de FOND ═════════ */
+.ap{padding:0 16px;display:flex;flex-direction:column;height:100%;background:var(--surface-page)}
+.ap-brand{display:flex;align-items:center;justify-content:center;gap:10px;padding:48px 0 20px}
+.ap-mark{width:28px;height:28px;color:var(--accent)}
+.ap-lockup{display:flex;flex-direction:column;gap:2px}
+.ap-wordmark{font-weight:800;font-size:23px;letter-spacing:-0.01em;line-height:1;color:var(--accent)}
+.ap-tagline{font-weight:600;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-tertiary)}
+.ap-card{background:var(--surface-hi);border:1px solid var(--border);border-radius:16px;padding:16px;
+  display:flex;flex-direction:column;gap:12px}
+.ap-eyebrow{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;
+  letter-spacing:.04em;text-transform:uppercase;color:var(--ink-secondary)}
+.ap-eyebrow svg{width:14px;height:14px;color:var(--accent);flex-shrink:0}
+/* AJOUT N°1 — la photo analysée + le contexte envoyé (la donnée qui justifie « Annuler ») */
+.ap-photo{display:flex;align-items:center;gap:12px;padding:10px;background:var(--surface-mid);
+  border:1px solid var(--border);border-radius:12px}
+.ap-thumb{width:44px;height:44px;border-radius:8px;flex-shrink:0;
+  background:#0e1117 radial-gradient(circle at 55% 45%, rgba(120,210,255,.9) 0%, rgba(120,210,255,0) 55%)}
+.ap-photo-meta{display:flex;flex-direction:column;gap:4px;min-width:0}
+.ap-photo-zone{font-size:14px;font-weight:600;color:var(--ink-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ap-photo-moment{font-size:12px;font-weight:500;color:var(--ink-tertiary)}
+.ap-bar{height:4px;background:var(--border);border-radius:999px;overflow:hidden}
+.ap-bar i{display:block;height:100%;width:54%;background:var(--accent);border-radius:999px;transition:width .6s}
+/* SUPPRESSION — plus de % chiffré (synthétique) : la barre + l'étape nommée portent le réel */
+.ap-meta{font-size:12px;font-weight:500;color:var(--ink-tertiary);font-variant-numeric:tabular-nums}
+.ap-step{font-size:18px;font-weight:700;letter-spacing:-0.01em;line-height:1.3;color:var(--ink-primary)}
+.ap-tipcard{margin-top:12px;background:var(--surface-mid);border:1px solid var(--border);border-radius:12px;padding:14px}
+.ap-tip-eyebrow{font-size:10px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:var(--ink-tertiary);margin-bottom:6px}
+.ap-tip-text{font-size:14px;font-weight:400;line-height:1.5;color:var(--ink-secondary)}
+.ap-tip-src{margin-top:8px;font-size:10px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:var(--ink-dim)}
+.ap-cancel{margin-top:auto;margin-bottom:max(20px,env(safe-area-inset-bottom));height:46px;border-radius:12px;
+  background:var(--surface-hi);border:1px solid var(--border);color:var(--ink-secondary);
+  font:600 14px var(--font-body);display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.ap-cancel svg{width:20px;height:20px}
+.ap-cancel:active{background:var(--surface-mid)}
+
+/* ═════════ Colonne ÉTATS — comportements ajoutés ═════════ */
+.state{width:358px;background:var(--surface-page);border:1px solid #C5C9D0;border-radius:16px;padding:16px;
+  display:flex;flex-direction:column;gap:12px}
+.state .cap{font-size:11px;font-weight:600;color:#6B7280;letter-spacing:.04em;text-transform:uppercase}
+/* AJOUT N°2 — chemin « connexion lente » (+45 s) : remplace le tip, ton calme, pas d'alarme */
+.slowcard{background:var(--surface-mid);border:1px solid var(--border);border-radius:12px;padding:14px}
+.slowcard .e{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:600;letter-spacing:.10em;
+  text-transform:uppercase;color:var(--risk-mid);margin-bottom:6px}
+.slowcard .e svg{width:14px;height:14px}
+.slowcard .t{font-size:14px;line-height:1.5;color:var(--ink-secondary)}
+/* AJOUT N°3 — annulation en 2 temps : le 2e tap porte la sémantique destructive (tokens risque) */
+.cancel2{height:46px;border-radius:12px;background:var(--risk-hi-soft);border:1px solid var(--risk-hi-edge);
+  color:var(--risk-hi);font:600 14px var(--font-body);display:flex;align-items:center;justify-content:center;gap:8px}
+.cancel2 svg{width:20px;height:20px}
+</style>
+</head>
+<body>
+<button class="toggle" onclick="document.querySelectorAll('.phone,.state').forEach(p=>p.classList.toggle('dark'))">☼ / ☾ Basculer le thème</button>
+<h1>Écran d'attente — v2 : conforme LOI <u>et</u> corrigé sur le fond</h1>
+<p class="sub">Au-delà de la forme : l'écran montre désormais <b>ce qui est analysé</b> (photo + zone + moment — la donnée
+qui justifie le bouton Annuler), le <b>% synthétique est retiré</b> (la barre + l'étape nommée portent l'information réelle),
+un <b>chemin « connexion lente »</b> apparaît à +45 s, et l'<b>annulation se confirme en 2 temps</b> (gants/mouvement terrain).</p>
+
+<div class="row">
+  <div class="col">
+    <div class="lbl bad">AVANT — écran actuel</div>
+    <div class="phone">
+      <div class="av">
+        <span class="av-wordmark">LUCENS</span>
+        <div class="av-card">
+          <div class="av-title">Analyse en cours</div>
+          <div class="av-bar"><i></i></div>
+          <div class="av-meta">
+            <span><span class="av-pct">54</span><span class="av-pctsign"> %</span></span>
+            <span>·</span><span>Étape 5 / 7</span>
+          </div>
+          <div class="av-step">Analyse par Lucens IA</div>
+        </div>
+        <div class="av-tip">
+          <div class="av-tip-text">Cyan brillant uniforme sur grande surface = souvent un substrat coloré (peinture, plastique azurant), pas du détergent.</div>
+          <div class="av-tip-src">Discrimination substrat</div>
+        </div>
+        <button class="av-cancel">Annuler l'analyse</button>
+        <div class="av-foot">Codex Alimentarius · Principes d'hygiène</div>
+      </div>
+    </div>
+    <div class="notes">
+      <li><b>On ne voit pas CE qui est analysé</b> — le bouton Annuler existe pour « erreur de photo/contexte » mais l'écran ne montre ni l'un ni l'autre</li>
+      <li><b>% géant 64 px</b> = fuite CSS legacy, et le chiffre est synthétique (creep)</li>
+      <li><b>Annulation immédiate</b> : un effleurement = analyse perdue + re-saisie</li>
+      <li><b>Rien à +45 s</b> : en cave/chambre froide, l'app semble figée</li>
+      <li>Rouge étranger, marque périmée + glow, 15/9,5 px hors échelle, ombre, footer illisible</li>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="lbl good">APRÈS v2 — proposition</div>
+    <div class="phone">
+      <div class="ap">
+        <div class="ap-brand">
+          <svg class="ap-mark" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g stroke="currentColor" stroke-width="7" stroke-linecap="square">
+              <path d="M0 24 V0 H24"/><path d="M72 0 H96 V24"/><path d="M96 72 V96 H72"/><path d="M24 96 H0 V72"/>
+              <circle cx="48" cy="48" r="20" stroke-width="4.5"/>
+            </g>
+            <circle cx="48" cy="48" r="8.5" fill="#B54A2A"/>
+          </svg>
+          <span class="ap-lockup">
+            <span class="ap-wordmark">LUCENS</span>
+            <span class="ap-tagline">Résidus · Biofilms · Contaminants</span>
+          </span>
+        </div>
+        <div class="ap-card" role="status" aria-live="polite">
+          <div class="ap-eyebrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            Analyse en cours
+          </div>
+          <div class="ap-photo">
+            <div class="ap-thumb"></div>
+            <div class="ap-photo-meta">
+              <div class="ap-photo-zone">Plan de travail inox</div>
+              <div class="ap-photo-moment">Contrôle de routine · après nettoyage</div>
+            </div>
+          </div>
+          <div class="ap-bar"><i></i></div>
+          <div class="ap-meta">Étape 5 / 7</div>
+          <div class="ap-step">Analyse par Lucens IA</div>
+        </div>
+        <div class="ap-tipcard" aria-live="polite">
+          <div class="ap-tip-eyebrow">Le saviez-vous</div>
+          <div class="ap-tip-text">Cyan brillant uniforme sur grande surface = souvent un substrat coloré (peinture, plastique azurant), pas du détergent.</div>
+          <div class="ap-tip-src">Discrimination substrat</div>
+        </div>
+        <button class="ap-cancel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          Annuler l'analyse
+        </button>
+      </div>
+    </div>
+    <div class="notes">
+      <li><b>+ Photo & contexte</b> : vignette 44 px + zone + moment — on voit ce qui part à l'IA, on peut annuler en connaissance de cause</li>
+      <li><b>− % chiffré</b> : barre + « Étape 5/7 » + nom de l'étape = l'information réelle, sans précision de théâtre</li>
+      <li><b>Lockup V167</b>, carte canon sans ombre, eyebrows canon, échelle typo respectée</li>
+      <li><b>Annuler</b> = secondaire canon 46 px, ancré en bas (pouce)</li>
+      <li><b>− Footer Codex</b> (vit dans « En savoir plus » / PDF)</li>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="lbl var">ÉTATS AJOUTÉS — comportements</div>
+    <div class="state">
+      <div class="cap">À +45 s — remplace la carte tip (ton calme, pas d'alarme)</div>
+      <div class="slowcard">
+        <div class="e">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+          Toujours en cours
+        </div>
+        <div class="t">L'analyse prend plus de temps que d'habitude — connexion lente probable. Elle continue, vous pouvez patienter ou annuler.</div>
+      </div>
+      <div class="cap" style="margin-top:8px">Annulation en 2 temps — tap 1 sur « Annuler »</div>
+      <div class="cancel2">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        Confirmer l'annulation ?
+      </div>
+      <div class="cap" style="font-weight:500;text-transform:none;letter-spacing:0">Retour automatique à l'état normal après 3 s sans 2ᵉ tap.
+      Le rouge (tokens --risk-hi-soft/edge) n'apparaît qu'ici : c'est un ÉTAT destructif confirmable, pas un bouton permanent.</div>
+    </div>
+    <div class="notes">
+      <li><b>Pourquoi pas d'ETA chiffré</b> (« ~25 s ») : la variance API (10-60 s+) ferait mentir l'écran ; le palier +45 s couvre le vrai besoin</li>
+      <li><b>Pourquoi pas de mode « arrière-plan »</b> : flux linéaire court, complexité d'état sans ROI</li>
+      <li><b>Pas de vibration de fin promise</b> : non supportée en PWA iOS (le terrain est sur iPhone)</li>
+      <li><b>Option à tester terrain</b> : photo venue du Live View (pénombre) → attente en sombre, quel que soit le thème (anti-éblouissement) ; import galerie → thème normal</li>
+    </div>
+  </div>
+</div>
+</body>
+</html>
