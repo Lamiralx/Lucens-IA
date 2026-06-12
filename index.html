@@ -8817,7 +8817,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v300</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v301</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -25357,12 +25357,13 @@ const Annotator = (() => {
   const LV_READOUT = {
     organic:  { label:'Résidu organique',    badge:'Biofilm élevé',     level:'high', color:'#A3E635' },
     chemical: { label:'Résidu chimique',     badge:'Risque chimique',   level:'mid',  color:'#38BDF8' },
-    mineral:  { label:'Tartre / calcaire',   badge:'Biofilm élevé',     level:'high', color:'#94A3B8' },
+    mineral:  { label:'Tartre / calcaire',   badge:'Dépôt minéral',     level:'mid',  color:'#94A3B8' },
     dust:     { label:'Poussière',           badge:'Risque faible',     level:'low',  color:'#9CA3AF' },
     fatty:    { label:'Résidu gras',         badge:'Risque modéré',     level:'mid',  color:'#FB923C' },
     pigmented:{ label:'Résidu pigmenté',     badge:'Risque modéré',     level:'mid',  color:'#F43F5E' },
     biofilm:  { label:'Biofilm potentiel',   badge:'Biofilm élevé',     level:'high', color:'#C084FC' },
-    unknown:  { label:'Résidu fluorescent',  badge:'Risque à confirmer',level:'low',  color:'#64748B' },
+    unknown:  { label:'Résidu fluorescent',  badge:'Type indéterminé',  level:'low',  color:'#64748B' },
+    mixed:    { label:'Résidus mêlés',        badge:'Risque cumulé',     level:'high', color:'#EAB308' },
   };
   /* V276 — SECOND AVIS SPECTROSCOPIQUE LOCAL (autonome dans le module Live View).
      Bibliothèque des 15 signatures fluorophores (rgb de référence + écart-type
@@ -25420,9 +25421,15 @@ const Annotator = (() => {
         const gR = Math.min(1.5, bgMax / Math.max(1, bgR));
         const gG = Math.min(1.5, bgMax / Math.max(1, bgG));
         const gB = Math.min(1.5, bgMax / Math.max(1, bgB));
-        R = Math.min(255, R * (0.6 + 0.4 * gR));
-        G = Math.min(255, G * (0.6 + 0.4 * gG));
-        B = Math.min(255, B * (0.6 + 0.4 * gB));
+        /* V300 — correction ADAPTATIVE (remplace le 40% fixe V252) : la force suit
+           l'INTENSITÉ du voile bleu mesuré sur le fond (bgB dominant). Voile FORT
+           (cause du « tout chimique ») → on corrige plus (jusqu'à 0.75) ; voile faible
+           → on corrige peu (0.30) pour ne pas sur-roter vers le vert. Gains plafonnés 1.5. */
+        const cast = Math.max(0, Math.min(1, (bgB - (bgR + bgG) / 2) / 60));
+        const w = 0.30 + 0.45 * cast;
+        R = Math.min(255, R * ((1 - w) + w * gR));
+        G = Math.min(255, G * ((1 - w) + w * gG));
+        B = Math.min(255, B * ((1 - w) + w * gB));
       }
     }
     const mx = Math.max(R, G, B), mn = Math.min(R, G, B);

@@ -57,6 +57,7 @@ Quand verdict = YES_FLUO, tu CLASSES la NATURE du résidu via "type".
 
 - **organic** : matière organique / alimentaire / biologique. Indices : vert-jaune diffus, OU surface BLANCHE/claire GRANULEUSE, opaque, en RELIEF 3D, à grain irrégulier (fromage, lait séché, miette, résidu protéique). ⚠️ Un blanc/pâle GRANULEUX et opaque = ORGANIQUE, PAS chimique.
 - **chemical** : produit chimique (savon, nettoyant, azurant). Indices STRICTS : film LISSE, plat, uniforme, sans relief ni grain, légèrement bleu-cyan, bords nets (coulure/goutte étalée lisse). RESTE VAGUE : ne dis pas "détergent"/"rinçage". Si c'est granuleux ou en relief → ce n'est PAS chimical.
+  ⚠️ ERREUR LA PLUS FRÉQUENTE À ÉVITER : conclure "chemical" parce que la teinte paraît bleu-cyan. Le voile UV bleute TOUTE la scène. Le bleu-cyan SEUL ne suffit JAMAIS pour "chemical" : il FAUT un film lisse confirmé. Bleu-cyan + grain / relief / aspect nuageux / mouchetures → organic, biofilm, mineral ou dust, PAS chemical.
 - **mineral** : tartre / calcaire. Indices : tache DIFFUSE, blanc-gris NEUTRE (pas franchement bleue), aspect poudreux/cristallin/crayeux, contours FLOUS, peu lumineuse, sur zone d'eau/séchage.
 - **dust** : MOUCHETURES fines, ternes, ÉPARSES/dispersées (pas une tache continue).
 - **fatty** : orange-ambre irisé, halo gras brillant.
