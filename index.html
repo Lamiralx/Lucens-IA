@@ -8817,7 +8817,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v294</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v295</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -28522,11 +28522,15 @@ const Annotator = (() => {
 
 <!-- V263 — Status bar Live View : fix DÉFINITIF de la bande blanche Dynamic
      Island (diagnostic par sonde V262 sur device réel, protocole V210).
-     Mécanisme : iOS peint la zone status-bar d'après le meta theme-color, le
-     lit au lancement et IGNORE les changements de contenu à chaud (échec V238).
-     En revanche, RETIRER le meta du DOM rend le backdrop adaptatif → il suit
-     le fond noir du Live View. Le meta (même nœud) est ré-inséré à la
-     fermeture avec la couleur du thème.
+     Mécanisme : iOS peint la zone status-bar d'après le meta theme-color.
+     Historique : changer le CONTENU à chaud échouait sur l'ANCIEN device
+     (échec V238) ; RETIRER le meta (V263) ne suffit pas non plus sur l'install
+     gravée (la bande reste claire — re-signalé 2026-06-12). V295 : on FORCE
+     theme-color en NOIR (#000000) pendant le LV — pari que l'iPhone 17 Pro
+     (iOS récent) relit theme-color à chaud et peint la bande en noir (fondue
+     dans le HUD) au lieu de blanc. Restauré à la couleur du thème à la
+     fermeture. À VÉRIFIER SUR DEVICE RÉEL (invisible en émulation Chrome ;
+     si toujours blanc → seul levier restant = réinstaller le Web Clip).
      Limite ASSUMÉE (décision utilisateur 2026-06-10) : le placement de la
      fenêtre web est GRAVÉ à l'installation du Web Clip ; cette installation
      date de l'ère « default » (V210) → la page démarre SOUS la status bar
@@ -28544,8 +28548,19 @@ const Annotator = (() => {
   var last = null;
   function sync(){
     var o = lvOpen(); if (o === last) return; last = o;
-    if (o) { if (mc.parentNode) mc.parentNode.removeChild(mc); }
-    else { mc.setAttribute('content', themeCol()); if (!mc.parentNode) document.head.appendChild(mc); }
+    if (o) {
+      /* V295 — barre blanche Live View : au lieu de RETIRER le meta (iOS gardait
+         alors la couleur CLAIRE du lancement → bande BLANCHE au-dessus de la
+         caméra), on force la status-bar en NOIR pendant le Live View. Sur iOS
+         récents (iPhone 17 Pro) qui relisent theme-color à chaud, la bande se
+         fond dans le HUD noir au lieu d'être blanche. Au pire (install qui
+         ignore le changement à chaud) : identique à avant, jamais pire. */
+      if (!mc.parentNode) document.head.appendChild(mc);
+      mc.setAttribute('content', '#000000');
+    } else {
+      mc.setAttribute('content', themeCol());
+      if (!mc.parentNode) document.head.appendChild(mc);
+    }
   }
   var obs = new MutationObserver(sync);
   obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'] });
