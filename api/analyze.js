@@ -34,6 +34,23 @@ function withTimeout(promise, ms, label = 'op') {
 const PRIMARY_MODEL  = "claude-opus-4-7";
 const FALLBACK_MODEL = "claude-sonnet-4-6";
 
+/* V296 — Tarifs Anthropic (USD / million de tokens) pour journaliser le COÛT
+   RÉEL de chaque analyse. Cache write 1h = 2× input ; cache read = 0.1× input. */
+const PRICING = {
+  "claude-opus-4-7":   { in: 5, out: 25 },
+  "claude-opus-4-8":   { in: 5, out: 25 },
+  "claude-sonnet-4-6": { in: 3, out: 15 },
+};
+function estimateCostUsd(model, u) {
+  const p = PRICING[model] || PRICING[PRIMARY_MODEL];
+  const inT = u?.input_tokens || 0;
+  const outT = u?.output_tokens || 0;
+  const cr = u?.cache_read_input_tokens || 0;     /* lecture cache : 0.1× input */
+  const cc = u?.cache_creation_input_tokens || 0; /* écriture cache 1h : 2× input */
+  const cost = (inT * p.in + cr * p.in * 0.1 + cc * p.in * 2 + outT * p.out) / 1e6;
+  return Math.round(cost * 1e5) / 1e5;
+}
+
 /* Statuts qui justifient un fallback : surcharge/indispo Anthropic.
    Pas 4xx (sauf 429) car ce sont des erreurs côté requête, pas serveur. */
 const OVERLOAD_STATUSES = new Set([429, 503, 529]);
@@ -1385,6 +1402,41 @@ Fin : respecte strictement la langue ${langName} et retourne uniquement le JSON.
     if (!result.image_quality || typeof result.image_quality !== 'object') {
       result.image_quality = { usable: true, warning: '', limitations: [] };
     }
+
+    /* ─── V296 — JOURNALISATION USAGE + COÛT RÉEL (audit de la dépense) ───
+       Best-effort : enregistre les vrais tokens et le coût estimé de CHAQUE
+       analyse réussie dans KV, lisible via /api/lucens-stats?view=usage.
+       Enveloppé dans un try : la télémétrie ne doit JAMAIS casser une analyse. */
+    try {
+      const _u = message.usage || {};
+      const _costUsd = estimateCostUsd(message.model, _u);
+      const _day = new Date().toISOString().slice(0, 10);
+      const _rec = {
+        ts: Date.now(),
+        model: message.model,
+        usedFallback: !!usedFallback,
+        input: _u.input_tokens || 0,
+        output: _u.output_tokens || 0,
+        cache_read: _u.cache_read_input_tokens || 0,
+        cache_create: _u.cache_creation_input_tokens || 0,
+        costUsd: _costUsd,
+        hasCrops: typeof hasZoneCrops !== 'undefined' ? !!hasZoneCrops : false,
+      };
+      const _microUsd = Math.round(_costUsd * 1e6);
+      const _dk = `lucens:usage:daily:${_day}`;
+      await withTimeout(Promise.all([
+        kv.lpush('lucens:usage:log', JSON.stringify(_rec)),
+        kv.ltrim('lucens:usage:log', 0, 499),
+        kv.hincrby(_dk, 'count', 1),
+        kv.hincrby(_dk, 'cost_micro_usd', _microUsd),
+        kv.hincrby(_dk, 'in_tok', _rec.input),
+        kv.hincrby(_dk, 'out_tok', _rec.output),
+        kv.hincrby(_dk, 'cache_read_tok', _rec.cache_read),
+        kv.hincrby(_dk, 'cache_create_tok', _rec.cache_create),
+        kv.hincrby(_dk, _rec.usedFallback ? 'fallback_count' : 'primary_count', 1),
+      ]), 3000, 'kv.usage.log').catch(() => {});
+      kv.expire(_dk, 60 * 60 * 24 * 120).catch(() => {});
+    } catch (_e) { /* télémétrie best-effort : on ignore tout échec */ }
 
     return res.status(200).json({
       ...result,

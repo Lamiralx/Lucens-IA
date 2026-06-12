@@ -65,6 +65,11 @@ export default async function handler(req, res) {
   try {
     const { kv } = await import('@vercel/kv');
 
+    /* V296 — Rapport d'usage/coût réel par analyse : ?view=usage[&days=N] */
+    if (String(req.query?.view || '') === 'usage') {
+      return await respondUsage(req, res, kv);
+    }
+
     const rangeParam = String(req.query?.range || '1w');
     const weeks = Math.min(MAX_RANGE_WEEKS, Math.max(1, parseInt(rangeParam, 10) || 1));
     const variant = typeof req.query?.variant === 'string' ? req.query.variant.slice(0, 32) : null;
@@ -167,6 +172,64 @@ function parseList(arr = []) {
   return arr.map(s => {
     try { return typeof s === 'string' ? JSON.parse(s) : s; } catch { return null; }
   }).filter(Boolean);
+}
+
+/* V296 — Rapport d'usage : coût RÉEL par analyse, agrégé par jour + 100 derniers
+   appels. Source : clés écrites par api/analyze.js (lucens:usage:daily:* + log). */
+async function respondUsage(req, res, kv) {
+  const days = Math.min(90, Math.max(1, parseInt(req.query?.days, 10) || 14));
+  const dayKeys = getLastDays(days);
+  const [dailies, logRaw] = await Promise.all([
+    Promise.all(dayKeys.map(d => kv.hgetall(`lucens:usage:daily:${d}`).catch(() => ({})))),
+    kv.lrange('lucens:usage:log', 0, 99).catch(() => []),
+  ]);
+  const daily = dayKeys.map((d, i) => {
+    const h = dailies[i] || {};
+    const count = Number(h.count || 0);
+    const costUsd = +(Number(h.cost_micro_usd || 0) / 1e6).toFixed(4);
+    return {
+      day: d,
+      count,
+      costUsd,
+      avgCostUsd: count ? +(costUsd / count).toFixed(4) : 0,
+      inTok: Number(h.in_tok || 0),
+      outTok: Number(h.out_tok || 0),
+      cacheReadTok: Number(h.cache_read_tok || 0),
+      cacheCreateTok: Number(h.cache_create_tok || 0),
+      primary: Number(h.primary_count || 0),
+      fallback: Number(h.fallback_count || 0),
+    };
+  });
+  const totalCount = daily.reduce((a, d) => a + d.count, 0);
+  const totalCost = +daily.reduce((a, d) => a + d.costUsd, 0).toFixed(4);
+  const totalFallback = daily.reduce((a, d) => a + d.fallback, 0);
+  const totalOut = daily.reduce((a, d) => a + d.outTok, 0);
+  return res.status(200).json({
+    ok: true,
+    view: 'usage',
+    generatedAt: Date.now(),
+    days,
+    summary: {
+      totalAnalyses: totalCount,
+      totalCostUsd: totalCost,
+      avgCostPerAnalysisUsd: totalCount ? +(totalCost / totalCount).toFixed(4) : 0,
+      avgOutputTokens: totalCount ? Math.round(totalOut / totalCount) : 0,
+      fallbackRatePct: totalCount ? +((totalFallback / totalCount) * 100).toFixed(1) : 0,
+    },
+    daily,
+    recent: parseList(logRaw),
+  });
+}
+
+function getLastDays(count) {
+  const out = [];
+  const now = new Date();
+  for (let i = count - 1; i >= 0; i--) {
+    const x = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    x.setUTCDate(x.getUTCDate() - i);
+    out.push(x.toISOString().slice(0, 10));
+  }
+  return out;
 }
 
 function computeWeeklyKpis({ total, detection = {}, identification = {}, score = {}, quality = {}, trust = {}, learning = {}, consent = {}, iou = {} }) {
