@@ -2516,6 +2516,19 @@ input[type="file"] { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .risk-pill .dot { animation: none; }
 }
+/* ─── V306 — MICRO-ANIMATIONS D'APPARITION SUPPRIMÉES (demande utilisateur) ───
+   L'app doit être INSTANTANÉE : plus de reveal/stagger sur le résultat ni le
+   héros, ni de pulse sur le point de risque (ça « laguait »). On force l'état
+   final visible. La transition de la barre de jauge (indicateur du score) reste. */
+.results.visible *,
+.score-block, .risk-pill, .risk-pill .dot, .hero-stats,
+.hero-gauge, .hero-gauge-labels, .hero-confidence {
+  animation: none !important;
+}
+.score-block, .risk-pill, .hero-stats,
+.hero-gauge, .hero-gauge-labels, .hero-confidence {
+  opacity: 1 !important; transform: none !important;
+}
 /* Stats — tertiary level, alignées à droite, hiérarchisées label/value */
 .hero-stats {
   display: flex; align-items: flex-end;
@@ -8816,7 +8829,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v305</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v306</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
