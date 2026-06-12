@@ -1409,6 +1409,30 @@ Fin : respecte strictement la langue ${langName} et retourne uniquement le JSON.
       result.image_quality = { usable: true, warning: '', limitations: [] };
     }
 
+    /* V299.4 — ROBUSTESSE score/riskLevel (SÉCURITÉ HACCP). Sur certaines photos
+       difficiles, Gemini omet les champs legacy `score`/`riskLevel` → l'écran
+       affichait score 0 / risque indéfini = FAUX RASSUREMENT sur une vraie
+       contamination. On garantit ici un score canonique (priorité : score >
+       overall_score > pire zone détectée) et un riskLevel dérivé des bandes
+       28/63 (mêmes seuils que le rapport), jamais laissés vides. */
+    {
+      let s = (typeof result.score === 'number' && result.score > 0) ? result.score
+            : (typeof result.overall_score === 'number' && result.overall_score > 0) ? result.overall_score
+            : 0;
+      if (s === 0 && Array.isArray(result.zones) && result.zones.length) {
+        /* zones détectées mais score absent → pire zone = plancher prudent */
+        const rs = result.zones.map(z => Number(z && z.risk_score)).filter(n => Number.isFinite(n) && n > 0);
+        if (rs.length) s = Math.max(...rs);
+      }
+      s = Math.max(0, Math.min(100, Math.round(s)));
+      result.score = s;
+      result.overall_score = s;
+      const VALID_RISK = ['Faible', 'Moyen', 'Élevé'];
+      if (!VALID_RISK.includes(result.riskLevel)) {
+        result.riskLevel = s < 28 ? 'Faible' : s < 63 ? 'Moyen' : 'Élevé';
+      }
+    }
+
     /* V299 — Normalisation DÉFENSIVE des bbox (spécifique Gemini). Malgré la
        consigne, Gemini peut produire les box au format natif [ymin,xmin,ymax,xmax]
        et/ou à l'échelle 0-1000. On reconvertit en { x, y, w, h } normalisé 0-1
