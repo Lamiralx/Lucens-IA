@@ -38,6 +38,11 @@ function withTimeout(promise, ms, label = 'op') {
 const PRIMARY_MODEL   = "gemini-2.5-pro";
 const FALLBACK_MODELS = ["gemini-2.5-flash"];
 
+/* V300 — Traduction repliée dans cet endpoint (mode:'translate') : aucun nouvel
+   endpoint (limite 12 fonctions). Flash texte-seul, pensée OFF = rapide+bon marché. */
+const TRANSLATE_MODEL = "gemini-2.5-flash";
+const LANG_NAMES = { fr: 'français', en: 'English', es: 'español', de: 'Deutsch' };
+
 /* Tarifs Gemini (USD / million de tokens, palier ≤200k — vérifiés 2026-06-12).
    La PENSÉE (thinking) est facturée au tarif OUTPUT. Le cache implicite Gemini
    facture les tokens d'entrée mis en cache ~0.25× (best-effort, non garanti). */
@@ -938,6 +943,79 @@ const SCHEMA = {
   additionalProperties: false,
 };
 
+/* ─── V300 — MODE TRADUCTION (replié dans /api/analyze, pas de nouvel endpoint) ───
+   Traduit les champs PROSE d'un rapport (déjà généré) vers les langues cibles,
+   pour que l'historique suive la langue courante (écran + PDF) sans re-analyser
+   l'image. Texte seul → Flash, pensée OFF, ~0,005$. Le client appelle ceci juste
+   après l'analyse (en ligne) pour pré-cacher les 3 autres langues → bascule offline. */
+async function handleTranslate(req, res) {
+  const ip = getClientIp(req);
+  const rl = await rateLimit({ scope: "translate", ip, limit: 120, windowSec: 3600 });
+  if (!rl.ok) return send429(res, rl.retryAfter);
+
+  const { sourceLang, targetLangs, fields } = req.body || {};
+  const src = LANG_NAMES[sourceLang] ? sourceLang : 'fr';
+  const tgts = (Array.isArray(targetLangs) ? targetLangs : [])
+    .filter(l => LANG_NAMES[l] && l !== src).slice(0, 3);
+  if (!fields || typeof fields !== 'object' || !tgts.length) {
+    return res.status(400).json({ error: "translate: 'fields' (objet) et 'targetLangs' requis" });
+  }
+
+  /* Aplatit + borne la taille (anti-abus) : valeurs string ou tableau de strings. */
+  const flat = {};
+  let total = 0;
+  for (const [k, v] of Object.entries(fields)) {
+    if (total > 12000) break;
+    if (typeof v === 'string' && v.trim()) {
+      flat[k] = v.slice(0, 700); total += flat[k].length;
+    } else if (Array.isArray(v)) {
+      const arr = v.filter(x => typeof x === 'string' && x.trim()).map(x => x.slice(0, 700)).slice(0, 12);
+      if (arr.length) { flat[k] = arr; total += arr.join('').length; }
+    }
+  }
+  if (!Object.keys(flat).length) {
+    return res.status(400).json({ error: "translate: aucun champ texte exploitable" });
+  }
+
+  const sys = `Tu es un traducteur expert en hygiène et sécurité alimentaire (HACCP). Traduis FIDÈLEMENT les VALEURS du JSON fourni, depuis le ${LANG_NAMES[src]} vers CHACUNE des langues cibles. Règles STRICTES : ne traduis JAMAIS les clés ; conserve les termes techniques et la signification exacte ; garde la même CONCISION (mêmes longueurs / budgets de mots, ton factuel d'inspecteur) ; pour les tableaux, conserve le même nombre d'éléments dans le même ordre. Réponds UNIQUEMENT par un objet JSON de la forme { "<code>": { <mêmes clés que l'entrée, valeurs traduites> } } avec une entrée par langue cible. Aucun texte hors JSON.`;
+  const user = `Langues cibles : ${tgts.map(l => `${l} (${LANG_NAMES[l]})`).join(', ')}.\nJSON à traduire (langue source = ${LANG_NAMES[src]}) :\n${JSON.stringify(flat)}`;
+
+  try {
+    const resp = await withTimeout(genai.models.generateContent({
+      model: TRANSLATE_MODEL,
+      contents: user,
+      config: {
+        systemInstruction: sys,
+        temperature: 0,
+        maxOutputTokens: 4096,
+        responseMimeType: "application/json",
+        thinkingConfig: { thinkingBudget: 0 },
+      },
+    }), 30000, 'translate');
+    const text = (typeof resp?.text === 'string' && resp.text)
+      ? resp.text
+      : (resp?.candidates?.[0]?.content?.parts || []).map(p => p?.text).filter(Boolean).join('');
+    let out = null;
+    try { out = JSON.parse(text); } catch { const m = text.match(/\{[\s\S]*\}/); if (m) { try { out = JSON.parse(m[0]); } catch {} } }
+    if (!out || typeof out !== 'object') {
+      return res.status(502).json({ error: "translate: réponse modèle invalide", retryable: true });
+    }
+    /* Ne renvoie que les langues demandées, et seulement les clés connues. */
+    const translations = {};
+    for (const l of tgts) {
+      const o = out[l];
+      if (o && typeof o === 'object') {
+        const clean = {};
+        for (const k of Object.keys(flat)) if (o[k] != null) clean[k] = o[k];
+        if (Object.keys(clean).length) translations[l] = clean;
+      }
+    }
+    return res.status(200).json({ translations, sourceLang: src, targetLangs: tgts });
+  } catch (e) {
+    return res.status(502).json({ error: "translate: " + String(e?.message || e).slice(0, 200), retryable: true });
+  }
+}
+
 export default async function handler(req, res) {
   /* CORS restreint à la whitelist (lieu de l'app), au lieu d'un wildcard "*" */
   applyCors(req, res);
@@ -947,6 +1025,11 @@ export default async function handler(req, res) {
 
   if (!genai) {
     return res.status(500).json({ error: "Server not configured: missing Gemini_API_KEY" });
+  }
+
+  /* V300 — Mode traduction (texte seul, pas d'image) : court-circuite l'analyse. */
+  if (req.body && req.body.mode === 'translate') {
+    return await handleTranslate(req, res);
   }
 
   /* Rate limit anti-cost-attack : 30 analyses / IP / heure.
