@@ -18,8 +18,8 @@
 })();
 </script>
 <!-- Favicon Lucens — L Geist Black sans-serif, géométrique pur -->
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%2306070A'/%3E%3Cpath d='M9 6 L9 26 L23 26 L23 22 L13 22 L13 6 Z' fill='%23FFFFFF'/%3E%3C/svg%3E">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='28' fill='%2306070A'/%3E%3Cpath d='M50 30 L50 148 L130 148 L130 124 L74 124 L74 30 Z' fill='%23FFFFFF'/%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2032%2032'%3E%3Crect%20width%3D'32'%20height%3D'32'%20rx%3D'4'%20fill%3D'%2306070A'%2F%3E%3Cpath%20d%3D'M9%206%20L9%2026%20L23%2026%20L23%2022%20L13%2022%20L13%206%20Z'%20fill%3D'%23FFFFFF'%2F%3E%3Ccircle%20cx%3D'24'%20cy%3D'8.6'%20r%3D'2.6'%20fill%3D'%23B54A2A'%2F%3E%3C%2Fsvg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20180%20180'%3E%3Crect%20width%3D'180'%20height%3D'180'%20rx%3D'28'%20fill%3D'%2306070A'%2F%3E%3Cpath%20d%3D'M50%2030%20L50%20148%20L130%20148%20L130%20124%20L74%20124%20L74%2030%20Z'%20fill%3D'%23FFFFFF'%2F%3E%3Ccircle%20cx%3D'135'%20cy%3D'49'%20r%3D'14.5'%20fill%3D'%23B54A2A'%2F%3E%3C%2Fsvg%3E">
 <title>Lucens IA</title>
 <meta name="description" content="Lucens IA — système d'inspection UV-A 365 nm. Détection visuelle d'indices fluorescents compatibles avec résidus organiques, traces chimiques suspectes et biofilms, pour HACCP, agroalimentaire et industries pharmaceutiques.">
 
@@ -4967,7 +4967,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 .ctx-q-sector { margin-top: 18px; }
 /* Wizard : une question à la fois, la suivante remplace la précédente après réponse. */
 .ctx-step { display: none; }
-.ctx-step.is-on { display: block; animation: ctx-step-slide .28s var(--ease-out, ease-out); }
+.ctx-step.is-on { display: block; }   /* V305 — micro-animation d'apparition retirée (jank) */
 @keyframes ctx-step-slide {
   from { opacity: 0; transform: translateX(18px); }
   to   { opacity: 1; transform: translateX(0); }
@@ -5089,7 +5089,7 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 /* V289 — révélation progressive : le RÔLE apparaît après le choix du secteur,
    micro-animation hyper discrète (fondu + 6px), neutralisée si reduced-motion. */
 .ctx-step.ctx-await { display: none; }
-.ctx-step.ctx-reveal { animation: ctxReveal .22s ease-out; }
+.ctx-step.ctx-reveal { animation: none; }   /* V305 — micro-animation retirée ; on défile vers le rôle à la place */
 @keyframes ctxReveal { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .ctx-step.ctx-reveal { animation: none; } }
 /* V288 — pille secteur compacte : libellé seul, centré, cible >=44px */
@@ -8719,10 +8719,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
   <!-- HEADER — V272 : LOCKUP UNIFIÉ (wordmark + point cuivre + tagline).
        Le viseur reste l'icône d'app (PWA/favicon), plus dans le lockup in-app. -->
   <header class="hdr">
-    <a class="hdr-brand" href="/" aria-label="Lucens — Résidus, biofilms, contaminants">
+    <a class="hdr-brand" href="/" aria-label="Lucens">
       <span class="hdr-lockup">
         <span class="hdr-wordmark" data-i18n="hdr_title">LUCENS</span>
-        <span class="hdr-tagline" data-i18n="hdr_brandline">RÉSIDUS · BIOFILMS · CONTAMINANTS</span>
       </span>
     </a>
     <span class="hdr-screen-title" id="hdrScreenTitle" data-i18n="screen_home" style="display:none">Accueil</span>
@@ -8817,7 +8816,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v302</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v305</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -9311,7 +9310,6 @@ body.lv-open { overflow: hidden; touch-action: none; }
       <!-- Marque centrée — définition utilisateur : wordmark + éléments dessous -->
       <div class="loader-brand">
         <span class="loader-wordmark">LUCENS</span>
-        <span class="loader-tagline" data-i18n="hdr_brandline">RÉSIDUS · BIOFILMS · CONTAMINANTS</span>
       </div>
 
       <!-- Carte instrument : LA photo analysée + secteur + progression réelle -->
@@ -10322,9 +10320,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
            live ; le PADDING (style) est jumelé avec l'historique (parité V275). */
         #results.visible > #hero { flex: 0 0 auto !important; margin: 0 !important; }
         #results.visible #hero,
-        .hist-live-result .hero { padding: 11px 15px !important; }
+        .hist-live-result .hero { padding: 8px 15px !important; }
         #results.visible #hero .hero-row,
-        .hist-live-result .hero .hero-row { margin-bottom: 9px !important; }
+        .hist-live-result .hero .hero-row { margin-bottom: 6px !important; }
         /* IMAGE : amortisseur — base 0 + grow 1 → elle ne prend QUE l'espace
            restant APRÈS hero + 3 blocs + boutons (ne « gonfle » pas en mangeant
            la place du verdict). Les 3 blocs s'affichent donc en ENTIER sans
@@ -10333,20 +10331,21 @@ body.lv-open { overflow: hidden; touch-action: none; }
            PLUS l'amortisseur écrasé. Hauteur STABLE (30dvh, identique à chaque
            analyse, verticale comme horizontale), affichée ENTIÈRE (contain). */
         #results.visible > .result-grid {
-          flex: 0 0 auto !important; height: 30dvh !important; min-height: 0 !important;
+          flex: 1 0 auto !important; height: auto !important;
+          min-height: 150px !important; max-height: 25dvh !important;
           margin: 0 !important; display: flex !important; flex-direction: column !important;
         }
         #results.visible .result-grid > .card:has(#viewerStage) { flex: 1 1 auto !important; min-height: 0 !important; }
         #results.visible #viewerStage { height: auto !important; flex: 1 1 auto !important; min-height: 0 !important; }
-        /* V292 — cartographie ENTIÈRE, jamais recadrée (parité paysage + PDF) */
+        /* V304 — cartographie ENTIÈRE, jamais recadrée (parité paysage + PDF) */
         #results.visible #viewerStage canvas,
         #results.visible #viewerStage img.original { object-fit: contain !important; }
         /* TEXTE (3 blocs) : occupe le reste sous la zone image fixe. Compacté pour
            que les 3 tiennent SANS défilement de page. Scroll interne = ultime
            recours seulement (texte IA anormalement long). */
         #results.visible > .lucens-verdict-card {
-          flex: 1 1 auto !important; min-height: 0 !important;
-          overflow-y: auto !important; gap: 10px !important; /* V292 — séparation NETTE des 3 blocs (gap standard LOI) */
+          flex: 0 1 auto !important; min-height: 0 !important;
+          overflow-y: auto !important; gap: 9px !important; /* V304 — l'IMAGE est prioritaire (pleine, plancher 150px, jamais compressée) ; le verdict prend le reste et ne scrolle qu'en ultime recours (petit écran) */
         }
         /* Compaction des 3 blocs : règles de STYLE (padding/marges/interligne).
            Jumelées avec .hist-live-result pour préserver « historique = analyse »
@@ -10357,13 +10356,13 @@ body.lv-open { overflow: hidden; touch-action: none; }
            gap 12, body 14/1.5 → blocs nettement distincts, conformes à la LOI
            design (grille 4px, cartes 14-16). Tient en zéro-scroll sur écran réel. */
         #results.visible .lv-verdict-head,
-        .hist-live-result .lv-verdict-head { padding: 12px 16px 0 !important; }
+        .hist-live-result .lv-verdict-head { padding: 8px 16px 0 !important; }
         #results.visible .lv-verdict-interpretation,
-        .hist-live-result .lv-verdict-interpretation { padding: 4px 16px 12px !important; }
+        .hist-live-result .lv-verdict-interpretation { padding: 3px 16px 8px !important; }
         #results.visible #lvRisque,
-        .hist-live-result .lv-risque { padding: 12px 16px 12px 18px !important; }
+        .hist-live-result .lv-risque { padding: 8px 16px 8px 18px !important; }
         #results.visible .lv-verdict-action,
-        .hist-live-result .lv-verdict-action { padding: 12px 16px !important; }
+        .hist-live-result .lv-verdict-action { padding: 8px 16px !important; }
         #results.visible .lv-verdict-eyebrow,
         #results.visible .lv-risque-label,
         #results.visible .lv-verdict-action-title,
@@ -10378,7 +10377,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         #results.visible .lv-verdict-action-text,
         .hist-live-result .lv-verdict-interpretation,
         .hist-live-result .lv-risque-text,
-        .hist-live-result .lv-verdict-action-text { font-size: 14px !important; line-height: 1.45 !important; }
+        .hist-live-result .lv-verdict-action-text { font-size: 14px !important; line-height: 1.38 !important; }
         /* 2 BOUTONS : toujours entièrement visibles, épinglés en bas de la pile */
         #results.visible > .results-toolbar { flex: 0 0 auto !important; margin: 8px 0 0 !important; }
 
@@ -19394,9 +19393,12 @@ const Annotator = (() => {
           refreshNav();
           const s2 = document.getElementById('ctxStep2');
           if (s2 && s2.classList.contains('ctx-await')) {
-            s2.classList.remove('ctx-await');
-            s2.classList.add('ctx-reveal');
-            setTimeout(() => s2.classList.remove('ctx-reveal'), 300);
+            s2.classList.remove('ctx-await');   /* V305 — révèle le rôle SANS micro-animation */
+            /* défile EN DOUCEUR vers le rôle au lieu de laisser une zone vide en bas */
+            requestAnimationFrame(() => {
+              try { s2.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
+              if (typeof updateCtxScrollbar === 'function') setTimeout(updateCtxScrollbar, 90);
+            });
           }
         };
         overlay.querySelectorAll('input[name="ctx_type"]').forEach(r => {

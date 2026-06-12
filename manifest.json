@@ -10,18 +10,21 @@
   "theme_color": "#06070A",
   "icons": [
     {
-      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjMwIiBmaWxsPSIjMDYwNzBBIi8+PHBhdGggZD0iTTUzIDMyIEw1MyAxNTggTDEzOSAxNTggTDEzOSAxMzIgTDc5IDEzMiBMNzkgMzIgWiIgZmlsbD0iI0ZGRkZGRiIvPjwvc3ZnPg==",
+      "src": "data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20192%20192'%3E%3Crect%20width%3D'192'%20height%3D'192'%20rx%3D'30'%20fill%3D'%2306070A'%2F%3E%3Cpath%20d%3D'M53%2032%20L53%20158%20L139%20158%20L139%20132%20L79%20132%20L79%2032%20Z'%20fill%3D'%23FFFFFF'%2F%3E%3Ccircle%20cx%3D'144'%20cy%3D'52'%20r%3D'15.4'%20fill%3D'%23B54A2A'%2F%3E%3C%2Fsvg%3E",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjgwIiBmaWxsPSIjMDYwNzBBIi8+PHBhdGggZD0iTTE0MCA4MCBMMTQwIDQyMCBMMzcyIDQyMCBMMzcyIDM1MCBMMjEwIDM1MCBMMjEwIDgwIFoiIGZpbGw9IiNGRkZGRkYiLz48L3N2Zz4=",
+      "src": "data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20512%20512'%3E%3Crect%20width%3D'512'%20height%3D'512'%20rx%3D'80'%20fill%3D'%2306070A'%2F%3E%3Cpath%20d%3D'M140%2080%20L140%20420%20L372%20420%20L372%20350%20L210%20350%20L210%2080%20Z'%20fill%3D'%23FFFFFF'%2F%3E%3Ccircle%20cx%3D'384'%20cy%3D'138'%20r%3D'41'%20fill%3D'%23B54A2A'%2F%3E%3C%2Fsvg%3E",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any"
     }
   ],
   "lang": "fr",
-  "categories": ["business", "productivity"]
+  "categories": [
+    "business",
+    "productivity"
+  ]
 }
