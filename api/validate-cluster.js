@@ -2,10 +2,10 @@
  * Lucens IA — Endpoint validation sémantique cluster Live View (V16)
  *
  * But : pour chaque cluster détecté par les heuristiques HSV du Live View,
- * demander à Claude Haiku si la zone est une VRAIE fluorescence ou un
+ * demander à Gemini Flash si la zone est une VRAIE fluorescence ou un
  * OBJET/MATÉRIAU normal (bois, verre, plastique, métal coloré, peinture).
  *
- * Pourquoi Haiku : latence ~600-900ms médiane, coût ~$0.0002 par appel,
+ * Pourquoi Flash (pensée OFF) : latence ~500-900ms, coût ~$0.0005 par appel,
  * suffisant pour une question binaire avec petit crop image.
  *
  * Entrée :
@@ -26,13 +26,16 @@
  * Vocabulaire VOLONTAIREMENT VAGUE/honnête (ne pas sur-spécifier — voir prompt).
  */
 
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenAI } from "@google/genai";
 import { applyCors, getClientIp, rateLimit, send429 } from "./_lib/security.js";
 
-const client = new Anthropic({ maxRetries: 1, timeout: 8000 });
+/* V299 — migration Haiku → Gemini Flash (crédit Anthropic épuisé). */
+const GEMINI_KEY = process.env.Gemini_API_KEY || process.env.GEMINI_API_KEY;
+const genai = GEMINI_KEY ? new GoogleGenAI({ apiKey: GEMINI_KEY }) : null;
 
-/* Modèle : Haiku 4.5 — le plus rapide. Précision suffisante pour binaire visuel. */
-const MODEL = "claude-haiku-4-5";
+/* Modèle : Gemini 2.5 Flash — rapide et bon marché. PENSÉE DÉSACTIVÉE
+   (thinkingBudget:0) pour tenir la cible de latence <800ms du juge Live View. */
+const MODEL = "gemini-2.5-flash";
 
 /* Rate limit : 240 validations / minute / IP — protège du burst sans
    bloquer les sessions intensives. */
@@ -112,22 +115,27 @@ export default async function handler(req, res) {
 
   const t0 = Date.now();
   try {
-    const resp = await client.messages.create({
+    if (!genai) throw new Error('Gemini key missing');
+    const resp = await genai.models.generateContent({
       model: MODEL,
-      /* V255 — +40 tokens pour le champ "type" ajouté au JSON. */
-      max_tokens: 120,
-      system: SYSTEM_PROMPT,
-      messages: [{
-        role: 'user',
-        content: [
-          { type: 'image', source: { type: 'base64', media_type: mt, data: image } },
-          { type: 'text', text: 'Classifie cette zone. JSON uniquement. La valeur "reason" doit être écrite en ' + langName + ' (3 à 6 mots).' }
-        ]
-      }]
+      contents: [
+        { inlineData: { mimeType: mt, data: image } },
+        { text: 'Classifie cette zone. JSON uniquement. La valeur "reason" doit être écrite en ' + langName + ' (3 à 6 mots).' }
+      ],
+      config: {
+        systemInstruction: SYSTEM_PROMPT,
+        temperature: 0,
+        maxOutputTokens: 256,
+        responseMimeType: 'application/json',
+        /* pensée OFF : un juge binaire doit rester sous ~800ms */
+        thinkingConfig: { thinkingBudget: 0 },
+      },
     });
 
     const latencyMs = Date.now() - t0;
-    const raw = resp.content?.[0]?.text?.trim() || '';
+    const raw = ((typeof resp?.text === 'string' && resp.text)
+      ? resp.text
+      : (resp?.candidates?.[0]?.content?.parts || []).map(p => p?.text).filter(Boolean).join('')).trim();
 
     /* Parse JSON robuste — on accepte les variations de wrapping */
     let parsed = null;
@@ -163,7 +171,7 @@ export default async function handler(req, res) {
     res.status(200).json({ verdict, type, reason, latencyMs });
   } catch (err) {
     const latencyMs = Date.now() - t0;
-    /* En cas d'erreur réseau/Anthropic, on retourne UNCERTAIN plutôt que 500
+    /* En cas d'erreur réseau/API, on retourne UNCERTAIN plutôt que 500
        pour ne pas casser le flow Live View. Le client peut continuer. */
     res.status(200).json({
       verdict: 'UNCERTAIN',

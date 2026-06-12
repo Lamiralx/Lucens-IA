@@ -1,15 +1,15 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenAI } from "@google/genai";
 import { kv } from "@vercel/kv";
 import { createHash } from "node:crypto";
 import { applyCors, getClientIp, rateLimit, send429 } from "./_lib/security.js";
 import { assignPromptVariant } from "./_lib/ab-testing.js";
 
-/* maxRetries=4 : couvre les vagues de saturation Anthropic jusqu'à ~90s
-   (backoff exponentiel intégré au SDK : ~1s, 2s, 4s, 8s)
-   timeout 120s : empêche un appel SDK de bloquer indéfiniment si le réseau
-   ou Anthropic mettent du temps (avant Phase 2 : pas de timeout = blocage
-   possible jusqu'au maxDuration 300s Vercel). */
-const client = new Anthropic({ maxRetries: 4, timeout: 120000 });
+/* V299 — MOTEUR : migration Anthropic Claude → Google Gemini (crédit Anthropic
+   épuisé). Le SYSTEM_PROMPT métier est CONSERVÉ tel quel (réglé sur 290+ versions) :
+   seul le moteur d'inférence change. Cascade de modèles si l'ID préféré n'est pas
+   disponible pour la clé. Clé Vercel : Gemini_API_KEY (casse mixte gravée). */
+const GEMINI_KEY = process.env.Gemini_API_KEY || process.env.GEMINI_API_KEY;
+const genai = GEMINI_KEY ? new GoogleGenAI({ apiKey: GEMINI_KEY }) : null;
 
 /* ─── Helpers timeouts (Phase 1 — anti-blocage Vercel KV / Anthropic) ───
    withTimeout : enveloppe une Promise dans un timeout. En cas de dépassement,
@@ -29,31 +29,38 @@ function withTimeout(promise, ms, label = 'op') {
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
 
-/* Fallback automatique si Opus reste saturé après les 4 retries du SDK.
-   Sonnet 4.6 est généralement moins demandé donc moins sujet aux 529. */
-const PRIMARY_MODEL  = "claude-opus-4-7";
-const FALLBACK_MODEL = "claude-sonnet-4-6";
+/* Cascade de modèles Gemini : si l'ID préféré (preview) n'est pas exposé pour
+   la clé, on retombe sur le stable Pro, puis sur Flash. Le 1er qui répond gagne. */
+const PRIMARY_MODEL   = "gemini-3.1-pro-preview";
+const FALLBACK_MODELS = ["gemini-2.5-pro", "gemini-2.5-flash"];
 
-/* V296 — Tarifs Anthropic (USD / million de tokens) pour journaliser le COÛT
-   RÉEL de chaque analyse. Cache write 1h = 2× input ; cache read = 0.1× input. */
+/* Tarifs Gemini (USD / million de tokens, palier ≤200k — vérifiés 2026-06-12).
+   La PENSÉE (thinking) est facturée au tarif OUTPUT. Le cache implicite Gemini
+   facture les tokens d'entrée mis en cache ~0.25× (best-effort, non garanti). */
 const PRICING = {
-  "claude-opus-4-7":   { in: 5, out: 25 },
-  "claude-opus-4-8":   { in: 5, out: 25 },
-  "claude-sonnet-4-6": { in: 3, out: 15 },
+  "gemini-3.1-pro-preview": { in: 2.0,  out: 12.0 },
+  "gemini-2.5-pro":         { in: 1.25, out: 10.0 },
+  "gemini-2.5-flash":       { in: 0.30, out: 2.50 },
 };
 function estimateCostUsd(model, u) {
   const p = PRICING[model] || PRICING[PRIMARY_MODEL];
   const inT = u?.input_tokens || 0;
-  const outT = u?.output_tokens || 0;
-  const cr = u?.cache_read_input_tokens || 0;     /* lecture cache : 0.1× input */
-  const cc = u?.cache_creation_input_tokens || 0; /* écriture cache 1h : 2× input */
-  const cost = (inT * p.in + cr * p.in * 0.1 + cc * p.in * 2 + outT * p.out) / 1e6;
+  const cached = u?.cache_read_input_tokens || 0;  /* sous-ensemble de inT, facturé ~0.25× */
+  const outT = u?.output_tokens || 0;              /* candidats + pensée (pensée = tarif output) */
+  const cost = ((inT - cached) * p.in + cached * p.in * 0.25 + outT * p.out) / 1e6;
   return Math.round(cost * 1e5) / 1e5;
 }
 
-/* Statuts qui justifient un fallback : surcharge/indispo Anthropic.
-   Pas 4xx (sauf 429) car ce sont des erreurs côté requête, pas serveur. */
-const OVERLOAD_STATUSES = new Set([429, 503, 529]);
+/* Addendum technique apposé au SYSTEM_PROMPT métier (conservé inchangé). Cible
+   les 2 dérives connues de Gemini vs Claude : (1) il tend à produire les bbox au
+   format natif [ymin,xmin,ymax,xmax]/1000 → on impose {x,y,w,h} en 0-1 ; (2)
+   garde-fou JSON pur + rappel budgets de mots / langue. */
+const GEMINI_ADDENDUM = `
+
+═══ FORMAT DE SORTIE (RAPPEL TECHNIQUE — IMPÉRATIF) ═══
+- Réponds UNIQUEMENT par l'objet JSON demandé : aucun texte avant/après, aucun bloc markdown, aucune balise de code.
+- Les bounding-box de chaque zone DOIVENT être au format { "x": , "y": , "w": , "h": } en coordonnées NORMALISÉES entre 0 et 1 (x,y = coin HAUT-GAUCHE de la box ; w,h = largeur/hauteur ; origine en haut-gauche de l'image). N'utilise JAMAIS le format [ymin, xmin, ymax, xmax] ni l'échelle 0-1000. La box doit couvrir TOUT le halo fluorescent, pas seulement le centre.
+- Respecte STRICTEMENT les budgets de mots de chaque champ et la langue de sortie demandée.`;
 
 /* ─── Vague 3 — Few-shot dynamique RAG (Gemini Livrable 5) ─────────
    Sélectionne 2 leçons issues de cas corrigés stockés en KV qui sont
@@ -926,8 +933,8 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(204).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return res.status(500).json({ error: "Server not configured: missing ANTHROPIC_API_KEY" });
+  if (!genai) {
+    return res.status(500).json({ error: "Server not configured: missing Gemini_API_KEY" });
   }
 
   /* Rate limit anti-cost-attack : 30 analyses / IP / heure.
@@ -972,7 +979,7 @@ export default async function handler(req, res) {
     /* USER PROMPT — Phase 3 audit : concis, hiérarchisé, avec few-shot */
     const hasHints = Array.isArray(detectedZones) && detectedZones.length > 0;
     let hintsLine = hasHints
-      ? `\nHints heuristiques (à valider, pas une contrainte) : ${detectedZones.length} zones-candidates fournies${hasZoneCrops ? ' avec crops 384×384 dans l\'ordre' : ''}. L'heuristique HSL rate souvent les grandes zones denses et invente des zones sur le voile UV ; utilise ton jugement visuel global.\n`
+      ? `\nHints heuristiques (à valider, pas une contrainte) : ${detectedZones.length} zones-candidates fournies${hasZoneCrops ? ' avec crops 640×640 dans l\'ordre' : ''}. L'heuristique HSL rate souvent les grandes zones denses et invente des zones sur le voile UV ; utilise ton jugement visuel global.\n`
       : '';
 
     /* V53 P2 — Hints chromatiques calculés client-side via mini-lib spectro
@@ -1213,112 +1220,95 @@ EXEMPLE DE SORTIE ATTENDUE (référence de format et de niveau technique — à 
 
 Fin : respecte strictement la langue ${langName} et retourne uniquement le JSON.`;
 
-    /* Opus 4.7 — modèle stable en prod. Sonnet 4.7 n'existe pas chez Anthropic.
-       Plus cher mais meilleure précision sur disambiguation D1-D8 + few-shot rules.
-       Si Opus reste saturé après 4 retries SDK → fallback Sonnet 4.6 (cf. catch).
-
-       STREAMING (Phase 2) : on utilise client.messages.stream(...) au lieu de
-       .create(...). Bénéfice clé : la connexion HTTP reste active pendant
-       toute la génération, ce qui évite les timeouts intermédiaires sur les
-       longues réponses Opus (40-90s typiques en effort:high). On reconstruit
-       le message complet via .finalMessage() — shape identique à .create(). */
-    const buildRequestArgs = (modelId) => ({
-      model: modelId,
-      /* max_tokens 8192 : permet output complet sur scènes complexes
-         (8-12 zones × ~250 tokens enrichis + reasoning_summary + différentiel
-         5 hypothèses + observations + validation + image_quality).
-         Anthropic ne facture que les tokens réellement générés. */
-      max_tokens: 8192,
-      thinking: { type: "adaptive" },
-      /* V24.1 — output_config supprimé (limite de grammar Anthropic
-         empêche d'avoir tous les champs UI legacy + V21 contextuel).
-         Sortie JSON pur via prompt + parsing tolérant côté backend. */
-      system: [
-        /* TTL 1h au lieu de 5min : sur usage HACCP typique (inspecteur faisant
-           5-15 photos sur 30-60min), le cache reste valide entre les analyses.
-           Coût write : 2× input (vs 1.25× en 5min) — rentable dès la 2e analyse. */
-        { type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral", ttl: "1h" } },
-      ],
-      messages: [
-        {
-          role: "user",
-          content: (() => {
-            const blocks = [
-              { type: "text", text: "═══ IMAGE GLOBALE (vue d'ensemble de la surface inspectée) ═══" },
-              { type: "image", source: { type: "base64", media_type: mediaType, data: image } },
-            ];
-            /* Phase 1.5 — injecte un crop dédié par zone, dans l'ordre numérique */
-            if (hasZoneCrops) {
-              blocks.push({
-                type: "text",
-                text: `\n═══ ${zoneCrops.length} CROPS DÉDIÉS — un par zone, dans l'ordre ═══`
-              });
-              for (let i = 0; i < zoneCrops.length; i++) {
-                blocks.push({
-                  type: "text",
-                  text: `\n— Crop hint ${i + 1} (384×384, à valider) —`
-                });
-                blocks.push({
-                  type: "image",
-                  source: { type: "base64", media_type: "image/jpeg", data: zoneCrops[i] }
-                });
-              }
-              blocks.push({
-                type: "text",
-                text: `\n═══ FIN DES CROPS — instructions complètes ci-dessous ═══\n`
-              });
-            }
-            blocks.push({ type: "text", text: userText });
-            return blocks;
-          })(),
-        },
-      ],
-    });
-
-    /* callModel : déclenche le stream et attend la finalMessage().
-       Le SDK Anthropic envoie des heartbeats pendant le stream, donc Vercel
-       ne coupe pas la fonction même pour des outputs de 60-90s. */
-    const callModel = async (modelId) => {
-      const stream = client.messages.stream(buildRequestArgs(modelId));
-      return await stream.finalMessage();
+    /* ─── Appel Gemini (V299) ───────────────────────────────────────────
+       buildParts() construit le contenu multimodal : image globale + crops
+       dédiés + userText. Le SYSTEM_PROMPT métier part en systemInstruction
+       (suivi de l'addendum format Gemini). responseMimeType json force une
+       syntaxe JSON valide ; le parsing tolérant en aval reste le filet de
+       sécurité. maxOutputTokens large : la PENSÉE (thinking) partage ce budget
+       côté Gemini — dimensionné pour ne JAMAIS tronquer le JSON final. */
+    const buildParts = () => {
+      const parts = [
+        { text: "═══ IMAGE GLOBALE (vue d'ensemble de la surface inspectée) ═══" },
+        { inlineData: { mimeType: mediaType, data: image } },
+      ];
+      /* Phase 1.5 — injecte un crop dédié par zone, dans l'ordre numérique */
+      if (hasZoneCrops) {
+        parts.push({ text: `\n═══ ${zoneCrops.length} CROPS DÉDIÉS — un par zone, dans l'ordre ═══` });
+        for (let i = 0; i < zoneCrops.length; i++) {
+          parts.push({ text: `\n— Crop hint ${i + 1} (640×640, à valider) —` });
+          parts.push({ inlineData: { mimeType: "image/jpeg", data: zoneCrops[i] } });
+        }
+        parts.push({ text: `\n═══ FIN DES CROPS — instructions complètes ci-dessous ═══\n` });
+      }
+      parts.push({ text: userText });
+      return parts;
     };
 
-    /* Tentative Opus → si surcharge persistante, fallback Sonnet (transparent).
-       withTimeout 110s : cap dur côté serveur même si le SDK ne timeout pas.
-       Laisse 190s+ de marge avant le maxDuration Vercel (300s) pour le reste. */
-    let message;
-    let usedFallback = false;
-    try {
-      message = await withTimeout(
-        callModel(PRIMARY_MODEL),
-        110000,
-        `Claude:${PRIMARY_MODEL}`
-      );
-    } catch (primaryErr) {
-      const isOverload = primaryErr instanceof Anthropic.APIError
-        && OVERLOAD_STATUSES.has(primaryErr.status);
-      const isTimeout = primaryErr?.name === 'TimeoutError';
-      if (!isOverload && !isTimeout) throw primaryErr;
-      const reason = isTimeout
-        ? `timeout ${primaryErr.timeoutMs}ms`
-        : `saturé (${primaryErr.status})`;
-      console.warn(`[ANALYZE] ${PRIMARY_MODEL} ${reason}, fallback ${FALLBACK_MODEL}`);
-      message = await withTimeout(
-        callModel(FALLBACK_MODEL),
-        110000,
-        `Claude:${FALLBACK_MODEL}`
-      );
-      usedFallback = true;
-    }
+    const buildConfig = () => ({
+      systemInstruction: SYSTEM_PROMPT + GEMINI_ADDENDUM,
+      temperature: 0.1,
+      maxOutputTokens: 16384,
+      responseMimeType: "application/json",
+    });
 
-    const textBlock = message.content.find((b) => b.type === "text");
-    if (!textBlock || !textBlock.text) {
-      console.error("[ANALYZE] Réponse vide du modèle", {
-        model: message?.model,
-        stop_reason: message?.stop_reason,
-        usage: message?.usage,
+    /* callModel : un appel Gemini non-streamé, normalisé vers la forme qu'attend
+       le reste du handler ({ text, model, stop_reason, usage }) — ainsi le code
+       en aval (parsing, normalisation, log de coût, _meta) reste inchangé. */
+    const callModel = async (modelId) => {
+      const resp = await genai.models.generateContent({
+        model: modelId,
+        contents: buildParts(),
+        config: buildConfig(),
       });
-      return res.status(502).json({ error: "Empty model response" });
+      const text = (typeof resp?.text === "string" && resp.text)
+        ? resp.text
+        : (resp?.candidates?.[0]?.content?.parts || [])
+            .map(p => p?.text).filter(Boolean).join("");
+      const um = resp?.usageMetadata || {};
+      return {
+        text,
+        model: modelId,
+        stop_reason: resp?.candidates?.[0]?.finishReason || "STOP",
+        usage: {
+          input_tokens: um.promptTokenCount || 0,
+          /* pensée facturée au tarif output → agrégée pour le coût réel */
+          output_tokens: (um.candidatesTokenCount || 0) + (um.thoughtsTokenCount || 0),
+          cache_read_input_tokens: um.cachedContentTokenCount || 0,
+          cache_creation_input_tokens: 0,
+        },
+      };
+    };
+
+    /* Cascade : modèle préféré → repli Pro stable → Flash. On retombe sur le
+       suivant à la MOINDRE erreur (ID preview non exposé pour la clé, 404/429/5xx,
+       timeout, réponse vide) car l'incertitude principale est la disponibilité de
+       l'ID preview. withTimeout 110s : cap dur côté serveur (marge avant 300s). */
+    const MODEL_CHAIN = [PRIMARY_MODEL, ...FALLBACK_MODELS];
+    let message = null;
+    let usedFallback = false;
+    let lastErr = null;
+    for (let i = 0; i < MODEL_CHAIN.length; i++) {
+      const modelId = MODEL_CHAIN[i];
+      try {
+        const m = await withTimeout(callModel(modelId), 110000, `Gemini:${modelId}`);
+        if (!m.text) throw new Error(`réponse vide (finish=${m.stop_reason})`);
+        message = m;
+        usedFallback = i > 0;
+        if (i > 0) console.warn(`[ANALYZE] fallback modèle → ${modelId} (rang ${i})`);
+        break;
+      } catch (err) {
+        lastErr = err;
+        console.warn(`[ANALYZE] ${modelId} échec: ${err?.message || err}`);
+      }
+    }
+    if (!message) {
+      console.error("[ANALYZE] Tous les modèles Gemini ont échoué:", lastErr?.message || lastErr);
+      return res.status(502).json({
+        error: "Le moteur d'analyse est momentanément indisponible. Réessayez.",
+        retryable: true,
+        type: "ModelUnavailable",
+      });
     }
 
     /* V24.1 — Parsing tolérant : on accepte JSON pur OU JSON dans un bloc
@@ -1353,16 +1343,16 @@ Fin : respecte strictement la langue ${langName} et retourne uniquement le JSON.
       }
       return null;
     }
-    let result = extractJSON(textBlock.text);
+    let result = extractJSON(message.text);
     if (!result) {
       try {
-      result = JSON.parse(textBlock.text);
+      result = JSON.parse(message.text);
     } catch (parseErr) {
       console.error("[ANALYZE] JSON.parse échoué:", parseErr?.message || parseErr);
       console.error("[ANALYZE] Début texte modèle (1000 chars):",
-        textBlock.text.slice(0, 1000));
+        message.text.slice(0, 1000));
       console.error("[ANALYZE] Fin texte modèle (200 chars):",
-        textBlock.text.slice(-200));
+        message.text.slice(-200));
       console.error("[ANALYZE] Métadonnées:", {
         model: message?.model,
         stop_reason: message?.stop_reason,
@@ -1401,6 +1391,33 @@ Fin : respecte strictement la langue ${langName} et retourne uniquement le JSON.
     if (typeof result.overall_score !== 'number') result.overall_score = 0;
     if (!result.image_quality || typeof result.image_quality !== 'object') {
       result.image_quality = { usable: true, warning: '', limitations: [] };
+    }
+
+    /* V299 — Normalisation DÉFENSIVE des bbox (spécifique Gemini). Malgré la
+       consigne, Gemini peut produire les box au format natif [ymin,xmin,ymax,xmax]
+       et/ou à l'échelle 0-1000. On reconvertit en { x, y, w, h } normalisé 0-1
+       (coin haut-gauche + dimensions) puis on clampe au cadre. Sans ça, la
+       cartographie peint des zones hors-champ ou inversées. No-op si déjà conforme. */
+    for (const z of result.zones) {
+      if (!z || typeof z !== 'object') continue;
+      let b = z.bbox_normalized;
+      if (Array.isArray(b) && b.length === 4) {
+        /* format natif Gemini [ymin, xmin, ymax, xmax] */
+        const [ymin, xmin, ymax, xmax] = b.map(Number);
+        const sc = [ymin, xmin, ymax, xmax].some(v => v > 1.5) ? 1000 : 1;
+        b = { x: xmin / sc, y: ymin / sc, w: (xmax - xmin) / sc, h: (ymax - ymin) / sc };
+      } else if (b && typeof b === 'object') {
+        let x = Number(b.x), y = Number(b.y), w = Number(b.w), h = Number(b.h);
+        if ([x, y, w, h].some(v => Number.isFinite(v) && v > 1.5)) { x /= 1000; y /= 1000; w /= 1000; h /= 1000; }
+        b = { x, y, w, h };
+      } else {
+        continue;
+      }
+      const x = Math.max(0, Math.min(1, Number.isFinite(b.x) ? b.x : 0));
+      const y = Math.max(0, Math.min(1, Number.isFinite(b.y) ? b.y : 0));
+      const w = Math.max(0, Math.min(1 - x, Number.isFinite(b.w) ? b.w : 0));
+      const h = Math.max(0, Math.min(1 - y, Number.isFinite(b.h) ? b.h : 0));
+      z.bbox_normalized = { x, y, w, h };
     }
 
     /* ─── V296 — JOURNALISATION USAGE + COÛT RÉEL (audit de la dépense) ───
@@ -1473,25 +1490,31 @@ Fin : respecte strictement la langue ${langName} et retourne uniquement le JSON.
       });
     }
 
-    if (err instanceof Anthropic.APIError) {
-      /* 529/503/429 même après fallback : message FR clair, status 503 (retry) */
-      if (OVERLOAD_STATUSES.has(err.status)) {
-        return res.status(503).json({
-          error: "Service d'analyse temporairement saturé. Veuillez réessayer dans une minute.",
-          retryable: true,
-          type: err.constructor.name,
-        });
-      }
-      return res.status(err.status || 500).json({ error: err.message, type: err.constructor.name });
+    /* Gemini : surcharge / quota (429 RESOURCE_EXHAUSTED, 503 UNAVAILABLE) →
+       503 retryable, message FR clair. Le SDK n'expose pas toujours un status
+       typé → détection par status numérique OU par motif dans le message. */
+    const _msg = String(err?.message || err);
+    const _status = Number(err?.status) || 0;
+    const _overloaded = [429, 503, 529].includes(_status)
+      || /\b(429|503|529)\b|RESOURCE_EXHAUSTED|UNAVAILABLE|overloaded|rate.?limit|quota/i.test(_msg);
+    if (_overloaded) {
+      return res.status(503).json({
+        error: "Service d'analyse temporairement saturé. Veuillez réessayer dans une minute.",
+        retryable: true,
+        type: "Overloaded",
+      });
     }
-    return res.status(500).json({ error: err.message || "Internal error" });
+    if (_status >= 400 && _status < 600) {
+      return res.status(_status).json({ error: _msg, type: "GeminiAPIError" });
+    }
+    return res.status(500).json({ error: _msg || "Internal error" });
   }
 }
 
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: "25mb",   /* MODE PRÉCISION MAX : image 2576px + 24 crops 384px en HQ */
+      sizeLimit: "25mb",   /* MODE PRÉCISION MAX : image 2576px + 24 crops 640px en HQ */
     },
   },
 };
