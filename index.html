@@ -8817,7 +8817,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v293</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v294</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -16854,6 +16854,12 @@ const Annotator = (() => {
     });
   })();
 
+  /* V294 — UNIFICATION RAPPORT : l'historique vit dans un bloc <script> séparé.
+     On expose le MÊME pop-up et le MÊME moteur PDF pour qu'une fiche d'historique
+     exporte un rapport STRICTEMENT identique à l'analyse (zéro divergence). */
+  window.openReportComposer = openReportComposer;
+  window.exportReport = exportReport;
+
   /* ─── FEEDBACK MODAL ─── */
   let _feedbackPendingAction = null;
   /* Vague 2 : timestamp d'ouverture du modal pour calculer elapsedMs côté
@@ -18087,9 +18093,10 @@ const Annotator = (() => {
     const zoneCount = c.zoneCount || 0;
     const interpretable = !(c.image_quality && c.image_quality.usable === false) && c.analyzable !== false;
     const hasFinding = interpretable && zoneCount > 0;
-    /* Moment réel de l'analyse (source de vérité : LucensMoment.peekMoment). */
-    let _momV = '';
-    try { _momV = (typeof LucensMoment !== 'undefined' && LucensMoment.peekMoment) ? (LucensMoment.peekMoment() || '') : ''; } catch (e) {}
+    /* Moment réel : ctx.moment (fiche historique) sinon LucensMoment.peekMoment
+       (analyse en cours). Une fiche d'historique passe son propre moment. */
+    let _momV = (c.moment === 'before_cleaning' || c.moment === 'after_cleaning') ? c.moment : '';
+    if (!_momV) { try { _momV = (typeof LucensMoment !== 'undefined' && LucensMoment.peekMoment) ? (LucensMoment.peekMoment() || '') : ''; } catch (e) {} }
     const momentTxt = _momV === 'before_cleaning' ? t('mo_before_key')
                     : _momV === 'after_cleaning'  ? t('mo_after_key') : '—';
 
@@ -18121,11 +18128,11 @@ const Annotator = (() => {
     else { riskIdx = 2; riskRGB = HIGH; }
 
     const locale = currentLang === 'en' ? 'en-GB' : currentLang === 'es' ? 'es-ES' : currentLang === 'de' ? 'de-DE' : 'fr-FR';
-    const now = new Date();
+    const now = (typeof c.ts === 'number' && c.ts > 0) ? new Date(c.ts) : new Date();
     const dateStr = now.toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' }) +
                     ', ' + now.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
-    let zoneTxt = '';
-    try { const z = document.getElementById('resultZone'); if (z && z.value) zoneTxt = z.value.trim(); } catch (e) {}
+    let zoneTxt = (c.zone || '').toString().trim();
+    if (!zoneTxt) { try { const z = document.getElementById('resultZone'); if (z && z.value) zoneTxt = z.value.trim(); } catch (e) {} }
     if (!zoneTxt) zoneTxt = '—';
 
     /* ─── EN-TÊTE : logo viseur + LUCENS + tagline ─── */
@@ -18195,19 +18202,18 @@ const Annotator = (() => {
     /* V292 — FIX déformation : boîte fixe colW×boxH par photo, image ENTIÈRE
        (contain) centrée dessus, fond neutre. Plus jamais d'étirement (le défaut
        était `ih` plafonné sans corriger `iw`). Verticale comme horizontale. */
-    const natRatio = (annCanvas && annCanvas.width && annCanvas.height) ? (annCanvas.height / annCanvas.width) : 0.72;
+    const _annImg  = c.annotatedImage || (typeof annCanvas !== 'undefined' ? annCanvas : null);
+    const _origImg = c.originalImage  || (typeof origImg   !== 'undefined' ? origImg   : null);
+    const natRatio = (_annImg && _annImg.width && _annImg.height) ? (_annImg.height / _annImg.width) : 0.72;
     let drawW = colW, drawH = colW * natRatio;
     if (drawH > boxH) { drawH = boxH; drawW = boxH / natRatio; }
     const offX = (colW - drawW) / 2, offY = (boxH - drawH) / 2;
     const colL = M, colR = M + colW + gap, DARK = [10, 17, 25];
     try {
-      const sc = document.createElement('canvas');
-      sc.width = annCanvas.width; sc.height = annCanvas.height;
-      sc.getContext('2d').drawImage(origImg, 0, 0, sc.width, sc.height);
       pdf.setFillColor(DARK[0], DARK[1], DARK[2]);
       pdf.rect(colL, y, colW, boxH, 'F'); pdf.rect(colR, y, colW, boxH, 'F');
-      pdf.addImage(sc.toDataURL('image/jpeg', 0.92), 'JPEG', colL + offX, y + offY, drawW, drawH);
-      pdf.addImage(annCanvas.toDataURL('image/jpeg', 0.92), 'JPEG', colR + offX, y + offY, drawW, drawH);
+      if (_origImg) pdf.addImage(_origImg, 'JPEG', colL + offX, y + offY, drawW, drawH);
+      if (_annImg)  pdf.addImage(_annImg,  'JPEG', colR + offX, y + offY, drawW, drawH);
     } catch (e) {}
     pdf.setDrawColor(BORDER[0], BORDER[1], BORDER[2]); pdf.setLineWidth(0.3);
     pdf.rect(colL, y, colW, boxH); pdf.rect(colR, y, colW, boxH);
@@ -18225,6 +18231,20 @@ const Annotator = (() => {
 
     /* ─── ANALYSE (Origine → Risque → Action) : profil COMPLET uniquement ─── */
     if (showAnalysis) {
+    /* V294 — STYLE HYBRIDE (directive rapports) : 1 verdict MODÉRÉ (couleur du
+       risque, pas surdimensionné) + 3 sections jumelles ; la couleur porte le
+       sens (origine cuivre · risque ambre EN PANNEAU · action teal). Tailles
+       resserrées : labels 8, verdict 13, corps 9.5, vérif 8 — pas de grosse police. */
+    const AMBER_SOFT = [250, 243, 224];
+    const drawSecLabel = (x, by, label, rgb, kind) => {
+      const cx = x + 1.6, cy = by - 1.2;
+      pdf.setDrawColor(rgb[0], rgb[1], rgb[2]); pdf.setFillColor(rgb[0], rgb[1], rgb[2]);
+      if (kind === 'origin') { pdf.setLineWidth(0.45); pdf.circle(cx, cy, 1.5, 'S'); pdf.circle(cx, cy, 0.5, 'F'); }
+      else if (kind === 'risk') { pdf.setLineWidth(0.45); pdf.triangle(cx, cy - 1.7, cx - 1.7, cy + 1.4, cx + 1.7, cy + 1.4, 'S'); pdf.setLineWidth(0.4); pdf.line(cx, cy - 0.5, cx, cy + 0.4); pdf.circle(cx, cy + 1.0, 0.22, 'F'); }
+      else { pdf.setLineWidth(0.7); pdf.line(cx - 1.6, cy + 0.2, cx - 0.4, cy + 1.3); pdf.line(cx - 0.4, cy + 1.3, cx + 1.8, cy - 1.4); }
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8); pdf.setTextColor(rgb[0], rgb[1], rgb[2]);
+      pdf.text(label.toUpperCase(), x + 5, by, { charSpace: 0.22 });
+    };
     /* ─── ORIGINE PROBABLE / RÉSULTAT (titre coloré par le risque) ─── */
     let origLabel, origTitle, origExpl;
     if (!interpretable) { origLabel = t('rep_result_label'); origTitle = t('rep_concl_uninterp'); origExpl = ''; }
@@ -18234,41 +18254,49 @@ const Annotator = (() => {
       origTitle = firstSentence(c.result && c.result.title, 64) || t('rep_concl_mid');
       origExpl = firstSentence(c.result && c.result.interpretation, 165);
     }
-    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); pdf.setTextColor(INK3[0], INK3[1], INK3[2]);
-    pdf.text(origLabel, M, y); y += 6.5;
-    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(17); pdf.setTextColor(riskRGB[0], riskRGB[1], riskRGB[2]);
+    drawSecLabel(M, y, origLabel, COPPER, 'origin'); y += 5.5;
+    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(13); pdf.setTextColor(riskRGB[0], riskRGB[1], riskRGB[2]);
     const tLines = pdf.splitTextToSize(origTitle, CW);
-    pdf.text(tLines, M, y); y += tLines.length * 6.6 + 1.5;
+    pdf.text(tLines, M, y); y += tLines.length * 5.2 + 1.5;
     if (origExpl) {
       pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9.5); pdf.setTextColor(INK2[0], INK2[1], INK2[2]);
       const eLines = pdf.splitTextToSize(origExpl, CW);
-      pdf.text(eLines, M, y); y += eLines.length * 4.7 + 2;
+      pdf.text(eLines, M, y); y += eLines.length * 4.6 + 2;
     }
     y += 5;
 
     /* ─── RISQUE ASSOCIÉ (raisonnement réel de l'IA, 1 ligne) ─── */
     const riskLine = hasFinding ? firstSentence(c.contextual_reasoning && c.contextual_reasoning.risk_logic, 170) : '';
     if (riskLine) {
-      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); pdf.setTextColor(INK3[0], INK3[1], INK3[2]);
-      pdf.text(t('rep_risque_label'), M, y); y += 5;
+      const _pad = 4.5, _ruleW = 1.2, _txtX = M + _pad + _ruleW;
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9.5);
+      const rLines = pdf.splitTextToSize(riskLine, CW - _pad * 2 - _ruleW);
+      const _panelH = (rLines.length - 1) * 4.6 + 16;
+      pdf.setFillColor(AMBER_SOFT[0], AMBER_SOFT[1], AMBER_SOFT[2]);
+      pdf.setDrawColor(MID[0], MID[1], MID[2]); pdf.setLineWidth(0.3);
+      pdf.roundedRect(M, y, CW, _panelH, 1.8, 1.8, 'FD');
+      pdf.setFillColor(MID[0], MID[1], MID[2]);
+      pdf.rect(M + 0.4, y + 1.2, _ruleW, _panelH - 2.4, 'F');
+      drawSecLabel(_txtX, y + 6, t('rep_risque_label'), MID, 'risk');
       pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9.5); pdf.setTextColor(INK2[0], INK2[1], INK2[2]);
-      const rLines = pdf.splitTextToSize(riskLine, CW);
-      pdf.text(rLines, M, y); y += rLines.length * 4.7 + 6;
+      pdf.text(rLines, _txtX, y + 11.5);
+      y += _panelH + 7;
     }
 
     /* ─── ACTION RECOMMANDÉE + vérification ─── */
     let actionTxt = hasFinding ? firstSentence(c.recommendation && c.recommendation.primary_action, 145) : t('rep_action_clean');
     if (!actionTxt) actionTxt = t('rep_action_clean');
-    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); pdf.setTextColor(INK3[0], INK3[1], INK3[2]);
-    pdf.text(t('rep_action_label'), M, y); y += 5.5;
-    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(12); pdf.setTextColor(INK[0], INK[1], INK[2]);
+    drawSecLabel(M, y, t('rep_action_label'), NAVY, 'action'); y += 5.5;
+    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(9.5); pdf.setTextColor(INK[0], INK[1], INK[2]);
     const aLines = pdf.splitTextToSize(actionTxt, CW);
-    pdf.text(aLines, M, y); y += aLines.length * 5.2 + 2;
+    pdf.text(aLines, M, y); y += aLines.length * 4.8 + 1.5;
     if (hasFinding) {
       const verify = firstSentence(c.recommendation && c.recommendation.confirmation_if_needed, 0) || t('rep_verify');
-      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5); pdf.setTextColor(INK3[0], INK3[1], INK3[2]);
-      const vLines = pdf.splitTextToSize(verify, CW);
-      pdf.text(vLines, M, y);
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8); pdf.setTextColor(INK3[0], INK3[1], INK3[2]);
+      const vLines = pdf.splitTextToSize(verify, CW - 4);
+      pdf.setDrawColor(INK3[0], INK3[1], INK3[2]); pdf.setLineWidth(0.4);
+      pdf.line(M + 0.5, y - 1.7, M + 1.7, y - 0.9); pdf.line(M + 1.7, y - 0.9, M + 0.5, y - 0.1);
+      pdf.text(vLines, M + 4, y);
     }
     }
 
@@ -28220,9 +28248,38 @@ const Annotator = (() => {
       pdfBtn.appendChild(svgIcon(['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4','M7 10l5 5 5-5','M12 15V3']));
       pdfBtn.appendChild(document.createTextNode(tr('h_btn_pdf', 'Télécharger le rapport')));
       pdfBtn.addEventListener('click', function(){
-        document.documentElement.classList.add('lucens-printing');
-        try { window.print(); }
-        finally { setTimeout(function(){ document.documentElement.classList.remove('lucens-printing'); }, 500); }
+        /* V294 — UNIFICATION : l'historique exporte via le MÊME pop-up
+           « Composer le rapport » + le MÊME moteur exportReport() que l'analyse.
+           Fini l'impression navigateur (rapport divergent). On reconstruit un
+           ctx complet depuis la fiche (résultat + score + zone + moment + date
+           + 2 images préchargées) → PDF strictement identique à l'analyse. */
+        if (typeof window.openReportComposer !== 'function' || typeof window.exportReport !== 'function') {
+          try { toast(tr('toast_export_err','Export indisponible'), 'error'); } catch (e) {}
+          return;
+        }
+        var _loadImg = function(src){ return new Promise(function(resolve){
+          if (!src) { resolve(null); return; }
+          var im = new Image();
+          im.onload = function(){ resolve(im); };
+          im.onerror = function(){ resolve(null); };
+          im.src = src;
+        }); };
+        window.openReportComposer(function(profile){
+          Promise.all([_loadImg(entry.source), _loadImg(entry.image)]).then(function(imgs){
+            var histCtx = Object.assign({}, entry.res || {}, {
+              score: (typeof entry.score === 'number') ? entry.score : 0,
+              zoneCount: (typeof entry.zoneCount === 'number') ? entry.zoneCount
+                         : ((entry.res && Array.isArray(entry.res.zones)) ? entry.res.zones.length : 0),
+              zone: entry.zone || '',
+              moment: entry.moment || '',
+              ts: entry.ts || entry.date || 0,
+              originalImage: imgs[0],
+              annotatedImage: imgs[1]
+            });
+            try { window.exportReport(histCtx, profile); }
+            catch (e) { try { toast(tr('toast_export_err','Export impossible'), 'error'); } catch (_) {} }
+          });
+        });
       });
       var delBtn = E('button','hist-btn hist-btn-danger', tr('h_btn_delete', 'Supprimer'));
       delBtn.type = 'button';
