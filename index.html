@@ -8817,7 +8817,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v301</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v302</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -13739,7 +13739,10 @@ async function lucensEnsureI18n(res, entryId) {
       delete lean.grid; delete lean._rawZones; delete lean._i18nInflight;
       try { window.LucensHistory.update(entryId, { res: lean }); } catch (e) {}
     }
-    try { if (typeof window._reRenderResults === 'function') window._reRenderResults(); } catch (e) {}
+    /* V302 — NE PAS appeler _reRenderResults() ici : il relance render()→record()
+       (doublon historique) et re-dessine inutilement (l'écran est déjà dans la
+       langue d'analyse). La bascule de langue à l'écran passe par applyLang() ;
+       la fiche d'historique ouverte se re-rend via 'lucens-lang-changed'. */
     try { window.dispatchEvent(new Event('lucens-lang-changed')); } catch (e) {}
   } catch (e) { try { res._i18nInflight = false; } catch (_) {} }
 }
@@ -23007,6 +23010,11 @@ const Annotator = (() => {
     function record(res, W, H) {
       try {
         if (!res) return;
+        /* V302 — ANTI-DOUBLON : render() appelle record() à CHAQUE rendu, or
+           _reRenderResults() (changement de langue, traduction) relance render().
+           On marque le résultat comme déjà enregistré → un re-rendu ne crée plus
+           une 2e fiche d'historique. */
+        if (res._recordedId) return;
         let annDataUrl = '';
         try { annDataUrl = annCanvas.toDataURL('image/jpeg', 0.72); } catch (e) {}
         let sector = null;
@@ -23051,6 +23059,7 @@ const Annotator = (() => {
         /* Expose l'id de la dernière inspection : le champ « Zone inspectée »
            de l'écran de résultats s'y rattache pour la nommer à chaud. */
         window.__lucensLastInspId = entry.id;
+        res._recordedId = entry.id;   /* V302 — marque enregistré (anti-doublon au re-rendu) */
         save(entry).then(function(){
           try { window.dispatchEvent(new Event('lucens-history-changed')); } catch (e) {}
         });

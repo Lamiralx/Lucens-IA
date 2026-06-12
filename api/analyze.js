@@ -68,7 +68,7 @@ const GEMINI_ADDENDUM = `
 
 ═══ FORMAT DE SORTIE (RAPPEL TECHNIQUE — IMPÉRATIF) ═══
 - Réponds UNIQUEMENT par l'objet JSON demandé : aucun texte avant/après, aucun bloc markdown, aucune balise de code.
-- Les bounding-box de chaque zone DOIVENT être au format { "x": , "y": , "w": , "h": } en coordonnées NORMALISÉES entre 0 et 1 (x,y = coin HAUT-GAUCHE de la box ; w,h = largeur/hauteur ; origine en haut-gauche de l'image). N'utilise JAMAIS le format [ymin, xmin, ymax, xmax] ni l'échelle 0-1000. La box doit couvrir TOUT le halo fluorescent, pas seulement le centre.
+- Les bounding-box de chaque zone DOIVENT être au format { "x": , "y": , "w": , "h": } en coordonnées NORMALISÉES entre 0 et 1 (x,y = coin HAUT-GAUCHE de la box ; w,h = largeur/hauteur ; origine en haut-gauche de l'image). N'utilise JAMAIS le format [ymin, xmin, ymax, xmax] ni l'échelle 0-1000. La box doit être AJUSTÉE au plus près de la tache fluorescente RÉELLE : assez large pour englober la tache, mais SANS déborder sur les reflets, le métal nu ou les surfaces propres autour — une box trop grande fait peindre la cartographie HORS de la tache.
 - Respecte STRICTEMENT les budgets de mots de chaque champ et la langue de sortie demandée.
 
 ═══ DISCRIMINATION DES RÉSIDUS — RAPPEL CALIBRÉ (anti-biais) ═══
@@ -987,7 +987,7 @@ async function handleTranslate(req, res) {
       config: {
         systemInstruction: sys,
         temperature: 0,
-        maxOutputTokens: 4096,
+        maxOutputTokens: 8192,
         responseMimeType: "application/json",
         thinkingConfig: { thinkingBudget: 0 },
       },
