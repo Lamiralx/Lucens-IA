@@ -8817,7 +8817,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v295</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v297</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -25237,6 +25237,11 @@ const Annotator = (() => {
   /* V24 — Hysteresis : un verdict FLUO/OBJECT persiste 3s même si signal
      vacille → évite les flashs ambre/cyan/rouge à chaque petit mouvement. */
   const CH_VERDICT_TTL_MS = 3000;
+  /* V297 — DWELL : durée de stabilité du réticule avant d'autoriser un appel Claude.
+     Le BALAYAGE (signature couleur qui change) ne déclenche AUCUN appel ; seul un vrai
+     ciblage tenu ~0,6 s interroge le juge IA. Effet : ~90 % d'appels Haiku en moins
+     (coût Live View ÷20-40), sans rien perdre AU MOMENT où tu juges un point. */
+  const LV_DWELL_MS = 600;
   let chLastVerdictTs = 0;
   let chLastSample = 0;
   let chCurrentVerdict = { state: 'idle', reason: '' };
@@ -25697,6 +25702,15 @@ const Annotator = (() => {
         const now = performance.now();
         const cacheKey = crosshairCacheKey(sample);
         const cachedVerdict = lv.validateCache.get(cacheKey);
+        /* V297 — DWELL : depuis combien de temps la signature couleur est STABLE ?
+           Elle change à chaque mouvement (balayage) → on remet le minuteur à zéro.
+           Stable ≥ LV_DWELL_MS = l'utilisateur VISE un point précis pour le juger. */
+        if (!hasSignal || cacheKey !== lv._dwellKey) {
+          lv._dwellKey = hasSignal ? cacheKey : null;
+          lv._dwellSince = now;
+        }
+        const _dwellStable = hasSignal && lv._dwellKey === cacheKey
+          && (now - (lv._dwellSince || now)) >= LV_DWELL_MS;
 
         if (!hasSignal) {
           /* Pas de signal coloré au réticule → état idle */
@@ -25737,6 +25751,22 @@ const Annotator = (() => {
               verdict: 'YES_FLUO', type: 'unknown', reason: 'signal net', ts: Date.now(),
             });
             /* Skip le fetch Claude, on garde l'état */
+            lv.rafId = requestAnimationFrame(loop);
+            return;
+          }
+          /* V297 — STABLE-ONLY + mode local : Claude n'est interrogé QUE si le réticule
+             est resté STABLE (même signature) ≥ LV_DWELL_MS — donc quand tu VISES un
+             point pour le juger, pas en plein balayage. Hors stabilité (ou mode 100 %
+             local / hors-ligne) : verdict LOCAL gratuit, AUCUN appel API. */
+          if (!(lv.validateEnabled && navigator.onLine && _dwellStable)) {
+            if (lv.validateEnabled && navigator.onLine) {
+              /* En balayage : on invite à viser ; le verdict précis arrive dès l'arrêt. */
+              if (chCurrentVerdict.state === 'idle') setCrosshairState('pending');
+            } else if (sample.brightRatio >= 0.06 || sample.avgSat >= 0.30) {
+              setCrosshairState('fluo');
+            } else if (chCurrentVerdict.state !== 'pending') {
+              setCrosshairState('idle');
+            }
             lv.rafId = requestAnimationFrame(loop);
             return;
           }
