@@ -8817,7 +8817,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v298</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v300</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -13676,6 +13676,76 @@ function setLang(lang) {
   applyLang();
 }
 
+/* ═══ V300 — TRADUCTION DYNAMIQUE DU TEXTE IA (écran + PDF, historique compris) ═══
+   Le texte rédigé par le moteur (title / interpretation / risk_logic /
+   primary_action / confirmation / observations) est généré dans la langue de
+   l'analyse (res.language) et FIGÉ. Pour que le rapport suive la langue COURANTE :
+   - lucensLZ(res, clé, original) → renvoie la version langue-courante depuis le
+     cache res._i18n[lang], sinon le texte d'origine (fallback sûr, jamais vide).
+   - lucensEnsureI18n(res, entryId) → si des langues manquent ET qu'on est EN LIGNE,
+     appelle /api/analyze?mode=translate (Flash, ~0,005$), met en cache res._i18n,
+     persiste dans l'historique (=> bascule OFFLINE ensuite), et re-rend.
+   Appelé juste après l'analyse (record) et à l'ouverture d'une fiche d'historique. */
+const LUCENS_LANGS = ['fr', 'en', 'es', 'de'];
+function lucensLZ(res, key, original) {
+  try {
+    if (res && res._i18n) {
+      const src = (res.language || 'fr').toString().toLowerCase();
+      if (currentLang !== src) {
+        const tr = res._i18n[currentLang];
+        if (tr && tr[key] != null && String(tr[key]).trim()) return tr[key];
+      }
+    }
+  } catch (e) {}
+  return original;
+}
+async function lucensEnsureI18n(res, entryId) {
+  try {
+    if (!res || !res.result) return;
+    const src = (res.language || 'fr').toString().toLowerCase();
+    const needed = LUCENS_LANGS.filter(l => l !== src && !(res._i18n && res._i18n[l]));
+    if (!needed.length) return;
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return; /* offline → fallback */
+    if (res._i18nInflight) return;
+    res._i18nInflight = true;
+    const obs = Array.isArray(res.observations)
+      ? res.observations.map(o => typeof o === 'string' ? o : (o && (o.body || o.text)) || '').filter(Boolean)
+      : [];
+    const raw = {
+      title: res.result && res.result.title,
+      interpretation: res.result && res.result.interpretation,
+      risk_logic: res.contextual_reasoning && res.contextual_reasoning.risk_logic,
+      primary_action: res.recommendation && res.recommendation.primary_action,
+      confirmation_if_needed: res.recommendation && res.recommendation.confirmation_if_needed,
+    };
+    const fields = {};
+    for (const k in raw) { if (typeof raw[k] === 'string' && raw[k].trim()) fields[k] = raw[k]; }
+    if (obs.length) fields.observations = obs;
+    if (!Object.keys(fields).length) { res._i18nInflight = false; return; }
+    let r;
+    try {
+      r = await fetch('/api/analyze', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'translate', sourceLang: src, targetLangs: needed, fields }),
+      });
+    } finally { res._i18nInflight = false; }
+    if (!r || !r.ok) return;
+    const data = await r.json();
+    if (!data || !data.translations || !Object.keys(data.translations).length) return;
+    res._i18n = Object.assign({}, res._i18n, data.translations);
+    /* persiste une copie ALLÉGÉE dans l'historique (bascule offline ultérieure) */
+    if (entryId && window.LucensHistory && window.LucensHistory.update) {
+      const lean = Object.assign({}, res);
+      delete lean.grid; delete lean._rawZones; delete lean._i18nInflight;
+      try { window.LucensHistory.update(entryId, { res: lean }); } catch (e) {}
+    }
+    try { if (typeof window._reRenderResults === 'function') window._reRenderResults(); } catch (e) {}
+    try { window.dispatchEvent(new Event('lucens-lang-changed')); } catch (e) {}
+  } catch (e) { try { res._i18nInflight = false; } catch (_) {} }
+}
+window.lucensLZ = lucensLZ;
+window.lucensEnsureI18n = lucensEnsureI18n;
+
 /* V290 — RACINE i18n : ce script s'exécute au MILIEU du document → les éléments
    situés APRÈS lui (page « En savoir plus », overlays learn/historique…)
    n'existaient pas encore lors des passes de chargement et restaient en
@@ -18259,8 +18329,8 @@ const Annotator = (() => {
     else if (!hasFinding) { origLabel = t('rep_result_label'); origTitle = t('rep_clean_title'); origExpl = t('rep_clean_expl'); }
     else {
       origLabel = t('rep_origine');
-      origTitle = firstSentence(c.result && c.result.title, 64) || t('rep_concl_mid');
-      origExpl = firstSentence(c.result && c.result.interpretation, 165);
+      origTitle = firstSentence(window.lucensLZ ? window.lucensLZ(c, 'title', c.result && c.result.title) : (c.result && c.result.title), 64) || t('rep_concl_mid');
+      origExpl = firstSentence(window.lucensLZ ? window.lucensLZ(c, 'interpretation', c.result && c.result.interpretation) : (c.result && c.result.interpretation), 165);
     }
     drawSecLabel(M, y, origLabel, COPPER, 'origin'); y += 5.5;
     pdf.setFont('helvetica', 'bold'); pdf.setFontSize(13); pdf.setTextColor(riskRGB[0], riskRGB[1], riskRGB[2]);
@@ -18274,7 +18344,7 @@ const Annotator = (() => {
     y += 5;
 
     /* ─── RISQUE ASSOCIÉ (raisonnement réel de l'IA, 1 ligne) ─── */
-    const riskLine = hasFinding ? firstSentence(c.contextual_reasoning && c.contextual_reasoning.risk_logic, 170) : '';
+    const riskLine = hasFinding ? firstSentence(window.lucensLZ ? window.lucensLZ(c, 'risk_logic', c.contextual_reasoning && c.contextual_reasoning.risk_logic) : (c.contextual_reasoning && c.contextual_reasoning.risk_logic), 170) : '';
     if (riskLine) {
       const _pad = 4.5, _ruleW = 1.2, _txtX = M + _pad + _ruleW;
       pdf.setFont('helvetica', 'normal'); pdf.setFontSize(9.5);
@@ -18292,14 +18362,14 @@ const Annotator = (() => {
     }
 
     /* ─── ACTION RECOMMANDÉE + vérification ─── */
-    let actionTxt = hasFinding ? firstSentence(c.recommendation && c.recommendation.primary_action, 145) : t('rep_action_clean');
+    let actionTxt = hasFinding ? firstSentence(window.lucensLZ ? window.lucensLZ(c, 'primary_action', c.recommendation && c.recommendation.primary_action) : (c.recommendation && c.recommendation.primary_action), 145) : t('rep_action_clean');
     if (!actionTxt) actionTxt = t('rep_action_clean');
     drawSecLabel(M, y, t('rep_action_label'), NAVY, 'action'); y += 5.5;
     pdf.setFont('helvetica', 'bold'); pdf.setFontSize(9.5); pdf.setTextColor(INK[0], INK[1], INK[2]);
     const aLines = pdf.splitTextToSize(actionTxt, CW);
     pdf.text(aLines, M, y); y += aLines.length * 4.8 + 1.5;
     if (hasFinding) {
-      const verify = firstSentence(c.recommendation && c.recommendation.confirmation_if_needed, 0) || t('rep_verify');
+      const verify = firstSentence(window.lucensLZ ? window.lucensLZ(c, 'confirmation_if_needed', c.recommendation && c.recommendation.confirmation_if_needed) : (c.recommendation && c.recommendation.confirmation_if_needed), 0) || t('rep_verify');
       pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8); pdf.setTextColor(INK3[0], INK3[1], INK3[2]);
       const vLines = pdf.splitTextToSize(verify, CW - 4);
       pdf.setDrawColor(INK3[0], INK3[1], INK3[2]); pdf.setLineWidth(0.4);
@@ -22513,7 +22583,11 @@ const Annotator = (() => {
     const tb = document.getElementById('translateBanner');
     if (!tb) return;
     const aLang = (res && res.language) ? String(res.language).toLowerCase() : null;
-    const mismatch = !!(aLang && currentLang && aLang !== currentLang.toLowerCase() && lastAnalyzedFile);
+    /* V300 — la traduction est désormais AUTOMATIQUE (lucensEnsureI18n). On ne montre
+       cette bannière de repli que si AUCUNE traduction n'est en cache pour la langue
+       courante (cas hors-ligne sur un vieux rapport). Sinon le texte EST déjà traduit. */
+    const _hasI18n = !!(res && res._i18n && res._i18n[(currentLang || '').toLowerCase()]);
+    const mismatch = !!(aLang && currentLang && aLang !== currentLang.toLowerCase() && !_hasI18n && lastAnalyzedFile);
     if (!mismatch) { tb.hidden = true; return; }
     const TXT = {
       fr: "Ce rapport a été rédigé dans une autre langue.",
@@ -22980,6 +23054,9 @@ const Annotator = (() => {
         save(entry).then(function(){
           try { window.dispatchEvent(new Event('lucens-history-changed')); } catch (e) {}
         });
+        /* V300 — pré-traduit les 3 autres langues juste après l'analyse (en ligne)
+           → bascule de langue ensuite 100% locale/offline, écran + PDF cohérents. */
+        try { if (window.lucensEnsureI18n) window.lucensEnsureI18n(res, entry.id); } catch (e) {}
         /* V287 — la source n'était pas toujours décodée au moment de record() :
            on la complète dès le décodage (la fiche offre alors le toggle source). */
         if (!entry.source) {
@@ -23564,16 +23641,16 @@ const Annotator = (() => {
             }
           }
         };
-        $set('lvVerdictTitle', result.title, 'Analyse');
+        $set('lvVerdictTitle', lucensLZ(res, 'title', result.title), 'Analyse');
         $set('lvVerdictConfidence', result.confidence_label);
-        $set('lvVerdictInterpretation', result.interpretation);
+        $set('lvVerdictInterpretation', lucensLZ(res, 'interpretation', result.interpretation));
         /* Spine métier : eyebrow « Origine probable » + Risque associé visible + barre de risque segmentée */
         try {
           const hasZones = (res.zoneCount || 0) > 0;
           const ey = document.getElementById('lvVerdictEyebrow');
           if (ey) ey.textContent = hasZones ? (t('rep_origine') || 'Origine probable') : (t('rep_result_label') || 'Résultat');
           const rq = document.getElementById('lvRisque'), rqt = document.getElementById('lvRisqueText');
-          const rlogic = ((reasoning && reasoning.risk_logic) || '').toString().trim();
+          const rlogic = (lucensLZ(res, 'risk_logic', (reasoning && reasoning.risk_logic) || '') || '').toString().trim();
           if (rq && rqt) {
             if (hasZones && rlogic) {
               rqt.textContent = '';
@@ -23632,7 +23709,7 @@ const Annotator = (() => {
              tombait toujours sur 'low' = titre vert même en risque élevé). */
           { if (card) { card.classList.remove('risk-low','risk-mid','risk-high'); card.classList.add('risk-' + _rk); } }
         } catch (e) {}
-        $set('lvVerdictActionText', recommendation.primary_action);
+        $set('lvVerdictActionText', lucensLZ(res, 'primary_action', recommendation.primary_action));
         const actTitle = document.getElementById('lvVerdictActionTitle');
         /* V291 — Label CHROME : suit la langue de l'UI (i18n), comme « Risque
            associé » (data-i18n). Avant : lu depuis recommendation.title (IA) avec
@@ -23653,7 +23730,7 @@ const Annotator = (() => {
         $set('lvVerdictSuggests', reasoning.what_fluorescence_suggests);
         $set('lvVerdictNotProve', reasoning.what_fluorescence_does_not_prove);
         $set('lvVerdictFollowUp', recommendation.follow_up);
-        $set('lvVerdictConfirmation', recommendation.confirmation_if_needed);
+        $set('lvVerdictConfirmation', lucensLZ(res, 'confirmation_if_needed', recommendation.confirmation_if_needed));
         const refs = (res.reference_logic && res.reference_logic.applicable_frameworks) || [];
         const refsEl = document.getElementById('lvVerdictFrameworks');
         if (refsEl) {
@@ -28171,10 +28248,14 @@ const Annotator = (() => {
 
       var hasZones = (entry.zoneCount || 0) > 0
         || (res && Array.isArray(res.zones) && res.zones.length > 0);
-      var rTitle = (res.result && (res.result.title || '').toString().trim()) || '';
-      var rInterp = (res.result && (res.result.interpretation || '').toString().trim()) || '';
-      var rLogic = (res.contextual_reasoning && (res.contextual_reasoning.risk_logic || '').toString().trim()) || '';
-      var rAction = (res.recommendation && (res.recommendation.primary_action || '').toString().trim()) || '';
+      /* V300 — traduction dynamique : pré-cache les langues manquantes (si en ligne)
+         puis re-render via lucens-lang-changed → la fiche suit la langue courante. */
+      try { if (window.lucensEnsureI18n) window.lucensEnsureI18n(res, id); } catch (e) {}
+      var _LZ = window.lucensLZ || function (r, k, o) { return o; };
+      var rTitle = (_LZ(res, 'title', (res.result && res.result.title) || '') || '').toString().trim();
+      var rInterp = (_LZ(res, 'interpretation', (res.result && res.result.interpretation) || '') || '').toString().trim();
+      var rLogic = (_LZ(res, 'risk_logic', (res.contextual_reasoning && res.contextual_reasoning.risk_logic) || '') || '').toString().trim();
+      var rAction = (_LZ(res, 'primary_action', (res.recommendation && res.recommendation.primary_action) || '') || '').toString().trim();
 
       /* (Bloc VERDICT) — clone de #hero : libellé + score + jauge à curseur */
       var hero = E('div','hero');
