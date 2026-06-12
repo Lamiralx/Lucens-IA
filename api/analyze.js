@@ -1288,17 +1288,21 @@ Fin : respecte strictement la langue ${langName} et retourne uniquement le JSON.
     let message = null;
     let usedFallback = false;
     let lastErr = null;
+    const _chain = [];   /* diagnostic : tentative par modèle (exposé dans _meta.chain) */
     for (let i = 0; i < MODEL_CHAIN.length; i++) {
       const modelId = MODEL_CHAIN[i];
+      const _t = Date.now();
       try {
         const m = await withTimeout(callModel(modelId), 110000, `Gemini:${modelId}`);
         if (!m.text) throw new Error(`réponse vide (finish=${m.stop_reason})`);
         message = m;
         usedFallback = i > 0;
+        _chain.push({ model: modelId, ok: true, ms: Date.now() - _t });
         if (i > 0) console.warn(`[ANALYZE] fallback modèle → ${modelId} (rang ${i})`);
         break;
       } catch (err) {
         lastErr = err;
+        _chain.push({ model: modelId, ok: false, ms: Date.now() - _t, error: String(err?.message || err).slice(0, 220) });
         console.warn(`[ANALYZE] ${modelId} échec: ${err?.message || err}`);
       }
     }
@@ -1461,6 +1465,7 @@ Fin : respecte strictement la langue ${langName} et retourne uniquement le JSON.
         model: message.model,
         stop_reason: message.stop_reason,
         usedFallback,
+        chain: _chain,
         usage: {
           input: message.usage.input_tokens,
           output: message.usage.output_tokens,
