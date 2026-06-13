@@ -8901,7 +8901,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v318</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v319</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -9402,7 +9402,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <img class="loader-photo" id="loaderPhoto" alt="">
         <div class="loader-ctx">
           <span class="loader-ctx-sector" id="loaderCtxSector">&nbsp;</span>
-          <span class="loader-ctx-spec" id="loaderCtxSpec">UV-A · 365 nm</span>
+          <span class="loader-ctx-spec" id="loaderCtxSpec">—</span>
         </div>
         <div class="loader-prog">
           <div class="loader-bar">
@@ -20469,7 +20469,7 @@ const Annotator = (() => {
     if (specEl) {
       const MO_KEYS = { before_cleaning: 'mo_before_key', after_cleaning: 'mo_after_key' };
       const mo = (typeof LucensMoment !== 'undefined' && LucensMoment.peekMoment) ? LucensMoment.peekMoment() : '';
-      specEl.textContent = (mo && MO_KEYS[mo]) ? t(MO_KEYS[mo]) : 'UV-A · 365 nm';
+      specEl.textContent = (mo && MO_KEYS[mo]) ? t(MO_KEYS[mo]) : '—';
     }
     startTipRotation();
     resetStepper();
