@@ -22034,7 +22034,7 @@ const Annotator = (() => {
     try {
       const resp = await fetch('/api/analyze', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-lucens-licence': (localStorage.getItem('lucens_licence') || ''), 'x-lucens-device': (localStorage.getItem('lucens_device') || '') },
         body: JSON.stringify({
           image: focusedB64,
           mediaType: 'image/jpeg',
@@ -22294,7 +22294,7 @@ const Annotator = (() => {
       }
       const doFetch = () => fetch('/api/analyze', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-lucens-licence': (localStorage.getItem('lucens_licence') || ''), 'x-lucens-device': (localStorage.getItem('lucens_device') || '') },
         body: JSON.stringify(_analyzePayload),
         signal,
       });
@@ -22354,6 +22354,10 @@ const Annotator = (() => {
         msg = t('err_api_too_large');
       } else if (resp.status === 415) {
         msg = t('err_api_format');
+      } else if (resp.status === 403) {
+        /* V326 — Licence absente / invalide / expirée : on dirige vers les Réglages,
+           via le même canal de message d'erreur (aucune UI ajoutée ailleurs). */
+        msg = t('licence_required_msg');
       } else {
         /* 400, 500, 503, 529, autres → message unifié sobre */
         msg = t('err_api_server');
@@ -23715,7 +23719,7 @@ const Annotator = (() => {
           try {
             const resp = await fetch('/api/analyze', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 'Content-Type': 'application/json', 'x-lucens-licence': (localStorage.getItem('lucens_licence') || ''), 'x-lucens-device': (localStorage.getItem('lucens_device') || '') },
               body: JSON.stringify(entry.payload),
             });
             if (resp.ok) {
@@ -23992,7 +23996,7 @@ const Annotator = (() => {
     try {
       const resp = await fetch('/api/analyze', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-lucens-licence': (localStorage.getItem('lucens_licence') || ''), 'x-lucens-device': (localStorage.getItem('lucens_device') || '') },
         body: JSON.stringify(payload),
       });
       if (resp.ok) {
