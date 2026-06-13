@@ -6,12 +6,12 @@
  * en 1er argument : appelées avec `import { kv } from '@vercel/kv'` côté routes,
  * et avec un mock en mémoire côté tests.
  *
- * Règles :
+ * Règles (V330) :
  *   - 1 code = 1 date d'expiration (modifiable par l'admin).
- *   - 1 appareil actif, « le dernier l'emporte » : le binding se fait à
- *     l'ACTIVATION (Réglages). L'analyse VÉRIFIE la correspondance (pas de
- *     rebind silencieux) → un autre appareil est refusé tant qu'il n'a pas
- *     ré-activé.
+ *   - STRICT 1 appareil : le code se verrouille sur le PREMIER appareil qui
+ *     l'active ; tout AUTRE appareil est refusé (reason "device_taken").
+ *     Transfert (changement de téléphone) = l'admin DÉLIE le code (unbindDevice),
+ *     puis le client réactive. L'analyse VÉRIFIE la correspondance d'appareil.
  *   - Expiration calculée sur l'horloge SERVEUR (jamais celle du client).
  *   - Révocation immédiate (appliquée à la prochaine analyse).
  */
