@@ -1037,6 +1037,12 @@ export default async function handler(req, res) {
      l'appareil au code, « le dernier l'emporte ». Opération légère → non soumise
      au rate-limit analyse. Renvoie le statut (dates) que le client affiche. */
   if (req.body && req.body.mode === 'licence_activate') {
+    /* V328 — limitation anti-essais : empêche de deviner un code par force brute
+       (30 tentatives / IP / heure). Largement suffisant pour un usage légitime
+       (on active une fois), bloque le balayage de l'espace des codes. */
+    const ipA = getClientIp(req);
+    const rlA = await rateLimit({ scope: 'licence_activate', ip: ipA, limit: 30, windowSec: 3600 });
+    if (!rlA.ok) return send429(res, rlA.retryAfter);
     const code = String(req.headers['x-lucens-licence'] || req.body.code || '');
     const device = String(req.headers['x-lucens-device'] || req.body.deviceId || '');
     if (!device) return res.status(400).json({ ok: false, reason: 'device_missing' });

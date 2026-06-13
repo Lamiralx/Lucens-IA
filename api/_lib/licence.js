@@ -24,8 +24,11 @@ const K = (c) => `licence:${norm(c)}`;
 const INDEX = "licence:index";
 
 export function generateCode() {
+  /* V328 — codes raccourcis : 2 groupes de 4 (8 caractères aléatoires, alphabet
+     31 sans I/O/0/1) → ex. LUCENS-7QK2-9F3A. ~41 bits : largement inguessable,
+     surtout avec la limitation anti-essais sur l'activation. */
   const grp = () => Array.from({ length: 4 }, () => ALPHABET[randomInt(ALPHABET.length)]).join("");
-  return `LUCENS-${grp()}-${grp()}-${grp()}`;
+  return `LUCENS-${grp()}-${grp()}`;
 }
 
 export async function getLicence(kv, code) {
