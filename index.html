@@ -1615,6 +1615,26 @@ body.has-offline-banner .info-page { top: var(--offline-banner-height, 36px); }
   color: var(--ink-secondary);
   padding: 0 2px;
 }
+/* V322 — hero « Pourquoi » + tableau comparatif (tokens Lucens, clair/sombre) */
+.info-page-body .why-lead{font-size:18px;font-weight:700;line-height:1.3;color:var(--ink-primary);padding:0 2px;margin-bottom:2px}
+.info-page-body .cmp-tbl{background:var(--surface-low);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:8px}
+.info-page-body .cmp-row{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,.95fr) minmax(0,.95fr) minmax(0,1.05fr);align-items:stretch}
+.info-page-body .cmp-row+.cmp-row{border-top:1px solid var(--hairline)}
+.info-page-body .cmp-cell{display:flex;align-items:center;justify-content:center;padding:12px 4px;text-align:center;min-width:0}
+.info-page-body .cmp-cell.cmp-lab{justify-content:flex-start;text-align:left;padding-left:14px;font-size:12.5px;line-height:1.25;font-weight:500;color:var(--ink-secondary);overflow-wrap:break-word}
+.info-page-body .cmp-col-luc{background:color-mix(in srgb, var(--accent) 7%, transparent)}
+.info-page-body .cmp-head .cmp-cell{padding:11px 4px;font-size:11px;font-weight:700;color:var(--ink-tertiary);line-height:1.15;white-space:nowrap}
+.info-page-body .cmp-head .cmp-lab{letter-spacing:.1em;text-transform:uppercase}
+.info-page-body .cmp-head .cmp-col-luc{background:var(--accent)}
+.info-page-body .cmp-luc{color:#fff;font-size:13px;font-weight:800;letter-spacing:.01em}
+.info-page-body .cmp-head .cmp-luc::after{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--lucens-signature);margin-left:5px;vertical-align:1px}
+.info-page-body .cmp-yes,.info-page-body .cmp-no,.info-page-body .cmp-part{font-size:16px;line-height:1;font-weight:700}
+.info-page-body .cmp-yes{color:var(--ink-tertiary)}
+.info-page-body .cmp-col-luc .cmp-yes{color:var(--lucens-signature);font-size:17px}
+.info-page-body .cmp-no{color:var(--ink-tertiary);opacity:.45;font-weight:500}
+.info-page-body .cmp-part{color:#BA7517;font-size:12.5px;font-weight:600}
+.info-page-body .cmp-foot{padding:12px 10px;background:color-mix(in srgb, var(--accent) 7%, transparent);border-top:1px solid var(--hairline);font-size:12px;font-weight:600;color:var(--accent);letter-spacing:.02em;text-align:center}
+.info-page-body .cmp-foot::before{content:'';display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--lucens-signature);margin-right:7px;vertical-align:1px}
 
 /* ─── MAIN ─── */
 main {
@@ -9042,10 +9062,17 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- POURQUOI LUCENS — argumentaire système, sans bullshit -->
         <div class="hiw">
 
-          <p class="hiw-prose" data-i18n="why_intro">Les contrôles à l'œil nu et les protocoles écrits ne mesurent pas ce qu'ils ne voient pas. Une surface peut paraître irréprochable et héberger ce qui déclenche une alerte sanitaire : biofilms persistants, allergènes croisés, fluides biologiques. Lucens est le premier instrument de terrain qui rend ces traces mesurables et opposables en audit.</p>
+          <p class="hiw-prose why-lead" data-i18n="why_intro">Voir l'invisible ne suffit pas — Lucens l'analyse.</p>
+          <p class="hiw-prose" data-i18n="why_lead">Détection des biofilms invisibles à l'œil nu, assistée par IA. Lucens révèle la fluorescence, puis son moteur la lit, la classe par famille, en mesure l'étendue et la juge dans votre contexte. Le terrain des pathogènes et de la contamination croisée, enfin objectivé.</p>
 
           <section class="hiw-block">
-            <h3 class="hiw-block-title" data-i18n="why_reveal_title">Ce que Lucens révèle</h3>
+            <h3 class="hiw-block-title" data-i18n="why_innov_title">Une vraie innovation : l'optique rencontre l'intelligence</h3>
+            <p class="hiw-prose" data-i18n="why_innov_p">Pour la première fois, une lampe UV-A, une imagerie 4K et un moteur d'IA forment un seul instrument. Derrière chaque analyse : la lecture d'une signature fluorescente complexe, sa classification par famille (biofilm, organique, chimique…), la mesure de son étendue au pixel et son interprétation selon votre secteur. Tout ce travail — invisible lui aussi — transforme une tache en décision documentée.</p>
+          </section>
+
+          <section class="hiw-block">
+            <h3 class="hiw-block-title" data-i18n="why_reveal_title">Ce que Lucens détecte</h3>
+            <p class="hiw-prose" data-i18n="why_reveal_lead">Quel que soit le résidu, la surface ou le secteur : Lucens reconnaît les grandes familles de contamination, sur tous types de matériaux, et les interprète dans votre contexte métier — des centaines de combinaisons.</p>
             <ul class="hiw-list">
               <li class="hiw-item">
                 <div class="hiw-figure" aria-hidden="true">
@@ -9117,7 +9144,27 @@ body.lv-open { overflow: hidden; touch-action: none; }
           </section>
 
           <section class="hiw-block">
-            <h3 class="hiw-block-title" data-i18n="why_b1_title">Un instrument conçu sur mesure</h3>
+            <h3 class="hiw-block-title" data-i18n="why_cmp_title">Lucens face aux méthodes actuelles</h3>
+            <div class="cmp-tbl">
+              <div class="cmp-row cmp-head">
+                <div class="cmp-cell cmp-lab" data-i18n="why_cmp_h_crit">Critère</div>
+                <div class="cmp-cell" data-i18n="why_cmp_h_atp">ATP-métrie</div>
+                <div class="cmp-cell" data-i18n="why_cmp_h_uv">Lampe UV</div>
+                <div class="cmp-cell cmp-col-luc cmp-luc">LUCENS</div>
+              </div>
+              <div class="cmp-row"><div class="cmp-cell cmp-lab" data-i18n="why_cmp_r1">Révèle l'invisible</div><div class="cmp-cell"><span class="cmp-no">✕</span></div><div class="cmp-cell"><span class="cmp-yes">✓</span></div><div class="cmp-cell cmp-col-luc"><span class="cmp-yes">✓</span></div></div>
+              <div class="cmp-row"><div class="cmp-cell cmp-lab" data-i18n="why_cmp_r2">Identifie la nature du résidu</div><div class="cmp-cell"><span class="cmp-no">✕</span></div><div class="cmp-cell"><span class="cmp-no">✕</span></div><div class="cmp-cell cmp-col-luc"><span class="cmp-yes">✓</span></div></div>
+              <div class="cmp-row"><div class="cmp-cell cmp-lab" data-i18n="why_cmp_r3">Analyse toute la surface</div><div class="cmp-cell"><span class="cmp-part" data-i18n="why_cmp_p1">1 point</span></div><div class="cmp-cell"><span class="cmp-yes">✓</span></div><div class="cmp-cell cmp-col-luc"><span class="cmp-yes">✓</span></div></div>
+              <div class="cmp-row"><div class="cmp-cell cmp-lab" data-i18n="why_cmp_r4">Caméra + image</div><div class="cmp-cell"><span class="cmp-no">✕</span></div><div class="cmp-cell"><span class="cmp-no">✕</span></div><div class="cmp-cell cmp-col-luc"><span class="cmp-yes">✓</span></div></div>
+              <div class="cmp-row"><div class="cmp-cell cmp-lab" data-i18n="why_cmp_r5">Score de risque + cartographie</div><div class="cmp-cell"><span class="cmp-no">✕</span></div><div class="cmp-cell"><span class="cmp-no">✕</span></div><div class="cmp-cell cmp-col-luc"><span class="cmp-yes">✓</span></div></div>
+              <div class="cmp-row"><div class="cmp-cell cmp-lab" data-i18n="why_cmp_r6">Rapport d'audit daté</div><div class="cmp-cell"><span class="cmp-part" data-i18n="why_cmp_p2">chiffre</span></div><div class="cmp-cell"><span class="cmp-no">✕</span></div><div class="cmp-cell cmp-col-luc"><span class="cmp-yes">✓</span></div></div>
+              <div class="cmp-row"><div class="cmp-cell cmp-lab" data-i18n="why_cmp_r7">Sans consommable, non destructif</div><div class="cmp-cell"><span class="cmp-no">✕</span></div><div class="cmp-cell"><span class="cmp-yes">✓</span></div><div class="cmp-cell cmp-col-luc"><span class="cmp-yes">✓</span></div></div>
+              <div class="cmp-foot" data-i18n="why_cmp_foot">Révéler · Analyser · Documenter</div>
+            </div>
+          </section>
+
+          <section class="hiw-block">
+            <h3 class="hiw-block-title" data-i18n="why_b1_title">Un instrument conçu pour l'invisible</h3>
             <ul class="hiw-list">
               <li class="hiw-item">
                 <div class="hiw-figure" aria-hidden="true">
@@ -9155,29 +9202,17 @@ body.lv-open { overflow: hidden; touch-action: none; }
                   <span class="hiw-item-desc" data-i18n="why_b1_capture_d">Conçue pour les très faibles luminances de la fluorescence UV. Chaque détail tient le zoom, à l'analyse comme à l'audit.</span>
                 </div>
               </li>
-              <li class="hiw-item">
-                <div class="hiw-figure" aria-hidden="true">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="6" width="18" height="12" rx="2"/>
-                    <path d="M9 6v12M15 6v12M3 12h18"/>
-                  </svg>
-                </div>
-                <div class="hiw-text">
-                  <span class="hiw-item-title" data-i18n="why_b1_calib_t">La carte de calibration Lucens</span>
-                  <span class="hiw-item-desc" data-i18n="why_b1_calib_d">Innovation propre au système : la première carte de référence aux signatures fluorescentes étalonnées. Présentée avant chaque inspection, elle cale la chaîne optique sur des valeurs connues. La mesure cesse d'être une appréciation visuelle : elle devient quantitative et défendable en audit.</span>
-                </div>
-              </li>
             </ul>
           </section>
 
           <section class="hiw-block">
-            <h3 class="hiw-block-title" data-i18n="why_b3_title">Décider, pas deviner</h3>
-            <p class="hiw-prose" data-i18n="why_b3_p">Lucens IA décode la fluorescence brute et la confronte à votre contexte métier. Elle classe les signatures, mesure leur étendue, hiérarchise les risques. Vous ne regardez plus une tache : vous mesurez un risque.</p>
+            <h3 class="hiw-block-title" data-i18n="why_pedago_title">Un outil de terrain, pédagogique et simple</h3>
+            <p class="hiw-prose" data-i18n="why_pedago_p">Conçu pour les professionnels de l'hygiène : prise en main immédiate, résultats lisibles au premier coup d'œil. Formez vos équipes à repérer les zones à risque et à objectiver le nettoyage — sans expertise de laboratoire.</p>
           </section>
 
           <section class="hiw-block">
-            <h3 class="hiw-block-title" data-i18n="why_b4_title">Aligné sur votre HACCP</h3>
-            <p class="hiw-prose" data-i18n="why_b4_p">Chaque inspection est datée, archivée et consultable. Vous documentez la vérification de votre plan de maîtrise sanitaire et démontrez votre due diligence, contrôle après contrôle.</p>
+            <h3 class="hiw-block-title" data-i18n="why_b4_title">Dans votre démarche HACCP</h3>
+            <p class="hiw-prose" data-i18n="why_b4_p">Chaque inspection est datée, cartographiée et archivée. Vous vérifiez l'efficacité du nettoyage et démontrez votre due diligence, contrôle après contrôle — une preuve opposable que ni un chiffre ATP ni une lampe ne vous donnent.</p>
           </section>
 
         </div>
@@ -9215,20 +9250,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
                   </svg>
                 </div>
                 <div class="hiw-text">
-                  <span class="hiw-item-title" data-i18n="hiw_dark_t">Une pièce sombre</span>
-                  <span class="hiw-item-desc" data-i18n="hiw_dark_d">La fluorescence n'apparaît que dans le noir. Coupez la lumière et fermez les volets.</span>
-                </div>
-              </li>
-              <li class="hiw-item">
-                <div class="hiw-figure" aria-hidden="true">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="6" width="18" height="12" rx="2"/>
-                    <path d="M9 6v12M15 6v12M3 12h18"/>
-                  </svg>
-                </div>
-                <div class="hiw-text">
-                  <span class="hiw-item-title" data-i18n="hiw_calib_t">La carte de calibration Lucens</span>
-                  <span class="hiw-item-desc" data-i18n="hiw_calib_d">Présentez la carte de calibration Lucens à la caméra avant l'inspection. Ses signatures fluorescentes de référence étalonnent la mesure pour la session.</span>
+                  <span class="hiw-item-title" data-i18n="hiw_dark_t">Réduisez la lumière ambiante</span>
+                  <span class="hiw-item-desc" data-i18n="hiw_dark_d">Pas besoin d'obscurité totale : évitez une lumière forte ou un spot direct, qui écrase la fluorescence. Plus vous êtes en pénombre, plus les traces ressortent.</span>
                 </div>
               </li>
             </ul>
@@ -11529,8 +11552,8 @@ const I18N = {
     home_hero_lead: "Repérez en direct les zones à risque et les résidus invisibles à l'œil nu.",
     home_benefits: "Résidus invisibles • Risque évalué • Rapport visuel",
     home_precautions: "Précautions d'usage",
-    why_intro: "Les contrôles à l'œil nu et les protocoles écrits ne mesurent pas ce qu'ils ne voient pas. Une surface peut paraître irréprochable et héberger ce qui déclenche une alerte sanitaire : biofilms persistants, allergènes croisés, fluides biologiques. Lucens est le premier instrument de terrain qui rend ces traces mesurables et opposables en audit.",
-    why_reveal_title: "Ce que Lucens révèle",
+    why_intro: "Voir l'invisible ne suffit pas. Lucens l'analyse.",
+    why_reveal_title: "Ce que Lucens détecte",
     why_reveal_bio_t: "Biofilms et colonies microbiennes",
     why_reveal_bio_d: "Installation persistante de bactéries et de levures sur les surfaces. C'est la source des contaminations qui reviennent malgré le nettoyage.",
     why_reveal_org_t: "Résidus organiques",
@@ -11541,7 +11564,7 @@ const I18N = {
     why_reveal_pest_d: "Urines et déjections de rongeurs, traces d'insectes. Alerte HACCP immédiate en zone de stockage ou de production.",
     why_reveal_chem_t: "Résidus chimiques et détergents",
     why_reveal_chem_d: "Rinçage incomplet, mélanges incompatibles. Risque toxique pour les produits et corrosion pour les équipements.",
-    why_b1_title: "Un instrument conçu sur mesure",
+    why_b1_title: "Un instrument conçu pour l'invisible",
     why_b1_lamp_t: "La lampe Lucens",
     why_b1_lamp_d: "Source de lumière propre au système Lucens. Calibrée pour faire ressortir biofilms, résidus organiques et contaminations croisées. Elle fait corps avec le filtre et l'imagerie : ensemble, ils forment l'instrument.",
     why_b1_filter_t: "Filtre optique dédié",
@@ -11552,8 +11575,28 @@ const I18N = {
     why_b1_calib_d: "La première carte de référence aux signatures fluorescentes étalonnées. Présentée avant chaque inspection, elle cale la chaîne optique sur des valeurs connues. Vous obtenez une mesure quantitative, traçable et défendable en audit.",
     why_b3_title: "Décider, pas deviner",
     why_b3_p: "Lucens IA décode la fluorescence brute et la rapproche de votre contexte métier. Elle classe les signatures, mesure leur étendue et hiérarchise les risques. À chaque tache détectée correspond un niveau de risque mesuré.",
-    why_b4_title: "Aligné sur votre HACCP",
-    why_b4_p: "Chaque inspection est datée et archivée. Vous documentez la vérification de votre plan de maîtrise sanitaire et constituez votre preuve de diligence pour chaque audit.",
+    why_b4_title: "Dans votre démarche HACCP",
+    why_b4_p: "Lucens date, cartographie et archive chaque inspection. Vous vérifiez l'efficacité du nettoyage et démontrez votre due diligence à chaque contrôle. C'est une preuve opposable, que ni un chiffre ATP ni une lampe ne fournit.",
+    why_lead: "Détection des biofilms invisibles à l'œil nu, assistée par IA. Lucens révèle la fluorescence, puis son moteur la lit, la classe par famille, en mesure l'étendue et la juge dans votre contexte, là où se développent les pathogènes et le risque de contamination croisée.",
+    why_innov_title: "Une vraie innovation : l'optique rencontre l'intelligence",
+    why_innov_p: "Pour la première fois, une lampe UV-A, une imagerie 4K et un moteur d'IA forment un seul instrument. Chaque analyse lit une signature fluorescente complexe, la classe par famille (biofilm, organique, chimique), mesure son étendue au pixel et l'interprète selon votre secteur. Ce travail d'analyse, invisible lui aussi, transforme une tache en décision documentée.",
+    why_reveal_lead: "Quel que soit le résidu, la surface ou le secteur, Lucens reconnaît les grandes familles de contamination et les interprète dans votre contexte métier, parmi des centaines de combinaisons possibles.",
+    why_cmp_title: "Lucens face aux méthodes actuelles",
+    why_cmp_h_crit: "Critère",
+    why_cmp_h_atp: "ATP-métrie",
+    why_cmp_h_uv: "Lampe UV",
+    why_cmp_r1: "Révèle l'invisible",
+    why_cmp_r2: "Identifie la nature du résidu",
+    why_cmp_r3: "Analyse toute la surface",
+    why_cmp_r4: "Caméra + image",
+    why_cmp_r5: "Score de risque + cartographie",
+    why_cmp_r6: "Rapport d'audit daté",
+    why_cmp_r7: "Sans consommable, non destructif",
+    why_cmp_p1: "1 point",
+    why_cmp_p2: "chiffre",
+    why_cmp_foot: "Révéler · Analyser · Documenter",
+    why_pedago_title: "Un outil de terrain, pédagogique et simple",
+    why_pedago_p: "Conçu pour les professionnels de l'hygiène : prise en main immédiate, résultats lisibles au premier coup d'œil. Formez vos équipes à repérer les zones à risque et à objectiver le nettoyage, sans expertise de laboratoire.",
     h_title: "Historique",
     h_home_all: "Tout voir",
     home_recent: "Dernières inspections",
@@ -11591,8 +11634,8 @@ const I18N = {
     hiw_b1_title: "Avant de commencer",
     hiw_lamp_t: "La lampe Lucens",
     hiw_lamp_d: "L'éclairage du système Lucens. C'est elle qui révèle la fluorescence ; aucune inspection sans elle.",
-    hiw_dark_t: "Une pièce sombre",
-    hiw_dark_d: "La fluorescence n'apparaît que dans le noir. Coupez la lumière et fermez les volets.",
+    hiw_dark_t: "Réduisez la lumière ambiante",
+    hiw_dark_d: "Pas besoin d'obscurité totale : évitez une lumière forte ou un spot direct, qui écrase la fluorescence. Plus vous êtes en pénombre, plus les traces ressortent.",
     hiw_calib_t: "La carte de calibration Lucens",
     hiw_calib_d: "Présentez la carte de calibration Lucens à la caméra avant l'inspection. Ses signatures fluorescentes de référence étalonnent la mesure pour la session.",
     hiw_b2_title: "Prendre la photo",
@@ -11603,8 +11646,8 @@ const I18N = {
     hiw_sharp_t: "Visez net et stable",
     hiw_sharp_d: "Une image nette = une analyse fiable. Restez immobile une seconde.",
     hiw_b3_title: "Ce que fait Lucens",
-    hiw_p1: "Lucens repère les indices fluorescents (résidus organiques, biofilms, traces chimiques) invisibles sous une lumière normale.",
-    hiw_p2: "Vous obtenez les zones détectées sur votre image, un diagnostic en langage clair, un score de risque et un rapport PDF prêt à archiver.",
+    hiw_p1: "La lampe Lucens fait ressortir les traces fluorescentes (résidus organiques, biofilms, dépôts chimiques) invisibles sous lumière normale.",
+    hiw_p2: "Lucens IA lit l'image : elle cartographie les zones fluorescentes, identifie leur nature probable, évalue le risque et produit un rapport PDF daté, prêt pour votre dossier HACCP.",
     sector_cta: "Configurer le contexte d'inspection",
     sector_cta_hint: "Adapte l'IA à votre secteur",
     sector_edit_label: "Contexte d'inspection · Modifier",
@@ -12147,8 +12190,8 @@ const I18N = {
     home_hero_lead: "Spot at-risk areas and residues invisible to the naked eye, live.",
     home_benefits: "Invisible residues • Risk assessed • Visual report",
     home_precautions: "Usage precautions",
-    why_intro: "Visual checks and written protocols cannot measure what they do not see. A surface can look spotless and still carry what triggers a sanitary alert: persistent biofilms, cross-allergens, biological fluids. Lucens is the first field instrument that makes these traces measurable and audit-defensible.",
-    why_reveal_title: "What Lucens reveals",
+    why_intro: "Seeing the invisible isn't enough. Lucens analyses it.",
+    why_reveal_title: "What Lucens detects",
     why_reveal_bio_t: "Biofilms and microbial colonies",
     why_reveal_bio_d: "Bacterial and yeast colonies anchored on surfaces. This is the source of contamination that keeps coming back despite cleaning.",
     why_reveal_org_t: "Organic residues",
@@ -12159,7 +12202,7 @@ const I18N = {
     why_reveal_pest_d: "Rodent urine and droppings, insect tracks. An immediate HACCP alert in storage and production zones.",
     why_reveal_chem_t: "Chemical and cleaning residues",
     why_reveal_chem_d: "Incomplete rinsing, incompatible mixtures. A toxicity risk for products and corrosion for equipment.",
-    why_b1_title: "A purpose-built instrument",
+    why_b1_title: "An instrument built for the invisible",
     why_b1_lamp_t: "The Lucens lamp",
     why_b1_lamp_d: "A light source proper to the Lucens system. Calibrated to reveal biofilms, organic residues and cross-contamination. It works as one with the filter and imaging: together they form the instrument.",
     why_b1_filter_t: "Dedicated optical filter",
@@ -12170,8 +12213,28 @@ const I18N = {
     why_b1_calib_d: "The first reference card with calibrated fluorescent signatures. Held up before each inspection, it sets the optical chain on known values. You get a quantitative, traceable measurement that holds up in audit.",
     why_b3_title: "Decide, do not guess",
     why_b3_p: "Lucens IA decodes the raw fluorescence and pairs it with your sector context. It classifies signatures, measures their extent and ranks the risks. Each detected stain comes with a measured risk level.",
-    why_b4_title: "Aligned with your HACCP plan",
-    why_b4_p: "Every inspection is dated and archived. You document the verification step of your food safety plan and build the evidence of your due diligence for each audit.",
+    why_b4_title: "Inside your HACCP plan",
+    why_b4_p: "Lucens dates, maps and archives every inspection. You verify cleaning effectiveness and prove your due diligence at each check. It is defensible evidence that neither an ATP figure nor a lamp provides.",
+    why_lead: "AI-assisted detection of biofilms invisible to the naked eye. Lucens reveals the fluorescence, then its engine reads it, classifies it by family, measures its extent and judges it in your context, where pathogens and cross-contamination risk develop.",
+    why_innov_title: "A real innovation: optics meets intelligence",
+    why_innov_p: "For the first time, a UV-A lamp, 4K imaging and an AI engine form a single instrument. Each analysis reads a complex fluorescent signature, classifies it by family (biofilm, organic, chemical), measures its extent to the pixel and interprets it for your sector. This analytical work, invisible too, turns a stain into a documented decision.",
+    why_reveal_lead: "Whatever the residue, the surface or the sector, Lucens recognises the main contamination families and interprets them in your professional context, among hundreds of possible combinations.",
+    why_cmp_title: "Lucens vs. current methods",
+    why_cmp_h_crit: "Criterion",
+    why_cmp_h_atp: "ATP testing",
+    why_cmp_h_uv: "UV lamp",
+    why_cmp_r1: "Reveals the invisible",
+    why_cmp_r2: "Identifies the residue type",
+    why_cmp_r3: "Analyses the whole surface",
+    why_cmp_r4: "Camera + image",
+    why_cmp_r5: "Risk score + mapping",
+    why_cmp_r6: "Dated audit report",
+    why_cmp_r7: "No consumable, non-destructive",
+    why_cmp_p1: "1 spot",
+    why_cmp_p2: "a number",
+    why_cmp_foot: "Reveal · Analyse · Document",
+    why_pedago_title: "A simple, teachable field tool",
+    why_pedago_p: "Built for hygiene professionals: immediate to pick up, results readable at a glance. Train your teams to spot risk zones and to objectify cleaning, without lab expertise.",
     h_title: "History",
     h_home_all: "View all",
     home_recent: "Latest inspections",
@@ -12211,8 +12274,8 @@ const I18N = {
     hiw_b1_title: "Before you start",
     hiw_lamp_t: "The Lucens lamp",
     hiw_lamp_d: "The lighting of the Lucens system. It is what reveals fluorescence; no inspection works without it.",
-    hiw_dark_t: "A dark room",
-    hiw_dark_d: "Fluorescence only shows in the dark. Switch off the lights and close the blinds.",
+    hiw_dark_t: "Dim the ambient light",
+    hiw_dark_d: "No need for total darkness: just avoid strong light or a direct spotlight, which wash out the fluorescence. The dimmer the room, the more the traces stand out.",
     hiw_calib_t: "The Lucens calibration card",
     hiw_calib_d: "Show the Lucens calibration card to the camera before the inspection. Its reference fluorescent signatures calibrate the measurement for the session.",
     hiw_b2_title: "Taking the photo",
@@ -12223,8 +12286,8 @@ const I18N = {
     hiw_sharp_t: "Aim sharp and steady",
     hiw_sharp_d: "A sharp image means a reliable analysis. Hold still for a second.",
     hiw_b3_title: "What Lucens does",
-    hiw_p1: "Lucens spots fluorescent traces (organic residues, biofilms, chemical marks) invisible under normal light.",
-    hiw_p2: "You get the detected zones on your image, a plain-language diagnosis, a risk score and a PDF report ready to file.",
+    hiw_p1: "The Lucens lamp brings out fluorescent traces (organic residues, biofilms, chemical deposits) invisible under normal light.",
+    hiw_p2: "Lucens AI reads the image: it maps the fluorescent zones, identifies their likely nature, assesses the risk and produces a dated PDF report, ready for your HACCP file.",
     sector_cta: "Set up your inspection context",
     sector_cta_hint: "For more accurate analyses",
     sector_edit_label: "Inspection context · Edit",
@@ -12893,8 +12956,8 @@ const I18N = {
     home_hero_lead: "Detecte en directo las zonas de riesgo y los residuos invisibles a simple vista.",
     home_benefits: "Residuos invisibles • Riesgo evaluado • Informe visual",
     home_precautions: "Precauciones de uso",
-    why_intro: "Los controles visuales y los protocolos escritos no miden lo que no ven. Una superficie puede parecer impecable y aún así contener lo que dispara una alerta sanitaria: biopelículas persistentes, alérgenos cruzados, fluidos biológicos. Lucens es el primer instrumento de campo que vuelve estas trazas medibles y defendibles en auditoría.",
-    why_reveal_title: "Lo que Lucens revela",
+    why_intro: "Ver lo invisible no basta. Lucens lo analiza.",
+    why_reveal_title: "Lo que Lucens detecta",
     why_reveal_bio_t: "Biopelículas y colonias microbianas",
     why_reveal_bio_d: "Colonias bacterianas y de levaduras adheridas a las superficies. Es el origen de las contaminaciones que regresan a pesar de la limpieza.",
     why_reveal_org_t: "Residuos orgánicos",
@@ -12905,7 +12968,7 @@ const I18N = {
     why_reveal_pest_d: "Orina y excrementos de roedores, rastros de insectos. Alerta APPCC inmediata en zonas de almacenamiento y producción.",
     why_reveal_chem_t: "Residuos químicos y detergentes",
     why_reveal_chem_d: "Enjuague incompleto, mezclas incompatibles. Riesgo tóxico para los productos y corrosión para los equipos.",
-    why_b1_title: "Un instrumento diseñado a medida",
+    why_b1_title: "Un instrumento diseñado para lo invisible",
     why_b1_lamp_t: "La lámpara Lucens",
     why_b1_lamp_d: "Fuente de luz propia del sistema Lucens. Calibrada para sacar a la luz biopelículas, residuos orgánicos y contaminación cruzada. Forma una unidad con el filtro y la imagen: juntos componen el instrumento.",
     why_b1_filter_t: "Filtro óptico dedicado",
@@ -12916,8 +12979,28 @@ const I18N = {
     why_b1_calib_d: "La primera tarjeta de referencia con firmas fluorescentes calibradas. Presentada antes de cada inspección, ajusta la cadena óptica a valores conocidos. Obtiene una medición cuantitativa, trazable y defendible en auditoría.",
     why_b3_title: "Decidir, no adivinar",
     why_b3_p: "Lucens IA decodifica la fluorescencia bruta y la cruza con el contexto de su sector. Clasifica las firmas, mide su extensión y jerarquiza los riesgos. A cada mancha detectada le corresponde un nivel de riesgo medido.",
-    why_b4_title: "Alineado con su APPCC",
-    why_b4_p: "Cada inspección queda fechada y archivada. Usted documenta la verificación de su plan de higiene y construye la prueba de su diligencia para cada auditoría.",
+    why_b4_title: "En su plan APPCC",
+    why_b4_p: "Lucens fecha, cartografía y archiva cada inspección. Usted verifica la eficacia de la limpieza y demuestra su diligencia en cada control. Una prueba defendible que ni una cifra ATP ni una lámpara aportan.",
+    why_lead: "Detección de biopelículas invisibles a simple vista, asistida por IA. Lucens revela la fluorescencia y luego su motor la lee, la clasifica por familia, mide su extensión y la evalúa en su contexto, allí donde se desarrollan los patógenos y el riesgo de contaminación cruzada.",
+    why_innov_title: "Una verdadera innovación: la óptica se une a la inteligencia",
+    why_innov_p: "Por primera vez, una lámpara UV-A, una imagen 4K y un motor de IA forman un solo instrumento. Cada análisis lee una firma fluorescente compleja, la clasifica por familia (biopelícula, orgánica, química), mide su extensión al píxel y la interpreta según su sector. Ese trabajo de análisis, también invisible, convierte una mancha en una decisión documentada.",
+    why_reveal_lead: "Sea cual sea el residuo, la superficie o el sector, Lucens reconoce las grandes familias de contaminación y las interpreta en su contexto profesional, entre cientos de combinaciones posibles.",
+    why_cmp_title: "Lucens frente a los métodos actuales",
+    why_cmp_h_crit: "Criterio",
+    why_cmp_h_atp: "ATP-metría",
+    why_cmp_h_uv: "Lámpara UV",
+    why_cmp_r1: "Revela lo invisible",
+    why_cmp_r2: "Identifica la naturaleza del residuo",
+    why_cmp_r3: "Analiza toda la superficie",
+    why_cmp_r4: "Cámara + imagen",
+    why_cmp_r5: "Puntuación de riesgo + cartografía",
+    why_cmp_r6: "Informe de auditoría fechado",
+    why_cmp_r7: "Sin consumibles, no destructivo",
+    why_cmp_p1: "1 punto",
+    why_cmp_p2: "una cifra",
+    why_cmp_foot: "Revelar · Analizar · Documentar",
+    why_pedago_title: "Una herramienta de campo, pedagógica y simple",
+    why_pedago_p: "Diseñada para los profesionales de la higiene: uso inmediato, resultados legibles de un vistazo. Forme a sus equipos para detectar las zonas de riesgo y objetivar la limpieza, sin experiencia de laboratorio.",
     h_title: "Historial",
     h_home_all: "Ver todo",
     home_recent: "Últimas inspecciones",
@@ -12957,8 +13040,8 @@ const I18N = {
     hiw_b1_title: "Antes de empezar",
     hiw_lamp_t: "La lámpara Lucens",
     hiw_lamp_d: "La iluminación del sistema Lucens. Es ella la que revela la fluorescencia; ninguna inspección posible sin ella.",
-    hiw_dark_t: "Una habitación oscura",
-    hiw_dark_d: "La fluorescencia solo aparece en la oscuridad. Apague la luz y cierre las persianas.",
+    hiw_dark_t: "Reduzca la luz ambiente",
+    hiw_dark_d: "No hace falta oscuridad total: evite una luz fuerte o un foco directo, que apagan la fluorescencia. Cuanta más penumbra, más resaltan las trazas.",
     hiw_calib_t: "La tarjeta de calibración Lucens",
     hiw_calib_d: "Muestre la tarjeta de calibración Lucens a la cámara antes de la inspección. Sus firmas fluorescentes de referencia calibran la medición para la sesión.",
     hiw_b2_title: "Tomar la foto",
@@ -12969,8 +13052,8 @@ const I18N = {
     hiw_sharp_t: "Apunte nítido y estable",
     hiw_sharp_d: "Una imagen nítida significa un análisis fiable. Quédese quieto un segundo.",
     hiw_b3_title: "Qué hace Lucens",
-    hiw_p1: "Lucens detecta los indicios fluorescentes (residuos orgánicos, biopelículas, trazas químicas) invisibles con luz normal.",
-    hiw_p2: "Obtiene las zonas detectadas en su imagen, un diagnóstico en lenguaje claro, una puntuación de riesgo y un informe PDF listo para archivar.",
+    hiw_p1: "La lámpara Lucens hace resaltar las trazas fluorescentes (residuos orgánicos, biopelículas, depósitos químicos) invisibles con luz normal.",
+    hiw_p2: "Lucens IA lee la imagen: cartografía las zonas fluorescentes, identifica su naturaleza probable, evalúa el riesgo y genera un informe PDF fechado, listo para su expediente APPCC.",
     sector_cta: "Configurar el contexto de inspección",
     sector_cta_hint: "Para análisis más precisos",
     sector_edit_label: "Contexto de inspección · Editar",
@@ -13499,8 +13582,8 @@ const I18N = {
     home_hero_lead: "Erkennen Sie live Risikozonen und mit bloßem Auge unsichtbare Rückstände.",
     home_benefits: "Unsichtbare Rückstände • Risiko bewertet • Visueller Bericht",
     home_precautions: "Anwendungshinweise",
-    why_intro: "Sichtkontrollen und schriftliche Protokolle messen nicht, was sie nicht sehen. Eine Oberfläche kann makellos aussehen und dennoch tragen, was einen Hygienealarm auslöst: persistente Biofilme, Kreuzallergene, biologische Flüssigkeiten. Lucens ist das erste Feldinstrument, das diese Spuren messbar und auditfest macht.",
-    why_reveal_title: "Was Lucens sichtbar macht",
+    why_intro: "Das Unsichtbare zu sehen reicht nicht. Lucens analysiert es.",
+    why_reveal_title: "Was Lucens erkennt",
     why_reveal_bio_t: "Biofilme und mikrobielle Kolonien",
     why_reveal_bio_d: "Anhaftende Bakterien- und Hefekolonien auf Oberflächen. Sie sind die Ursache wiederkehrender Kontaminationen trotz Reinigung.",
     why_reveal_org_t: "Organische Rückstände",
@@ -13511,7 +13594,7 @@ const I18N = {
     why_reveal_pest_d: "Nagetierurin und -kot, Insektenspuren. Ein unmittelbarer HACCP-Alarm in Lager- und Produktionsbereichen.",
     why_reveal_chem_t: "Chemische und Reinigungsrückstände",
     why_reveal_chem_d: "Unvollständiges Nachspülen, unverträgliche Mischungen. Vergiftungsrisiko für die Produkte und Korrosion an den Anlagen.",
-    why_b1_title: "Ein maßgeschneidertes Instrument",
+    why_b1_title: "Ein Instrument für das Unsichtbare",
     why_b1_lamp_t: "Die Lucens-Lampe",
     why_b1_lamp_d: "Lichtquelle, die fester Bestandteil des Lucens-Systems ist. Kalibriert, um Biofilme, organische Rückstände und Kreuzkontaminationen sichtbar zu machen. Sie bildet eine Einheit mit Filter und Bildgebung: gemeinsam sind sie das Instrument.",
     why_b1_filter_t: "Dedizierter Optikfilter",
@@ -13522,8 +13605,28 @@ const I18N = {
     why_b1_calib_d: "Die erste Referenzkarte mit kalibrierten Fluoreszenzsignaturen. Vor jeder Inspektion vorgehalten, richtet sie die optische Kette an bekannten Werten aus. Sie erhalten eine quantitative, nachvollziehbare Messung, die im Audit standhält.",
     why_b3_title: "Entscheiden, nicht raten",
     why_b3_p: "Lucens IA decodiert die rohe Fluoreszenz und gleicht sie mit Ihrem Branchenkontext ab. Sie klassifiziert die Signaturen, misst ihre Ausdehnung und priorisiert die Risiken. Jedem erkannten Fleck wird ein gemessener Risikograd zugeordnet.",
-    why_b4_title: "Abgestimmt auf Ihr HACCP-Konzept",
-    why_b4_p: "Jede Inspektion wird datiert und archiviert. Sie dokumentieren den Verifizierungsschritt Ihres HACCP-Konzepts und sichern den Nachweis Ihrer Sorgfaltspflicht für jedes Audit.",
+    why_b4_title: "In Ihrem HACCP-Konzept",
+    why_b4_p: "Lucens datiert, kartiert und archiviert jede Inspektion. Sie überprüfen die Reinigungswirksamkeit und belegen Ihre Sorgfaltspflicht bei jeder Kontrolle. Ein belastbarer Nachweis, den weder ein ATP-Wert noch eine Lampe liefert.",
+    why_lead: "KI-gestützte Erkennung von Biofilmen, die mit bloßem Auge unsichtbar sind. Lucens macht die Fluoreszenz sichtbar, dann liest sein Modul sie aus, ordnet sie nach Familie, misst ihre Ausdehnung und bewertet sie in Ihrem Kontext, dort wo Krankheitserreger und Kreuzkontaminationsrisiko entstehen.",
+    why_innov_title: "Eine echte Innovation: Optik trifft Intelligenz",
+    why_innov_p: "Zum ersten Mal bilden eine UV-A-Lampe, eine 4K-Bildgebung und ein KI-Modul ein einziges Instrument. Jede Analyse liest eine komplexe Fluoreszenzsignatur, ordnet sie nach Familie (Biofilm, organisch, chemisch), misst ihre Ausdehnung pixelgenau und interpretiert sie für Ihre Branche. Diese ebenfalls unsichtbare Analysearbeit macht aus einem Fleck eine dokumentierte Entscheidung.",
+    why_reveal_lead: "Ganz gleich, welcher Rückstand, welche Oberfläche oder welche Branche: Lucens erkennt die großen Kontaminationsfamilien und interpretiert sie in Ihrem beruflichen Kontext, unter Hunderten möglicher Kombinationen.",
+    why_cmp_title: "Lucens im Vergleich zu heutigen Methoden",
+    why_cmp_h_crit: "Kriterium",
+    why_cmp_h_atp: "ATP-Messung",
+    why_cmp_h_uv: "UV-Lampe",
+    why_cmp_r1: "Macht Unsichtbares sichtbar",
+    why_cmp_r2: "Bestimmt die Rückstandsart",
+    why_cmp_r3: "Analysiert die ganze Oberfläche",
+    why_cmp_r4: "Kamera + Bild",
+    why_cmp_r5: "Risiko-Score + Kartierung",
+    why_cmp_r6: "Datierter Audit-Bericht",
+    why_cmp_r7: "Ohne Verbrauchsmaterial, zerstörungsfrei",
+    why_cmp_p1: "1 Punkt",
+    why_cmp_p2: "eine Zahl",
+    why_cmp_foot: "Sichtbar machen · Analysieren · Dokumentieren",
+    why_pedago_title: "Ein einfaches, lehrreiches Praxiswerkzeug",
+    why_pedago_p: "Für Hygienefachleute gemacht: sofort einsatzbereit, Ergebnisse auf einen Blick lesbar. Schulen Sie Ihre Teams, Risikozonen zu erkennen und die Reinigung zu objektivieren, ohne Laborkenntnisse.",
     h_title: "Verlauf",
     h_home_all: "Alle ansehen",
     home_recent: "Letzte Inspektionen",
@@ -13563,8 +13666,8 @@ const I18N = {
     hiw_b1_title: "Bevor Sie beginnen",
     hiw_lamp_t: "Die Lucens-Lampe",
     hiw_lamp_d: "Die Beleuchtung des Lucens-Systems. Sie ist es, die die Fluoreszenz sichtbar macht; keine Inspektion ohne sie.",
-    hiw_dark_t: "Ein dunkler Raum",
-    hiw_dark_d: "Fluoreszenz zeigt sich nur im Dunkeln. Schalten Sie das Licht aus und schließen Sie die Rollläden.",
+    hiw_dark_t: "Umgebungslicht reduzieren",
+    hiw_dark_d: "Keine völlige Dunkelheit nötig: vermeiden Sie nur starkes Licht oder einen direkten Strahler, die die Fluoreszenz überstrahlen. Je gedämpfter das Licht, desto deutlicher treten die Spuren hervor.",
     hiw_calib_t: "Die Lucens-Kalibrierungskarte",
     hiw_calib_d: "Halten Sie die Lucens-Kalibrierungskarte vor der Inspektion vor die Kamera. Ihre Referenz-Fluoreszenzsignaturen kalibrieren die Messung für die Sitzung.",
     hiw_b2_title: "Das Foto aufnehmen",
@@ -13575,8 +13678,8 @@ const I18N = {
     hiw_sharp_t: "Zielen Sie scharf und ruhig",
     hiw_sharp_d: "Ein scharfes Bild bedeutet eine zuverlässige Analyse. Halten Sie eine Sekunde still.",
     hiw_b3_title: "Was Lucens macht",
-    hiw_p1: "Lucens erkennt fluoreszierende Spuren (organische Rückstände, Biofilme, chemische Spuren), die bei normalem Licht unsichtbar sind.",
-    hiw_p2: "Sie erhalten die erkannten Zonen auf Ihrem Bild, eine verständliche Diagnose, einen Risiko-Score und einen archivierbaren PDF-Bericht.",
+    hiw_p1: "Die Lucens-Lampe lässt fluoreszierende Spuren (organische Rückstände, Biofilme, chemische Ablagerungen) hervortreten, die bei normalem Licht unsichtbar sind.",
+    hiw_p2: "Lucens IA liest das Bild: Sie kartiert die fluoreszierenden Zonen, bestimmt ihre wahrscheinliche Art, bewertet das Risiko und erstellt einen datierten PDF-Bericht, bereit für Ihre HACCP-Akte.",
     sector_cta: "Inspektionskontext einrichten",
     sector_cta_hint: "Für genauere Analysen",
     sector_edit_label: "Inspektionskontext · Ändern",
