@@ -3,6 +3,7 @@ import { kv } from "@vercel/kv";
 import { createHash } from "node:crypto";
 import { applyCors, getClientIp, rateLimit, send429 } from "./_lib/security.js";
 import { assignPromptVariant } from "./_lib/ab-testing.js";
+import * as Licence from "./_lib/licence.js";
 
 /* V299 — MOTEUR : migration Anthropic Claude → Google Gemini (crédit Anthropic
    épuisé). Le SYSTEM_PROMPT métier est CONSERVÉ tel quel (réglé sur 290+ versions) :
@@ -1032,12 +1033,43 @@ export default async function handler(req, res) {
     return await handleTranslate(req, res);
   }
 
+  /* V326 — Mode activation de licence (déclenché depuis les Réglages). Lie
+     l'appareil au code, « le dernier l'emporte ». Opération légère → non soumise
+     au rate-limit analyse. Renvoie le statut (dates) que le client affiche. */
+  if (req.body && req.body.mode === 'licence_activate') {
+    const code = String(req.headers['x-lucens-licence'] || req.body.code || '');
+    const device = String(req.headers['x-lucens-device'] || req.body.deviceId || '');
+    if (!device) return res.status(400).json({ ok: false, reason: 'device_missing' });
+    try {
+      const r = await Licence.activate(kv, code, device);
+      return res.status(r.ok ? 200 : 403).json(r);
+    } catch (e) {
+      return res.status(503).json({ ok: false, reason: 'kv_unavailable' });
+    }
+  }
+
   /* Rate limit anti-cost-attack : 30 analyses / IP / heure.
      Suffisant pour un audit HACCP intensif (15 analyses x 2 = 30) sans gêner
      les utilisateurs légitimes, mais bloque toute attaque massive. */
   const ip = getClientIp(req);
   const rl = await rateLimit({ scope: "analyze", ip, limit: 30, windowSec: 3600 });
   if (!rl.ok) return send429(res, rl.retryAfter);
+
+  /* V326 — VERROU LICENCE (fail-closed). Aucune analyse sans licence valide +
+     appareil lié → zéro appel Gemini, zéro coût. Toute erreur KV = refus. */
+  {
+    const licCode = String(req.headers['x-lucens-licence'] || '');
+    const licDevice = String(req.headers['x-lucens-device'] || '');
+    let lic;
+    try {
+      lic = await Licence.checkForAnalysis(kv, licCode, licDevice);
+    } catch (e) {
+      return res.status(503).json({ error: "Licence non vérifiable (service indisponible).", type: "LicenceError", reason: "kv_unavailable" });
+    }
+    if (!lic.ok) {
+      return res.status(403).json({ error: "Licence requise ou invalide.", type: "LicenceError", reason: lic.reason });
+    }
+  }
 
   try {
     const { image, mediaType, detectedZones, zoneCrops, lang, userContext, liveHints, spectroHints } = req.body || {};
