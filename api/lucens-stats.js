@@ -48,7 +48,7 @@ export default async function handler(req, res) {
   applyCors(req, res);
 
   if (req.method === 'OPTIONS') return res.status(204).end();
-  if (req.method !== 'GET') {
+  if (req.method !== 'GET' && req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
@@ -64,6 +64,21 @@ export default async function handler(req, res) {
 
   try {
     const { kv } = await import('@vercel/kv');
+
+    /* V326 — Gestion des licences repliée ici (pas de nouvelle fonction
+       serverless — limite 12 Hobby). POST { action: 'licence_*' }, protégé par
+       le même token admin vérifié ci-dessus. */
+    if (req.method === 'POST') {
+      const Licence = await import('./_lib/licence.js');
+      const { action, data, code, patch } = req.body || {};
+      if (action === 'licence_create') return res.json(await Licence.createLicence(kv, data || {}));
+      if (action === 'licence_list')   return res.json({ items: await Licence.listLicences(kv) });
+      if (action === 'licence_update') return res.json(await Licence.updateLicence(kv, code, patch || {}));
+      if (action === 'licence_revoke') return res.json(await Licence.revoke(kv, code));
+      if (action === 'licence_unbind') return res.json(await Licence.unbindDevice(kv, code));
+      if (action === 'licence_delete') { await Licence.removeLicence(kv, code); return res.json({ ok: true }); }
+      return res.status(400).json({ error: 'Action inconnue' });
+    }
 
     /* V296 — Rapport d'usage/coût réel par analyse : ?view=usage[&days=N] */
     if (String(req.query?.view || '') === 'usage') {
