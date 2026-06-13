@@ -42,6 +42,12 @@
   .tokenbar{ display:flex; gap:8px; align-items:flex-end; }
   .tokenbar label{ flex:1; margin-bottom:0; }
   .muted{ color:var(--muted); font-size:12px; }
+  .filterbar{ display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .chips{ display:flex; gap:6px; flex-wrap:wrap; }
+  .chip{ height:30px; padding:0 13px; font-size:12px; font-weight:500; border-radius:20px; border:1px solid var(--line); background:#fff; color:var(--muted); cursor:pointer; }
+  .chip:hover{ background:var(--bg); }
+  .chip.active{ background:var(--petrol); border-color:var(--petrol); color:#fff; }
+  input[type=search]{ width:100%; }
 </style>
 </head>
 <body>
@@ -84,7 +90,17 @@
   </div>
 
   <div class="card">
-    <h2>Codes existants</h2>
+    <h2>Codes <span id="codesCount" class="muted"></span></h2>
+    <div class="filterbar">
+      <input id="search" type="search" placeholder="Rechercher : code, nom, prénom, email, entreprise, n° commande…">
+      <div class="chips" id="statusChips">
+        <button type="button" class="chip active" data-status="all">Tous</button>
+        <button type="button" class="chip" data-status="active">Actifs</button>
+        <button type="button" class="chip" data-status="expired">Expirés</button>
+        <button type="button" class="chip" data-status="revoked">Révoqués</button>
+        <button type="button" class="chip" data-status="unbound">Non activés</button>
+      </div>
+    </div>
     <div style="overflow-x:auto">
       <table>
         <thead><tr>
@@ -97,7 +113,7 @@
   </div>
 
   <div class="card">
-    <h2>Demandes de licence</h2>
+    <h2>Demandes de licence <span id="reqCount" class="muted"></span></h2>
     <div style="overflow-x:auto">
       <table>
         <thead><tr>
@@ -117,6 +133,12 @@
   let editingCode = null;
   let items = [];
   let requests = [];
+  let fQ = ''; let fStatus = 'all';
+  function codeStatus(l){ if(l.statut==='revoked') return 'revoked'; if(l.expiresAt && new Date(l.expiresAt) <= new Date()) return 'expired'; return 'active'; }
+  function matchesText(o, fields){ if(!fQ) return true; return fields.map(f => (o[f]||'')).join(' ').toLowerCase().includes(fQ); }
+  function matchesCode(l){ if(fStatus==='unbound'){ if(l.deviceId) return false; } else if(fStatus!=='all' && codeStatus(l)!==fStatus) return false; return matchesText(l, ['code','nom','prenom','email','entreprise','numeroCommande']); }
+  function matchesReq(r){ return matchesText(r, ['nom','prenom','email','telephone','entreprise','message']); }
+  function applyFilters(){ renderRows(); renderReq(); }
 
   $('tok').value = sessionStorage.getItem(tokenKey) || '';
   $('saveTok').addEventListener('click', () => { sessionStorage.setItem(tokenKey, $('tok').value.trim()); setGlobal('Token mémorisé pour cette session.', 'ok'); });
@@ -204,8 +226,11 @@
   function renderRows(){
     const rows = $('rows');
     rows.replaceChildren();
-    $('emptyHint').style.display = items.length ? 'none' : 'block';
-    for(const l of items){
+    const list = items.filter(matchesCode);
+    $('codesCount').textContent = items.length ? '(' + list.length + ' / ' + items.length + ')' : '';
+    $('emptyHint').style.display = list.length ? 'none' : 'block';
+    $('emptyHint').textContent = items.length ? 'Aucun code ne correspond au filtre.' : 'Chargez les codes avec le bouton ci-dessus.';
+    for(const l of list){
       const tr = document.createElement('tr');
 
       const codeCell = document.createElement('td'); codeCell.className = 'mono';
@@ -264,8 +289,11 @@
   }
   function renderReq(){
     const rows = $('reqRows'); rows.replaceChildren();
-    $('reqEmptyHint').style.display = requests.length ? 'none' : 'block';
-    for(const rq of requests){
+    const list = requests.filter(matchesReq);
+    $('reqCount').textContent = requests.length ? '(' + list.length + ' / ' + requests.length + ')' : '';
+    $('reqEmptyHint').style.display = list.length ? 'none' : 'block';
+    $('reqEmptyHint').textContent = requests.length ? 'Aucune demande ne correspond au filtre.' : 'Aucune demande pour l’instant.';
+    for(const rq of list){
       const tr = document.createElement('tr');
       const nameTxt = (((rq.prenom||'')+' '+(rq.nom||'')).trim()||'—') + (rq.entreprise ? ' · '+rq.entreprise : '');
       const contact = (rq.email||'') + (rq.telephone ? (rq.email?' · ':'')+rq.telephone : '');
@@ -281,6 +309,12 @@
     try{ const res = await call({ action:'licence_requests_list' }); requests = res.items || []; renderReq(); }
     catch(e){ /* silencieux : l'erreur token est déjà signalée par la liste des codes */ }
   }
+
+  $('search').addEventListener('input', (e) => { fQ = e.target.value.trim().toLowerCase(); applyFilters(); });
+  document.querySelectorAll('#statusChips .chip').forEach((c) => c.addEventListener('click', () => {
+    document.querySelectorAll('#statusChips .chip').forEach((x) => x.classList.toggle('active', x === c));
+    fStatus = c.dataset.status; applyFilters();
+  }));
 
   $('refresh').addEventListener('click', load);
 </script>
