@@ -8969,7 +8969,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v334</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v335</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -17124,6 +17124,18 @@ const Annotator = (() => {
        heure locale est-d'UTC → off-by-one). fmt() reste local pour l'activation. */
     function fmtDay(iso) { if (!iso) return ''; const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }); }
 
+    /* V335 — Formatage auto du code pendant la saisie : on garde seulement les
+       lettres/chiffres (majuscules) et on replace les tirets aux bonnes positions
+       LUCENS-XXXX-XXXX. L'utilisateur tape « LUCENSABCD1234 » → « LUCENS-ABCD-1234 ».
+       Coller un code (avec ou sans tirets) le reformate aussi. Vide reste vide. */
+    function formatLicence(raw) {
+      const s = (raw || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 14); /* LUCENS + 8 */
+      let out = s.slice(0, 6);
+      if (s.length > 6) out += '-' + s.slice(6, 10);
+      if (s.length > 10) out += '-' + s.slice(10, 14);
+      return out;
+    }
+
     function render() {
       const hintEl = document.getElementById('licenceHint');
       const code = localStorage.getItem('lucens_licence') || '';
@@ -17177,6 +17189,14 @@ const Annotator = (() => {
 
     btn.addEventListener('click', activate);
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') activate(); });
+    /* V335 — tirets automatiques pendant la frappe / au collage. */
+    input.addEventListener('input', () => {
+      const f = formatLicence(input.value);
+      if (f !== input.value) {
+        input.value = f;
+        try { input.setSelectionRange(f.length, f.length); } catch (e) {}
+      }
+    });
 
     /* V333 — Retirer la licence de CET appareil : suppression locale RÉELLE
        (le code reste lié côté serveur, donc réutilisable en le re-saisissant).
