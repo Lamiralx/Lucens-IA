@@ -680,9 +680,9 @@ body.has-offline-banner .upload-hub {
   border-radius: var(--radius-sm);
 }
 /* V272 — MARQUE UNIFIÉE (décision utilisateur) : partout le même lockup =
-   wordmark LUCENS + point cuivre STATIQUE + éléments « RÉSIDUS · BIOFILMS ·
-   CONTAMINANTS » dessous. Le viseur reste l'icône d'app (PWA/favicon), il ne
-   fait plus partie du lockup in-app. Aucune animation/glow. */
+   wordmark LUCENS + point cuivre STATIQUE, SANS baseline. Le viseur reste
+   l'icône d'app (PWA/favicon), il ne fait plus partie du lockup in-app.
+   Aucune animation/glow. */
 .hdr-lockup { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; }
 .hdr-wordmark {
   font-family: var(--font-display);
@@ -697,29 +697,15 @@ body.has-offline-banner .upload-hub {
   content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
   background: var(--lucens-signature); margin-left: 5px; vertical-align: 0.16em;
 }
-.hdr-tagline {
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: 9px;
-  line-height: 1;
-  letter-spacing: 0.14em;
-  color: var(--ink-tertiary);
-  text-transform: uppercase;
-  white-space: nowrap;
-}
+/* V320 — .hdr-tagline supprimé (code mort : aucun élément DOM, baseline retirée). */
 @media (max-width: 640px) {
   .hdr-wordmark { font-size: 21px; }
-  .hdr-tagline { font-size: 8.5px; letter-spacing: 0.11em; }
-}
-@media (max-width: 360px) {
-  .hdr-tagline { display: none; }
 }
 
 /* ════════════════ V227 — REDESIGN ACCUEIL « app » (maquette validée) ════════════════
    En-tête wordmark CENTRÉ sans tagline · accueil épuré : inspections DOMINANTES +
    UNE ligne « En savoir plus » → page dédiée (les 3 accordéons y sont déplacés). */
 .hdr { justify-content: center !important; }
-.hdr-tagline { display: none !important; }
 
 /* Accueil : actions (haut) · inspections (remplissent, dominantes) · ligne savoir+ (bas). */
 .home { justify-content: space-evenly !important; gap: 0 !important; padding-top: 0 !important; }
@@ -1470,7 +1456,10 @@ body.has-offline-banner .info-page { top: var(--offline-banner-height, 36px); }
 /* Barre du haut de la page : flèche retour + titre. Couvre l'en-tête LUCENS. */
 .info-page-top {
   flex-shrink: 0;
-  display: flex;
+  /* V320 — logo CENTRÉ comme partout : chevron retour à gauche (col 1),
+     lockup LUCENS au centre (col 2), col 3 = équilibrage symétrique. */
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
   align-items: center;
   gap: 12px;
   padding: calc(12px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right)) 12px max(16px, env(safe-area-inset-left));
@@ -1479,6 +1468,7 @@ body.has-offline-banner .info-page { top: var(--offline-banner-height, 36px); }
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
 }
+.info-page-top .hdr-lockup { grid-column: 2; justify-self: center; }
 .info-page-back {
   display: inline-flex; align-items: center; justify-content: center;
   width: 40px; height: 40px; flex-shrink: 0;
@@ -1493,11 +1483,16 @@ body.has-offline-banner .info-page { top: var(--offline-banner-height, 36px); }
 .info-page-back:hover { background: var(--surface-low); border-color: var(--hairline-hi); }
 .info-page-back:active { transform: scale(0.92); }
 /* V249 remplacé par le bloc unifié V250 (boutons retour + fermeture) plus haut. */
-.info-page-title {
+/* V320 — titre de page RELOCALISÉ dans le contenu (l'en-tête ne porte plus que
+   le lockup LUCENS centré). Gros titre éditorial calé sur la colonne de lecture. */
+.info-page-h1 {
+  max-width: 640px;
+  margin: 2px auto 16px;
   font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 24px;
+  font-weight: 700;
   letter-spacing: -0.01em;
+  line-height: 1.15;
   color: var(--ink-primary);
 }
 .info-page-body {
@@ -1583,11 +1578,13 @@ body.has-offline-banner .info-page { top: var(--offline-banner-height, 36px); }
 .info-page-body .hiw { gap: 18px; }
 .info-page-body .hiw-block { gap: 7px; }
 .info-page-body .hiw-block-title {
-  margin: 0 0 0 4px;
-  font-family: var(--font-body);
-  font-size: 11px; font-weight: 700;
-  letter-spacing: 0.05em;
-  color: var(--ink-tertiary);   /* en-tête de section gris (app), pas accent marketing */
+  margin: 0 0 2px 0;
+  font-family: var(--font-display);
+  font-size: 17px; font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: none;        /* V320 — casse normale (override de l'uppercase global), comme privacy h2 */
+  line-height: 1.3;
+  color: var(--ink-primary);   /* V320 — en-tête de section CANON (unifié avec privacy h2 = 17px sombre) */
 }
 /* La liste devient une CARTE groupée */
 .info-page-body .hiw-list {
@@ -1612,9 +1609,9 @@ body.has-offline-banner .info-page { top: var(--offline-banner-height, 36px); }
 }
 .info-page-body .hiw-figure svg { width: 20px; height: 20px; }
 .info-page-body .hiw-item-title { font-size: 14px; line-height: 1.25; }
-.info-page-body .hiw-item-desc { font-size: 12.5px; line-height: 1.45; }
+.info-page-body .hiw-item-desc { font-size: 14px; line-height: 1.5; color: var(--ink-secondary); }   /* V320 — corps CANON 14px */
 .info-page-body .hiw-prose {
-  font-size: 13.5px; line-height: 1.5;
+  font-size: 14px; line-height: 1.6;   /* V320 — corps CANON 14px */
   color: var(--ink-secondary);
   padding: 0 2px;
 }
@@ -1892,9 +1889,8 @@ input[type="file"] { display: none; }
            calc(env(safe-area-inset-bottom, 0px) + 16px)
            max(16px, env(safe-area-inset-left, 0px));
 }
-/* Marque centrée — définition utilisateur (2026-06-10) : wordmark seul,
-   éléments « RÉSIDUS · BIOFILMS · CONTAMINANTS » dessous, point cuivre
-   STATIQUE (aucune animation/glow). */
+/* Marque centrée — wordmark LUCENS + point cuivre STATIQUE, SANS baseline
+   (aucune animation/glow). */
 .loader-brand {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   padding-bottom: 20px; flex-shrink: 0; text-align: center;
@@ -1908,20 +1904,10 @@ input[type="file"] { display: none; }
   content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
   background: var(--lucens-signature); margin-left: 5px; vertical-align: 0.16em;
 }
-.loader-tagline {
-  font-family: var(--font-body);
-  font-weight: 600; font-size: 9px; line-height: 1; letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--ink-tertiary); white-space: nowrap;
-}
-/* V284 — LOGO IDENTIQUE AU PIXEL au header sur TOUS les écrans (l'utilisateur
-   voyait DEUX logos différents sur téléphone : header 21px/8.5px, loader resté
-   23px/9px avec un gap plus large). Mêmes ruptures que .hdr-wordmark/.hdr-tagline. */
+/* V320 — .loader-tagline supprimé (code mort : aucun élément DOM, baseline retirée). */
+/* V284 — LOGO IDENTIQUE AU PIXEL au header (loader = même taille que .hdr-wordmark). */
 @media (max-width: 640px) {
   .loader-wordmark { font-size: 21px; }
-  .loader-tagline { font-size: 8.5px; letter-spacing: 0.11em; }
-}
-@media (max-width: 360px) {
-  .loader-tagline { display: none; }
 }
 /* Carte instrument — idiome de l'écran Résultats (photo edge-to-edge en tête) */
 .loader-instr {
@@ -8776,11 +8762,13 @@ body.lv-open { overflow: hidden; touch-action: none; }
   .lv-modal.lv-cal-mode .lv-crosshair { width: 70px; height: 70px; }
 }
 /* V316 — Splash lancement (premium, fond blanc, wordmark pétrole, dot cuivre) */
-#lcsLaunch{position:fixed;inset:0;z-index:9999;background:#fff;display:flex;align-items:center;justify-content:center;animation:lcsSplashOut .55s cubic-bezier(.4,0,.6,1) 1.8s both}
+#lcsLaunch{position:fixed;inset:0;z-index:9999;background:var(--surface-page);display:flex;align-items:center;justify-content:center;animation:lcsSplashOut .55s cubic-bezier(.4,0,.6,1) 1.8s both}
 #lcsLaunch .lcs-lk{position:relative;display:inline-flex;align-items:flex-start;animation:lcsSplashIn .65s cubic-bezier(.16,1,.3,1) .08s both}
-#lcsLaunch .lcs-word{font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif;font-size:40px;font-weight:800;letter-spacing:-.01em;color:#0F3D4E;line-height:1;user-select:none;-webkit-user-select:none}
-#lcsLaunch .lcs-dot{width:7px;height:7px;border-radius:50%;background:#B54A2A;margin-left:5px;margin-top:5px;flex-shrink:0;animation:lcsDotIn .5s cubic-bezier(.34,1.56,.64,1) .42s both}
-@keyframes lcsSplashIn{from{opacity:0;transform:translateY(14px);filter:blur(8px)}to{opacity:1;transform:none;filter:none}}
+#lcsLaunch .lcs-word{font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif;font-size:40px;font-weight:800;letter-spacing:-.01em;color:var(--accent);line-height:1;user-select:none;-webkit-user-select:none}
+#lcsLaunch .lcs-dot{width:7px;height:7px;border-radius:50%;background:var(--lucens-signature);margin-left:5px;margin-top:5px;flex-shrink:0;animation:lcsDotIn .5s cubic-bezier(.34,1.56,.64,1) .42s both}
+/* V320 — anti-saccade : blur(8px) animé retiré (coûteux/janky sur mobile),
+   on garde un fondu + translation (compositor, fluide). */
+@keyframes lcsSplashIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes lcsDotIn{from{opacity:0;transform:scale(0)}to{opacity:1;transform:none}}
 @keyframes lcsSplashOut{to{opacity:0}}
 </style>
@@ -8802,7 +8790,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
     <span class="offline-banner-text" id="offlineBannerText">Hors-ligne · vos analyses partiront à la reconnexion</span>
   </div>
 
-  <!-- HEADER — V272 : LOCKUP UNIFIÉ (wordmark + point cuivre + tagline).
+  <!-- HEADER — V272 : LOCKUP UNIFIÉ (wordmark LUCENS + point cuivre, sans baseline).
        Le viseur reste l'icône d'app (PWA/favicon), plus dans le lockup in-app. -->
   <header class="hdr">
     <a class="hdr-brand" href="/" aria-label="Lucens">
@@ -8925,9 +8913,10 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V250 — chevron retour CANONIQUE (identique partout) -->
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
       </button>
-      <span class="info-page-title" data-i18n="home_why">Pourquoi Lucens</span>
+      <span class="hdr-lockup"><span class="hdr-wordmark" data-i18n="hdr_title">LUCENS</span></span>
     </div>
     <div class="info-page-body" data-page-body="why">
+      <h1 class="info-page-h1" data-i18n="home_why">Pourquoi Lucens</h1>
       <figure class="vid-slot" data-src="" data-poster="">
         <div class="vid-frame">
           <div class="vid-ph">
@@ -8945,9 +8934,10 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V250 — chevron retour CANONIQUE (identique partout) -->
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
       </button>
-      <span class="info-page-title" data-i18n="home_how">Comment ça marche</span>
+      <span class="hdr-lockup"><span class="hdr-wordmark" data-i18n="hdr_title">LUCENS</span></span>
     </div>
     <div class="info-page-body" data-page-body="how">
+      <h1 class="info-page-h1" data-i18n="home_how">Comment ça marche</h1>
       <figure class="vid-slot" data-src="" data-poster="">
         <div class="vid-frame">
           <div class="vid-ph">
@@ -8965,9 +8955,11 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V250 — chevron retour CANONIQUE (identique partout) -->
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
       </button>
-      <span class="info-page-title" data-i18n="home_precautions">Précautions d'usage</span>
+      <span class="hdr-lockup"><span class="hdr-wordmark" data-i18n="hdr_title">LUCENS</span></span>
     </div>
-    <div class="info-page-body" data-page-body="legal"></div>
+    <div class="info-page-body" data-page-body="legal">
+      <h1 class="info-page-h1" data-i18n="home_precautions">Précautions d'usage</h1>
+    </div>
   </section>
 
   <main>
@@ -11535,7 +11527,6 @@ const I18N = {
     home_why: "Pourquoi Lucens IA",
     home_hero_sub: "Résidus, biofilms et contaminants invisibles",
     home_hero_lead: "Repérez en direct les zones à risque et les résidus invisibles à l'œil nu.",
-    hdr_brandline: "RÉSIDUS · BIOFILMS · CONTAMINANTS",
     home_benefits: "Résidus invisibles • Risque évalué • Rapport visuel",
     home_precautions: "Précautions d'usage",
     why_intro: "Les contrôles à l'œil nu et les protocoles écrits ne mesurent pas ce qu'ils ne voient pas. Une surface peut paraître irréprochable et héberger ce qui déclenche une alerte sanitaire : biofilms persistants, allergènes croisés, fluides biologiques. Lucens est le premier instrument de terrain qui rend ces traces mesurables et opposables en audit.",
@@ -11678,8 +11669,6 @@ const I18N = {
     ctx_q_type:                "Secteur d'activité",
     /* V80 — Contexte modal — boutons + aria */
     ctx_next:                  "Suivant",
-    ctx_step1_label:           "Secteur",
-    ctx_step2_label:           "Rôle",
     ctx_steps_aria:            "Étapes",
     ctx_step1_aria:            "Question 1",
     ctx_step2_aria:            "Question 2",
@@ -12156,7 +12145,6 @@ const I18N = {
     home_why: "Why Lucens IA",
     home_hero_sub: "Residues, biofilms and invisible contaminants",
     home_hero_lead: "Spot at-risk areas and residues invisible to the naked eye, live.",
-    hdr_brandline: "RESIDUES · BIOFILMS · CONTAMINANTS",
     home_benefits: "Invisible residues • Risk assessed • Visual report",
     home_precautions: "Usage precautions",
     why_intro: "Visual checks and written protocols cannot measure what they do not see. A surface can look spotless and still carry what triggers a sanitary alert: persistent biofilms, cross-allergens, biological fluids. Lucens is the first field instrument that makes these traces measurable and audit-defensible.",
@@ -12903,7 +12891,6 @@ const I18N = {
     home_why: "Por qué Lucens IA",
     home_hero_sub: "Residuos, biopelículas y contaminantes invisibles",
     home_hero_lead: "Detecte en directo las zonas de riesgo y los residuos invisibles a simple vista.",
-    hdr_brandline: "RESIDUOS · BIOPELÍCULAS · CONTAMINANTES",
     home_benefits: "Residuos invisibles • Riesgo evaluado • Informe visual",
     home_precautions: "Precauciones de uso",
     why_intro: "Los controles visuales y los protocolos escritos no miden lo que no ven. Una superficie puede parecer impecable y aún así contener lo que dispara una alerta sanitaria: biopelículas persistentes, alérgenos cruzados, fluidos biológicos. Lucens es el primer instrumento de campo que vuelve estas trazas medibles y defendibles en auditoría.",
@@ -13510,7 +13497,6 @@ const I18N = {
     home_why: "Warum Lucens IA",
     home_hero_sub: "Rückstände, Biofilme und unsichtbare Verunreinigungen",
     home_hero_lead: "Erkennen Sie live Risikozonen und mit bloßem Auge unsichtbare Rückstände.",
-    hdr_brandline: "RÜCKSTÄNDE · BIOFILME · KONTAMINANTEN",
     home_benefits: "Unsichtbare Rückstände • Risiko bewertet • Visueller Bericht",
     home_precautions: "Anwendungshinweise",
     why_intro: "Sichtkontrollen und schriftliche Protokolle messen nicht, was sie nicht sehen. Eine Oberfläche kann makellos aussehen und dennoch tragen, was einen Hygienealarm auslöst: persistente Biofilme, Kreuzallergene, biologische Flüssigkeiten. Lucens ist das erste Feldinstrument, das diese Spuren messbar und auditfest macht.",
@@ -26746,25 +26732,25 @@ const Annotator = (() => {
     }
     const avgLum = lumSum / (pd.length / 4);
 
-    /* Étape 2 : boost adaptatif selon luminance scène */
-    let brightFactor, contrastFactor, satFactor;
-    if (avgLum < 50)       { brightFactor = 1.60; contrastFactor = 1.15; satFactor = 1.25; }
-    else if (avgLum < 100) { brightFactor = 1.35; contrastFactor = 1.12; satFactor = 1.20; }
-    else if (avgLum < 160) { brightFactor = 1.15; contrastFactor = 1.08; satFactor = 1.15; }
-    else                   { brightFactor = 1.00; contrastFactor = 1.05; satFactor = 1.10; }
-
-    /* Étape 3 : boost + léger renforcement de netteté (contraste local).
-       Le contraste accru aide à compenser un éventuel léger flou résiduel. */
-    sctx.filter = `brightness(${brightFactor}) contrast(${contrastFactor}) saturate(${satFactor})`;
+    /* V320 — BOOST DE CAPTURE SUPPRIMÉ (cause racine « cartographie vide en Live
+       View », prouvée au banc .claude/tests/repro-liveview-carto2.mjs).
+       Avant : un boost brightness×1.6 / contrast / saturate était CUIT dans
+       l'image analysée. Sur les appareils qui appliquent ctx.filter (Safari 17+,
+       iOS récents = notre cible), il RELÈVE le fond sombre → effondre la détection
+       à CONTRASTE ABSOLU de la cartographie (_spxLoops V271 : maskFrac < 0.003 →
+       abstention → AUCUN ambre peint), alors que la MÊME scène IMPORTÉE (non
+       boostée) cartographie parfaitement. Le moteur local (détection RELATIVE au
+       fond) et le verdict IA n'étaient quasi pas affectés → symptôme exact « photo
+       + score OK mais zéro surlignage ». On capture donc la frame nette TELLE
+       QUELLE ; l'IA reste informée que la scène est sombre via sceneLuminance. */
     sctx.drawImage(bestFrame, 0, 0);
-    sctx.filter = 'none';
 
     /* Étape 4 : hints live view pour /api/analyze */
     window.LucensLiveHints = {
       capturedFromLive: true,
       timestamp: Date.now(),
       sceneLuminance: Math.round(avgLum),
-      boostApplied: { brightness: brightFactor, contrast: contrastFactor, saturation: satFactor },
+      boostApplied: null,   /* V320 — plus aucun boost cuit dans l'image (cf. capture ci-dessus) */
       sharpness: Math.round(bestSharp),
       multiFrame: FRAMES,
       bgVioletSat: lv.bgVioletSat,

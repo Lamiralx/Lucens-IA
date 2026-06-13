@@ -90,9 +90,11 @@ body { min-height: 100dvh; }
 .privacy-header-inner {
   max-width: 720px;
   margin: 0 auto;
-  display: flex;
+  /* V320 — logo CENTRÉ comme partout : chevron retour à gauche (col 1),
+     lockup LUCENS au centre (col 2), col 3 = équilibrage symétrique. */
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
   align-items: center;
-  justify-content: flex-start;
   gap: 12px;
   padding: 12px max(16px, env(safe-area-inset-right)) 12px max(16px, env(safe-area-inset-left));
   min-height: 60px;
@@ -113,8 +115,8 @@ body { min-height: 100dvh; }
 .back-btn:hover { filter: brightness(1.08); }
 .back-btn:active { transform: scale(0.92); filter: brightness(0.94); }
 .back-btn svg { width: 20px; height: 20px; }
-/* Lockup unifié V273 : wordmark + point cuivre + tagline */
-.lockup { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; }
+/* Lockup unifié V273 : wordmark LUCENS + point cuivre, sans baseline */
+.lockup { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; grid-column: 2; justify-self: center; }
 .wordmark {
   font-family: var(--font-display);
   font-weight: 800;
@@ -132,22 +134,9 @@ body { min-height: 100dvh; }
   margin-left: 5px;
   vertical-align: 0.16em;
 }
-.tagline {
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: 9px;
-  line-height: 1;
-  letter-spacing: 0.14em;
-  color: var(--ink-tertiary);
-  text-transform: uppercase;
-  white-space: nowrap;
-}
+/* V320 — .tagline supprimé : baseline retirée du DOM, marque = wordmark + point cuivre. */
 @media (max-width: 640px) {
   .wordmark { font-size: 21px; }
-  .tagline { font-size: 8.5px; letter-spacing: 0.11em; }
-}
-@media (max-width: 360px) {
-  .tagline { display: none; }
 }
 
 .container {
@@ -169,7 +158,7 @@ body { min-height: 100dvh; }
 h1 {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 22px;
+  font-size: 24px;
   line-height: 1.2;
   letter-spacing: -0.01em;
   color: var(--ink-primary);
@@ -220,7 +209,7 @@ h1 {
 h2 {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 18px;
+  font-size: 17px;
   letter-spacing: -0.01em;
   color: var(--ink-primary);
   margin: 32px 0 8px;
@@ -287,7 +276,6 @@ footer a:hover { color: var(--ink-primary); }
     </a>
     <span class="lockup">
       <span class="wordmark">LUCENS</span>
-      <span class="tagline" data-i18n="hdr_brandline">RÉSIDUS · BIOFILMS · CONTAMINANTS</span>
     </span>
   </div>
 </header>
@@ -346,6 +334,10 @@ footer a:hover { color: var(--ink-primary); }
 <p data-i18n="p_retention_note">Votre adresse IP n'est pas enregistrée avec ces retours. Une image peut être reliée à un repère technique qui ne contient pas votre nom. Cela limite fortement les risques, sans rendre les données totalement intraçables : c'est pourquoi le droit à l'oubli ci-dessous existe.</p>
 <p data-i18n="p_retention_legal">Ces traitements reposent sur votre accord (le feedback) et sur notre intérêt légitime à améliorer la détection.</p>
 
+<h2 data-i18n="h2_rights">Vos droits</h2>
+<p data-i18n="p_rights_1">Vous disposez d'un droit d'accès, de rectification, d'effacement et d'opposition sur vos données. Le plus simple pour les exercer : utilisez le code de suppression remis avec chaque feedback (voir ci-dessous).</p>
+<p data-i18n="p_rights_cnil" data-i18n-rich>Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir la <strong>CNIL</strong> (cnil.fr).</p>
+
 <h2 data-i18n="h2_oubli">Tout faire supprimer</h2>
 <p data-i18n="p_oubli_intro" data-i18n-rich>Quand vous envoyez un feedback ou une image corrective, Lucens vous remet un <strong>code de suppression personnel</strong>.</p>
 <ul>
@@ -365,8 +357,13 @@ footer a:hover { color: var(--ink-primary); }
 <p data-i18n="p_dont_closing">sauf si vous y êtes expressément autorisé.</p>
 
 <h2 data-i18n="h2_processors">Qui fait fonctionner Lucens</h2>
-<p data-i18n="p_processors_1">Pour fonctionner, Lucens s'appuie sur des prestataires techniques d'hébergement et d'analyse d'images. Ils sont encadrés par contrat et tenus à la confidentialité.</p>
-<p data-i18n="p_processors_2">Vos photos d'analyse ne sont pas conservées par ces prestataires au-delà du traitement. La liste détaillée des prestataires est disponible sur demande (voir Nous contacter).</p>
+<p data-i18n="p_processors_1">Pour analyser vos photos, Lucens s'appuie sur deux prestataires techniques :</p>
+<ul>
+  <li data-i18n="li_processors_google" data-i18n-rich><strong>Google</strong> — analyse de l'image par intelligence artificielle ;</li>
+  <li data-i18n="li_processors_vercel" data-i18n-rich><strong>Vercel</strong> — hébergement de l'application.</li>
+</ul>
+<p data-i18n="p_processors_transfer" data-i18n-rich>Ces prestataires traitent les données <strong>aux États-Unis</strong>. Ce transfert hors de l'Union européenne est encadré par des <strong>clauses contractuelles types</strong> approuvées par la Commission européenne, qui imposent un niveau de protection équivalent au nôtre.</p>
+<p data-i18n="p_processors_2">Vos photos d'analyse ne sont pas conservées par ces prestataires au-delà du traitement nécessaire à l'analyse. La liste complète est disponible sur demande (voir Nous contacter).</p>
 
 <h2 data-i18n="h2_not">Ce que Lucens n'est pas</h2>
 <p data-i18n="p_not_1" data-i18n-rich>Lucens est une <strong>aide visuelle</strong>. Ce n'est pas un diagnostic microbiologique, chimique ou médical. Lucens ne prend aucune décision officielle à votre place.</p>
@@ -395,7 +392,6 @@ footer a:hover { color: var(--ink-primary); }
       title: "Confidentialité · Lucens IA",
       meta_desc: "Confidentialité Lucens IA : photos non conservées, historique stocké sur votre appareil, pas de compte ni de traceur, suppression gratuite à tout moment.",
       back_aria: "Revenir à l'application Lucens",
-      hdr_brandline: "RÉSIDUS · BIOFILMS · CONTAMINANTS",
       eyebrow: "Confidentialité",
       h1: "Vos données, en clair",
       lead: "Lucens analyse des photos prises sous lampe UV pour vous aider à repérer des traces d'hygiène. Cette page explique ce que devient chaque donnée : ce qui est utilisé, combien de temps, et comment tout faire supprimer.",
@@ -430,6 +426,9 @@ footer a:hover { color: var(--ink-primary); }
       li_retention_2: "<strong>Les images correctives</strong> : 12 mois maximum, ou moins si vous demandez leur suppression avant.",
       p_retention_note: "Votre adresse IP n'est pas enregistrée avec ces retours. Une image peut être reliée à un repère technique qui ne contient pas votre nom. Cela limite fortement les risques, sans rendre les données totalement intraçables : c'est pourquoi le droit à l'oubli ci-dessous existe.",
       p_retention_legal: "Ces traitements reposent sur votre accord (le feedback) et sur notre intérêt légitime à améliorer la détection.",
+      h2_rights: "Vos droits",
+      p_rights_1: "Vous disposez d'un droit d'accès, de rectification, d'effacement et d'opposition sur vos données. Le plus simple pour les exercer : utilisez le code de suppression remis avec chaque feedback (voir ci-dessous).",
+      p_rights_cnil: "Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir la <strong>CNIL</strong> (cnil.fr).",
       h2_oubli: "Tout faire supprimer",
       p_oubli_intro: "Quand vous envoyez un feedback ou une image corrective, Lucens vous remet un <strong>code de suppression personnel</strong>.",
       li_oubli_1: "<strong>Conservez ce code.</strong> C'est lui qui identifie vos données.",
@@ -443,8 +442,11 @@ footer a:hover { color: var(--ink-primary); }
       li_dont_3: "tout élément couvert par un secret professionnel ou industriel,",
       p_dont_closing: "sauf si vous y êtes expressément autorisé.",
       h2_processors: "Qui fait fonctionner Lucens",
-      p_processors_1: "Pour fonctionner, Lucens s'appuie sur des prestataires techniques d'hébergement et d'analyse d'images. Ils sont encadrés par contrat et tenus à la confidentialité.",
-      p_processors_2: "Vos photos d'analyse ne sont pas conservées par ces prestataires au-delà du traitement. La liste détaillée des prestataires est disponible sur demande (voir Nous contacter).",
+      p_processors_1: "Pour analyser vos photos, Lucens s'appuie sur deux prestataires techniques :",
+      li_processors_google: "<strong>Google</strong> — analyse de l'image par intelligence artificielle ;",
+      li_processors_vercel: "<strong>Vercel</strong> — hébergement de l'application.",
+      p_processors_transfer: "Ces prestataires traitent les données <strong>aux États-Unis</strong>. Ce transfert hors de l'Union européenne est encadré par des <strong>clauses contractuelles types</strong> approuvées par la Commission européenne, qui imposent un niveau de protection équivalent au nôtre.",
+      p_processors_2: "Vos photos d'analyse ne sont pas conservées par ces prestataires au-delà du traitement nécessaire à l'analyse. La liste complète est disponible sur demande (voir Nous contacter).",
       h2_not: "Ce que Lucens n'est pas",
       p_not_1: "Lucens est une <strong>aide visuelle</strong>. Ce n'est pas un diagnostic microbiologique, chimique ou médical. Lucens ne prend aucune décision officielle à votre place.",
       p_not_2: "La décision finale (valider une surface, libérer un produit, conclure sur l'hygiène) reste toujours <strong>humaine</strong>. Elle doit être confirmée par les méthodes de terrain appropriées : ATP-métrie, écouvillonnages, analyses de laboratoire, contrôles HACCP.",
@@ -459,7 +461,6 @@ footer a:hover { color: var(--ink-primary); }
       title: "Privacy · Lucens IA",
       meta_desc: "Lucens IA privacy: photos not kept, history stored on your device, no account and no tracker, free deletion at any time.",
       back_aria: "Back to the Lucens app",
-      hdr_brandline: "RESIDUES · BIOFILMS · CONTAMINANTS",
       eyebrow: "Privacy",
       h1: "Your data, in plain words",
       lead: "Lucens analyses photos taken under a UV lamp to help you spot hygiene traces. This page explains what happens to each piece of data: what is used, for how long, and how to have everything deleted.",
@@ -494,6 +495,9 @@ footer a:hover { color: var(--ink-primary); }
       li_retention_2: "<strong>Corrective images</strong>: 12 months maximum, or less if you ask for their deletion sooner.",
       p_retention_note: "Your IP address is not recorded with these returns. An image may be linked to a technical marker that does not contain your name. This strongly limits the risk, without making the data fully untraceable: that is why the right to be forgotten below exists.",
       p_retention_legal: "These operations rely on your consent (the feedback) and on our legitimate interest in improving detection.",
+      h2_rights: "Your rights",
+      p_rights_1: "You have the right to access, rectify, erase and object to the processing of your data. The simplest way to exercise them: use the deletion code provided with each feedback (see below).",
+      p_rights_cnil: "If you believe your rights are not being respected, you can lodge a complaint with your data protection authority (in France, the <strong>CNIL</strong> — cnil.fr).",
       h2_oubli: "Delete everything",
       p_oubli_intro: "When you send feedback or a corrective image, Lucens gives you a <strong>personal deletion code</strong>.",
       li_oubli_1: "<strong>Keep this code.</strong> It is what identifies your data.",
@@ -507,8 +511,11 @@ footer a:hover { color: var(--ink-primary); }
       li_dont_3: "anything covered by professional or industrial secrecy,",
       p_dont_closing: "unless you are expressly authorised.",
       h2_processors: "Who keeps Lucens running",
-      p_processors_1: "To operate, Lucens relies on technical providers for hosting and image analysis. They are bound by contract and by confidentiality.",
-      p_processors_2: "Your analysis photos are not kept by these providers beyond processing. The detailed list of providers is available on request (see Contact us).",
+      p_processors_1: "To analyse your photos, Lucens relies on two technical providers:",
+      li_processors_google: "<strong>Google</strong> — AI-powered image analysis;",
+      li_processors_vercel: "<strong>Vercel</strong> — hosting of the application.",
+      p_processors_transfer: "These providers process the data <strong>in the United States</strong>. This transfer outside the European Union is governed by <strong>standard contractual clauses</strong> approved by the European Commission, which impose a level of protection equivalent to ours.",
+      p_processors_2: "Your analysis photos are not kept by these providers beyond the processing needed for the analysis. The full list is available on request (see Contact us).",
       h2_not: "What Lucens is not",
       p_not_1: "Lucens is a <strong>visual aid</strong>. It is not a microbiological, chemical or medical diagnosis. Lucens makes no official decision on your behalf.",
       p_not_2: "The final decision (validating a surface, releasing a product, concluding on hygiene) always remains <strong>human</strong>. It must be confirmed by the appropriate field methods: ATP testing, swabbing, laboratory analyses, HACCP controls.",
@@ -523,7 +530,6 @@ footer a:hover { color: var(--ink-primary); }
       title: "Privacidad · Lucens IA",
       meta_desc: "Privacidad Lucens IA: fotos no conservadas, historial almacenado en su dispositivo, sin cuenta ni rastreadores, eliminación gratuita en cualquier momento.",
       back_aria: "Volver a la aplicación Lucens",
-      hdr_brandline: "RESIDUOS · BIOFILMS · CONTAMINANTES",
       eyebrow: "Privacidad",
       h1: "Sus datos, en claro",
       lead: "Lucens analiza fotos tomadas con lámpara UV para ayudarle a detectar trazas de higiene. Esta página explica qué ocurre con cada dato: qué se utiliza, durante cuánto tiempo y cómo hacer que se elimine todo.",
@@ -558,6 +564,9 @@ footer a:hover { color: var(--ink-primary); }
       li_retention_2: "<strong>Las imágenes correctivas</strong>: 12 meses como máximo, o menos si solicita su eliminación antes.",
       p_retention_note: "Su dirección IP no se registra con estos comentarios. Una imagen puede vincularse a una referencia técnica que no contiene su nombre. Esto limita en gran medida los riesgos, sin hacer que los datos sean totalmente irrastreables: por eso existe el derecho al olvido a continuación.",
       p_retention_legal: "Estos tratamientos se basan en su consentimiento (el feedback) y en nuestro interés legítimo por mejorar la detección.",
+      h2_rights: "Sus derechos",
+      p_rights_1: "Usted tiene derecho de acceso, rectificación, supresión y oposición sobre sus datos. La forma más sencilla de ejercerlos: utilice el código de eliminación entregado con cada feedback (consulte a continuación).",
+      p_rights_cnil: "Si considera que sus derechos no se respetan, puede reclamar ante su autoridad de protección de datos (en Francia, la <strong>CNIL</strong> — cnil.fr).",
       h2_oubli: "Eliminarlo todo",
       p_oubli_intro: "Cuando envía un feedback o una imagen correctiva, Lucens le entrega un <strong>código de eliminación personal</strong>.",
       li_oubli_1: "<strong>Conserve este código.</strong> Es lo que identifica sus datos.",
@@ -571,8 +580,11 @@ footer a:hover { color: var(--ink-primary); }
       li_dont_3: "cualquier elemento cubierto por secreto profesional o industrial,",
       p_dont_closing: "salvo que esté expresamente autorizado a hacerlo.",
       h2_processors: "Quién hace funcionar Lucens",
-      p_processors_1: "Para funcionar, Lucens se apoya en proveedores técnicos de alojamiento y de análisis de imágenes. Están sujetos a contrato y obligados a la confidencialidad.",
-      p_processors_2: "Sus fotos de análisis no son conservadas por estos proveedores más allá del tratamiento. La lista detallada de proveedores está disponible bajo petición (consulte Contáctenos).",
+      p_processors_1: "Para analizar sus fotos, Lucens se apoya en dos proveedores técnicos:",
+      li_processors_google: "<strong>Google</strong> — análisis de la imagen mediante inteligencia artificial;",
+      li_processors_vercel: "<strong>Vercel</strong> — alojamiento de la aplicación.",
+      p_processors_transfer: "Estos proveedores tratan los datos <strong>en los Estados Unidos</strong>. Esta transferencia fuera de la Unión Europea está regulada por <strong>cláusulas contractuales tipo</strong> aprobadas por la Comisión Europea, que imponen un nivel de protección equivalente al nuestro.",
+      p_processors_2: "Sus fotos de análisis no son conservadas por estos proveedores más allá del tratamiento necesario para el análisis. La lista completa está disponible bajo petición (consulte Contáctenos).",
       h2_not: "Lo que Lucens no es",
       p_not_1: "Lucens es una <strong>ayuda visual</strong>. No es un diagnóstico microbiológico, químico o médico. Lucens no toma ninguna decisión oficial en su lugar.",
       p_not_2: "La decisión final (validar una superficie, liberar un producto, concluir sobre la higiene) sigue siendo siempre <strong>humana</strong>. Debe confirmarse mediante los métodos de campo apropiados: ATP-metría, hisopos, análisis de laboratorio, controles APPCC.",
@@ -587,7 +599,6 @@ footer a:hover { color: var(--ink-primary); }
       title: "Datenschutz · Lucens IA",
       meta_desc: "Datenschutz Lucens IA: Fotos werden nicht aufbewahrt, Verlauf bleibt auf Ihrem Gerät, kein Konto und keine Tracker, jederzeit kostenlose Löschung.",
       back_aria: "Zurück zur Lucens-App",
-      hdr_brandline: "RÜCKSTÄNDE · BIOFILME · KONTAMINANTEN",
       eyebrow: "Datenschutz",
       h1: "Ihre Daten, klar erklärt",
       lead: "Lucens analysiert Fotos, die unter UV-Lampe aufgenommen wurden, um Sie beim Erkennen von Hygienespuren zu unterstützen. Diese Seite erklärt, was mit jeder Information geschieht: was verwendet wird, wie lange, und wie alles gelöscht werden kann.",
@@ -622,6 +633,9 @@ footer a:hover { color: var(--ink-primary); }
       li_retention_2: "<strong>Korrigierende Bilder</strong>: höchstens 12 Monate, oder kürzer, wenn Sie vorher die Löschung anfordern.",
       p_retention_note: "Ihre IP-Adresse wird mit diesen Rückmeldungen nicht gespeichert. Ein Bild kann mit einer technischen Kennung verknüpft sein, die Ihren Namen nicht enthält. Das begrenzt die Risiken stark, ohne die Daten vollständig unauffindbar zu machen: deshalb gibt es das nachstehende Recht auf Löschung.",
       p_retention_legal: "Diese Verarbeitungen beruhen auf Ihrer Zustimmung (dem Feedback) und auf unserem berechtigten Interesse, die Erkennung zu verbessern.",
+      h2_rights: "Ihre Rechte",
+      p_rights_1: "Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Widerspruch bezüglich Ihrer Daten. Am einfachsten üben Sie sie aus, indem Sie den mit jedem Feedback übermittelten Löschcode verwenden (siehe unten).",
+      p_rights_cnil: "Wenn Sie der Ansicht sind, dass Ihre Rechte nicht gewahrt werden, können Sie sich an Ihre Datenschutzbehörde wenden (in Frankreich die <strong>CNIL</strong> — cnil.fr).",
       h2_oubli: "Alles löschen lassen",
       p_oubli_intro: "Wenn Sie ein Feedback oder ein korrigierendes Bild senden, übermittelt Ihnen Lucens einen <strong>persönlichen Löschcode</strong>.",
       li_oubli_1: "<strong>Bewahren Sie diesen Code auf.</strong> Er identifiziert Ihre Daten.",
@@ -635,8 +649,11 @@ footer a:hover { color: var(--ink-primary); }
       li_dont_3: "alles, was durch Berufs- oder Industriegeheimnis geschützt ist,",
       p_dont_closing: "es sei denn, Sie sind dazu ausdrücklich befugt.",
       h2_processors: "Wer Lucens betreibt",
-      p_processors_1: "Für den Betrieb stützt sich Lucens auf technische Dienstleister für Hosting und Bildanalyse. Sie sind vertraglich gebunden und zur Vertraulichkeit verpflichtet.",
-      p_processors_2: "Ihre Analysefotos werden von diesen Dienstleistern nicht über die Verarbeitung hinaus aufbewahrt. Die detaillierte Liste der Dienstleister ist auf Anfrage erhältlich (siehe Kontakt).",
+      p_processors_1: "Um Ihre Fotos zu analysieren, stützt sich Lucens auf zwei technische Dienstleister:",
+      li_processors_google: "<strong>Google</strong> — KI-gestützte Bildanalyse;",
+      li_processors_vercel: "<strong>Vercel</strong> — Hosting der Anwendung.",
+      p_processors_transfer: "Diese Dienstleister verarbeiten die Daten <strong>in den Vereinigten Staaten</strong>. Diese Übermittlung außerhalb der Europäischen Union wird durch <strong>Standardvertragsklauseln</strong> abgesichert, die von der Europäischen Kommission genehmigt wurden und ein gleichwertiges Schutzniveau gewährleisten.",
+      p_processors_2: "Ihre Analysefotos werden von diesen Dienstleistern nicht über die für die Analyse erforderliche Verarbeitung hinaus aufbewahrt. Die vollständige Liste ist auf Anfrage erhältlich (siehe Kontakt).",
       h2_not: "Was Lucens nicht ist",
       p_not_1: "Lucens ist eine <strong>visuelle Hilfe</strong>. Es ist keine mikrobiologische, chemische oder medizinische Diagnose. Lucens trifft keine offizielle Entscheidung an Ihrer Stelle.",
       p_not_2: "Die endgültige Entscheidung (eine Oberfläche freigeben, ein Produkt freigeben, ein Hygieneurteil fällen) bleibt stets <strong>menschlich</strong>. Sie muss durch die geeigneten Feldmethoden bestätigt werden: ATP-Messung, Abstriche, Laboranalysen, HACCP-Kontrollen.",

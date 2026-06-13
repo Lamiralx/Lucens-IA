@@ -1104,10 +1104,10 @@ export default async function handler(req, res) {
     if (liveHints && typeof liveHints === 'object' && liveHints.capturedFromLive) {
       const parts = ['CONTEXTE DE CAPTURE — mode Live View UV-A 365 nm :'];
       if (typeof liveHints.sceneLuminance === 'number') {
-        parts.push(`La scène d'origine est sombre (luminance moyenne ${liveHints.sceneLuminance}/255), ce qui est NORMAL et attendu sous éclairage UV-A.`);
+        parts.push(`La scène d'origine est sombre (luminance moyenne ${liveHints.sceneLuminance}/255), ce qui est NORMAL et attendu sous éclairage UV-A. NE PÉNALISE PAS la qualité (image_quality.usable) pour un motif de faible luminosité : sous UV-A 365 nm la pénombre est volontaire et l'image reste exploitable — la fluorescence ressort justement sur fond sombre.`);
       }
       if (liveHints.boostApplied && typeof liveHints.boostApplied.brightness === 'number') {
-        parts.push(`L'image a été éclaircie automatiquement à la capture (gain luminosité ×${liveHints.boostApplied.brightness.toFixed(2)}) pour rester exploitable. NE PÉNALISE PAS la qualité (image_quality.usable) pour un motif de faible luminosité : l'éclaircissement est volontaire et l'image est exploitable.`);
+        parts.push(`L'image a été éclaircie automatiquement à la capture (gain luminosité ×${liveHints.boostApplied.brightness.toFixed(2)}) pour rester exploitable.`);
       }
       if (liveHints.multiFrame) {
         parts.push(`L'image est la frame la plus nette sélectionnée parmi ${liveHints.multiFrame} captures (anti-flou de bougé). C'est une frame vidéo : elle peut présenter un LÉGER adoucissement normal du flux caméra. NE BLOQUE PAS l'analyse pour un flou léger (image_quality.usable doit rester true sauf flou EXTRÊME rendant les surfaces non identifiables). Analyse au mieux les zones visibles.`);
