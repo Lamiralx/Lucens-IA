@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#F4F6F8">
+<!-- V310 — theme-color par MEDIA (prefers-color-scheme) : iOS peint la status-bar
+     selon l'APPARENCE SYSTÈME du téléphone, évalué au niveau OS (≠ <meta> unique
+     modifié en JS qui restait figé sur l'install gravée — échecs V238/V263/V295).
+     En mode sombre système → barre sombre, fondue dans le contenu, même Web Clip gravé. -->
+<meta name="theme-color" content="#06070A" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F4F6F8" media="(prefers-color-scheme: light)">
 <!-- Thème : applique le choix sauvegardé AVANT le rendu (anti-flash) -->
 <script>
 (function(){
@@ -727,19 +733,19 @@ body.has-offline-banner .upload-hub {
 /* Ligne « En savoir plus » unique → ouvre la page. */
 .home-learn-link {
   flex: 0 0 auto !important;
-  display: flex; align-items: center; gap: 13px;
-  width: 100%; padding: 15px 16px; margin: 0;
+  display: flex; align-items: center; gap: 11px;
+  width: 100%; padding: 11px 14px; margin: 0;   /* V312 — compacté : lien secondaire, ne doit pas dépasser les CTA (52px) */
   background: var(--surface, #fff); border: 1px solid var(--border); border-radius: 16px;
   cursor: pointer; text-align: left; -webkit-tap-highlight-color: transparent;
   transition: transform .12s var(--ease-out, ease);
 }
 .home-learn-link:active { transform: scale(0.99); }
-.home-learn-link .hl-ic { width: 38px; height: 38px; border-radius: 11px; background: var(--bg-2); display: flex; align-items: center; justify-content: center; color: var(--accent); flex-shrink: 0; }
-.home-learn-link .hl-ic svg { width: 20px; height: 20px; }
+.home-learn-link .hl-ic { width: 30px; height: 30px; border-radius: 9px; background: var(--bg-2); display: flex; align-items: center; justify-content: center; color: var(--accent); flex-shrink: 0; }
+.home-learn-link .hl-ic svg { width: 17px; height: 17px; }
 .home-learn-link .hl-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .home-learn-link .hl-t { display: block; }
-.home-learn-link .hl-t { font-size: 15px; font-weight: 700; color: var(--ink-primary); }
-.home-learn-link .hl-s { font-size: 12px; color: var(--ink-tertiary); margin-top: 1px; line-height: 1.35; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; } /* V290 — tout visible (2 lignes), fini l'ellipse qui coupait */
+.home-learn-link .hl-t { font-size: 13.5px; font-weight: 700; color: var(--ink-primary); }
+.home-learn-link .hl-s { font-size: 11px; color: var(--ink-tertiary); margin-top: 1px; line-height: 1.3; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; } /* V290 — 2 lignes ; V312 — compacté */
 .home-learn-link .hl-chev { color: var(--border-hi); font-size: 20px; line-height: 1; flex-shrink: 0; }
 
 /* Page « En savoir plus » : overlay plein écran qui glisse depuis la DROITE. */
@@ -1087,7 +1093,7 @@ body.has-offline-banner .upload-hub {
    block qui casserait position:fixed).
    ═══════════════════════════════════════════════════════════════════ */
 :root {
-  --bottom-bar-h: 42px;   /* V206 — rangée d'onglets resserrée (moins de blanc interne) */
+  --bottom-bar-h: 50px;   /* V312 — +8px (≈2mm) : cible tactile ≥44px HIG, usage terrain ganté + pastille active (était 42px V206) */
   /* V219 — Onglets façon barre Apple : le fond teal remplit la zone « home
      indicator » et les onglets se posent AU-DESSUS du trait (ils ne le touchent
      plus). Dégagement = quasi tout l'inset iOS (au lieu du ~4px de V206 qui les
@@ -1136,11 +1142,11 @@ body.has-offline-banner .upload-hub {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 3px;
   height: var(--bottom-bar-h);
   min-height: var(--bottom-bar-h);
   width: auto !important;
-  padding: 4px 2px !important;
+  padding: 6px 2px !important;
   background: transparent !important;
   border: 0 !important;
   border-radius: 0 !important;
@@ -1151,7 +1157,7 @@ body.has-offline-banner .upload-hub {
   transition: color .14s ease, transform .12s ease;
 }
 .bottom-bar .bb-item:hover { background: transparent !important; }
-.bottom-bar .bb-item:active { transform: scale(0.94) !important; }
+.bottom-bar .bb-item:active { transform: scale(0.96) !important; }
 .bottom-bar .bb-item svg { width: 20px !important; height: 20px !important; flex-shrink: 0; }
 /* Label de l'onglet — réaffiché TOUJOURS (on annule les masquages mobiles de
    l'en-tête : .hdr-ctx-text @480px, .hdr-hist-text @560px). */
@@ -1255,6 +1261,18 @@ body.has-offline-banner .upload-hub {
 .bottom-bar .bb-item.is-active .bb-label,
 .bottom-bar .bb-item.is-active .hdr-hist-text,
 .bottom-bar .bb-item.is-active .hdr-ctx-text { color: #FFFFFF !important; font-weight: 600 !important; }
+/* V312 — état ACTIF en PASTILLE (affordance bouton + ancrage « où suis-je »).
+   Statique (zéro reflow), derrière icône+label, plus haute que large, centrée. */
+.bottom-bar .bb-item.is-active::before {
+  content: '';
+  position: absolute;
+  top: 4px; bottom: 4px;
+  left: 50%; transform: translateX(-50%);
+  width: 56px; max-width: 88%;
+  border-radius: 13px;
+  background: rgba(255,255,255,0.13);
+  z-index: -1;
+}
 .bottom-bar .lang-current-code { color: rgba(255,255,255,0.88) !important; }
 
 .settings-overlay {
@@ -5377,12 +5395,15 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   max-height: calc(100dvh - 24px);
   display: flex; flex-direction: column;
   padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  --kb: 0px;   /* V315 — hauteur du clavier, pilotée par visualViewport (0 = fermé) */
   transform: translateY(24px);
   opacity: 0;
-  transition: transform .3s cubic-bezier(.16, 1, .3, 1), opacity .22s ease;
+  transition: transform .34s cubic-bezier(.22, 1, .3, 1), opacity .22s ease;
   overflow: hidden;
 }
-.mo-overlay.visible .mo-modal { transform: translateY(0); opacity: 1; }
+/* V315 — la feuille MONTE en douceur au-dessus du clavier (anim premium type Airbnb) :
+   la même transition transform porte le glissement. --kb=0 → comportement inchangé. */
+.mo-overlay.visible .mo-modal { transform: translateY(calc(-1 * var(--kb, 0px))); opacity: 1; }
 @media (min-width: 640px) {
   .mo-overlay { align-items: center; padding: 24px 16px; }
   .mo-modal { border-radius: 24px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
@@ -5439,11 +5460,19 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 .mo-zone-wrap { position: relative; }
 .mo-zone-wrap .mo-zone-input { padding-right: 42px; }
 .mo-zone-pen {
-  position: absolute; right: 14px; top: 50%;
-  width: 16px; height: 16px;
+  position: absolute; right: 13px; top: 50%;
+  width: 18px; height: 18px;
   transform: translateY(-50%);
-  color: var(--ink-dim);
+  color: var(--ink-secondary);   /* V312 — sobre au repos (pas accent permanent = lit « éditable », pas « erreur ») */
   pointer-events: none;
+  animation: moPenHint 1.6s var(--ease-out, ease) 1;   /* attire l'œil 1× : « ce champ est personnalisable » */
+}
+.mo-zone-wrap:focus-within .mo-zone-pen { color: var(--accent); }   /* accent UNIQUEMENT au focus */
+@media (prefers-reduced-motion: reduce) { .mo-zone-pen { animation: none; } }
+@keyframes moPenHint {
+  0%   { transform: translateY(-50%) scale(1);    opacity: 0.6; }
+  45%  { transform: translateY(-50%) scale(1.18); opacity: 1; }
+  100% { transform: translateY(-50%) scale(1);    opacity: 1; }
 }
 .mo-zone-wrap.has-text .mo-zone-pen { display: none; }
 /* V281 — AVANT / APRÈS toujours CÔTE À CÔTE, libellé seul, codes couleur d'état :
@@ -7504,6 +7533,15 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
 }
 .hist-zone-input:focus { outline: none; border-color: var(--accent); }
 .hist-zone-input::placeholder { color: var(--ink-dim); font-weight: 500; }
+/* V312 — crayon d'édition (sobre au repos, accent au focus, masqué si rempli). */
+.hist-zone-block .hist-zone-input { padding-right: 42px; }
+.hist-zone-pen {
+  position: absolute; right: 13px; bottom: 14px;
+  width: 18px; height: 18px;
+  color: var(--ink-secondary); pointer-events: none;
+}
+.hist-zone-block:focus-within .hist-zone-pen { color: var(--accent); }
+.hist-zone-block.has-text .hist-zone-pen { display: none; }
 .hist-zone-saved {
   position: absolute; right: 12px; bottom: 13px;
   font-family: var(--font-mono); font-size: 10px; font-weight: 700;
@@ -7540,6 +7578,25 @@ details.zones-verdict-card[open] > .zones-verdict-summary .card-chev {
   html.lucens-printing .hist-obs-item,
   html.lucens-printing .hist-live-result,
   html.lucens-printing .hist-detail-img { break-inside: avoid; }
+  /* V308 — PDF : un rapport ne se déroule pas → FORCER les 3 volets OUVERTS
+     (corps intégraux, jamais tronqués), masquer chevrons + gist redondant. */
+  html.lucens-printing .hist-live-result .lv-acc-body {
+    display: block !important; grid-template-rows: none !important;
+  }
+  html.lucens-printing .hist-live-result .lv-acc-body-in {
+    overflow: visible !important; padding: 2px 15px 13px !important;
+  }
+  html.lucens-printing .hist-live-result .lv-verdict-interpretation,
+  html.lucens-printing .hist-live-result .lv-risque-text,
+  html.lucens-printing .hist-live-result .lv-verdict-action-text,
+  html.lucens-printing .hist-live-result .lv-verify {
+    max-height: none !important; overflow: visible !important; display: block !important;
+  }
+  html.lucens-printing .hist-live-result .lv-acc-chev,
+  html.lucens-printing .hist-live-result .lv-acc-gist { display: none !important; }
+  html.lucens-printing .hist-live-result .lv-acc-head {
+    display: block !important; cursor: default !important; padding: 13px 15px 0 !important;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -8718,9 +8775,25 @@ body.lv-open { overflow: hidden; touch-action: none; }
   .lv-crosshair { width: min(54%, 200px); height: min(72%, 200px); }
   .lv-modal.lv-cal-mode .lv-crosshair { width: 70px; height: 70px; }
 }
+/* V316 — Splash lancement (premium, fond blanc, wordmark pétrole, dot cuivre) */
+#lcsLaunch{position:fixed;inset:0;z-index:9999;background:#fff;display:flex;align-items:center;justify-content:center;animation:lcsSplashOut .55s cubic-bezier(.4,0,.6,1) 1.8s both}
+#lcsLaunch .lcs-lk{position:relative;display:inline-flex;align-items:flex-start;animation:lcsSplashIn .65s cubic-bezier(.16,1,.3,1) .08s both}
+#lcsLaunch .lcs-word{font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif;font-size:40px;font-weight:800;letter-spacing:-.01em;color:#0F3D4E;line-height:1;user-select:none;-webkit-user-select:none}
+#lcsLaunch .lcs-dot{width:7px;height:7px;border-radius:50%;background:#B54A2A;margin-left:5px;margin-top:5px;flex-shrink:0;animation:lcsDotIn .5s cubic-bezier(.34,1.56,.64,1) .42s both}
+@keyframes lcsSplashIn{from{opacity:0;transform:translateY(14px);filter:blur(8px)}to{opacity:1;transform:none;filter:none}}
+@keyframes lcsDotIn{from{opacity:0;transform:scale(0)}to{opacity:1;transform:none}}
+@keyframes lcsSplashOut{to{opacity:0}}
 </style>
 </head>
 <body>
+<!-- V316 — Splash lancement (une fois par session) -->
+<div id="lcsLaunch" role="presentation" aria-hidden="true">
+  <div class="lcs-lk">
+    <span class="lcs-word">LUCENS</span>
+    <span class="lcs-dot"></span>
+  </div>
+</div>
+<script>(function(){try{var e=document.getElementById('lcsLaunch');if(!e)return;if(sessionStorage.getItem('lcsLaunched')){e.style.display='none';return;}sessionStorage.setItem('lcsLaunched','1');e.addEventListener('animationend',function(a){if(a.animationName==='lcsSplashOut')e.remove();});}catch(x){}})();</script>
 <div class="app">
 
   <!-- Bandeau offline — visible uniquement quand pas de connexion ou queue non vide -->
@@ -8751,14 +8824,14 @@ body.lv-open { overflow: hidden; touch-action: none; }
            Contexte · Réglages. L'accueil reste l'écran par défaut (on y revient en
            fermant un panneau). -->
       <button type="button" class="hdr-hist-btn bb-item" id="histBtn" aria-label="Historique des inspections" title="Historique">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v4h4"/><path d="M12 7.5V12l3.2 1.9"/>
         </svg>
         <span class="hdr-hist-text" data-i18n="hdr_hist_btn">Historique</span>
       </button>
       <button type="button" class="hdr-ctx-btn bb-item" id="hdrCtxBtn" aria-label="Contexte d'inspection">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 4h6v3H9z"/><path d="M9 11h6M9 15h4"/>
         </svg>
         <span class="hdr-ctx-text bb-label" data-i18n="hdr_ctx_btn">Contexte</span>
       </button>
@@ -8766,9 +8839,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
            regroupés derrière ce bouton « Réglages » qui ouvre un panneau. La barre
            du bas ne garde que les outils fréquents : Historique, Contexte, Réglages. -->
       <button type="button" class="bb-item bb-settings-btn" id="settingsBtn" aria-label="Réglages" aria-haspopup="dialog" aria-expanded="false">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="9" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="17" r="2"/>
         </svg>
         <span class="bb-label" data-i18n="bb_settings">Réglages</span>
       </button>
@@ -8829,7 +8901,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v306</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v316</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -10157,6 +10229,76 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results.visible #lvRisque,
       .hist-live-result .lv-risque { border-left: 3px solid var(--risk-color, #E5E7EB) !important; padding-left: 15px !important; }
 
+      /* ═══ VOLETS DÉROULANTS (V308) — JUMELÉ #results.visible / .hist-live-result.
+         Volet fermé = header à hauteur FIXE (cases figées) + gist 1 ligne ; corps
+         révélé au tap via grid-template-rows 0fr→1fr. Transition CSS pure, ZÉRO
+         reflow JS (leçon audit Live View). 1 seul ouvert (single-open en JS). */
+      #results.visible .lv-acc,
+      .hist-live-result .lv-acc {
+        background: var(--surface-hi) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+        margin: 0 !important; position: relative !important;
+      }
+      #results.visible .lv-acc-head,
+      .hist-live-result .lv-acc-head {
+        -webkit-appearance: none !important; appearance: none !important;
+        background: transparent !important; border: 0 !important;
+        width: 100% !important; text-align: left !important;
+        display: grid !important;
+        grid-template-columns: minmax(0,1fr) auto !important;
+        align-items: center !important; column-gap: 10px !important;
+        padding: 13px 15px !important; margin: 0 !important;
+        font: inherit !important; color: inherit !important;
+        cursor: pointer !important; -webkit-tap-highlight-color: transparent !important;
+      }
+      #results.visible .lv-acc-head .lv-acc-eyebrow,
+      .hist-live-result .lv-acc-head .lv-acc-eyebrow { margin: 0 !important; }
+      #results.visible .lv-acc-gist,
+      .hist-live-result .lv-acc-gist {
+        min-width: 0 !important;
+        overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important;
+        color: var(--ink-secondary) !important;
+        font-size: 13.5px !important; font-weight: 600 !important; line-height: 1.3 !important;
+      }
+      #results.visible .lv-acc-gist .lv-verdict-title,
+      .hist-live-result .lv-acc-gist .lv-verdict-title {
+        display: inline !important; margin: 0 !important; font-size: 14px !important; line-height: 1.3 !important;
+      }
+      #results.visible .lv-acc-chev,
+      .hist-live-result .lv-acc-chev {
+        width: 18px !important; height: 18px !important; flex-shrink: 0 !important;
+        color: var(--ink-tertiary) !important; transition: transform .15s ease !important;
+      }
+      #results.visible .lv-acc.is-open .lv-acc-chev,
+      .hist-live-result .lv-acc.is-open .lv-acc-chev { transform: rotate(180deg) !important; }
+      #results.visible .lv-acc-body,
+      .hist-live-result .lv-acc-body {
+        display: grid !important; grid-template-rows: 0fr !important;
+        transition: grid-template-rows .18s ease !important;
+      }
+      #results.visible .lv-acc.is-open .lv-acc-body,
+      .hist-live-result .lv-acc.is-open .lv-acc-body { grid-template-rows: 1fr !important; }
+      #results.visible .lv-acc-body-in,
+      .hist-live-result .lv-acc-body-in {
+        overflow: hidden !important; min-height: 0 !important; padding: 0 !important;
+      }
+      /* Padding UNIQUEMENT à l'ouverture : fermé = hauteur réellement 0 (le padding
+         d'un grid-item ne collapse pas avec la piste 0fr → fuite de 13px sinon). */
+      #results.visible .lv-acc.is-open .lv-acc-body-in,
+      .hist-live-result .lv-acc.is-open .lv-acc-body-in { padding: 2px 15px 13px !important; }
+      #results.visible .lv-acc-body-in > .lv-verdict-interpretation,
+      .hist-live-result .lv-acc-body-in > .lv-verdict-interpretation {
+        background: transparent !important; border: 0 !important; border-radius: 0 !important; padding: 0 !important; margin: 0 !important;
+      }
+      #results.visible #lvRisque.lv-acc,
+      .hist-live-result .lv-acc.lv-risque {
+        padding: 0 !important; border-left: 3px solid var(--risk-color, var(--border)) !important;
+      }
+      #results.visible .lv-acc[data-acc="action"],
+      .hist-live-result .lv-acc.lv-verdict-action { padding: 0 !important; display: block !important; }
+
       /* 4 — TOGGLE compact, centré, discret — BLOC CANONIQUE du segmented
          (purge V263 lot 1 : 11 générations précédentes de .viewer-tabs/.viewer-tab
          supprimées ; les déclarations encore gagnantes des V188.8/V190 y sont
@@ -10204,10 +10346,16 @@ body.lv-open { overflow: hidden; touch-action: none; }
       /* V236 — bloc TAILLE FIXE même VIDE : min-height 326px (≈5 lignes). Avec 0
          inspection (« Aucune inspection ») le bloc ne rétrécit plus. « En savoir
          plus » reste centré dans la zone restante. */
-      .home-history-scroll { flex: 0 0 auto !important; min-height: 326px !important; max-height: none !important; overflow: hidden !important; background: var(--surface-low) !important; border: 1px solid var(--border) !important; border-radius: 16px !important; box-shadow: none !important; padding: 0 12px !important;
-        display: flex !important; flex-direction: column !important; /* replié de V205 */ }
+      .home-history-scroll { flex: 0 0 auto !important; height: 326px !important; min-height: 326px !important; max-height: 326px !important; overflow: hidden !important; background: var(--surface-low) !important; border: 1px solid var(--border) !important; border-radius: 16px !important; box-shadow: none !important; padding: 0 12px !important;
+        display: flex !important; flex-direction: column !important; /* V312 — hauteur FIXE 326px ; le scroll passe au body */ }
       .home-history-body { display: flex !important; flex-direction: column !important; gap: 0 !important;
-        flex: 1 1 auto !important; padding: 0 !important; overflow: visible !important; /* replié de V205/V188 */ }
+        flex: 1 1 auto !important; min-height: 0 !important; padding: 0 !important;
+        overflow-y: auto !important; overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain !important;
+        scrollbar-width: thin !important; scrollbar-color: var(--border-hi) transparent !important; /* V312 — scroll interne précis pour cliquer une inspection */ }
+      .home-history-body::-webkit-scrollbar { width: 5px !important; -webkit-appearance: none !important; display: block !important; }
+      .home-history-body::-webkit-scrollbar-thumb { background: var(--border-hi) !important; border-radius: 3px !important; }
+      .home-history-body::-webkit-scrollbar-track { background: transparent !important; }
       .home-hrow { flex: 0 0 auto !important; min-height: 62px !important; padding: 11px 2px !important; gap: 12px !important; background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; }
       .home-hrow:not(:last-child) { border-bottom: 1px solid var(--hairline) !important; }
       .home-hrow-thumb { width: 42px !important; height: 42px !important; border-radius: 11px !important; }
@@ -10218,7 +10366,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
          chevauchement ni débordement. */
       @media (orientation: landscape) and (max-height: 600px) {
         #homeHistory.home-history { align-self: stretch !important; min-height: 0 !important; max-height: 100% !important; }
-        .home-history-scroll { flex: 1 1 auto !important; min-height: 0 !important; max-height: none !important; overflow-y: auto !important; }
+        .home-history-scroll { flex: 1 1 auto !important; height: auto !important; min-height: 0 !important; max-height: none !important; overflow: hidden !important; }
       }
       
       /* ─── V275 — HISTORIQUE = CLONE : espacement du clone. Les règles
@@ -10343,9 +10491,12 @@ body.lv-open { overflow: hidden; touch-action: none; }
         /* V292 — ZONE IMAGE FIXE & DÉDIÉE (demande utilisateur) : l'image n'est
            PLUS l'amortisseur écrasé. Hauteur STABLE (30dvh, identique à chaque
            analyse, verticale comme horizontale), affichée ENTIÈRE (contain). */
+        /* V308 — IMAGE GRANDE : remplit l'espace restant (Origine visible + 2 volets
+           fermés laissent de la place) → image généreuse, boutons épinglés en bas.
+           Plancher 160px ; cède (≥160) quand l'utilisateur déroule un volet. */
         #results.visible > .result-grid {
-          flex: 1 0 auto !important; height: auto !important;
-          min-height: 150px !important; max-height: 25dvh !important;
+          flex: 1 1 auto !important; height: auto !important;
+          min-height: 160px !important;
           margin: 0 !important; display: flex !important; flex-direction: column !important;
         }
         #results.visible .result-grid > .card:has(#viewerStage) { flex: 1 1 auto !important; min-height: 0 !important; }
@@ -10357,8 +10508,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
            que les 3 tiennent SANS défilement de page. Scroll interne = ultime
            recours seulement (texte IA anormalement long). */
         #results.visible > .lucens-verdict-card {
-          flex: 0 1 auto !important; min-height: 0 !important;
-          overflow-y: auto !important; gap: 9px !important; /* V304 — l'IMAGE est prioritaire (pleine, plancher 150px, jamais compressée) ; le verdict prend le reste et ne scrolle qu'en ultime recours (petit écran) */
+          flex: 0 0 auto !important; min-height: 0 !important;
+          gap: 9px !important; /* V308 — la carte garde sa hauteur NATURELLE : Origine + headers de volets TOUJOURS visibles, jamais comprimés ; c'est l'IMAGE (flex:1 1) qui absorbe l'espace restant. */
         }
         /* Compaction des 3 blocs : règles de STYLE (padding/marges/interligne).
            Jumelées avec .hist-live-result pour préserver « historique = analyse »
@@ -10369,13 +10520,13 @@ body.lv-open { overflow: hidden; touch-action: none; }
            gap 12, body 14/1.5 → blocs nettement distincts, conformes à la LOI
            design (grille 4px, cartes 14-16). Tient en zéro-scroll sur écran réel. */
         #results.visible .lv-verdict-head,
-        .hist-live-result .lv-verdict-head { padding: 8px 16px 0 !important; }
+        .hist-live-result .lv-verdict-head { padding: 11px 16px 0 !important; }
         #results.visible .lv-verdict-interpretation,
-        .hist-live-result .lv-verdict-interpretation { padding: 3px 16px 8px !important; }
+        .hist-live-result .lv-verdict-interpretation { padding: 4px 16px 11px !important; }
         #results.visible #lvRisque,
-        .hist-live-result .lv-risque { padding: 8px 16px 8px 18px !important; }
+        .hist-live-result .lv-risque { padding: 11px 16px 11px 18px !important; }
         #results.visible .lv-verdict-action,
-        .hist-live-result .lv-verdict-action { padding: 8px 16px !important; }
+        .hist-live-result .lv-verdict-action { padding: 11px 16px !important; }
         #results.visible .lv-verdict-eyebrow,
         #results.visible .lv-risque-label,
         #results.visible .lv-verdict-action-title,
@@ -10390,7 +10541,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         #results.visible .lv-verdict-action-text,
         .hist-live-result .lv-verdict-interpretation,
         .hist-live-result .lv-risque-text,
-        .hist-live-result .lv-verdict-action-text { font-size: 14px !important; line-height: 1.38 !important; }
+        .hist-live-result .lv-verdict-action-text { font-size: 14px !important; line-height: 1.5 !important; }
         /* 2 BOUTONS : toujours entièrement visibles, épinglés en bas de la pile */
         #results.visible > .results-toolbar { flex: 0 0 auto !important; margin: 8px 0 0 !important; }
 
@@ -10425,7 +10576,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         }
         .hist-report .hist-live-result .hero { flex: 0 0 auto !important; }
         /* V292 — ZONE IMAGE FIXE & DÉDIÉE (jumeau du live) : hauteur stable 38dvh. */
-        .hist-report .hist-live-result .card:has(.viewer-stage) { flex: 0 0 auto !important; height: 34dvh !important; min-height: 0 !important; }
+        .hist-report .hist-live-result .card:has(.viewer-stage) { flex: 1 1 auto !important; height: auto !important; min-height: 120px !important; }
         .hist-report .hist-live-result .viewer-stage {
           flex: 1 1 auto !important; min-height: 0 !important; height: auto !important;
         }
@@ -10433,7 +10584,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         .hist-report .hist-live-result .viewer-stage canvas,
         .hist-report .hist-live-result .viewer-stage img.original { object-fit: contain !important; }
         .hist-report .hist-live-result .lucens-verdict-card {
-          flex: 1 1 auto !important; min-height: 0 !important; overflow-y: auto !important;
+          flex: 0 0 auto !important; min-height: 0 !important; /* V308 — hauteur naturelle : Origine + headers de volets toujours visibles ; l'image absorbe. */
         }
         /* 2 boutons (Télécharger / Supprimer) épinglés en bas, compacts */
         .hist-report .hist-actions { flex: 0 0 auto !important; margin-top: 8px !important; }
@@ -10503,27 +10654,44 @@ body.lv-open { overflow: hidden; touch-action: none; }
            Affichée AVANT tout le reste. C'est ce que l'utilisateur lit en
            premier : identité probable, ce que ça signifie, ce qu'il doit faire. -->
       <div class="lucens-verdict-card" id="lucensVerdictCard" hidden>
-        <div class="lv-verdict-head">
-          <div class="lv-verdict-eyebrow">
-            <svg class="lv-eyebrow-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-            <span id="lvVerdictEyebrow">Analyse</span>
+        <!-- ORIGINE PROBABLE — TOUJOURS VISIBLE. Wrapper .lv-origine = UNE seule carte (head + interprétation sans gap interne, plus de barre entre titre et texte). -->
+        <div class="lv-origine">
+          <div class="lv-verdict-head">
+            <div class="lv-verdict-eyebrow">
+              <svg class="lv-eyebrow-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              <span id="lvVerdictEyebrow">Analyse</span>
+            </div>
+            <h2 class="lv-verdict-title" id="lvVerdictTitle">—</h2>
+            <div class="lv-verdict-confidence" id="lvVerdictConfidence">—</div>
           </div>
-          <h2 class="lv-verdict-title" id="lvVerdictTitle">—</h2>
-          <div class="lv-verdict-confidence" id="lvVerdictConfidence">—</div>
+          <p class="lv-verdict-interpretation" id="lvVerdictInterpretation">—</p>
         </div>
-        <p class="lv-verdict-interpretation" id="lvVerdictInterpretation">—</p>
-        <div class="lv-risque" id="lvRisque" hidden>
-          <div class="lv-risque-label" data-i18n="rep_risque_label">Risque associé</div>
-          <div class="lv-risque-text" id="lvRisqueText"></div>
-        </div>
-        <div class="lv-verdict-action">
-          <div class="lv-verdict-action-icon" aria-hidden="true">⤳</div>
-          <div class="lv-verdict-action-body">
-            <div class="lv-verdict-action-title" id="lvVerdictActionTitle" data-i18n="rep_action_label">Action recommandée</div>
-            <div class="lv-verdict-action-text" id="lvVerdictActionText">—</div>
-            <div class="lv-verify" data-i18n="rep_verify">En cas de doute, confirmer par prélèvement (ATP ou laboratoire).</div>
+        <!-- RISQUE ASSOCIÉ — volet déroulant (V308). Fermé par défaut, label + chevron, corps révélé au tap (jamais rogné). -->
+        <section class="lv-acc" data-acc="risque" id="lvRisque" hidden>
+          <button type="button" class="lv-acc-head" aria-expanded="false" aria-controls="accBodyRisque">
+            <span class="lv-acc-eyebrow lv-risque-label" data-i18n="rep_risque_label">Risque associé</span>
+            <svg class="lv-acc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="lv-acc-body" id="accBodyRisque">
+            <div class="lv-acc-body-in">
+              <div class="lv-risque-text" id="lvRisqueText"></div>
+            </div>
           </div>
-        </div>
+        </section>
+        <!-- ACTION RECOMMANDÉE — volet déroulant (V308). -->
+        <section class="lv-acc" data-acc="action">
+          <button type="button" class="lv-acc-head" aria-expanded="false" aria-controls="accBodyAction">
+            <span class="lv-acc-eyebrow lv-verdict-action-title" id="lvVerdictActionTitle" data-i18n="rep_action_label">Action recommandée</span>
+            <svg class="lv-acc-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="lv-acc-body" id="accBodyAction">
+            <div class="lv-acc-body-in">
+              <div class="lv-verdict-action-icon" aria-hidden="true">⤳</div>
+              <div class="lv-verdict-action-text" id="lvVerdictActionText">—</div>
+              <div class="lv-verify" data-i18n="rep_verify">En cas de doute, confirmer par prélèvement (ATP ou laboratoire).</div>
+            </div>
+          </div>
+        </section>
         <!-- V44 — Vigilance retirée : redondant avec la reco + créait répétitions
              (3 exemples sur objets déjà écartés). Si une zone est écartée, elle
              n'a pas besoin d'être ressassée. -->
@@ -10933,9 +11101,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
       <!-- V281 — l'icône crayon (disparaît dès qu'on tape) indique SANS texte
            qu'on peut écrire ici (placeholder interdit, minimum de texte). -->
       <div class="mo-zone-wrap" id="moZoneWrap">
-        <input type="text" class="mo-zone-input" id="moZoneInput" autocomplete="off" enterkeyhint="done" maxlength="60">
+        <input type="text" class="mo-zone-input" id="moZoneInput" autocomplete="off" enterkeyhint="done" maxlength="60" aria-label="Zone inspectée">
         <svg class="mo-zone-pen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+          <path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
         </svg>
       </div>
       <div class="mo-field-label" data-i18n="moment_label">Moment du cliché</div>
@@ -18315,10 +18483,14 @@ const Annotator = (() => {
     pdf.text(t('rep_img_analyzed'), colR + colW / 2, y + boxH + 4, { align: 'center' });
     y += boxH + 9;
     if (hasFinding) {
-      pdf.setDrawColor(COPPER[0], COPPER[1], COPPER[2]); pdf.setLineWidth(0.6);
-      pdf.circle(M + 1.5, y - 1, 1.4, 'S');
+      /* V311 — légende sous l'IMAGE ANALYSÉE (colonne droite colR), marqueur =
+         CARRÉ PLEIN ORANGE identique à la mosaïque de cartographie (rgb 236,170,60),
+         au lieu du cercle cuivre tracé sous l'image originale. */
+      const _legX = colR, _sq = 2.6;
+      pdf.setFillColor(236, 170, 60);
+      pdf.rect(_legX, y - 1 - _sq / 2, _sq, _sq, 'F');
       pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8); pdf.setTextColor(INK3[0], INK3[1], INK3[2]);
-      pdf.text(t('rep_legend'), M + 5, y);
+      pdf.text(t('rep_legend'), _legX + _sq + 2, y);
       y += 7;
     }
 
@@ -19844,6 +20016,30 @@ const Annotator = (() => {
         }
       } catch (e) { console.warn('[Moment] i18n force-apply failed:', e?.message || e); }
       requestAnimationFrame(() => overlay.classList.add('visible'));
+      bindKeyboardAnchor();
+    }
+
+    /* V315 — ANIM CLAVIER PREMIUM (type Airbnb) : la feuille GLISSE en douceur
+       au-dessus du clavier. On pilote --kb (hauteur du clavier) via visualViewport ;
+       la transition transform de .mo-modal porte le glissement (rien d'instantané).
+       Clamp = garde le haut de la feuille visible. On n'écoute QUE les events
+       visualViewport (≈1× à l'ouverture/fermeture du clavier) → ZÉRO reflow par frame. */
+    function bindKeyboardAnchor() {
+      const vv = window.visualViewport;
+      if (!vv || bindKeyboardAnchor._bound) return;
+      bindKeyboardAnchor._bound = true;
+      const sync = () => {
+        const ov = document.getElementById('momentOverlay');
+        const modal = ov ? ov.querySelector('.mo-modal') : null;
+        if (!modal) return;
+        if (ov.hidden || !ov.classList.contains('visible')) { modal.style.setProperty('--kb', '0px'); return; }
+        let kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+        if (kb < 40) kb = 0;   /* seuil : ignore le micro-bruit (barres Safari) */
+        if (kb > 0) kb = Math.min(kb, Math.max(0, window.innerHeight - modal.offsetHeight - 12));  /* clamp : ne sort jamais le header */
+        modal.style.setProperty('--kb', kb + 'px');
+      };
+      vv.addEventListener('resize', sync);
+      vv.addEventListener('scroll', sync);
     }
 
     /* Branchement du submit / skip. La page peut déjà être chargée au moment
@@ -23686,6 +23882,7 @@ const Annotator = (() => {
                 li = mm.index + mm[0].length;
               }
               if (li < rlogic.length) rqt.appendChild(document.createTextNode(rlogic.slice(li)));
+              const rg = document.getElementById('lvRisqueGist'); if (rg) rg.textContent = rlogic;
               rq.hidden = false;
             } else { rq.hidden = true; }
           }
@@ -23740,6 +23937,10 @@ const Annotator = (() => {
            repli FR codé en dur → restait « Action recommandée » en session EN
            quand l'IA n'envoyait pas le titre. */
         if (actTitle) actTitle.textContent = (typeof t === 'function' && t('rep_action_label')) || 'Action recommandée';
+        /* V308 — gist 1 ligne (résumé du texte action) + branchement accordion (écran). */
+        const _agist = document.getElementById('lvVerdictActionGist'), _atxt = document.getElementById('lvVerdictActionText');
+        if (_agist && _atxt) _agist.textContent = (_atxt.textContent || '').trim();
+        try { window.lucensAccBind(card); window.lucensAccInitial(card); } catch (e) {}
         const vig = document.getElementById('lvVerdictVigilance');
         const vigText = document.getElementById('lvVerdictVigilanceText');
         const pov = (res.point_of_vigilance && res.point_of_vigilance.text) || '';
@@ -25785,11 +25986,18 @@ const Annotator = (() => {
     const W = overlay.width, H = overlay.height;
 
     lv.frameCount++;
-    /* Frame skipping pour perf */
-    if (lv.frameCount % lv.procEvery !== 0 || !lv.mapEnabled) {
+    /* V311 — THROTTLE TEMPOREL (anti-saccade) : on espace les frames LOURDES
+       (getImageData + analyse) à un intervalle FIXE (~110 ms) au lieu de
+       frameCount % procEvery — indépendant du fps réel, donc le compositor a le
+       temps de présenter la vidéo caméra entre deux pics = preview plus fluide.
+       CH_SAMPLE_EVERY_MS (250) + le dwell (600) plafonnent déjà l'échantillonnage
+       → aucune perte de détection. (Ajuster 110 selon ressenti device.) */
+    const _nowProc = performance.now();
+    if (!lv.mapEnabled || (_nowProc - (lv._lastProc || 0)) < 110) {
       lv.rafId = requestAnimationFrame(loop);
       return;
     }
+    lv._lastProc = _nowProc;
 
     if (cam.videoWidth > 0) {
       wctx.drawImage(cam, 0, 0, WORK_W, WORK_H);
@@ -28203,6 +28411,42 @@ const Annotator = (() => {
     return svg;
   }
 
+  /* VOLETS DÉROULANTS (V308) — toggle partagé écran résultat + détail historique.
+     Single-open (1 seul ouvert), aria-expanded, AUCUNE mesure de layout (transition
+     100% CSS via .is-open). Exposé en global : le peupleur écran et renderDetail
+     vivent dans des scopes différents. */
+  window.lucensAccBind = function(card){
+    if (!card || card.__accBound) return;
+    card.__accBound = true;
+    card.addEventListener('click', function(ev){
+      var h = ev.target.closest('.lv-acc-head');
+      if (!h || !card.contains(h)) return;
+      var sec = h.parentNode;
+      var wasOpen = sec.classList.contains('is-open');
+      var open = card.querySelectorAll('.lv-acc.is-open');
+      for (var i = 0; i < open.length; i++){
+        open[i].classList.remove('is-open');
+        var hb = open[i].querySelector('.lv-acc-head');
+        if (hb) hb.setAttribute('aria-expanded', 'false');
+      }
+      if (!wasOpen){
+        sec.classList.add('is-open');
+        h.setAttribute('aria-expanded', 'true');
+      }
+    });
+  };
+  window.lucensAccInitial = function(card){
+    if (!card) return;
+    var op = card.querySelectorAll('.lv-acc.is-open');
+    for (var i = 0; i < op.length; i++){
+      op[i].classList.remove('is-open');
+      var hb0 = op[i].querySelector('.lv-acc-head');
+      if (hb0) hb0.setAttribute('aria-expanded', 'false');
+    }
+    /* V308 — Origine est TOUJOURS visible (hors volets) ; Risque + Action = volets
+       FERMÉS par défaut (l'utilisateur déroule au besoin → image grande, zéro-scroll). */
+  };
+
   function renderDetail(id){
     Promise.resolve(window.LucensHistory ? window.LucensHistory.get(id) : null).then(function(entry){
       if (!entry){ renderList(); return; }
@@ -28234,7 +28478,13 @@ const Annotator = (() => {
       zoneInput.setAttribute('autocomplete','off');
       zoneInput.placeholder = tr('h_zone_ph', 'ex. Plan de travail cuisine');
       zoneInput.value = entry.zone || '';
+      zoneInput.setAttribute('aria-label', tr('h_zone_label', 'Nom de la zone inspectée'));
       zoneWrap.appendChild(zoneInput);
+      /* V312 — crayon « éditable » (même affordance que le pop-up Contexte) ; masqué dès qu'il y a du texte. */
+      var zonePen = svgIcon(['M12 20h9','M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z']);
+      zonePen.classList.add('hist-zone-pen'); zonePen.setAttribute('aria-hidden','true');
+      zoneWrap.appendChild(zonePen);
+      if (zoneInput.value) zoneWrap.classList.add('has-text');
       var savedBadge = E('span','hist-zone-saved', tr('h_zone_saved', 'Enregistré'));
       zoneWrap.appendChild(savedBadge);
       report.appendChild(zoneWrap);
@@ -28257,6 +28507,7 @@ const Annotator = (() => {
         }
       }
       zoneInput.addEventListener('input', function(){
+        zoneWrap.classList.toggle('has-text', !!zoneInput.value);   /* V312 — masque le crayon dès la 1re frappe */
         clearTimeout(zTimer);
         zTimer = setTimeout(persistZone, 450);
       });
@@ -28375,24 +28626,34 @@ const Annotator = (() => {
       /* (Bloc ANALYSE) — clone de .lucens-verdict-card : 3 sections lv-* */
       if (rTitle || rInterp || (hasZones && rLogic) || rAction){
         var vCard = E('div','lucens-verdict-card risk-'+rkClass);
+        /* V308 — helper VOLET déroulant (jumeau de l'écran : header label + chevron, corps révélé au tap). */
+        function lvAccSection(accName, eyebrowEl, bodyNode){
+          var sec = E('section','lv-acc'); sec.setAttribute('data-acc', accName);
+          var btn = E('button','lv-acc-head'); btn.type = 'button'; btn.setAttribute('aria-expanded','false');
+          btn.appendChild(eyebrowEl);
+          var chev = svgIcon(['m6 9 6 6 6-6']); chev.classList.add('lv-acc-chev'); chev.setAttribute('aria-hidden','true'); btn.appendChild(chev);
+          sec.appendChild(btn);
+          var body = E('div','lv-acc-body');
+          var bin = E('div','lv-acc-body-in'); bin.appendChild(bodyNode); body.appendChild(bin);
+          sec.appendChild(body);
+          return sec;
+        }
         if (rTitle || rInterp){
+          /* ORIGINE PROBABLE — TOUJOURS VISIBLE, regroupée en UNE carte (.lv-origine, pas de gap interne → plus de barre entre titre et texte). */
+          var origineWrap = E('div','lv-origine');
           var head = E('div','lv-verdict-head');
           var ey1 = E('div','lv-verdict-eyebrow');
           var ico = svgIcon(['M11 11m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0','m21 21-4.3-4.3']);
-          ico.classList.add('lv-eyebrow-ico');
-          ey1.appendChild(ico);
-          ey1.appendChild(document.createTextNode(
-            hasZones ? tr('rep_origine', 'Origine probable') : tr('rep_result_label', 'Résultat')));
+          ico.classList.add('lv-eyebrow-ico'); ey1.appendChild(ico);
+          ey1.appendChild(document.createTextNode(hasZones ? tr('rep_origine', 'Origine probable') : tr('rep_result_label', 'Résultat')));
           head.appendChild(ey1);
           if (rTitle) head.appendChild(E('h2','lv-verdict-title', rTitle));
-          vCard.appendChild(head);
-          /* l'interprétation porte la fermeture visuelle de la carte (bords bas) :
-             on l'ajoute même vide pour ne jamais laisser la tête « ouverte ». */
-          vCard.appendChild(E('p','lv-verdict-interpretation', rInterp));
+          origineWrap.appendChild(head);
+          origineWrap.appendChild(E('p','lv-verdict-interpretation', rInterp));
+          vCard.appendChild(origineWrap);
         }
         if (hasZones && rLogic){
-          var rq = E('div','lv-risque');
-          rq.appendChild(E('div','lv-risque-label', tr('rep_risque_label', 'Risque associé')));
+          var rlabel = E('div','lv-risque-label lv-acc-eyebrow', tr('rep_risque_label', 'Risque associé'));
           var rtext = E('p','lv-risque-text');
           var PATHO = /(Listeria|Salmonelles?|salmonelles?|E\.?\s?coli|Pseudomonas|Staphylocoque|Campylobacter|Legionella|Clostridium|Bacillus)/g;
           var li = 0;
@@ -28405,20 +28666,18 @@ const Annotator = (() => {
             li = at + hit.length;
           });
           if (li < rLogic.length) rtext.appendChild(document.createTextNode(rLogic.slice(li)));
-          rq.appendChild(rtext);
-          vCard.appendChild(rq);
+          var secR = lvAccSection('risque', rlabel, rtext);
+          secR.classList.add('lv-risque');
+          vCard.appendChild(secR);
         }
         if (rAction){
-          /* V291 — Label CHROME : i18n (langue UI), cohérent avec la carte
-             principale. Avant : préférait recommendation.title (langue d'analyse). */
-          var actLbl = tr('rep_action_label', 'Action recommandée');
-          var act = E('div','lv-verdict-action');
-          var actBody = E('div','lv-verdict-action-body');
-          actBody.appendChild(E('div','lv-verdict-action-title', actLbl));
-          actBody.appendChild(E('div','lv-verdict-action-text', rAction));
-          act.appendChild(actBody);
-          vCard.appendChild(act);
+          var actLbl = E('div','lv-verdict-action-title lv-acc-eyebrow', tr('rep_action_label', 'Action recommandée'));
+          var atext = E('div','lv-verdict-action-text', rAction);
+          var secA = lvAccSection('action', actLbl, atext);
+          secA.classList.add('lv-verdict-action');
+          vCard.appendChild(secA);
         }
+        try { window.lucensAccBind(vCard); window.lucensAccInitial(vCard); } catch(e){}
         live.appendChild(vCard);
       }
 
