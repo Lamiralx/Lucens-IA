@@ -63,15 +63,25 @@ export async function createLicence(kv, { nom, prenom, email, entreprise, numero
   return lic;
 }
 
-/* Activation (Réglages) : lie l'appareil — « dernier l'emporte ». Renvoie le statut. */
+/* Activation (Réglages) — STRICT : le code se lie au PREMIER appareil qui l'active.
+   Une fois lié, tout AUTRE appareil est REFUSÉ (reason: "device_taken"). Pour
+   transférer un code vers un nouvel appareil (client qui change de téléphone),
+   l'admin doit d'abord le DÉLIER (unbindDevice / bouton « Délier »). */
 export async function activate(kv, code, deviceId, now = new Date()) {
   const lic = await getLicence(kv, code);
   if (!lic) return { ok: false, reason: "unknown" };
   if (lic.statut === "revoked") return { ok: false, reason: "revoked" };
   if (!lic.expiresAt || new Date(lic.expiresAt) <= now) return { ok: false, reason: "expired", expiresAt: lic.expiresAt };
-  lic.deviceId = deviceId;
-  if (!lic.activatedAt) lic.activatedAt = now.toISOString();
-  await save(kv, lic);
+  /* Déjà lié à un AUTRE appareil → refus (pas de transfert sans déliaison admin). */
+  if (lic.deviceId && lic.deviceId !== deviceId) {
+    return { ok: false, reason: "device_taken" };
+  }
+  /* Première activation (aucun appareil lié) → on verrouille sur cet appareil. */
+  if (!lic.deviceId) {
+    lic.deviceId = deviceId;
+    lic.activatedAt = now.toISOString();
+    await save(kv, lic);
+  }
   return { ok: true, expiresAt: lic.expiresAt, activatedAt: lic.activatedAt };
 }
 

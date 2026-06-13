@@ -8938,7 +8938,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v329</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v330</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -11841,6 +11841,7 @@ const I18N = {
     licence_valid_until:       "Valable jusqu'au",
     licence_activated_on:      "Activée le",
     licence_invalid:           "Code invalide ou expiré",
+    licence_taken:             "Ce code est déjà utilisé sur un autre appareil.",
     licence_required_msg:      "Licence requise : activez votre code dans les Réglages",
     theme_light:               "Clair",
     theme_dark:                "Sombre",
@@ -12482,6 +12483,7 @@ const I18N = {
     licence_valid_until:       "Valid until",
     licence_activated_on:      "Activated on",
     licence_invalid:           "Invalid or expired code",
+    licence_taken:             "This code is already in use on another device.",
     licence_required_msg:      "Licence required: activate your code in Settings",
     theme_light:               "Light",
     theme_dark:                "Dark",
@@ -12724,6 +12726,7 @@ const I18N = {
     licence_valid_until: "Válida hasta el",
     licence_activated_on: "Activada el",
     licence_invalid: "Código no válido o caducado",
+    licence_taken: "Este código ya se usa en otro dispositivo.",
     licence_required_msg: "Se requiere licencia: active su código en Ajustes",
     theme_light: "Claro",
     theme_dark: "Oscuro",
@@ -13361,6 +13364,7 @@ const I18N = {
     licence_valid_until: "Gültig bis",
     licence_activated_on: "Aktiviert am",
     licence_invalid: "Ungültiger oder abgelaufener Code",
+    licence_taken: "Dieser Code wird bereits auf einem anderen Gerät verwendet.",
     licence_required_msg: "Lizenz erforderlich: Code in den Einstellungen aktivieren",
     theme_light: "Hell",
     theme_dark: "Dunkel",
@@ -17071,7 +17075,7 @@ const Annotator = (() => {
           render();
         } else {
           statusEl.hidden = false; statusEl.style.color = 'var(--danger, #9B2C2C)';
-          statusEl.textContent = tr('licence_invalid');
+          statusEl.textContent = tr(data && data.reason === 'device_taken' ? 'licence_taken' : 'licence_invalid');
         }
       } catch (e) {
         statusEl.hidden = false; statusEl.style.color = 'var(--danger, #9B2C2C)';
