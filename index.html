@@ -1294,6 +1294,13 @@ body.has-offline-banner .upload-hub {
   border: 1px solid var(--hairline); border-bottom: 0;
   box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.28);
   padding: 10px 18px calc(20px + env(safe-area-inset-bottom, 0px));
+  /* V334 — la feuille est ancrée en bas et grandit vers le HAUT. Sans plafond,
+     un contenu long (licence + formulaire « Obtenir ») la faisait déborder par
+     le haut → en-tête/croix hors écran + collision Dynamic Island. On plafonne
+     en tenant compte du safe-area haut, et on rend l'intérieur défilant. */
+  max-height: calc(100dvh - max(env(safe-area-inset-top, 0px), 44px) - 16px);
+  overflow-y: auto; overflow-x: hidden;
+  -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
   animation: settings-slide .26s var(--ease-out, cubic-bezier(.2,.8,.2,1)) both;
 }
 @keyframes settings-slide { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -1303,8 +1310,13 @@ body.has-offline-banner .upload-hub {
   background: var(--hairline); margin: 0 auto 6px;
 }
 .settings-head {
+  /* V334 — collant : la croix reste atteignable quand le contenu défile. Le fond
+     pleine largeur (marges négatives compensées par le padding) masque le contenu
+     qui passe dessous. */
+  position: sticky; top: 0; z-index: 3;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 4px 0 12px;
+  margin: 0 -18px; padding: 4px 18px 12px;
+  background: var(--surface, #fff);
 }
 .settings-title {
   font-family: var(--font-mono); font-size: 12px; font-weight: 700;
@@ -8955,7 +8967,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v333</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v334</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
