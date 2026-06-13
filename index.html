@@ -8899,6 +8899,22 @@ body.lv-open { overflow: hidden; touch-action: none; }
             <button type="button" id="licenceActivate" data-i18n="licence_activate" style="height:38px;padding:0 14px;font-size:13px;font-weight:600;border:none;border-radius:10px;background:var(--lucens-signature,#B54A2A);color:#fff;cursor:pointer">Activer</button>
           </div>
           <div id="licenceStatus" style="font-size:13px;margin-top:8px" hidden></div>
+          <div id="licenceGet" style="margin-top:10px">
+            <button type="button" id="licenceGetBtn" data-i18n="licence_get" style="height:36px;padding:0 12px;font-size:13px;font-weight:500;border:1px solid var(--border,#E2E6E8);border-radius:10px;background:transparent;color:var(--ink-primary,#1A2B30);cursor:pointer">Obtenir une licence</button>
+            <div id="licenceReqForm" hidden style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+              <p id="licenceReqIntro" data-i18n="licence_req_intro" style="font-size:12.5px;color:var(--ink-tertiary,#6B7280);margin:0;line-height:1.4">Laissez vos coordonnées, nous vous envoyons un code.</p>
+              <div style="display:flex;gap:8px">
+                <input type="text" id="lr_prenom" autocomplete="given-name" style="flex:1;min-width:0;height:36px;padding:0 10px;font-size:14px;border:1px solid var(--border,#E2E6E8);border-radius:10px;background:var(--surface-low,#fff);color:var(--ink-primary,#1A2B30)">
+                <input type="text" id="lr_nom" autocomplete="family-name" style="flex:1;min-width:0;height:36px;padding:0 10px;font-size:14px;border:1px solid var(--border,#E2E6E8);border-radius:10px;background:var(--surface-low,#fff);color:var(--ink-primary,#1A2B30)">
+              </div>
+              <input type="email" id="lr_email" autocomplete="email" inputmode="email" style="height:36px;padding:0 10px;font-size:14px;border:1px solid var(--border,#E2E6E8);border-radius:10px;background:var(--surface-low,#fff);color:var(--ink-primary,#1A2B30)">
+              <input type="tel" id="lr_tel" autocomplete="tel" inputmode="tel" style="height:36px;padding:0 10px;font-size:14px;border:1px solid var(--border,#E2E6E8);border-radius:10px;background:var(--surface-low,#fff);color:var(--ink-primary,#1A2B30)">
+              <input type="text" id="lr_entreprise" autocomplete="organization" style="height:36px;padding:0 10px;font-size:14px;border:1px solid var(--border,#E2E6E8);border-radius:10px;background:var(--surface-low,#fff);color:var(--ink-primary,#1A2B30)">
+              <textarea id="lr_message" rows="2" style="padding:8px 10px;font-size:14px;border:1px solid var(--border,#E2E6E8);border-radius:10px;background:var(--surface-low,#fff);color:var(--ink-primary,#1A2B30);resize:vertical;font-family:inherit"></textarea>
+              <button type="button" id="lr_send" data-i18n="licence_req_send" style="height:38px;padding:0 14px;font-size:13px;font-weight:600;border:none;border-radius:10px;background:var(--lucens-signature,#B54A2A);color:#fff;cursor:pointer">Envoyer la demande</button>
+              <div id="lr_status" style="font-size:13px" hidden></div>
+            </div>
+          </div>
         </div>
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_lang">Langue</span>
@@ -8938,7 +8954,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v330</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v331</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -11842,6 +11858,17 @@ const I18N = {
     licence_activated_on:      "Activée le",
     licence_invalid:           "Code invalide ou expiré",
     licence_taken:             "Ce code est déjà utilisé sur un autre appareil.",
+    licence_get:               "Obtenir une licence",
+    licence_req_intro:         "Laissez vos coordonnées, nous vous envoyons un code.",
+    licence_req_send:          "Envoyer la demande",
+    licence_req_sent:          "Demande envoyée. Vous recevrez votre code par email.",
+    licence_req_error:         "Échec de l'envoi. Réessayez.",
+    lr_ph_prenom:              "Prénom",
+    lr_ph_nom:                 "Nom",
+    lr_ph_email:               "Email",
+    lr_ph_tel:                 "Téléphone",
+    lr_ph_entreprise:          "Entreprise",
+    lr_ph_message:             "Message (optionnel)",
     licence_required_msg:      "Licence requise : activez votre code dans les Réglages",
     theme_light:               "Clair",
     theme_dark:                "Sombre",
@@ -12484,6 +12511,17 @@ const I18N = {
     licence_activated_on:      "Activated on",
     licence_invalid:           "Invalid or expired code",
     licence_taken:             "This code is already in use on another device.",
+    licence_get:               "Get a licence",
+    licence_req_intro:         "Leave your details and we'll send you a code.",
+    licence_req_send:          "Send request",
+    licence_req_sent:          "Request sent. You'll receive your code by email.",
+    licence_req_error:         "Sending failed. Please try again.",
+    lr_ph_prenom:              "First name",
+    lr_ph_nom:                 "Last name",
+    lr_ph_email:               "Email",
+    lr_ph_tel:                 "Phone",
+    lr_ph_entreprise:          "Company",
+    lr_ph_message:             "Message (optional)",
     licence_required_msg:      "Licence required: activate your code in Settings",
     theme_light:               "Light",
     theme_dark:                "Dark",
@@ -12727,6 +12765,17 @@ const I18N = {
     licence_activated_on: "Activada el",
     licence_invalid: "Código no válido o caducado",
     licence_taken: "Este código ya se usa en otro dispositivo.",
+    licence_get: "Obtener una licencia",
+    licence_req_intro: "Déjenos sus datos y le enviaremos un código.",
+    licence_req_send: "Enviar solicitud",
+    licence_req_sent: "Solicitud enviada. Recibirá su código por email.",
+    licence_req_error: "Error al enviar. Inténtelo de nuevo.",
+    lr_ph_prenom: "Nombre",
+    lr_ph_nom: "Apellido",
+    lr_ph_email: "Email",
+    lr_ph_tel: "Teléfono",
+    lr_ph_entreprise: "Empresa",
+    lr_ph_message: "Mensaje (opcional)",
     licence_required_msg: "Se requiere licencia: active su código en Ajustes",
     theme_light: "Claro",
     theme_dark: "Oscuro",
@@ -13365,6 +13414,17 @@ const I18N = {
     licence_activated_on: "Aktiviert am",
     licence_invalid: "Ungültiger oder abgelaufener Code",
     licence_taken: "Dieser Code wird bereits auf einem anderen Gerät verwendet.",
+    licence_get: "Lizenz anfordern",
+    licence_req_intro: "Hinterlassen Sie Ihre Daten, wir senden Ihnen einen Code.",
+    licence_req_send: "Anfrage senden",
+    licence_req_sent: "Anfrage gesendet. Sie erhalten Ihren Code per E-Mail.",
+    licence_req_error: "Senden fehlgeschlagen. Bitte erneut versuchen.",
+    lr_ph_prenom: "Vorname",
+    lr_ph_nom: "Nachname",
+    lr_ph_email: "E-Mail",
+    lr_ph_tel: "Telefon",
+    lr_ph_entreprise: "Unternehmen",
+    lr_ph_message: "Nachricht (optional)",
     licence_required_msg: "Lizenz erforderlich: Code in den Einstellungen aktivieren",
     theme_light: "Hell",
     theme_dark: "Dunkel",
@@ -17044,6 +17104,7 @@ const Annotator = (() => {
       if (code && !input.value) input.value = code;
       const activeValid = !!(code && meta && meta.expiresAt && new Date(meta.expiresAt) > new Date());
       if (hintEl) hintEl.hidden = activeValid;  /* l'aide ne s'affiche que tant qu'aucune licence active */
+      const getEl = document.getElementById('licenceGet'); if (getEl) getEl.hidden = activeValid;  /* idem pour « Obtenir une licence » */
       if (!code || !meta || !meta.expiresAt) { statusEl.hidden = true; statusEl.textContent = ''; return; }
       const expired = new Date(meta.expiresAt) <= new Date();
       statusEl.hidden = false;
@@ -17085,6 +17146,43 @@ const Annotator = (() => {
 
     btn.addEventListener('click', activate);
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') activate(); });
+
+    /* V331 — Formulaire « Obtenir une licence » → demande stockée (file admin). */
+    const reqForm = document.getElementById('licenceReqForm');
+    const getBtn = document.getElementById('licenceGetBtn');
+    const reqStatus = document.getElementById('lr_status');
+    const reqMap = { lr_prenom: 'lr_ph_prenom', lr_nom: 'lr_ph_nom', lr_email: 'lr_ph_email', lr_tel: 'lr_ph_tel', lr_entreprise: 'lr_ph_entreprise', lr_message: 'lr_ph_message' };
+    function setReqPlaceholders() {
+      for (const [id, key] of Object.entries(reqMap)) { const el = document.getElementById(id); if (el) el.placeholder = tr(key); }
+    }
+    if (getBtn && reqForm) {
+      getBtn.addEventListener('click', () => { reqForm.hidden = !reqForm.hidden; if (!reqForm.hidden) setReqPlaceholders(); });
+    }
+    const sendBtn = document.getElementById('lr_send');
+    if (sendBtn) {
+      sendBtn.addEventListener('click', async () => {
+        const g = (id) => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+        const data = { prenom: g('lr_prenom'), nom: g('lr_nom'), email: g('lr_email'), telephone: g('lr_tel'), entreprise: g('lr_entreprise'), message: g('lr_message') };
+        if (!data.email && !data.telephone) { reqStatus.hidden = false; reqStatus.style.color = 'var(--danger, #9B2C2C)'; reqStatus.textContent = tr('lr_ph_email') + ' / ' + tr('lr_ph_tel') + ' ?'; return; }
+        sendBtn.disabled = true; const prev = sendBtn.textContent; sendBtn.textContent = '…';
+        try {
+          const r = await fetch('/api/analyze', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mode: 'licence_request', data }) });
+          const j = await r.json().catch(() => ({}));
+          if (r.ok && j.ok) {
+            reqForm.querySelectorAll('input, textarea').forEach((el) => { el.value = ''; });
+            reqStatus.hidden = false; reqStatus.style.color = 'var(--success, #137a4f)'; reqStatus.textContent = tr('licence_req_sent');
+            setTimeout(() => { reqForm.hidden = true; reqStatus.hidden = true; }, 4000);
+          } else {
+            reqStatus.hidden = false; reqStatus.style.color = 'var(--danger, #9B2C2C)'; reqStatus.textContent = tr('licence_req_error');
+          }
+        } catch (e) {
+          reqStatus.hidden = false; reqStatus.style.color = 'var(--danger, #9B2C2C)'; reqStatus.textContent = tr('licence_req_error');
+        } finally { sendBtn.disabled = false; sendBtn.textContent = prev; }
+      });
+    }
+    setReqPlaceholders();
+    window.addEventListener('lucens-lang-changed', setReqPlaceholders);
+
     window.addEventListener('lucens-lang-changed', render);
     render();
     window.__lucensLicenceCode = () => localStorage.getItem('lucens_licence') || '';

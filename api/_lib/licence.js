@@ -121,3 +121,42 @@ export async function listLicences(kv) {
   }
   return out.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
 }
+
+/* ─── Demandes de licence (formulaire « Obtenir une licence ») ────────────
+   Captées publiquement (mode licence_request, anti-spam), affichées dans la
+   page admin. Aucun paiement : l'admin traite la demande puis crée le code. */
+const REQ_INDEX = "licence:requests";
+const RK = (id) => `licence:req:${id}`;
+const reqId = () => Array.from({ length: 10 }, () => ALPHABET[randomInt(ALPHABET.length)]).join("");
+
+export async function createRequest(kv, { nom, prenom, email, telephone, entreprise, message } = {}) {
+  const id = reqId();
+  const req = {
+    id,
+    nom: String(nom || "").slice(0, 80),
+    prenom: String(prenom || "").slice(0, 80),
+    email: String(email || "").slice(0, 120),
+    telephone: String(telephone || "").slice(0, 40),
+    entreprise: String(entreprise || "").slice(0, 120),
+    message: String(message || "").slice(0, 600),
+    createdAt: new Date().toISOString(),
+  };
+  await kv.set(RK(id), JSON.stringify(req));
+  await kv.sadd(REQ_INDEX, id);
+  return req;
+}
+
+export async function listRequests(kv) {
+  const ids = await kv.smembers(REQ_INDEX);
+  const out = [];
+  for (const id of ids) {
+    const raw = await kv.get(RK(id));
+    if (raw) out.push(typeof raw === "string" ? JSON.parse(raw) : raw);
+  }
+  return out.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
+}
+
+export async function removeRequest(kv, id) {
+  await kv.del(RK(id));
+  await kv.srem(REQ_INDEX, id);
+}

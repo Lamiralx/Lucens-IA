@@ -77,6 +77,8 @@ export default async function handler(req, res) {
       if (action === 'licence_revoke') return res.json(await Licence.revoke(kv, code));
       if (action === 'licence_unbind') return res.json(await Licence.unbindDevice(kv, code));
       if (action === 'licence_delete') { await Licence.removeLicence(kv, code); return res.json({ ok: true }); }
+      if (action === 'licence_requests_list') return res.json({ items: await Licence.listRequests(kv) });
+      if (action === 'licence_request_delete') { await Licence.removeRequest(kv, req.body.id); return res.json({ ok: true }); }
       return res.status(400).json({ error: 'Action inconnue' });
     }
 

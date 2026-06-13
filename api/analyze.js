@@ -1054,6 +1054,25 @@ export default async function handler(req, res) {
     }
   }
 
+  /* V331 — Demande de licence (formulaire public « Obtenir une licence »).
+     Anti-spam : 5 demandes / IP / heure. Stockée en KV, traitée dans l'admin.
+     Exige au moins un email OU un téléphone (sinon la demande est inexploitable). */
+  if (req.body && req.body.mode === 'licence_request') {
+    const ipR = getClientIp(req);
+    const rlR = await rateLimit({ scope: 'licence_request', ip: ipR, limit: 5, windowSec: 3600 });
+    if (!rlR.ok) return send429(res, rlR.retryAfter);
+    const d = (req.body && req.body.data) || {};
+    if (!String(d.email || '').trim() && !String(d.telephone || '').trim()) {
+      return res.status(400).json({ ok: false, reason: 'contact_required' });
+    }
+    try {
+      const r = await Licence.createRequest(kv, d);
+      return res.status(200).json({ ok: true, id: r.id });
+    } catch (e) {
+      return res.status(503).json({ ok: false, reason: 'kv_unavailable' });
+    }
+  }
+
   /* Rate limit anti-cost-attack : 30 analyses / IP / heure.
      Suffisant pour un audit HACCP intensif (15 analyses x 2 = 30) sans gêner
      les utilisateurs légitimes, mais bloque toute attaque massive. */

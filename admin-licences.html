@@ -95,6 +95,19 @@
     </div>
     <div id="emptyHint" class="muted">Chargez les codes avec le bouton ci-dessus.</div>
   </div>
+
+  <div class="card">
+    <h2>Demandes de licence</h2>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th>Date</th><th>Client</th><th>Contact</th><th>Message</th><th></th>
+        </tr></thead>
+        <tbody id="reqRows"></tbody>
+      </table>
+    </div>
+    <div id="reqEmptyHint" class="muted">Aucune demande pour l'instant.</div>
+  </div>
 </div>
 
 <script>
@@ -103,6 +116,7 @@
   const tokenKey = 'lucens_admin_token';
   let editingCode = null;
   let items = [];
+  let requests = [];
 
   $('tok').value = sessionStorage.getItem(tokenKey) || '';
   $('saveTok').addEventListener('click', () => { sessionStorage.setItem(tokenKey, $('tok').value.trim()); setGlobal('Token mémorisé pour cette session.', 'ok'); });
@@ -231,6 +245,41 @@
       renderRows();
       setGlobal(items.length + ' code(s).', items.length ? 'ok' : '');
     }catch(e){ setGlobal(e.message, 'err'); }
+    loadRequests();
+  }
+
+  function fillFromRequest(rq){
+    $('f_prenom').value = rq.prenom||''; $('f_nom').value = rq.nom||'';
+    $('f_email').value = rq.email||''; $('f_entreprise').value = rq.entreprise||'';
+    $('f_cmd').value = '';
+    editingCode = null;
+    $('formTitle').textContent = 'Créer un code'; $('submit').textContent = 'Générer le code'; $('editHint').style.display = 'none';
+    setForm('Infos pré-remplies depuis la demande. Choisissez une date d’expiration puis Générer.', 'ok');
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+  async function delRequest(id){
+    if(!confirm('Supprimer cette demande ?')) return;
+    try{ await call({ action:'licence_request_delete', id }); await loadRequests(); }
+    catch(e){ setGlobal(e.message, 'err'); }
+  }
+  function renderReq(){
+    const rows = $('reqRows'); rows.replaceChildren();
+    $('reqEmptyHint').style.display = requests.length ? 'none' : 'block';
+    for(const rq of requests){
+      const tr = document.createElement('tr');
+      const nameTxt = (((rq.prenom||'')+' '+(rq.nom||'')).trim()||'—') + (rq.entreprise ? ' · '+rq.entreprise : '');
+      const contact = (rq.email||'') + (rq.telephone ? (rq.email?' · ':'')+rq.telephone : '');
+      tr.append(cell(fmtDate(rq.createdAt)), cell(nameTxt), cell(contact||'—'));
+      const msgC = cell(''); msgC.className = 'muted'; msgC.textContent = (rq.message||'').slice(0,80); tr.append(msgC);
+      const actC = document.createElement('td'); actC.style.whiteSpace = 'nowrap';
+      actC.append(smallBtn('Créer le code', () => fillFromRequest(rq)), smallBtn('Suppr.', () => delRequest(rq.id)));
+      tr.append(actC);
+      rows.append(tr);
+    }
+  }
+  async function loadRequests(){
+    try{ const res = await call({ action:'licence_requests_list' }); requests = res.items || []; renderReq(); }
+    catch(e){ /* silencieux : l'erreur token est déjà signalée par la liste des codes */ }
   }
 
   $('refresh').addEventListener('click', load);
