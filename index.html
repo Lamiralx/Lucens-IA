@@ -8899,6 +8899,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
             <button type="button" id="licenceActivate" data-i18n="licence_activate" style="height:38px;padding:0 14px;font-size:13px;font-weight:600;border:none;border-radius:10px;background:var(--lucens-signature,#B54A2A);color:#fff;cursor:pointer">Activer</button>
           </div>
           <div id="licenceStatus" style="font-size:13px;margin-top:8px" hidden></div>
+          <button type="button" id="licenceRemove" data-i18n="licence_remove" hidden style="height:32px;padding:0 10px;margin-top:8px;font-size:12.5px;font-weight:500;border:1px solid var(--border,#E2E6E8);border-radius:9px;background:transparent;color:var(--danger,#9B2C2C);cursor:pointer">Retirer la licence</button>
           <div id="licenceGet" style="margin-top:10px">
             <button type="button" id="licenceGetBtn" data-i18n="licence_get" style="height:36px;padding:0 12px;font-size:13px;font-weight:500;border:1px solid var(--border,#E2E6E8);border-radius:10px;background:transparent;color:var(--ink-primary,#1A2B30);cursor:pointer">Obtenir une licence</button>
             <div id="licenceReqForm" hidden style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
@@ -8954,7 +8955,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v332</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v333</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -11859,6 +11860,8 @@ const I18N = {
     licence_invalid:           "Code invalide ou expiré",
     licence_taken:             "Ce code est déjà utilisé sur un autre appareil.",
     licence_get:               "Obtenir une licence",
+    licence_remove:            "Retirer la licence",
+    licence_removed:           "Licence retirée",
     licence_req_intro:         "Laissez vos coordonnées, nous vous envoyons un code.",
     licence_req_send:          "Envoyer la demande",
     licence_req_sent:          "Demande envoyée. Vous recevrez votre code par email.",
@@ -12512,6 +12515,8 @@ const I18N = {
     licence_invalid:           "Invalid or expired code",
     licence_taken:             "This code is already in use on another device.",
     licence_get:               "Get a licence",
+    licence_remove:            "Remove licence",
+    licence_removed:           "Licence removed",
     licence_req_intro:         "Leave your details and we'll send you a code.",
     licence_req_send:          "Send request",
     licence_req_sent:          "Request sent. You'll receive your code by email.",
@@ -12766,6 +12771,8 @@ const I18N = {
     licence_invalid: "Código no válido o caducado",
     licence_taken: "Este código ya se usa en otro dispositivo.",
     licence_get: "Obtener una licencia",
+    licence_remove: "Quitar la licencia",
+    licence_removed: "Licencia eliminada",
     licence_req_intro: "Déjenos sus datos y le enviaremos un código.",
     licence_req_send: "Enviar solicitud",
     licence_req_sent: "Solicitud enviada. Recibirá su código por email.",
@@ -13415,6 +13422,8 @@ const I18N = {
     licence_invalid: "Ungültiger oder abgelaufener Code",
     licence_taken: "Dieser Code wird bereits auf einem anderen Gerät verwendet.",
     licence_get: "Lizenz anfordern",
+    licence_remove: "Lizenz entfernen",
+    licence_removed: "Lizenz entfernt",
     licence_req_intro: "Hinterlassen Sie Ihre Daten, wir senden Ihnen einen Code.",
     licence_req_send: "Anfrage senden",
     licence_req_sent: "Anfrage gesendet. Sie erhalten Ihren Code per E-Mail.",
@@ -17106,19 +17115,22 @@ const Annotator = (() => {
       const code = localStorage.getItem('lucens_licence') || '';
       let meta = null;
       try { meta = JSON.parse(localStorage.getItem('lucens_licence_meta') || 'null'); } catch (e) {}
-      if (code && !input.value) input.value = code;
+      /* V333 — on NE re-remplit PLUS le champ depuis le code stocké : le champ
+         est une vraie saisie (le vider le laisse vide). Le code actif est montré
+         dans le statut (lecture seule) et se retire via le bouton « Retirer ». */
       const activeValid = !!(code && meta && meta.expiresAt && new Date(meta.expiresAt) > new Date());
       if (hintEl) hintEl.hidden = activeValid;  /* l'aide ne s'affiche que tant qu'aucune licence active */
       const getEl = document.getElementById('licenceGet'); if (getEl) getEl.hidden = activeValid;  /* idem pour « Obtenir une licence » */
+      const removeEl = document.getElementById('licenceRemove'); if (removeEl) removeEl.hidden = !code;  /* « Retirer » dès qu'un code est stocké */
       if (!code || !meta || !meta.expiresAt) { statusEl.hidden = true; statusEl.textContent = ''; return; }
       const expired = new Date(meta.expiresAt) <= new Date();
       statusEl.hidden = false;
       if (expired) {
         statusEl.style.color = 'var(--danger, #9B2C2C)';
-        statusEl.textContent = tr('licence_expired') + ' · ' + fmtDay(meta.expiresAt);
+        statusEl.textContent = tr('licence_expired') + ' · ' + code + ' · ' + fmtDay(meta.expiresAt);
       } else {
         statusEl.style.color = 'var(--success, #137a4f)';
-        const parts = [tr('licence_active'), tr('licence_valid_until') + ' ' + fmtDay(meta.expiresAt)];
+        const parts = [tr('licence_active'), code, tr('licence_valid_until') + ' ' + fmtDay(meta.expiresAt)];
         if (meta.activatedAt) parts.push(tr('licence_activated_on') + ' ' + fmt(meta.activatedAt));
         statusEl.textContent = parts.join(' · ');
       }
@@ -17151,6 +17163,21 @@ const Annotator = (() => {
 
     btn.addEventListener('click', activate);
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') activate(); });
+
+    /* V333 — Retirer la licence de CET appareil : suppression locale RÉELLE
+       (le code reste lié côté serveur, donc réutilisable en le re-saisissant).
+       Corrige le « ça revient au refresh » : plus aucun re-remplissage auto. */
+    const removeBtn = document.getElementById('licenceRemove');
+    if (removeBtn) removeBtn.addEventListener('click', () => {
+      try { localStorage.removeItem('lucens_licence'); } catch (e) {}
+      try { localStorage.removeItem('lucens_licence_meta'); } catch (e) {}
+      input.value = '';
+      render();
+      statusEl.hidden = false; statusEl.style.color = 'var(--ink-tertiary, #6B7280)';
+      statusEl.textContent = tr('licence_removed');
+      setTimeout(() => { if (statusEl.textContent === tr('licence_removed')) statusEl.hidden = true; }, 2600);
+      try { input.focus(); } catch (e) {}
+    });
 
     /* V331 — Formulaire « Obtenir une licence » → demande stockée (file admin). */
     const reqForm = document.getElementById('licenceReqForm');
