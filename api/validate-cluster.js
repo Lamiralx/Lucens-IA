@@ -28,6 +28,8 @@
 
 import { GoogleGenAI } from "@google/genai";
 import { applyCors, getClientIp, rateLimit, send429 } from "./_lib/security.js";
+import * as Licence from "./_lib/licence.js";
+import { kv } from "@vercel/kv";
 
 /* V299 — migration Haiku → Gemini Flash (crédit Anthropic épuisé). */
 const GEMINI_KEY = process.env.Gemini_API_KEY || process.env.GEMINI_API_KEY;
@@ -100,6 +102,19 @@ export default async function handler(req, res) {
   if (!rl.ok) {
     send429(res, rl.retryAfter);
     return;
+  }
+
+  /* V326 — VERROU LICENCE (fail-closed côté coût). Sans licence valide + appareil
+     lié, on NE FAIT PAS l'appel Gemini : on renvoie un verdict neutre que le Live
+     View traite déjà comme « incertain » → dégradation locale silencieuse, zéro
+     coût, aucun message. Toute erreur KV = même repli neutre (jamais d'appel Gemini). */
+  try {
+    const licCode = String(req.headers['x-lucens-licence'] || '');
+    const licDevice = String(req.headers['x-lucens-device'] || '');
+    const lic = await Licence.checkForAnalysis(kv, licCode, licDevice);
+    if (!lic.ok) { res.status(200).json({ verdict: 'UNCERTAIN', type: 'unknown', reason: 'licence', latencyMs: 0 }); return; }
+  } catch (e) {
+    res.status(200).json({ verdict: 'UNCERTAIN', type: 'unknown', reason: 'licence_kv', latencyMs: 0 }); return;
   }
 
   const { image, mediaType, lang } = req.body || {};

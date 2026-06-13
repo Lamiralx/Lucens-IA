@@ -22138,7 +22138,7 @@ const Annotator = (() => {
       const b64 = cropZoneToBase64(imgData, zone, W, H, 256, 0.4);
       const resp = await fetch('/api/validate-cluster', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-lucens-licence': (localStorage.getItem('lucens_licence') || ''), 'x-lucens-device': (localStorage.getItem('lucens_device') || '') },
         body: JSON.stringify({ image: b64, mediaType: 'image/jpeg', lang: currentLang }),
       });
       if (!resp.ok) return null;
@@ -25762,7 +25762,7 @@ const Annotator = (() => {
 
       fetch('/api/validate-cluster', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-lucens-licence': (localStorage.getItem('lucens_licence') || ''), 'x-lucens-device': (localStorage.getItem('lucens_device') || '') },
         body: JSON.stringify({ image: b64, mediaType: 'image/jpeg', lang: currentLang }),
       })
       .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
@@ -26210,7 +26210,7 @@ const Annotator = (() => {
 
       fetch('/api/validate-cluster', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-lucens-licence': (localStorage.getItem('lucens_licence') || ''), 'x-lucens-device': (localStorage.getItem('lucens_device') || '') },
         body: JSON.stringify({ image: b64, mediaType: 'image/jpeg', lang: currentLang }),
       })
       .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
@@ -26395,7 +26395,7 @@ const Annotator = (() => {
             const b64 = cropCanvas.toDataURL('image/jpeg', 0.82).split(',')[1];
             fetch('/api/validate-cluster', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 'Content-Type': 'application/json', 'x-lucens-licence': (localStorage.getItem('lucens_licence') || ''), 'x-lucens-device': (localStorage.getItem('lucens_device') || '') },
               body: JSON.stringify({ image: b64, mediaType: 'image/jpeg', lang: currentLang }),
             })
             .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
