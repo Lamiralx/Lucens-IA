@@ -8927,7 +8927,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v324</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v325</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -9276,7 +9276,8 @@ body.lv-open { overflow: hidden; touch-action: none; }
           </section>
 
           <section class="hiw-block">
-            <h3 class="hiw-block-title" data-i18n="hiw_b2_title">Prendre la photo</h3>
+            <h3 class="hiw-block-title" data-i18n="hiw_b2_title">Capturez sous la lampe</h3>
+            <p class="hiw-prose" data-i18n="hiw_b2_intro">Dans l'app, capturez la scène en direct avec le Live View, ou importez une photo déjà prise sous la lampe. L'analyse est la même.</p>
             <ul class="hiw-list">
               <li class="hiw-item">
                 <div class="hiw-figure" aria-hidden="true">
@@ -9316,9 +9317,9 @@ body.lv-open { overflow: hidden; touch-action: none; }
           </section>
 
           <section class="hiw-block">
-            <h3 class="hiw-block-title" data-i18n="hiw_b3_title">Ce que fait Lucens</h3>
-            <p class="hiw-prose" data-i18n="hiw_p1">Lucens repère les indices fluorescents — résidus organiques, biofilms, traces chimiques — invisibles sous une lumière normale.</p>
-            <p class="hiw-prose" data-i18n="hiw_p2">Vous obtenez les zones détectées sur votre image, un diagnostic en langage clair, un score de risque et un rapport PDF prêt à archiver.</p>
+            <h3 class="hiw-block-title" data-i18n="hiw_b3_title">Ce que fait Lucens IA</h3>
+            <p class="hiw-prose" data-i18n="hiw_p1">La lampe Lucens révèle. Lucens IA, l'app que vous tenez, analyse : elle lit la signature fluorescente de l'image.</p>
+            <p class="hiw-prose" data-i18n="hiw_p2">Vous obtenez les zones détectées cartographiées sur votre photo, leur nature probable (biofilm, organique, chimique…), un score de risque et un rapport PDF daté, prêt pour votre dossier HACCP.</p>
           </section>
 
         </div>
@@ -9332,6 +9333,17 @@ body.lv-open { overflow: hidden; touch-action: none; }
               <div class="acc-panel"><div class="acc-panel-inner">
         <div class="hiw">
           <ul class="hiw-list">
+            <li class="hiw-item">
+              <div class="hiw-figure" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+                </svg>
+              </div>
+              <div class="hiw-text">
+                <span class="hiw-item-title" data-i18n="disclaimer_uv_label">Sécurité UV-A</span>
+                <span class="hiw-item-desc" data-i18n="disclaimer_uv">La lampe émet un rayonnement UV-A 365 nm. Ne fixez pas la source et ne l'orientez pas vers les yeux. En usage prolongé, portez une protection oculaire anti-UV.</span>
+              </div>
+            </li>
             <li class="hiw-item">
               <div class="hiw-figure" aria-hidden="true">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
@@ -11651,34 +11663,35 @@ const I18N = {
     home_spec: "Aide à la décision HACCP",
     hiw_b1_title: "Avant de commencer",
     hiw_lamp_t: "La lampe Lucens",
-    hiw_lamp_d: "L'éclairage du système Lucens. C'est elle qui révèle la fluorescence ; aucune inspection sans elle.",
+    hiw_lamp_d: "La source du système Lucens. C'est elle qui fait fluorescer les résidus invisibles : sans elle, rien à analyser.",
     hiw_dark_t: "Réduisez la lumière ambiante",
     hiw_dark_d: "Pas besoin d'obscurité totale : évitez une lumière forte ou un spot direct, qui écrase la fluorescence. Plus vous êtes en pénombre, plus les traces ressortent.",
-    hiw_calib_t: "La carte de calibration Lucens",
-    hiw_calib_d: "Présentez la carte de calibration Lucens à la caméra avant l'inspection. Ses signatures fluorescentes de référence étalonnent la mesure pour la session.",
-    hiw_b2_title: "Prendre la photo",
+    hiw_b2_title: "Capturez sous la lampe",
+    hiw_b2_intro: "Dans l'app, capturez la scène en direct avec le Live View, ou importez une photo déjà prise sous la lampe. L'analyse est la même.",
     hiw_dist_t: "Approchez-vous à environ 30 cm",
-    hiw_dist_d: "Trop loin, les petites taches deviennent invisibles.",
-    hiw_angle_t: "Tenez la lampe bien droite",
-    hiw_angle_d: "Perpendiculaire à la surface, à 90°. Pas en biais.",
+    hiw_dist_d: "La fluorescence est faible : de trop loin, les petites taches disparaissent. Cadrez la zone à inspecter, pas toute la pièce.",
+    hiw_angle_t: "Tenez la lampe perpendiculaire",
+    hiw_angle_d: "Visez la surface à 90°, pas en biais. De biais, la lampe crée des reflets que l'analyse peut prendre pour des traces.",
     hiw_sharp_t: "Visez net et stable",
-    hiw_sharp_d: "Une image nette = une analyse fiable. Restez immobile une seconde.",
-    hiw_b3_title: "Ce que fait Lucens",
-    hiw_p1: "La lampe Lucens fait ressortir les traces fluorescentes (résidus organiques, biofilms, dépôts chimiques) invisibles sous lumière normale.",
-    hiw_p2: "Lucens IA lit l'image : elle cartographie les zones fluorescentes, identifie leur nature probable, évalue le risque et produit un rapport PDF daté, prêt pour votre dossier HACCP.",
+    hiw_sharp_d: "Une image nette vaut une analyse fiable. Stabilisez-vous une seconde ; reprenez si c'est flou.",
+    hiw_b3_title: "Ce que fait Lucens IA",
+    hiw_p1: "La lampe Lucens révèle. Lucens IA, l'app que vous tenez, analyse : elle lit la signature fluorescente de l'image.",
+    hiw_p2: "Vous obtenez les zones détectées cartographiées sur votre photo, leur nature probable (biofilm, organique, chimique…), un score de risque et un rapport PDF daté, prêt pour votre dossier HACCP.",
     sector_cta: "Configurer le contexte d'inspection",
     sector_cta_hint: "Adapte l'IA à votre secteur",
     sector_edit_label: "Contexte d'inspection · Modifier",
+    disclaimer_uv_label: "Sécurité UV-A",
+    disclaimer_uv: "La lampe émet un rayonnement UV-A 365 nm. Ne fixez pas la source et ne l'orientez pas vers les yeux. En usage prolongé, portez une protection oculaire anti-UV.",
     disclaimer_kp1_label: "Nature",
-    disclaimer_kp1: "Lucens IA est un outil d'aide à l'inspection visuelle par fluorescence UV-A 365 nm. Les conclusions proposées sont indicatives.",
+    disclaimer_kp1: "Lucens IA aide à l'inspection visuelle par fluorescence UV-A 365 nm. Ses conclusions sont indicatives et n'ont pas valeur de diagnostic.",
     disclaimer_kp2_label: "Limites",
     disclaimer_kp2: "Lucens IA n'identifie pas formellement des micro-organismes, ne mesure pas de concentration chimique et ne remplace pas un audit qualité formel.",
     disclaimer_kp3_label: "Validation",
-    disclaimer_kp3: "Les zones signalées par Lucens IA doivent être confirmées selon vos protocoles internes : ATP, écouvillonnage ISO 18593, analyse de laboratoire ou contrôle HACCP selon le contexte.",
+    disclaimer_kp3: "Confirmez les zones signalées par vos protocoles internes : ATP-métrie, écouvillonnage ISO 18593, analyse de laboratoire ou contrôle HACCP selon le contexte.",
     disclaimer_kp4_label: "Responsabilité",
-    disclaimer_kp4: "L'utilisateur reste seul responsable des décisions prises à partir des recommandations Lucens IA et du respect des réglementations applicables à son secteur.",
+    disclaimer_kp4: "Vous restez seul responsable des décisions prises à partir de ces résultats et du respect des réglementations de votre secteur.",
     disclaimer_kp5_label: "Confidentialité",
-    disclaimer_kp5: "Les images sont traitées de manière anonyme par Lucens IA. Aucune conservation en clair côté serveur.",
+    disclaimer_kp5: "Vos images servent uniquement à l'analyse, sans donnée personnelle associée, et ne sont pas conservées en clair sur nos serveurs.",
     disclaimer_kp6_label: "Détails",
     disclaimer_kp6: "Politique de confidentialité complète et droit à l'oubli",
     err_load: "Impossible d'analyser cette image.",
@@ -12291,34 +12304,35 @@ const I18N = {
     home_spec: "HACCP decision support",
     hiw_b1_title: "Before you start",
     hiw_lamp_t: "The Lucens lamp",
-    hiw_lamp_d: "The lighting of the Lucens system. It is what reveals fluorescence; no inspection works without it.",
+    hiw_lamp_d: "The light source of the Lucens system. It makes the invisible residues fluoresce: without it, nothing to analyse.",
     hiw_dark_t: "Dim the ambient light",
     hiw_dark_d: "No need for total darkness: just avoid strong light or a direct spotlight, which wash out the fluorescence. The dimmer the room, the more the traces stand out.",
-    hiw_calib_t: "The Lucens calibration card",
-    hiw_calib_d: "Show the Lucens calibration card to the camera before the inspection. Its reference fluorescent signatures calibrate the measurement for the session.",
-    hiw_b2_title: "Taking the photo",
+    hiw_b2_title: "Capture under the lamp",
+    hiw_b2_intro: "In the app, capture the scene live with Live View, or import a photo already taken under the lamp. The analysis is the same.",
     hiw_dist_t: "Get about 30 cm away",
-    hiw_dist_d: "Too far and small spots become invisible.",
-    hiw_angle_t: "Hold the lamp straight",
-    hiw_angle_d: "Perpendicular to the surface, at 90°. Not at an angle.",
+    hiw_dist_d: "Fluorescence is faint: from too far, small spots disappear. Frame the area to inspect, not the whole room.",
+    hiw_angle_t: "Hold the lamp perpendicular",
+    hiw_angle_d: "Aim at the surface at 90°, not at an angle. At an angle, the lamp creates reflections the analysis may mistake for traces.",
     hiw_sharp_t: "Aim sharp and steady",
-    hiw_sharp_d: "A sharp image means a reliable analysis. Hold still for a second.",
-    hiw_b3_title: "What Lucens does",
-    hiw_p1: "The Lucens lamp brings out fluorescent traces (organic residues, biofilms, chemical deposits) invisible under normal light.",
-    hiw_p2: "Lucens AI reads the image: it maps the fluorescent zones, identifies their likely nature, assesses the risk and produces a dated PDF report, ready for your HACCP file.",
+    hiw_sharp_d: "A sharp image means a reliable analysis. Steady yourself for a second; retake it if it's blurry.",
+    hiw_b3_title: "What Lucens AI does",
+    hiw_p1: "The Lucens lamp reveals. Lucens AI, the app in your hand, analyses: it reads the fluorescent signature of the image.",
+    hiw_p2: "You get the detected zones mapped onto your photo, their likely nature (biofilm, organic, chemical…), a risk score and a dated PDF report, ready for your HACCP file.",
     sector_cta: "Set up your inspection context",
     sector_cta_hint: "For more accurate analyses",
     sector_edit_label: "Inspection context · Edit",
+    disclaimer_uv_label: "UV-A safety",
+    disclaimer_uv: "The lamp emits UV-A 365 nm radiation. Do not stare at the source or point it toward the eyes. For prolonged use, wear UV-blocking eye protection.",
     disclaimer_kp1_label: "Nature",
-    disclaimer_kp1: "Decision-support tool. Indicative analysis based on UV-A 365 nm visible fluorescence.",
+    disclaimer_kp1: "Lucens AI assists visual inspection through UV-A 365 nm fluorescence. Its conclusions are indicative and do not constitute a diagnosis.",
     disclaimer_kp2_label: "Limits",
     disclaimer_kp2: "Not a confirmed microbiological, chemical or toxicological identification. Does not replace a formal quality audit.",
     disclaimer_kp3_label: "Validation",
-    disclaimer_kp3: "Results must be confirmed by internal controls: ATP testing, swabbing, accredited lab analyses, HACCP controls.",
+    disclaimer_kp3: "Confirm the flagged zones with your internal protocols: ATP testing, ISO 18593 swabbing, laboratory analysis or HACCP control depending on context.",
     disclaimer_kp4_label: "Liability",
-    disclaimer_kp4: "The user remains solely responsible for decisions made on the basis of these results and for implementing the quality protocols required by their regulations.",
+    disclaimer_kp4: "You remain solely responsible for decisions based on these results and for compliance with your sector's regulations.",
     disclaimer_kp5_label: "Privacy",
-    disclaimer_kp5: "Images processed anonymously. No plain-form storage.",
+    disclaimer_kp5: "Your images are used only for analysis, with no personal data attached, and are not stored in plain form on our servers.",
     disclaimer_kp6_label: "Details",
     disclaimer_kp6: "Full privacy policy and right to erasure",
     err_load: "Cannot analyse this image.",
@@ -13057,34 +13071,35 @@ const I18N = {
     home_spec: "Apoyo a la decisión APPCC",
     hiw_b1_title: "Antes de empezar",
     hiw_lamp_t: "La lámpara Lucens",
-    hiw_lamp_d: "La iluminación del sistema Lucens. Es ella la que revela la fluorescencia; ninguna inspección posible sin ella.",
+    hiw_lamp_d: "La fuente de luz del sistema Lucens. Es ella la que hace fluorescer los residuos invisibles: sin ella, nada que analizar.",
     hiw_dark_t: "Reduzca la luz ambiente",
     hiw_dark_d: "No hace falta oscuridad total: evite una luz fuerte o un foco directo, que apagan la fluorescencia. Cuanta más penumbra, más resaltan las trazas.",
-    hiw_calib_t: "La tarjeta de calibración Lucens",
-    hiw_calib_d: "Muestre la tarjeta de calibración Lucens a la cámara antes de la inspección. Sus firmas fluorescentes de referencia calibran la medición para la sesión.",
-    hiw_b2_title: "Tomar la foto",
+    hiw_b2_title: "Capture bajo la lámpara",
+    hiw_b2_intro: "En la app, capture la escena en directo con el Live View, o importe una foto ya tomada bajo la lámpara. El análisis es el mismo.",
     hiw_dist_t: "Acérquese a unos 30 cm",
-    hiw_dist_d: "Demasiado lejos, las manchas pequeñas se vuelven invisibles.",
-    hiw_angle_t: "Mantenga la lámpara recta",
-    hiw_angle_d: "Perpendicular a la superficie, a 90°. No inclinada.",
+    hiw_dist_d: "La fluorescencia es débil: desde demasiado lejos, las manchas pequeñas desaparecen. Encuadre la zona a inspeccionar, no toda la sala.",
+    hiw_angle_t: "Mantenga la lámpara perpendicular",
+    hiw_angle_d: "Apunte a la superficie a 90°, no inclinada. Inclinada, la lámpara crea reflejos que el análisis puede confundir con trazas.",
     hiw_sharp_t: "Apunte nítido y estable",
-    hiw_sharp_d: "Una imagen nítida significa un análisis fiable. Quédese quieto un segundo.",
-    hiw_b3_title: "Qué hace Lucens",
-    hiw_p1: "La lámpara Lucens hace resaltar las trazas fluorescentes (residuos orgánicos, biopelículas, depósitos químicos) invisibles con luz normal.",
-    hiw_p2: "Lucens IA lee la imagen: cartografía las zonas fluorescentes, identifica su naturaleza probable, evalúa el riesgo y genera un informe PDF fechado, listo para su expediente APPCC.",
+    hiw_sharp_d: "Una imagen nítida vale un análisis fiable. Estabilícese un segundo; repita si está borrosa.",
+    hiw_b3_title: "Qué hace Lucens IA",
+    hiw_p1: "La lámpara Lucens revela. Lucens IA, la app que tiene en la mano, analiza: lee la firma fluorescente de la imagen.",
+    hiw_p2: "Obtiene las zonas detectadas cartografiadas sobre su foto, su naturaleza probable (biopelícula, orgánica, química…), una puntuación de riesgo y un informe PDF fechado, listo para su expediente APPCC.",
     sector_cta: "Configurar el contexto de inspección",
     sector_cta_hint: "Para análisis más precisos",
     sector_edit_label: "Contexto de inspección · Editar",
+    disclaimer_uv_label: "Seguridad UV-A",
+    disclaimer_uv: "La lámpara emite radiación UV-A 365 nm. No fije la mirada en la fuente ni la oriente hacia los ojos. En uso prolongado, use protección ocular anti-UV.",
     disclaimer_kp1_label: "Naturaleza",
-    disclaimer_kp1: "Herramienta de apoyo a la decisión. Análisis indicativo basado en fluorescencia visible bajo UV-A 365 nm.",
+    disclaimer_kp1: "Lucens IA asiste la inspección visual por fluorescencia UV-A 365 nm. Sus conclusiones son indicativas y no constituyen un diagnóstico.",
     disclaimer_kp2_label: "Límites",
     disclaimer_kp2: "No constituye una identificación microbiológica, química ni toxicológica. No sustituye una auditoría de calidad formal.",
     disclaimer_kp3_label: "Validación",
-    disclaimer_kp3: "Resultados a confirmar mediante controles internos: ATP-metría, hisopos, análisis de laboratorio acreditados, controles APPCC.",
+    disclaimer_kp3: "Confirme las zonas señaladas con sus protocolos internos: ATP-metría, hisopos ISO 18593, análisis de laboratorio o control APPCC según el contexto.",
     disclaimer_kp4_label: "Responsabilidad",
-    disclaimer_kp4: "El usuario sigue siendo el único responsable de las decisiones y de la aplicación de los protocolos de calidad exigidos por su normativa.",
+    disclaimer_kp4: "Usted es el único responsable de las decisiones tomadas a partir de estos resultados y del cumplimiento de la normativa de su sector.",
     disclaimer_kp5_label: "Confidencialidad",
-    disclaimer_kp5: "Imágenes procesadas de forma anónima. Ninguna conservación en claro.",
+    disclaimer_kp5: "Sus imágenes se usan únicamente para el análisis, sin datos personales asociados, y no se conservan en claro en nuestros servidores.",
     disclaimer_kp6_label: "Detalles",
     disclaimer_kp6: "Política de privacidad completa y derecho al olvido",
     err_load: "Imposible analizar esta imagen.",
@@ -13683,34 +13698,35 @@ const I18N = {
     home_spec: "HACCP-Entscheidungshilfe",
     hiw_b1_title: "Bevor Sie beginnen",
     hiw_lamp_t: "Die Lucens-Lampe",
-    hiw_lamp_d: "Die Beleuchtung des Lucens-Systems. Sie ist es, die die Fluoreszenz sichtbar macht; keine Inspektion ohne sie.",
+    hiw_lamp_d: "Die Lichtquelle des Lucens-Systems. Sie bringt die unsichtbaren Rückstände zum Fluoreszieren: ohne sie gibt es nichts zu analysieren.",
     hiw_dark_t: "Umgebungslicht reduzieren",
     hiw_dark_d: "Keine völlige Dunkelheit nötig: vermeiden Sie nur starkes Licht oder einen direkten Strahler, die die Fluoreszenz überstrahlen. Je gedämpfter das Licht, desto deutlicher treten die Spuren hervor.",
-    hiw_calib_t: "Die Lucens-Kalibrierungskarte",
-    hiw_calib_d: "Halten Sie die Lucens-Kalibrierungskarte vor der Inspektion vor die Kamera. Ihre Referenz-Fluoreszenzsignaturen kalibrieren die Messung für die Sitzung.",
-    hiw_b2_title: "Das Foto aufnehmen",
+    hiw_b2_title: "Unter der Lampe aufnehmen",
+    hiw_b2_intro: "Erfassen Sie die Szene in der App live mit der Live View, oder importieren Sie ein bereits unter der Lampe aufgenommenes Foto. Die Analyse ist dieselbe.",
     hiw_dist_t: "Gehen Sie auf etwa 30 cm heran",
-    hiw_dist_d: "Zu weit weg werden kleine Flecken unsichtbar.",
-    hiw_angle_t: "Halten Sie die Lampe gerade",
-    hiw_angle_d: "Senkrecht zur Oberfläche, im 90°-Winkel. Nicht schräg.",
+    hiw_dist_d: "Die Fluoreszenz ist schwach: aus zu großer Entfernung verschwinden kleine Flecken. Rahmen Sie den zu prüfenden Bereich ein, nicht den ganzen Raum.",
+    hiw_angle_t: "Halten Sie die Lampe senkrecht",
+    hiw_angle_d: "Zielen Sie im 90°-Winkel auf die Oberfläche, nicht schräg. Schräg erzeugt die Lampe Reflexe, die die Analyse für Spuren halten kann.",
     hiw_sharp_t: "Zielen Sie scharf und ruhig",
-    hiw_sharp_d: "Ein scharfes Bild bedeutet eine zuverlässige Analyse. Halten Sie eine Sekunde still.",
-    hiw_b3_title: "Was Lucens macht",
-    hiw_p1: "Die Lucens-Lampe lässt fluoreszierende Spuren (organische Rückstände, Biofilme, chemische Ablagerungen) hervortreten, die bei normalem Licht unsichtbar sind.",
-    hiw_p2: "Lucens IA liest das Bild: Sie kartiert die fluoreszierenden Zonen, bestimmt ihre wahrscheinliche Art, bewertet das Risiko und erstellt einen datierten PDF-Bericht, bereit für Ihre HACCP-Akte.",
+    hiw_sharp_d: "Ein scharfes Bild bedeutet eine zuverlässige Analyse. Halten Sie eine Sekunde still; wiederholen Sie es, wenn es unscharf ist.",
+    hiw_b3_title: "Was Lucens IA macht",
+    hiw_p1: "Die Lucens-Lampe zeigt. Lucens IA, die App in Ihrer Hand, analysiert: Sie liest die Fluoreszenzsignatur des Bildes.",
+    hiw_p2: "Sie erhalten die erkannten Zonen auf Ihrem Foto kartiert, ihre wahrscheinliche Art (Biofilm, organisch, chemisch…), einen Risiko-Score und einen datierten PDF-Bericht, bereit für Ihre HACCP-Akte.",
     sector_cta: "Inspektionskontext einrichten",
     sector_cta_hint: "Für genauere Analysen",
     sector_edit_label: "Inspektionskontext · Ändern",
+    disclaimer_uv_label: "UV-A-Sicherheit",
+    disclaimer_uv: "Die Lampe gibt UV-A-365-nm-Strahlung ab. Blicken Sie nicht in die Quelle und richten Sie sie nicht auf die Augen. Bei längerem Gebrauch tragen Sie einen UV-Augenschutz.",
     disclaimer_kp1_label: "Charakter",
-    disclaimer_kp1: "Entscheidungshilfewerkzeug. Indikative Analyse auf Basis der unter UV-A 365 nm sichtbaren Fluoreszenz.",
+    disclaimer_kp1: "Lucens IA unterstützt die Sichtprüfung durch UV-A-365-nm-Fluoreszenz. Ihre Schlussfolgerungen sind richtungweisend und stellen keine Diagnose dar.",
     disclaimer_kp2_label: "Grenzen",
     disclaimer_kp2: "Keine bestätigte mikrobiologische, chemische oder toxikologische Identifizierung. Ersetzt kein formelles Qualitätsaudit.",
     disclaimer_kp3_label: "Validierung",
-    disclaimer_kp3: "Ergebnisse durch interne Kontrollen zu bestätigen: ATP-Messung, Abstriche, akkreditierte Laboranalysen, HACCP-Kontrollen.",
+    disclaimer_kp3: "Bestätigen Sie die markierten Zonen mit Ihren internen Protokollen: ATP-Messung, ISO-18593-Abstriche, Laboranalyse oder HACCP-Kontrolle je nach Kontext.",
     disclaimer_kp4_label: "Haftung",
-    disclaimer_kp4: "Der Nutzer bleibt allein verantwortlich für Entscheidungen und für die Umsetzung der vorgeschriebenen Qualitätsprotokolle.",
+    disclaimer_kp4: "Sie bleiben allein verantwortlich für Entscheidungen auf Basis dieser Ergebnisse und für die Einhaltung der Vorschriften Ihrer Branche.",
     disclaimer_kp5_label: "Datenschutz",
-    disclaimer_kp5: "Bilder werden anonym verarbeitet. Keine Speicherung im Klartext.",
+    disclaimer_kp5: "Ihre Bilder dienen ausschließlich der Analyse, ohne zugeordnete personenbezogene Daten, und werden nicht im Klartext auf unseren Servern gespeichert.",
     disclaimer_kp6_label: "Details",
     disclaimer_kp6: "Vollständige Datenschutzerklärung und Recht auf Löschung",
     err_load: "Bild kann nicht analysiert werden.",
