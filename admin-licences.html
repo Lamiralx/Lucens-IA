@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Lucens · Licences (admin)</title>
+<style>
+  :root{ --petrol:#0F3D4E; --copper:#B54A2A; --ink:#1A2B30; --muted:#6B7A80; --line:#E2E6E8; --bg:#F7F8F8; --ok:#137a4f; --okbg:#E6F4EC; --warn:#8a6d00; --warnbg:#FBF1D6; --bad:#9B2C2C; --badbg:#FBE9E9; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--bg); -webkit-text-size-adjust:100%; }
+  .wrap{ max-width:880px; margin:0 auto; padding:20px 16px 60px; }
+  header{ display:flex; align-items:baseline; gap:10px; margin-bottom:18px; }
+  .wm{ font-size:20px; font-weight:600; letter-spacing:.04em; color:var(--petrol); }
+  .wm b{ color:var(--copper); font-weight:600; }
+  .sub{ font-size:13px; color:var(--muted); }
+  .card{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:16px; }
+  .card h2{ font-size:15px; font-weight:600; margin:0 0 12px; }
+  label{ display:block; font-size:12px; color:var(--muted); margin-bottom:10px; }
+  input{ width:100%; height:38px; margin-top:4px; padding:0 10px; font-size:14px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink); }
+  input:focus{ outline:none; border-color:var(--petrol); }
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:0 12px; }
+  .grid .full{ grid-column:1 / -1; }
+  button{ height:38px; padding:0 14px; font-size:13px; font-weight:500; border-radius:8px; border:1px solid var(--line); background:#fff; color:var(--ink); cursor:pointer; }
+  button:hover{ background:var(--bg); }
+  button.primary{ background:var(--copper); border-color:var(--copper); color:#fff; }
+  button.primary:hover{ filter:brightness(.95); }
+  button.sm{ height:30px; padding:0 9px; font-size:12px; }
+  .row-actions button{ margin-left:4px; }
+  .codebox{ display:flex; align-items:center; gap:10px; margin-top:12px; padding:10px 12px; background:var(--bg); border-radius:8px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:15px; font-weight:600; letter-spacing:.06em; }
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  th{ text-align:left; font-weight:500; color:var(--muted); padding:8px 8px; border-bottom:1px solid var(--line); }
+  td{ padding:10px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  .mono{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; }
+  .pill{ display:inline-block; font-size:11px; padding:2px 8px; border-radius:6px; }
+  .pill.ok{ background:var(--okbg); color:var(--ok); }
+  .pill.warn{ background:var(--warnbg); color:var(--warn); }
+  .pill.bad{ background:var(--badbg); color:var(--bad); }
+  .status{ font-size:13px; min-height:18px; margin-top:8px; }
+  .status.err{ color:var(--bad); }
+  .status.ok{ color:var(--ok); }
+  .tokenbar{ display:flex; gap:8px; align-items:flex-end; }
+  .tokenbar label{ flex:1; margin-bottom:0; }
+  .muted{ color:var(--muted); font-size:12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="wm">Lucens<b>.</b></span>
+    <span class="sub">Licences — administration</span>
+  </header>
+
+  <div class="card">
+    <div class="tokenbar">
+      <label>Token admin (header <span class="mono">x-lucens-admin</span>)
+        <input id="tok" type="password" placeholder="collez votre LUCENS_ADMIN_TOKEN" autocomplete="off">
+      </label>
+      <button id="saveTok">Mémoriser</button>
+      <button id="refresh" class="primary">Charger les codes</button>
+    </div>
+    <div id="globalStatus" class="status"></div>
+  </div>
+
+  <div class="card">
+    <h2 id="formTitle">Créer un code</h2>
+    <div class="grid">
+      <label>Nom<input id="f_nom" type="text"></label>
+      <label>Prénom<input id="f_prenom" type="text"></label>
+      <label class="full">Adresse email<input id="f_email" type="email"></label>
+      <label>Entreprise<input id="f_entreprise" type="text"></label>
+      <label>N° de commande<input id="f_cmd" type="text"></label>
+      <label>Date d'expiration<input id="f_exp" type="date"></label>
+      <label style="display:flex;align-items:flex-end">
+        <button id="submit" class="primary" style="width:100%">Générer le code</button>
+      </label>
+    </div>
+    <div id="formStatus" class="status"></div>
+    <div id="codeResult" class="codebox" style="display:none">
+      <span id="codeValue"></span>
+      <button id="copyCode" class="sm" style="margin-left:auto">Copier</button>
+    </div>
+    <div id="editHint" class="muted" style="display:none;margin-top:8px"></div>
+  </div>
+
+  <div class="card">
+    <h2>Codes existants</h2>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th>Code</th><th>Client</th><th>Expire</th><th>Statut</th><th></th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div id="emptyHint" class="muted">Chargez les codes avec le bouton ci-dessus.</div>
+  </div>
+</div>
+
+<script>
+  const API = '/api/lucens-stats';
+  const $ = (id) => document.getElementById(id);
+  const tokenKey = 'lucens_admin_token';
+  let editingCode = null;
+  let items = [];
+
+  $('tok').value = sessionStorage.getItem(tokenKey) || '';
+  $('saveTok').addEventListener('click', () => { sessionStorage.setItem(tokenKey, $('tok').value.trim()); setGlobal('Token mémorisé pour cette session.', 'ok'); });
+
+  function setGlobal(msg, cls){ const e = $('globalStatus'); e.textContent = msg || ''; e.className = 'status ' + (cls || ''); }
+  function setForm(msg, cls){ const e = $('formStatus'); e.textContent = msg || ''; e.className = 'status ' + (cls || ''); }
+
+  async function call(body){
+    const tok = ($('tok').value || sessionStorage.getItem(tokenKey) || '').trim();
+    if(!tok){ throw new Error('Renseignez d’abord le token admin.'); }
+    const r = await fetch(API, { method:'POST', headers:{ 'content-type':'application/json', 'x-lucens-admin': tok }, body: JSON.stringify(body) });
+    if(r.status === 401){ throw new Error('Token admin refusé (401).'); }
+    const data = await r.json().catch(() => ({}));
+    if(!r.ok){ throw new Error(data.error || ('HTTP ' + r.status)); }
+    return data;
+  }
+
+  function expToISO(dateStr){ return dateStr ? (dateStr + 'T23:59:59.000Z') : ''; }
+  function fmtDate(iso){ if(!iso) return '—'; const d = new Date(iso); if(isNaN(d)) return iso; return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' }); }
+
+  function pill(l){
+    const s = document.createElement('span');
+    if(l.statut === 'revoked'){ s.className = 'pill bad'; s.textContent = 'révoqué'; }
+    else if(l.expiresAt && new Date(l.expiresAt) <= new Date()){ s.className = 'pill warn'; s.textContent = 'expiré'; }
+    else { s.className = 'pill ok'; s.textContent = 'actif'; }
+    return s;
+  }
+  function cell(text, cls){ const c = document.createElement('td'); if(cls) c.className = cls; if(text != null) c.textContent = text; return c; }
+  function smallBtn(label, fn){ const b = document.createElement('button'); b.className = 'sm'; b.textContent = label; b.addEventListener('click', fn); return b; }
+
+  function resetForm(){
+    editingCode = null;
+    ['f_nom','f_prenom','f_email','f_entreprise','f_cmd','f_exp'].forEach(i => $(i).value = '');
+    $('formTitle').textContent = 'Créer un code';
+    $('submit').textContent = 'Générer le code';
+    $('editHint').style.display = 'none';
+  }
+
+  $('submit').addEventListener('click', async () => {
+    setForm('');
+    const data = {
+      nom: $('f_nom').value.trim(), prenom: $('f_prenom').value.trim(),
+      email: $('f_email').value.trim(), entreprise: $('f_entreprise').value.trim(),
+      numeroCommande: $('f_cmd').value.trim(), expiresAt: expToISO($('f_exp').value),
+    };
+    if(!data.expiresAt){ setForm('La date d’expiration est obligatoire.', 'err'); return; }
+    try{
+      if(editingCode){
+        await call({ action:'licence_update', code: editingCode, patch: data });
+        setForm('Modifications enregistrées.', 'ok'); resetForm();
+      } else {
+        const lic = await call({ action:'licence_create', data });
+        $('codeValue').textContent = lic.code;
+        $('codeResult').style.display = 'flex';
+        setForm('Code créé. Transmettez-le au client.', 'ok'); resetForm();
+      }
+      await load();
+    }catch(e){ setForm(e.message, 'err'); }
+  });
+
+  $('copyCode').addEventListener('click', () => {
+    navigator.clipboard && navigator.clipboard.writeText($('codeValue').textContent);
+    $('copyCode').textContent = 'Copié'; setTimeout(() => $('copyCode').textContent = 'Copier', 1500);
+  });
+
+  function editLic(l){
+    editingCode = l.code;
+    $('f_nom').value = l.nom||''; $('f_prenom').value = l.prenom||''; $('f_email').value = l.email||'';
+    $('f_entreprise').value = l.entreprise||''; $('f_cmd').value = l.numeroCommande||'';
+    $('f_exp').value = (l.expiresAt||'').slice(0,10);
+    $('formTitle').textContent = 'Modifier ' + l.code;
+    $('submit').textContent = 'Enregistrer les modifications';
+    $('editHint').style.display = 'block';
+    $('editHint').textContent = 'Vous modifiez ' + l.code + '. Changez la date pour prolonger ou raccourcir, puis Enregistrer.';
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+
+  async function actLic(action, code){
+    const labels = { licence_revoke:'Révoquer', licence_unbind:'Délier l’appareil de', licence_delete:'Supprimer définitivement' };
+    if(!confirm(labels[action] + ' ' + code + ' ?')) return;
+    try{ await call({ action, code }); setGlobal(code + ' : ' + action.replace('licence_','') + ' OK', 'ok'); await load(); }
+    catch(e){ setGlobal(e.message, 'err'); }
+  }
+
+  function renderRows(){
+    const rows = $('rows');
+    rows.replaceChildren();
+    $('emptyHint').style.display = items.length ? 'none' : 'block';
+    for(const l of items){
+      const tr = document.createElement('tr');
+
+      const codeCell = document.createElement('td'); codeCell.className = 'mono';
+      const dot = document.createElement('span');
+      dot.textContent = l.deviceId ? '● ' : '○ ';
+      dot.title = l.deviceId ? 'appareil lié' : 'non activé';
+      if(!l.deviceId) dot.style.color = '#B4B2A9';
+      codeCell.append(dot, document.createTextNode(l.code));
+
+      const clientCell = document.createElement('td');
+      const nameTxt = (((l.prenom||'') + ' ' + (l.nom||'')).trim() || '—') + (l.entreprise ? ' · ' + l.entreprise : '');
+      clientCell.append(document.createTextNode(nameTxt));
+      const sub = document.createElement('div'); sub.className = 'muted';
+      sub.textContent = (l.email||'') + (l.numeroCommande ? ' · ' + l.numeroCommande : '');
+      clientCell.append(sub);
+
+      const stCell = document.createElement('td'); stCell.append(pill(l));
+
+      const actCell = document.createElement('td'); actCell.className = 'row-actions'; actCell.style.whiteSpace = 'nowrap';
+      actCell.append(
+        smallBtn('Modifier', () => editLic(l)),
+        smallBtn('Révoquer', () => actLic('licence_revoke', l.code)),
+        smallBtn('Délier', () => actLic('licence_unbind', l.code)),
+        smallBtn('Suppr.', () => actLic('licence_delete', l.code)),
+      );
+
+      tr.append(codeCell, clientCell, cell(fmtDate(l.expiresAt)), stCell, actCell);
+      rows.append(tr);
+    }
+  }
+
+  async function load(){
+    setGlobal('Chargement…');
+    try{
+      const res = await call({ action:'licence_list' });
+      items = res.items || [];
+      renderRows();
+      setGlobal(items.length + ' code(s).', items.length ? 'ok' : '');
+    }catch(e){ setGlobal(e.message, 'err'); }
+  }
+
+  $('refresh').addEventListener('click', load);
+</script>
+</body>
+</html>
