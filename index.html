@@ -8762,10 +8762,10 @@ body.lv-open { overflow: hidden; touch-action: none; }
   .lv-modal.lv-cal-mode .lv-crosshair { width: 70px; height: 70px; }
 }
 /* V316 — Splash lancement (premium, fond blanc, wordmark pétrole, dot cuivre) */
-#lcsLaunch{position:fixed;inset:0;z-index:9999;background:var(--surface-page);display:flex;align-items:center;justify-content:center;animation:lcsSplashOut .55s cubic-bezier(.4,0,.6,1) 1.8s both}
+#lcsLaunch{position:fixed;inset:0;z-index:9999;background:#fff;display:flex;align-items:center;justify-content:center;animation:lcsSplashOut .55s cubic-bezier(.4,0,.6,1) 1.8s both}
 #lcsLaunch .lcs-lk{position:relative;display:inline-flex;align-items:flex-start;animation:lcsSplashIn .65s cubic-bezier(.16,1,.3,1) .08s both}
-#lcsLaunch .lcs-word{font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif;font-size:40px;font-weight:800;letter-spacing:-.01em;color:var(--accent);line-height:1;user-select:none;-webkit-user-select:none}
-#lcsLaunch .lcs-dot{width:7px;height:7px;border-radius:50%;background:var(--lucens-signature);margin-left:5px;margin-top:5px;flex-shrink:0;animation:lcsDotIn .5s cubic-bezier(.34,1.56,.64,1) .42s both}
+#lcsLaunch .lcs-word{font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif;font-size:40px;font-weight:800;letter-spacing:-.01em;color:#0F3D4E;line-height:1;user-select:none;-webkit-user-select:none}
+#lcsLaunch .lcs-dot{width:7px;height:7px;border-radius:50%;background:#B54A2A;margin-left:5px;margin-top:5px;flex-shrink:0;animation:lcsDotIn .5s cubic-bezier(.34,1.56,.64,1) .42s both}
 /* V320 — anti-saccade : blur(8px) animé retiré (coûteux/janky sur mobile),
    on garde un fondu + translation (compositor, fluide). */
 @keyframes lcsSplashIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
