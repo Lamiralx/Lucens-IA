@@ -76,7 +76,7 @@
       <label class="full">Adresse email<input id="f_email" type="email"></label>
       <label>Entreprise<input id="f_entreprise" type="text"></label>
       <label>N° de commande<input id="f_cmd" type="text"></label>
-      <label>Date d'expiration<input id="f_exp" type="date"></label>
+      <label>Date d'expiration<input id="f_exp" type="date"><small class="muted" style="font-weight:400;font-size:11px;margin-top:3px;display:block">Le code reste valable jusqu'à la fin de ce jour.</small></label>
       <label style="display:flex;align-items:flex-end">
         <button id="submit" class="primary" style="width:100%">Générer le code</button>
       </label>
@@ -157,7 +157,10 @@
   }
 
   function expToISO(dateStr){ return dateStr ? (dateStr + 'T23:59:59.000Z') : ''; }
-  function fmtDate(iso){ if(!iso) return '—'; const d = new Date(iso); if(isNaN(d)) return iso; return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' }); }
+  /* Expiration = JOUR calendaire (stocké en fin de journée UTC, ...T23:59:59Z).
+     On force timeZone:'UTC' pour afficher EXACTEMENT le jour saisi : sinon, en
+     fuseau est-d'UTC (France l'été = +2), 23:59 UTC bascule au lendemain → +1 jour. */
+  function fmtDate(iso){ if(!iso) return '—'; const d = new Date(iso); if(isNaN(d)) return iso; return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric', timeZone:'UTC' }); }
 
   function pill(l){
     const s = document.createElement('span');

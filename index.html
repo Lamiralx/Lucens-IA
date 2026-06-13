@@ -8954,7 +8954,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v331</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v332</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -17095,6 +17095,11 @@ const Annotator = (() => {
     }
     const tr = (k) => (typeof t === 'function' ? t(k) : k);
     function fmt(iso) { if (!iso) return ''; const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }); }
+    /* Expiration = JOUR calendaire (stocké en fin de journée UTC, ...T23:59:59Z).
+       On force timeZone:'UTC' pour afficher EXACTEMENT le jour fixé par l'admin,
+       identique dans tous les fuseaux (sinon 23:59 UTC bascule au lendemain en
+       heure locale est-d'UTC → off-by-one). fmt() reste local pour l'activation. */
+    function fmtDay(iso) { if (!iso) return ''; const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }); }
 
     function render() {
       const hintEl = document.getElementById('licenceHint');
@@ -17110,10 +17115,10 @@ const Annotator = (() => {
       statusEl.hidden = false;
       if (expired) {
         statusEl.style.color = 'var(--danger, #9B2C2C)';
-        statusEl.textContent = tr('licence_expired') + ' · ' + fmt(meta.expiresAt);
+        statusEl.textContent = tr('licence_expired') + ' · ' + fmtDay(meta.expiresAt);
       } else {
         statusEl.style.color = 'var(--success, #137a4f)';
-        const parts = [tr('licence_active'), tr('licence_valid_until') + ' ' + fmt(meta.expiresAt)];
+        const parts = [tr('licence_active'), tr('licence_valid_until') + ' ' + fmtDay(meta.expiresAt)];
         if (meta.activatedAt) parts.push(tr('licence_activated_on') + ' ' + fmt(meta.activatedAt));
         statusEl.textContent = parts.join(' · ');
       }
