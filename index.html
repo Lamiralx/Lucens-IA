@@ -17077,6 +17077,17 @@ const Annotator = (() => {
     render();
     window.__lucensLicenceCode = () => localStorage.getItem('lucens_licence') || '';
     window.__lucensDeviceId = deviceId;
+    window.__lucensHasValidLicence = function () {
+      try {
+        const c = localStorage.getItem('lucens_licence');
+        const m = JSON.parse(localStorage.getItem('lucens_licence_meta') || 'null');
+        return !!(c && m && m.expiresAt && new Date(m.expiresAt) > new Date());
+      } catch (e) { return false; }
+    };
+    window.__lucensOpenLicence = function () {
+      try { if (typeof window.__openSettings === 'function') window.__openSettings(); } catch (e) {}
+      setTimeout(() => { try { input.focus(); input.scrollIntoView({ block: 'center' }); } catch (e) {} }, 140);
+    };
   })();
 
   /* V164 — Onglet ANALYSE de la barre du bas (brief §13). Écran principal =
@@ -20670,6 +20681,13 @@ const Annotator = (() => {
       console.warn('[process] analyse déjà en cours — appel ignoré (anti-réentrance V140)');
       return;
     }
+    /* V326 — VERROU LICENCE, bascule douce. Sans licence locale valide : on
+       n'ouvre PAS le loader et on n'envoie rien → on ouvre les Réglages sur le
+       champ Licence. Zéro message d'erreur. Le serveur reste le vrai garde-fou. */
+    if (typeof window.__lucensHasValidLicence === 'function' && !window.__lucensHasValidLicence()) {
+      if (typeof window.__lucensOpenLicence === 'function') window.__lucensOpenLicence();
+      return;
+    }
     lastAnalyzedFile = file;   /* V144 — retenu pour "Traduire ce rapport" */
 
     /* V26 — Nouvelle AbortController par analyse (mode online) */
@@ -22355,8 +22373,9 @@ const Annotator = (() => {
       } else if (resp.status === 415) {
         msg = t('err_api_format');
       } else if (resp.status === 403) {
-        /* V326 — Licence absente / invalide / expirée : on dirige vers les Réglages,
-           via le même canal de message d'erreur (aucune UI ajoutée ailleurs). */
+        /* V326 — Cas serveur (révoqué / expiré / autre appareil) : bascule douce
+           vers les Réglages (champ Licence) + ligne sobre. Aucune UI ajoutée ailleurs. */
+        try { if (typeof window.__lucensOpenLicence === 'function') window.__lucensOpenLicence(); } catch (e) {}
         msg = t('licence_required_msg');
       } else {
         /* 400, 500, 503, 529, autres → message unifié sobre */
