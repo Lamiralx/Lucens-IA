@@ -65,7 +65,50 @@
       <button id="saveTok">Mémoriser</button>
       <button id="refresh" class="primary">Charger les codes</button>
     </div>
+    <div id="loginRow" style="display:none;margin-top:12px">
+      <div class="tokenbar">
+        <label style="flex:1">Code à 6 chiffres (Authenticator) — ou un code de secours
+          <input id="totpCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="123 456">
+        </label>
+        <button id="loginBtn" class="primary">Se connecter</button>
+      </div>
+    </div>
     <div id="globalStatus" class="status"></div>
+  </div>
+
+  <div class="card" id="securityCard">
+    <h2>Sécurité · double authentification (2FA)</h2>
+    <div id="secSummary" class="muted">Renseignez le token pour voir l'état de la 2FA.</div>
+
+    <div id="secEnrollStart" style="display:none;margin-top:10px">
+      <p class="muted" style="line-height:1.5">Le token seul ne suffit plus une fois la 2FA activée : il faudra aussi un code à 6 chiffres généré par <b>Google Authenticator</b> (ou Authy / 1Password) sur votre téléphone. Rien n'est lié à cet ordinateur.</p>
+      <button id="enrollStartBtn" class="primary">Activer la double authentification</button>
+    </div>
+
+    <div id="enrollPanel" style="display:none;margin-top:12px">
+      <p><b>1.</b> Scannez ce QR code avec votre application d'authentification :</p>
+      <div id="qr" style="margin:8px 0"></div>
+      <p class="muted">…ou saisissez cette clé manuellement (« Saisir une clé de configuration ») :</p>
+      <div class="codebox"><span id="secretText" class="mono" style="word-break:break-all"></span><button id="copySecret" class="sm" style="margin-left:auto">Copier</button></div>
+      <p style="margin-top:14px"><b>2.</b> Entrez le code à 6 chiffres affiché par l'app pour confirmer :</p>
+      <div class="tokenbar">
+        <label style="flex:1"><input id="confirmCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="123 456"></label>
+        <button id="confirmEnroll" class="primary">Confirmer et activer</button>
+        <button id="cancelEnroll">Annuler</button>
+      </div>
+      <div id="enrollStatus" class="status"></div>
+    </div>
+
+    <div id="backupPanel" style="display:none;margin-top:12px">
+      <p style="color:var(--bad)"><b>Notez ces codes de secours MAINTENANT</b> — ils ne seront plus jamais affichés. Chacun débloque l'accès une seule fois si vous perdez votre téléphone. Gardez-les en lieu sûr (gestionnaire de mots de passe, papier au coffre).</p>
+      <div id="backupCodes" class="codebox mono" style="flex-direction:column;align-items:flex-start;gap:4px;line-height:1.8"></div>
+      <div style="margin-top:10px"><button id="copyBackup" class="sm">Copier les codes</button> <button id="backupDone" class="primary">J'ai noté mes codes</button></div>
+    </div>
+
+    <div id="secActive" style="display:none;margin-top:10px">
+      <button id="disableBtn">Désactiver la 2FA</button>
+      <span class="muted" style="margin-left:8px">Pour transférer vers un nouveau téléphone : désactivez puis réactivez.</span>
+    </div>
   </div>
 
   <div class="card">
@@ -126,10 +169,12 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
   const API = '/api/lucens-stats';
   const $ = (id) => document.getElementById(id);
   const tokenKey = 'lucens_admin_token';
+  const sessionKey = 'lucens_admin_session';
   let editingCode = null;
   let items = [];
   let requests = [];
@@ -141,7 +186,7 @@
   function applyFilters(){ renderRows(); renderReq(); }
 
   $('tok').value = sessionStorage.getItem(tokenKey) || '';
-  $('saveTok').addEventListener('click', () => { sessionStorage.setItem(tokenKey, $('tok').value.trim()); setGlobal('Token mémorisé pour cette session.', 'ok'); });
+  $('saveTok').addEventListener('click', () => { sessionStorage.setItem(tokenKey, $('tok').value.trim()); setGlobal('Token mémorisé pour cette session.', 'ok'); refreshSecurity(); });
 
   function setGlobal(msg, cls){ const e = $('globalStatus'); e.textContent = msg || ''; e.className = 'status ' + (cls || ''); }
   function setForm(msg, cls){ const e = $('formStatus'); e.textContent = msg || ''; e.className = 'status ' + (cls || ''); }
@@ -149,9 +194,15 @@
   async function call(body){
     const tok = ($('tok').value || sessionStorage.getItem(tokenKey) || '').trim();
     if(!tok){ throw new Error('Renseignez d’abord le token admin.'); }
-    const r = await fetch(API, { method:'POST', headers:{ 'content-type':'application/json', 'x-lucens-admin': tok }, body: JSON.stringify(body) });
-    if(r.status === 401){ throw new Error('Token admin refusé (401).'); }
+    const headers = { 'content-type':'application/json', 'x-lucens-admin': tok };
+    const sess = sessionStorage.getItem(sessionKey);
+    if(sess) headers['x-lucens-session'] = sess;
+    const r = await fetch(API, { method:'POST', headers, body: JSON.stringify(body) });
     const data = await r.json().catch(() => ({}));
+    if(r.status === 401){
+      if(data && data.needs2fa){ $('loginRow').style.display = 'block'; const e = new Error('Connexion 2FA requise : entrez votre code à 6 chiffres.'); e.needs2fa = true; throw e; }
+      throw new Error('Token admin refusé (401).');
+    }
     if(!r.ok){ throw new Error(data.error || ('HTTP ' + r.status)); }
     return data;
   }
@@ -320,6 +371,98 @@
   }));
 
   $('refresh').addEventListener('click', load);
+
+  /* ─── 2FA admin (TOTP) ──────────────────────────────────────── */
+  /* Secret base32 standard (A-Z2-7) généré DANS LE NAVIGATEUR — n'apparaît
+     jamais ailleurs tant que l'enrôlement n'est pas confirmé côté serveur. */
+  function genSecret(bytesLen){
+    const bytes = new Uint8Array(bytesLen || 20); crypto.getRandomValues(bytes);
+    const A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'; let bits = 0, val = 0, out = '';
+    for(const b of bytes){ val = (val << 8) | b; bits += 8; while(bits >= 5){ out += A[(val >>> (bits - 5)) & 31]; bits -= 5; } }
+    if(bits > 0) out += A[(val << (5 - bits)) & 31];
+    return out;
+  }
+  let pendingSecret = '';
+  let backupBlob = '';
+
+  function render2fa(s){
+    const enrolled = !!(s && s.enrolled);
+    $('secEnrollStart').style.display = enrolled ? 'none' : 'block';
+    $('secActive').style.display = enrolled ? 'block' : 'none';
+    $('enrollPanel').style.display = 'none';
+    $('backupPanel').style.display = 'none';
+    if(enrolled){
+      const left = (s.backupRemaining != null) ? s.backupRemaining : '?';
+      $('secSummary').innerHTML = '✓ <b style="color:var(--ok)">Double authentification active.</b> ' + left + ' code(s) de secours restant(s).';
+      $('loginRow').style.display = s.session ? 'none' : 'block';
+    } else {
+      $('secSummary').textContent = 'La 2FA n’est pas encore activée — le token seul donne accès. Activez-la pour sécuriser la création de licences.';
+      $('loginRow').style.display = 'none';
+    }
+  }
+
+  async function refreshSecurity(){
+    const tok = ($('tok').value || sessionStorage.getItem(tokenKey) || '').trim();
+    if(!tok){ $('secSummary').textContent = 'Renseignez le token pour voir l’état de la 2FA.'; return; }
+    try{ render2fa(await call({ action:'admin_2fa_status' })); }
+    catch(e){ if(e.needs2fa) return; $('secSummary').textContent = e.message; }
+  }
+
+  $('enrollStartBtn').addEventListener('click', () => {
+    pendingSecret = genSecret(20);
+    $('secretText').textContent = pendingSecret;
+    const uri = 'otpauth://totp/' + encodeURIComponent('Lucens') + ':' + encodeURIComponent('Admin') +
+                '?secret=' + pendingSecret + '&issuer=' + encodeURIComponent('Lucens') + '&digits=6&period=30&algorithm=SHA1';
+    $('qr').replaceChildren();
+    try{ new QRCode($('qr'), { text: uri, width: 176, height: 176, correctLevel: QRCode.CorrectLevel.M }); }
+    catch(e){ $('qr').textContent = '(QR indisponible — utilisez la clé ci-dessous)'; }
+    $('secEnrollStart').style.display = 'none';
+    $('enrollPanel').style.display = 'block';
+    $('confirmCode').value = ''; $('enrollStatus').textContent = ''; $('confirmCode').focus();
+  });
+  $('cancelEnroll').addEventListener('click', () => { pendingSecret = ''; $('enrollPanel').style.display = 'none'; refreshSecurity(); });
+  $('copySecret').addEventListener('click', () => { navigator.clipboard && navigator.clipboard.writeText(pendingSecret); $('copySecret').textContent = 'Copié'; setTimeout(() => $('copySecret').textContent = 'Copier', 1500); });
+
+  $('confirmEnroll').addEventListener('click', async () => {
+    const code = ($('confirmCode').value || '').replace(/\s/g, '');
+    if(!/^\d{6}$/.test(code)){ $('enrollStatus').textContent = 'Entrez les 6 chiffres affichés par l’app.'; $('enrollStatus').className = 'status err'; return; }
+    try{
+      const r = await call({ action:'admin_2fa_enable', secret: pendingSecret, code });
+      pendingSecret = '';
+      $('enrollPanel').style.display = 'none';
+      const box = $('backupCodes'); box.replaceChildren();
+      (r.backupCodes || []).forEach(c => { const d = document.createElement('div'); d.textContent = c; box.append(d); });
+      backupBlob = (r.backupCodes || []).join('\n');
+      $('backupPanel').style.display = 'block';
+      $('secEnrollStart').style.display = 'none';
+      $('secSummary').innerHTML = '✓ <b style="color:var(--ok)">2FA activée.</b>';
+    }catch(e){ $('enrollStatus').textContent = e.message; $('enrollStatus').className = 'status err'; }
+  });
+  $('copyBackup').addEventListener('click', () => { navigator.clipboard && navigator.clipboard.writeText(backupBlob); $('copyBackup').textContent = 'Copié'; setTimeout(() => $('copyBackup').textContent = 'Copier les codes', 1500); });
+  $('backupDone').addEventListener('click', () => { backupBlob = ''; $('backupPanel').style.display = 'none'; refreshSecurity(); });
+
+  async function doLogin(){
+    const code = ($('totpCode').value || '').replace(/\s/g, '');
+    if(!code){ setGlobal('Entrez votre code.', 'err'); return; }
+    try{
+      const r = await call({ action:'admin_login', code });
+      sessionStorage.setItem(sessionKey, r.session);
+      $('totpCode').value = ''; $('loginRow').style.display = 'none';
+      setGlobal('Connecté.' + (r.backupRemaining != null ? ' ' + r.backupRemaining + ' code(s) de secours restant(s).' : ''), 'ok');
+      await refreshSecurity(); await load();
+    }catch(e){ setGlobal(e.message, 'err'); }
+  }
+  $('loginBtn').addEventListener('click', doLogin);
+  $('totpCode').addEventListener('keydown', (e) => { if(e.key === 'Enter') doLogin(); });
+  $('confirmCode').addEventListener('keydown', (e) => { if(e.key === 'Enter') $('confirmEnroll').click(); });
+
+  $('disableBtn').addEventListener('click', async () => {
+    if(!confirm('Désactiver la double authentification ? Le token seul redonnera accès.')) return;
+    try{ await call({ action:'admin_2fa_disable' }); sessionStorage.removeItem(sessionKey); setGlobal('2FA désactivée.', 'ok'); await refreshSecurity(); }
+    catch(e){ setGlobal(e.message, 'err'); }
+  });
+
+  if(($('tok').value || '').trim()) refreshSecurity();
 </script>
 </body>
 </html>

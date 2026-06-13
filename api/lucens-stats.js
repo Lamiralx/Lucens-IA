@@ -65,12 +65,62 @@ export default async function handler(req, res) {
   try {
     const { kv } = await import('@vercel/kv');
 
-    /* V326 — Gestion des licences repliée ici (pas de nouvelle fonction
-       serverless — limite 12 Hobby). POST { action: 'licence_*' }, protégé par
-       le même token admin vérifié ci-dessus. */
+    /* ─── 2FA admin (TOTP) — V333 ───────────────────────────────────────
+       2ᵉ facteur EN PLUS du token (déjà vérifié ci-dessus). Replié ici, aucune
+       nouvelle fonction serverless. État en KV `admin:totp` ; session signée
+       (clé = token admin). Repli d'urgence : env LUCENS_ADMIN_2FA_OFF=1. */
+    const Totp = await import('./_lib/totp.js');
+    const twoFAOff = process.env.LUCENS_ADMIN_2FA_OFF === '1';
+    let totpState = await kv.get('admin:totp').catch(() => null);
+    if (typeof totpState === 'string') { try { totpState = JSON.parse(totpState); } catch { totpState = null; } }
+    const enrolled = !!(totpState && totpState.secret);
+    const sessHeader = req.headers['x-lucens-session'];
+    const validSession = enrolled ? Totp.verifySession(typeof sessHeader === 'string' ? sessHeader : '', expected) : null;
+
+    /* V326 — Gestion des licences + 2FA repliées ici (pas de nouvelle fonction
+       serverless — limite 12 Hobby). POST { action }, protégé par le token admin
+       vérifié ci-dessus, et par la 2FA quand elle est active. */
     if (req.method === 'POST') {
+      const body = req.body || {};
+      const { action, data, code, patch } = body;
+
+      /* — Actions de GESTION 2FA (règles d'auth propres, ne passent pas l'enforcement) — */
+      if (action === 'admin_2fa_status') {
+        return res.json({ enrolled, twoFAOff, session: !!validSession, backupRemaining: enrolled ? (totpState.backup || []).length : 0 });
+      }
+      if (action === 'admin_login') {
+        if (!enrolled) return res.status(400).json({ error: '2FA non configurée' });
+        const c = String(body.code || '');
+        let okCode = Totp.verifyTotp(totpState.secret, c);
+        if (!okCode) {
+          const r = Totp.consumeBackup(c, totpState.backup || []);
+          if (r.ok) { totpState.backup = r.hashes; await kv.set('admin:totp', JSON.stringify(totpState)); okCode = true; }
+        }
+        if (!okCode) return res.status(401).json({ error: 'Code refusé' });
+        return res.json({ ok: true, session: Totp.signSession(expected, { ttlSec: 43200 }), backupRemaining: (totpState.backup || []).length });
+      }
+      if (action === 'admin_2fa_enable') {
+        /* Bootstrap : si pas encore enrôlé, le token seul suffit. Réenrôlement → session valide exigée. */
+        if (enrolled && !validSession && !twoFAOff) return res.status(401).json({ error: 'Connexion 2FA requise pour réinitialiser', needs2fa: true });
+        const secret = String(body.secret || '').toUpperCase().replace(/[^A-Z2-7]/g, '');
+        if (secret.length < 16) return res.status(400).json({ error: 'Secret invalide' });
+        if (!Totp.verifyTotp(secret, String(body.code || ''))) return res.status(400).json({ error: 'Code de confirmation incorrect' });
+        const backupCodes = Totp.generateBackupCodes(8);
+        await kv.set('admin:totp', JSON.stringify({ secret, enabledAt: new Date().toISOString(), backup: backupCodes.map(Totp.hashBackup) }));
+        return res.json({ ok: true, backupCodes });
+      }
+      if (action === 'admin_2fa_disable') {
+        if (enrolled && !validSession && !twoFAOff) return res.status(401).json({ error: 'Connexion 2FA requise', needs2fa: true });
+        await kv.del('admin:totp');
+        return res.json({ ok: true });
+      }
+
+      /* — ENFORCEMENT : quand la 2FA est active, toute action sensible exige une session valide. — */
+      if (enrolled && !twoFAOff && !validSession) {
+        return res.status(401).json({ error: 'Session 2FA requise', needs2fa: true });
+      }
+
       const Licence = await import('./_lib/licence.js');
-      const { action, data, code, patch } = req.body || {};
       if (action === 'licence_create') return res.json(await Licence.createLicence(kv, data || {}));
       if (action === 'licence_list')   return res.json({ items: await Licence.listLicences(kv) });
       if (action === 'licence_update') return res.json(await Licence.updateLicence(kv, code, patch || {}));
@@ -78,7 +128,7 @@ export default async function handler(req, res) {
       if (action === 'licence_unbind') return res.json(await Licence.unbindDevice(kv, code));
       if (action === 'licence_delete') { await Licence.removeLicence(kv, code); return res.json({ ok: true }); }
       if (action === 'licence_requests_list') return res.json({ items: await Licence.listRequests(kv) });
-      if (action === 'licence_request_delete') { await Licence.removeRequest(kv, req.body.id); return res.json({ ok: true }); }
+      if (action === 'licence_request_delete') { await Licence.removeRequest(kv, body.id); return res.json({ ok: true }); }
       return res.status(400).json({ error: 'Action inconnue' });
     }
 
