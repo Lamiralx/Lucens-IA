@@ -8938,7 +8938,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v328</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v329</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -17096,6 +17096,7 @@ const Annotator = (() => {
       try { if (typeof window.__openSettings === 'function') window.__openSettings(); } catch (e) {}
       setTimeout(() => { try { input.focus(); input.scrollIntoView({ block: 'center' }); } catch (e) {} }, 140);
     };
+    window.__lucensRefreshLicence = render;  /* V328 — re-rendre le statut (ex. après purge sur 403) */
   })();
 
   /* V164 — Onglet ANALYSE de la barre du bas (brief §13). Écran principal =
@@ -21050,6 +21051,23 @@ const Annotator = (() => {
         if (apiErr && apiErr.name === 'AbortError') {
           throw apiErr;
         }
+        /* V328 — Refus de LICENCE (403 : autre appareil / révoqué / expiré). Ce
+           n'est PAS une panne réseau → on NE bascule PAS en analyse locale (sinon
+           l'appareil délié produirait quand même un résultat, et son statut
+           resterait faussement « actif »). On ferme le loader, on purge la licence
+           locale périmée, et on rouvre les Réglages sur le champ Licence. */
+        if (apiErr && apiErr._licence) {
+          loader.classList.remove('active');
+          try { stopTipRotation(); } catch (e) {}
+          try { stopMicroRotation(); } catch (e) {}
+          try { stopLoaderTimer(); } catch (e) {}
+          uploadHub.style.display = '';
+          currentAnalyzeAbort = null;
+          try { localStorage.removeItem('lucens_licence_meta'); } catch (e) {}
+          try { if (typeof window.__lucensRefreshLicence === 'function') window.__lucensRefreshLicence(); } catch (e) {}
+          try { if (typeof window.__lucensOpenLicence === 'function') window.__lucensOpenLicence(); } catch (e) {}
+          return;
+        }
         /* V54 fix Bug B (defense-in-depth) — Si le loader est déjà fermé
            (race où watchdog/cancel ont fini leur cleanup MAIS l'AbortError n'a
            pas encore propagé, ex: cancel mid-await dans le retry loop), on
@@ -22381,9 +22399,10 @@ const Annotator = (() => {
       } else if (resp.status === 415) {
         msg = t('err_api_format');
       } else if (resp.status === 403) {
-        /* V326 — Cas serveur (révoqué / expiré / autre appareil) : bascule douce
-           vers les Réglages (champ Licence) + ligne sobre. Aucune UI ajoutée ailleurs. */
-        try { if (typeof window.__lucensOpenLicence === 'function') window.__lucensOpenLicence(); } catch (e) {}
+        /* V326/V328 — Refus de licence (révoqué / expiré / autre appareil). On
+           tague l'erreur (_licence, voir le throw) pour que le catch n'enchaîne
+           PAS sur l'analyse locale ; la bascule vers les Réglages se fait dans le
+           catch, une fois le loader fermé. */
         msg = t('licence_required_msg');
       } else {
         /* 400, 500, 503, 529, autres → message unifié sobre */
@@ -22396,7 +22415,9 @@ const Annotator = (() => {
       } catch (_) {}
       /* Status dot instrument : signaler l'erreur API */
       try { if (typeof InstrumentStatusDot !== 'undefined') InstrumentStatusDot.notifyApiError(); } catch {}
-      throw new Error(msg);
+      const _e = new Error(msg);
+      if (resp.status === 403) _e._licence = true;  /* V328 — refus licence : géré à part, pas de repli local */
+      throw _e;
     }
     /* Status dot instrument : signaler succès, reset compteur d'erreurs */
     try { if (typeof InstrumentStatusDot !== 'undefined') InstrumentStatusDot.notifyApiSuccess(); } catch {}
