@@ -63,9 +63,20 @@ if ('serviceWorker' in navigator) {
      ça recharge, c'est tout. Complété par le rechargement silencieux V139
      (au repos) : la plupart du temps l'app se met à jour toute seule, le
      bouton des Réglages est le filet quand l'app est occupée. */
+  /* V324 — libellé de version AUTO-SYNCHRONISÉ sur le SW (fin du numéro codé en
+     dur dans #settingsVersion, qui était resté figé à v319 aux V320-V322). Le
+     client lit la version réelle du SW et l'affiche ; on ne bumpe plus que le SW. */
+  function lucensSetVersionLabel(v) {
+    const m = String(v || '').match(/v\d+/);
+    const el = document.getElementById('settingsVersion');
+    if (m && el) el.textContent = m[0];
+  }
   navigator.serviceWorker.addEventListener('message', (event) => {
-    if (!event || !event.data || event.data.type !== 'SW_UPDATE_AVAILABLE') return;
-    window.__lucensSwUpdatePending = event.data.version || 'unknown';
+    if (!event || !event.data) return;
+    const data = event.data;
+    if (data.type === 'VERSION' || data.type === 'SW_UPDATE_AVAILABLE') lucensSetVersionLabel(data.version);
+    if (data.type !== 'SW_UPDATE_AVAILABLE') return;
+    window.__lucensSwUpdatePending = data.version || 'unknown';
     const row = document.getElementById('settingsUpdateRow');
     if (!row) return;
     row.hidden = false;
@@ -75,6 +86,13 @@ if ('serviceWorker' in navigator) {
       btn.addEventListener('click', () => { location.reload(); });
     }
   });
+  /* Demande la version au SW au démarrage et à chaque prise de contrôle. */
+  function lucensAskSwVersion() {
+    const c = navigator.serviceWorker.controller;
+    if (c) { try { c.postMessage({ type: 'GET_VERSION' }); } catch (e) {} }
+  }
+  navigator.serviceWorker.ready.then(lucensAskSwVersion).catch(() => {});
+  navigator.serviceWorker.addEventListener('controllerchange', lucensAskSwVersion);
 
   /* V139 — MISE À JOUR SANS FRICTION. Quand un nouveau Service Worker prend le
      contrôle (nouvelle version déployée + activée via skipWaiting), on RECHARGE
@@ -8909,7 +8927,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v323</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v324</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->

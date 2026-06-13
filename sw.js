@@ -13,7 +13,7 @@
  * Versionning : bump CACHE_VERSION à chaque déploiement majeur pour purge propre.
  */
 
-const CACHE_VERSION = 'lucens-v323-2026-06-13';
+const CACHE_VERSION = 'lucens-v324-2026-06-13';
 const APP_SHELL_CACHE = `app-shell-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 
@@ -80,6 +80,14 @@ self.addEventListener('activate', (event) => {
        } catch (e) {}
      }))
   );
+});
+
+/* V324 — répond la version courante du SW au client (libellé Réglages
+   auto-synchronisé : plus jamais de numéro codé en dur à bumper à la main). */
+self.addEventListener('message', (event) => {
+  if (event && event.data && event.data.type === 'GET_VERSION' && event.source) {
+    try { event.source.postMessage({ type: 'VERSION', version: CACHE_VERSION }); } catch (e) {}
+  }
 });
 
 /* ─── FETCH — stratégies par type de requête ───────────────────────── */
