@@ -8924,6 +8924,16 @@ body.lv-open { overflow: hidden; touch-action: none; }
             <span class="settings-theme-switch" aria-hidden="true"><span class="settings-theme-knob"></span></span>
           </button>
         </div>
+        <!-- V326 — LICENCE : saisie + statut. SEUL endroit de l'app où la licence
+             apparaît. Le client ne voit que ses 2 dates ; l'identité est côté admin. -->
+        <div class="settings-group">
+          <span class="settings-group-label" data-i18n="settings_licence">Licence</span>
+          <div id="licenceEntry" style="display:flex;gap:8px;margin-top:4px">
+            <input type="text" id="licenceInput" placeholder="LUCENS-XXXX-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" style="flex:1;min-width:0;height:38px;padding:0 10px;font-size:14px;border:1px solid var(--border,#E2E6E8);border-radius:10px;background:var(--surface-low,#fff);color:var(--ink-primary,#1A2B30)">
+            <button type="button" id="licenceActivate" data-i18n="licence_activate" style="height:38px;padding:0 14px;font-size:13px;font-weight:600;border:none;border-radius:10px;background:var(--lucens-signature,#B54A2A);color:#fff;cursor:pointer">Activer</button>
+          </div>
+          <div id="licenceStatus" style="font-size:13px;margin-top:8px" hidden></div>
+        </div>
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
@@ -11821,6 +11831,15 @@ const I18N = {
     settings_theme_dark:       "Thème sombre",
     settings_theme_dark_sub:   "Confort visuel en faible lumière",
     settings_version:          "Version",
+    settings_licence:          "Licence",
+    licence_activate:          "Activer",
+    licence_active:            "Licence active",
+    licence_expired:           "Licence expirée",
+    licence_none:              "Aucun code actif",
+    licence_valid_until:       "Valable jusqu'au",
+    licence_activated_on:      "Activée le",
+    licence_invalid:           "Code invalide ou expiré",
+    licence_required_msg:      "Licence requise : activez votre code dans les Réglages",
     theme_light:               "Clair",
     theme_dark:                "Sombre",
     back_btn:                  "Retour",
@@ -12452,6 +12471,15 @@ const I18N = {
     settings_lang:             "Language",
     settings_theme:            "Theme",
     settings_version:          "Version",
+    settings_licence:          "Licence",
+    licence_activate:          "Activate",
+    licence_active:            "Licence active",
+    licence_expired:           "Licence expired",
+    licence_none:              "No active code",
+    licence_valid_until:       "Valid until",
+    licence_activated_on:      "Activated on",
+    licence_invalid:           "Invalid or expired code",
+    licence_required_msg:      "Licence required: activate your code in Settings",
     theme_light:               "Light",
     theme_dark:                "Dark",
     back_btn:                  "Back",
@@ -12684,6 +12712,15 @@ const I18N = {
     settings_lang: "Idioma",
     settings_theme: "Tema",
     settings_version: "Versión",
+    settings_licence: "Licencia",
+    licence_activate: "Activar",
+    licence_active: "Licencia activa",
+    licence_expired: "Licencia caducada",
+    licence_none: "Ningún código activo",
+    licence_valid_until: "Válida hasta el",
+    licence_activated_on: "Activada el",
+    licence_invalid: "Código no válido o caducado",
+    licence_required_msg: "Se requiere licencia: active su código en Ajustes",
     theme_light: "Claro",
     theme_dark: "Oscuro",
     back_btn: "Atrás",
@@ -13311,6 +13348,15 @@ const I18N = {
     settings_lang: "Sprache",
     settings_theme: "Thema",
     settings_version: "Version",
+    settings_licence: "Lizenz",
+    licence_activate: "Aktivieren",
+    licence_active: "Lizenz aktiv",
+    licence_expired: "Lizenz abgelaufen",
+    licence_none: "Kein aktiver Code",
+    licence_valid_until: "Gültig bis",
+    licence_activated_on: "Aktiviert am",
+    licence_invalid: "Ungültiger oder abgelaufener Code",
+    licence_required_msg: "Lizenz erforderlich: Code in den Einstellungen aktivieren",
     theme_light: "Hell",
     theme_dark: "Dunkel",
     back_btn: "Zurück",
@@ -16957,6 +17003,80 @@ const Annotator = (() => {
     overlay.querySelectorAll('.lang-btn').forEach(b => {
       b.addEventListener('click', () => { setTimeout(close, 90); });
     });
+  })();
+
+  /* V326 — LICENCE (Réglages uniquement). Saisie + activation + statut (2 dates).
+     deviceId stable en local ; activation = POST /api/analyze mode=licence_activate
+     (lie l'appareil au code, « dernier l'emporte »). Aucun effet ailleurs dans l'UI.
+     Expose __lucensLicenceCode/__lucensDeviceId pour le branchement des analyses. */
+  (function initLicence() {
+    const input = document.getElementById('licenceInput');
+    const btn = document.getElementById('licenceActivate');
+    const statusEl = document.getElementById('licenceStatus');
+    if (!input || !btn || !statusEl) return;
+
+    function deviceId() {
+      let d = localStorage.getItem('lucens_device');
+      if (!d) {
+        d = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+          : ('dev-' + Math.random().toString(36).slice(2) + Date.now().toString(36));
+        localStorage.setItem('lucens_device', d);
+      }
+      return d;
+    }
+    const tr = (k) => (typeof t === 'function' ? t(k) : k);
+    function fmt(iso) { if (!iso) return ''; const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }); }
+
+    function render() {
+      const code = localStorage.getItem('lucens_licence') || '';
+      let meta = null;
+      try { meta = JSON.parse(localStorage.getItem('lucens_licence_meta') || 'null'); } catch (e) {}
+      if (code && !input.value) input.value = code;
+      if (!code || !meta || !meta.expiresAt) { statusEl.hidden = true; statusEl.textContent = ''; return; }
+      const expired = new Date(meta.expiresAt) <= new Date();
+      statusEl.hidden = false;
+      if (expired) {
+        statusEl.style.color = 'var(--danger, #9B2C2C)';
+        statusEl.textContent = tr('licence_expired') + ' · ' + fmt(meta.expiresAt);
+      } else {
+        statusEl.style.color = 'var(--success, #137a4f)';
+        const parts = [tr('licence_active'), tr('licence_valid_until') + ' ' + fmt(meta.expiresAt)];
+        if (meta.activatedAt) parts.push(tr('licence_activated_on') + ' ' + fmt(meta.activatedAt));
+        statusEl.textContent = parts.join(' · ');
+      }
+    }
+
+    async function activate() {
+      const code = (input.value || '').trim().toUpperCase();
+      if (!code) return;
+      btn.disabled = true; const prev = btn.textContent; btn.textContent = '…';
+      try {
+        const r = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-lucens-licence': code, 'x-lucens-device': deviceId() },
+          body: JSON.stringify({ mode: 'licence_activate', code, deviceId: deviceId() }),
+        });
+        const data = await r.json().catch(() => ({}));
+        if (r.ok && data.ok) {
+          localStorage.setItem('lucens_licence', code);
+          localStorage.setItem('lucens_licence_meta', JSON.stringify({ expiresAt: data.expiresAt, activatedAt: data.activatedAt }));
+          render();
+        } else {
+          statusEl.hidden = false; statusEl.style.color = 'var(--danger, #9B2C2C)';
+          statusEl.textContent = tr('licence_invalid');
+        }
+      } catch (e) {
+        statusEl.hidden = false; statusEl.style.color = 'var(--danger, #9B2C2C)';
+        statusEl.textContent = tr('licence_invalid');
+      } finally { btn.disabled = false; btn.textContent = prev; }
+    }
+
+    btn.addEventListener('click', activate);
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') activate(); });
+    window.addEventListener('lucens-lang-changed', render);
+    render();
+    window.__lucensLicenceCode = () => localStorage.getItem('lucens_licence') || '';
+    window.__lucensDeviceId = deviceId;
   })();
 
   /* V164 — Onglet ANALYSE de la barre du bas (brief §13). Écran principal =
