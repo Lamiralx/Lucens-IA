@@ -8972,7 +8972,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v338</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v339</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -22371,8 +22371,13 @@ const Annotator = (() => {
       const verdict = (v.verdict || '').toUpperCase();
       const currentConf = z.confidence ?? 0;
       if (verdict === 'NO_OBJECT' && currentConf < 0.65) {
+        /* V339 — Le juge FLASH (modèle faible) ne SUPPRIME plus une détection du
+           PRO (modèle fort). Pour un outil HACCP, rater une contamination est pire
+           que d'en signaler une douteuse : on abaisse la confiance + on tague, mais
+           la zone RESTE affichée (en plus discret). Fin des « non identifié »
+           causés par le juge faible qui efface en silence une vraie tache. */
         rejectedCount++;
-        return { ...z, _haiku_rejected: true, _haiku_reason: v.reason || '' };
+        return { ...z, confidence: Math.min(currentConf, 0.4), _haiku_uncertain: true, _haiku_reason: v.reason || '' };
       }
       if (verdict === 'UNCERTAIN') {
         uncertainCount++;
@@ -22385,8 +22390,10 @@ const Annotator = (() => {
       return z;
     });
     console.log('[V50 P3] Haiku results : ' + rejectedCount + ' rejected, ' + uncertainCount + ' uncertain, ' + boostedCount + ' boosted');
-    /* Filter out les zones rejetées par Haiku (≥ 0.65 confidence boosté = on garde quand même) */
-    return updated.filter(z => !z._haiku_rejected);
+    /* V339 — AUCUNE suppression : le juge faible ne retire plus de zone (il a déjà
+       abaissé la confiance des NO_OBJECT douteux). Toutes les détections du Pro
+       restent affichées. */
+    return updated;
   }
 
   async function multiPassLowConfidenceZones(zones, imgData, W, H, lang) {
