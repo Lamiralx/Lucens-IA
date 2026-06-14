@@ -1097,7 +1097,7 @@ body.has-offline-banner .upload-hub {
    block qui casserait position:fixed).
    ═══════════════════════════════════════════════════════════════════ */
 :root {
-  --bottom-bar-h: 50px;   /* V312 — +8px (≈2mm) : cible tactile ≥44px HIG, usage terrain ganté + pastille active (était 42px V206) */
+  --bottom-bar-h: 58px;   /* V343 — +8px pour loger des icônes plus grosses (28px) + libellé ; barre plus lisible / userfriendly (était 50px) */
   /* V219 — Onglets façon barre Apple : le fond teal remplit la zone « home
      indicator » et les onglets se posent AU-DESSUS du trait (ils ne le touchent
      plus). Dégagement = quasi tout l'inset iOS (au lieu du ~4px de V206 qui les
@@ -1162,7 +1162,9 @@ body.has-offline-banner .upload-hub {
 }
 .bottom-bar .bb-item:hover { background: transparent !important; }
 .bottom-bar .bb-item:active { transform: scale(0.96) !important; }
-.bottom-bar .bb-item svg { width: 20px !important; height: 20px !important; flex-shrink: 0; }
+/* V343 — Icônes barre du bas AGRANDIES (20→28px) + trait plus présent (2.3) pour
+   un rendu plus lisible / userfriendly, à la façon des barres d'onglets iOS. */
+.bottom-bar .bb-item svg { width: 28px !important; height: 28px !important; flex-shrink: 0; stroke-width: 2.3 !important; }
 /* Label de l'onglet — réaffiché TOUJOURS (on annule les masquages mobiles de
    l'en-tête : .hdr-ctx-text @480px, .hdr-hist-text @560px). */
 .bottom-bar .bb-label,
@@ -8977,7 +8979,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v342</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v343</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
