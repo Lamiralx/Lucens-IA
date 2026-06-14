@@ -1436,7 +1436,15 @@ Fin : respecte strictement la langue ${langName} et retourne uniquement le JSON.
        suivant à la MOINDRE erreur (ID preview non exposé pour la clé, 404/429/5xx,
        timeout, réponse vide) car l'incertitude principale est la disponibilité de
        l'ID preview. withTimeout 110s : cap dur côté serveur (marge avant 300s). */
-    const MODEL_CHAIN = [PRIMARY_MODEL, ...FALLBACK_MODELS];
+    /* Benchmark A/B : override de modèle, UNIQUEMENT si le header admin correspond
+       au token (les clients normaux ne peuvent pas le déclencher → pas de coût
+       subi). Force un SEUL modèle (pas de repli) pour mesurer sa qualité pure. */
+    const _benchModel = (typeof req.body?.benchModel === 'string'
+      && req.headers['x-lucens-admin']
+      && process.env.LUCENS_ADMIN_TOKEN
+      && req.headers['x-lucens-admin'] === process.env.LUCENS_ADMIN_TOKEN)
+      ? req.body.benchModel : null;
+    const MODEL_CHAIN = _benchModel ? [_benchModel] : [PRIMARY_MODEL, ...FALLBACK_MODELS];
     let message = null;
     let usedFallback = false;
     let lastErr = null;
