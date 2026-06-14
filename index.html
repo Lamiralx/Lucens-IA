@@ -1247,7 +1247,11 @@ body.has-offline-banner .upload-hub {
    (gris clair sur blanc). Maintenant : surface teal foncé de la marque (accordée
    au logo LUCENS + au bouton « Analyser en direct ») → onglets clairs TRÈS
    visibles, barre clairement identifiée comme zone de navigation. */
-.bottom-bar {
+/* V345 — Le fond petrol #0F3D4E de la barre est réservé au THÈME CLAIR (barre de
+   nav branded, onglets clairs très lisibles). En SOMBRE, la barre reprend le fond
+   near-black du header (var(--header-bg)) via la règle de base → elle s'aligne sur
+   le reste de l'app sombre (plus de « bleu petrol » qui jure avec le quasi-noir). */
+:root[data-theme="light"] .bottom-bar {
   background: #0F3D4E !important;
   border-top: 1px solid rgba(255,255,255,0.10) !important;
   box-shadow: 0 -8px 24px -14px rgba(12,14,19,0.40) !important;
@@ -8979,7 +8983,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v344</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v345</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
