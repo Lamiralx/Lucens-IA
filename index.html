@@ -8878,9 +8878,14 @@ body.lv-open { overflow: hidden; touch-action: none; }
         </svg>
         <span class="hdr-ctx-text bb-label" data-i18n="hdr_ctx_btn">Contexte</span>
       </button>
-      <!-- V162 — Langue + Thème SORTIS de la barre du bas (réglages rares) et
-           regroupés derrière ce bouton « Réglages » qui ouvre un panneau. La barre
-           du bas ne garde que les outils fréquents : Historique, Contexte, Réglages. -->
+      <!-- V342 — Bouton « Personnalisation » (Langue + Thème), à côté de Contexte.
+           Réglages ne garde plus que Licence + Version + Mise à jour. -->
+      <button type="button" class="bb-item bb-perso-btn" id="personalizationBtn" aria-label="Personnalisation" aria-haspopup="dialog" aria-expanded="false">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>
+        </svg>
+        <span class="bb-label" data-i18n="settings_personalization">Personnalisation</span>
+      </button>
       <button type="button" class="bb-item bb-settings-btn" id="settingsBtn" aria-label="Réglages" aria-haspopup="dialog" aria-expanded="false">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="9" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="17" r="2"/>
@@ -8972,7 +8977,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v341</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v342</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -8982,6 +8987,22 @@ body.lv-open { overflow: hidden; touch-action: none; }
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- V342 — PERSONNALISATION : 2ᵉ bottom-sheet (Langue + Thème), ouvert par le
+       bouton « Personnalisation » de la barre du bas. Le contenu Langue/Thème est
+       DÉPLACÉ ici par JS (initPersonalizationSheet) depuis le panneau Réglages, qui
+       ne garde plus que Licence + Version + Mise à jour. -->
+  <div class="settings-overlay" id="personalizationOverlay" hidden>
+    <div class="settings-sheet" role="dialog" aria-modal="true" aria-labelledby="persoTitle">
+      <div class="settings-head">
+        <span class="settings-title" id="persoTitle" data-i18n="settings_personalization">Personnalisation</span>
+        <button type="button" class="settings-close" id="persoClose" aria-label="Fermer la personnalisation">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="settings-body" id="persoBody"></div>
     </div>
   </div>
 
@@ -11860,6 +11881,7 @@ const I18N = {
     bb_theme:                  "Thème",
     bb_analyse:                "Analyse",
     bb_settings:               "Réglages",
+    settings_personalization:  "Personnalisation",
     settings_title:            "Réglages",
     settings_lang:             "Langue",
     settings_theme:            "Thème",
@@ -12517,6 +12539,7 @@ const I18N = {
     bb_theme:                  "Theme",
     bb_analyse:                "Analysis",
     bb_settings:               "Settings",
+    settings_personalization:  "Personalisation",
     settings_title:            "Settings",
     settings_lang:             "Language",
     settings_theme:            "Theme",
@@ -12773,6 +12796,7 @@ const I18N = {
     bb_theme: "Tema",
     bb_analyse: "Análisis",
     bb_settings: "Ajustes",
+    settings_personalization: "Personalización",
     settings_title: "Ajustes",
     settings_lang: "Idioma",
     settings_theme: "Tema",
@@ -13424,6 +13448,7 @@ const I18N = {
     bb_theme: "Thema",
     bb_analyse: "Analyse",
     bb_settings: "Einstellungen",
+    settings_personalization: "Personalisierung",
     settings_title: "Einstellungen",
     settings_lang: "Sprache",
     settings_theme: "Thema",
@@ -17098,6 +17123,33 @@ const Annotator = (() => {
     overlay.querySelectorAll('.lang-btn').forEach(b => {
       b.addEventListener('click', () => { setTimeout(close, 90); });
     });
+  })();
+
+  /* V342 — PERSONNALISATION (bottom-sheet à part, bouton dédié dans la barre du bas).
+     On DÉPLACE les groupes Langue + Thème depuis le panneau Réglages vers ce panneau
+     (déplacement DOM → le câblage global des .lang-btn et du #themeToggle est conservé).
+     Réglages ne garde donc que Licence + Version + Mise à jour. */
+  (function initPersonalizationSheet() {
+    const btn = document.getElementById('personalizationBtn');
+    const overlay = document.getElementById('personalizationOverlay');
+    const body = document.getElementById('persoBody');
+    const closeBtn = document.getElementById('persoClose');
+    if (!btn || !overlay || !body) return;
+    try {
+      const lg = (document.getElementById('settingsLangGrid') || {}).closest ? document.getElementById('settingsLangGrid').closest('.settings-group') : null;
+      const tg = (document.getElementById('themeToggle') || {}).closest ? document.getElementById('themeToggle').closest('.settings-group') : null;
+      if (lg) body.appendChild(lg);
+      if (tg) body.appendChild(tg);
+    } catch (e) {}
+    const open = () => { overlay.hidden = false; btn.setAttribute('aria-expanded', 'true'); if (typeof window.__syncThemeState === 'function') window.__syncThemeState(); };
+    const close = () => { overlay.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
+    window.__openPersonalization = open; window.__closePersonalization = close;
+    btn.addEventListener('click', (e) => { e.stopPropagation(); if (overlay.hidden) open(); else close(); });
+    if (closeBtn) closeBtn.addEventListener('click', (e) => { e.stopPropagation(); close(); });
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !overlay.hidden) close(); });
+    /* Choisir une langue applique + ferme le panneau. */
+    overlay.querySelectorAll('.lang-btn').forEach(b => { b.addEventListener('click', () => { setTimeout(close, 90); }); });
   })();
 
   /* V326 — LICENCE (Réglages uniquement). Saisie + activation + statut (2 dates).
