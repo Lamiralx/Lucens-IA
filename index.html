@@ -1648,7 +1648,7 @@ body.has-offline-banner .info-page { top: var(--offline-banner-height, 36px); }
 .info-page-body .cmp-row{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,.95fr) minmax(0,.95fr) minmax(0,1.05fr);align-items:stretch}
 .info-page-body .cmp-row+.cmp-row{border-top:1px solid var(--hairline)}
 .info-page-body .cmp-cell{display:flex;align-items:center;justify-content:center;padding:12px 4px;text-align:center;min-width:0}
-.info-page-body .cmp-cell.cmp-lab{justify-content:flex-start;text-align:left;padding-left:14px;font-size:12.5px;line-height:1.25;font-weight:500;color:var(--ink-secondary);overflow-wrap:break-word}
+.info-page-body .cmp-cell.cmp-lab{justify-content:flex-start;text-align:left;padding-left:14px;font-size:12px;line-height:1.25;font-weight:500;color:var(--ink-secondary);overflow-wrap:break-word}
 .info-page-body .cmp-col-luc{background:color-mix(in srgb, var(--accent) 7%, transparent)}
 .info-page-body .cmp-head .cmp-cell{padding:11px 4px;font-size:11px;font-weight:700;color:var(--ink-tertiary);line-height:1.15;white-space:nowrap}
 .info-page-body .cmp-head .cmp-lab{letter-spacing:.1em;text-transform:uppercase}
@@ -1659,7 +1659,7 @@ body.has-offline-banner .info-page { top: var(--offline-banner-height, 36px); }
 .info-page-body .cmp-yes{color:var(--ink-tertiary)}
 .info-page-body .cmp-col-luc .cmp-yes{color:var(--lucens-signature);font-size:17px}
 .info-page-body .cmp-no{color:var(--ink-tertiary);opacity:.45;font-weight:500}
-.info-page-body .cmp-part{color:#BA7517;font-size:12.5px;font-weight:600}
+.info-page-body .cmp-part{color:#BA7517;font-size:12px;font-weight:600}
 .info-page-body .cmp-foot{padding:12px 10px;background:color-mix(in srgb, var(--accent) 7%, transparent);border-top:1px solid var(--hairline);font-size:12px;font-weight:600;color:var(--accent);letter-spacing:.02em;text-align:center}
 .info-page-body .cmp-foot::before{content:'';display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--lucens-signature);margin-right:7px;vertical-align:1px}
 
@@ -8906,26 +8906,26 @@ body.lv-open { overflow: hidden; touch-action: none; }
              bascule douce ouvre ce panneau). SEUL endroit où la licence apparaît. -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_licence">Licence</span>
-          <p id="licenceHint" style="font-size:12.5px;color:var(--ink-tertiary,#6B7280);margin:2px 0 8px;line-height:1.4" data-i18n="licence_hint">Entrez votre clé de licence pour activer l'analyse.</p>
+          <p id="licenceHint" style="font-size:12px;color:var(--ink-tertiary);margin:2px 0 8px;line-height:1.4" data-i18n="licence_hint">Entrez votre clé de licence pour activer l'analyse.</p>
           <div id="licenceEntry" style="display:flex;gap:8px;margin-top:4px">
-            <input type="text" id="licenceInput" placeholder="LUCENS-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" style="flex:1;min-width:0;height:38px;padding:0 10px;font-size:14px;border:1px solid var(--border,#E2E6E8);border-radius:10px;background:var(--surface-low,#fff);color:var(--ink-primary,#1A2B30)">
-            <button type="button" id="licenceActivate" data-i18n="licence_activate" style="height:38px;padding:0 14px;font-size:13px;font-weight:600;border:none;border-radius:10px;background:var(--lucens-signature,#B54A2A);color:#fff;cursor:pointer">Activer</button>
+            <input type="text" id="licenceInput" placeholder="LUCENS-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" style="flex:1;min-width:0;height:38px;padding:0 10px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-low);color:var(--ink-primary)">
+            <button type="button" id="licenceActivate" data-i18n="licence_activate" style="height:38px;padding:0 14px;font-size:13px;font-weight:600;border:none;border-radius:var(--radius-md);background:var(--accent);color:#fff;cursor:pointer">Activer</button>
           </div>
           <div id="licenceStatus" style="font-size:13px;margin-top:8px" hidden></div>
-          <button type="button" id="licenceRemove" data-i18n="licence_remove" hidden style="height:32px;padding:0 10px;margin-top:8px;font-size:12.5px;font-weight:500;border:1px solid var(--border,#E2E6E8);border-radius:9px;background:transparent;color:var(--danger,#9B2C2C);cursor:pointer">Retirer la licence</button>
+          <button type="button" id="licenceRemove" data-i18n="licence_remove" hidden style="height:32px;padding:0 10px;margin-top:8px;font-size:12px;font-weight:500;border:1px solid var(--border);border-radius:var(--radius-md);background:transparent;color:var(--ink-secondary);cursor:pointer">Retirer la licence</button>
           <div id="licenceGet" style="margin-top:10px">
-            <button type="button" id="licenceGetBtn" data-i18n="licence_get" style="height:38px;padding:0 14px;font-size:13px;font-weight:600;border:none;border-radius:10px;background:var(--lucens-signature,#B54A2A);color:#fff;cursor:pointer">Obtenir une licence</button>
+            <button type="button" id="licenceGetBtn" data-i18n="licence_get" style="height:38px;padding:0 14px;font-size:13px;font-weight:600;border:none;border-radius:var(--radius-md);background:var(--accent);color:#fff;cursor:pointer">Obtenir une licence</button>
             <div id="licenceReqForm" hidden style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
-              <p id="licenceReqIntro" data-i18n="licence_req_intro" style="font-size:12.5px;color:var(--ink-tertiary,#6B7280);margin:0;line-height:1.4">Laissez vos coordonnées, nous vous envoyons un code.</p>
+              <p id="licenceReqIntro" data-i18n="licence_req_intro" style="font-size:12px;color:var(--ink-tertiary);margin:0;line-height:1.4">Laissez vos coordonnées, nous vous envoyons un code.</p>
               <div style="display:flex;gap:8px">
-                <input type="text" id="lr_prenom" autocomplete="given-name" style="flex:1;min-width:0;height:36px;padding:0 10px;font-size:14px;border:1px solid var(--border,#E2E6E8);border-radius:10px;background:var(--surface-low,#fff);color:var(--ink-primary,#1A2B30)">
-                <input type="text" id="lr_nom" autocomplete="family-name" style="flex:1;min-width:0;height:36px;padding:0 10px;font-size:14px;border:1px solid var(--border,#E2E6E8);border-radius:10px;background:var(--surface-low,#fff);color:var(--ink-primary,#1A2B30)">
+                <input type="text" id="lr_prenom" autocomplete="given-name" style="flex:1;min-width:0;height:36px;padding:0 10px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-low);color:var(--ink-primary)">
+                <input type="text" id="lr_nom" autocomplete="family-name" style="flex:1;min-width:0;height:36px;padding:0 10px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-low);color:var(--ink-primary)">
               </div>
-              <input type="email" id="lr_email" autocomplete="email" inputmode="email" style="height:36px;padding:0 10px;font-size:14px;border:1px solid var(--border,#E2E6E8);border-radius:10px;background:var(--surface-low,#fff);color:var(--ink-primary,#1A2B30)">
-              <input type="tel" id="lr_tel" autocomplete="tel" inputmode="tel" style="height:36px;padding:0 10px;font-size:14px;border:1px solid var(--border,#E2E6E8);border-radius:10px;background:var(--surface-low,#fff);color:var(--ink-primary,#1A2B30)">
-              <input type="text" id="lr_entreprise" autocomplete="organization" style="height:36px;padding:0 10px;font-size:14px;border:1px solid var(--border,#E2E6E8);border-radius:10px;background:var(--surface-low,#fff);color:var(--ink-primary,#1A2B30)">
-              <textarea id="lr_message" rows="2" style="padding:8px 10px;font-size:14px;border:1px solid var(--border,#E2E6E8);border-radius:10px;background:var(--surface-low,#fff);color:var(--ink-primary,#1A2B30);resize:vertical;font-family:inherit"></textarea>
-              <button type="button" id="lr_send" data-i18n="licence_req_send" style="height:38px;padding:0 14px;font-size:13px;font-weight:600;border:none;border-radius:10px;background:var(--lucens-signature,#B54A2A);color:#fff;cursor:pointer">Envoyer la demande</button>
+              <input type="email" id="lr_email" autocomplete="email" inputmode="email" style="height:36px;padding:0 10px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-low);color:var(--ink-primary)">
+              <input type="tel" id="lr_tel" autocomplete="tel" inputmode="tel" style="height:36px;padding:0 10px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-low);color:var(--ink-primary)">
+              <input type="text" id="lr_entreprise" autocomplete="organization" style="height:36px;padding:0 10px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-low);color:var(--ink-primary)">
+              <textarea id="lr_message" rows="2" style="padding:8px 10px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-low);color:var(--ink-primary);resize:vertical;font-family:inherit"></textarea>
+              <button type="button" id="lr_send" data-i18n="licence_req_send" style="height:38px;padding:0 14px;font-size:13px;font-weight:600;border:none;border-radius:var(--radius-md);background:var(--accent);color:#fff;cursor:pointer">Envoyer la demande</button>
               <div id="lr_status" style="font-size:13px" hidden></div>
             </div>
           </div>
@@ -8968,7 +8968,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v346</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary);padding:2px 0;">v347</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -9127,7 +9127,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
           </button>
 
           <div class="home-accordions">
-            <span class="home-more-label" data-i18n="home_more" style="display:block;font-size:12.5px;font-weight:600;color:var(--text-3,#6B7280);margin:22px 2px 6px">En savoir plus</span>
+            <span class="home-more-label" data-i18n="home_more" style="display:block;font-size:12px;font-weight:600;color:var(--text-3);margin:22px 2px 6px">En savoir plus</span>
             <div class="acc-item">
               <button class="acc-head" type="button" data-page="why" aria-label="Pourquoi Lucens">
                 <span class="acc-label" data-i18n="home_why">Pourquoi Lucens</span>
@@ -9741,7 +9741,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
       #results.visible #hero .hero-risk-label,
       .hist-live-result .hero .hero-risk-label {
         font-size: 12px !important; font-weight: 600 !important;
-        color: var(--ink-tertiary, #6B7280) !important;
+        color: var(--ink-tertiary) !important;
       }
       /* La jauge slim — RE-AFFICHÉE et restylée façon Apple Health */
       #results.visible #hero .hero-gauge,
@@ -9778,7 +9778,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         padding: 0 2px !important;
         font-size: 10px !important;
         font-weight: 600 !important;
-        color: var(--ink-tertiary, #6B7280) !important;
+        color: var(--ink-tertiary) !important;
       }
       /* Hide .hero-seg (pilules) — on utilise .hero-gauge à la place */
       #results.visible #hero .hero-seg,
@@ -17198,10 +17198,10 @@ const Annotator = (() => {
       const expired = new Date(meta.expiresAt) <= new Date();
       statusEl.hidden = false;
       if (expired) {
-        statusEl.style.color = 'var(--danger, #9B2C2C)';
+        statusEl.style.color = 'var(--risk-hi)';
         statusEl.textContent = tr('licence_expired') + ' · ' + code + ' · ' + fmtDay(meta.expiresAt);
       } else {
-        statusEl.style.color = 'var(--success, #137a4f)';
+        statusEl.style.color = 'var(--risk-low)';
         const parts = [tr('licence_active'), code, tr('licence_valid_until') + ' ' + fmtDay(meta.expiresAt)];
         if (meta.activatedAt) parts.push(tr('licence_activated_on') + ' ' + fmt(meta.activatedAt));
         statusEl.textContent = parts.join(' · ');
@@ -17224,11 +17224,11 @@ const Annotator = (() => {
           localStorage.setItem('lucens_licence_meta', JSON.stringify({ expiresAt: data.expiresAt, activatedAt: data.activatedAt }));
           render();
         } else {
-          statusEl.hidden = false; statusEl.style.color = 'var(--danger, #9B2C2C)';
+          statusEl.hidden = false; statusEl.style.color = 'var(--risk-hi)';
           statusEl.textContent = tr(data && data.reason === 'device_taken' ? 'licence_taken' : 'licence_invalid');
         }
       } catch (e) {
-        statusEl.hidden = false; statusEl.style.color = 'var(--danger, #9B2C2C)';
+        statusEl.hidden = false; statusEl.style.color = 'var(--risk-hi)';
         statusEl.textContent = tr('licence_invalid');
       } finally { btn.disabled = false; btn.textContent = prev; }
     }
@@ -17253,7 +17253,7 @@ const Annotator = (() => {
       try { localStorage.removeItem('lucens_licence_meta'); } catch (e) {}
       input.value = '';
       render();
-      statusEl.hidden = false; statusEl.style.color = 'var(--ink-tertiary, #6B7280)';
+      statusEl.hidden = false; statusEl.style.color = 'var(--ink-tertiary)';
       statusEl.textContent = tr('licence_removed');
       setTimeout(() => { if (statusEl.textContent === tr('licence_removed')) statusEl.hidden = true; }, 2600);
       try { input.focus(); } catch (e) {}
@@ -17275,20 +17275,20 @@ const Annotator = (() => {
       sendBtn.addEventListener('click', async () => {
         const g = (id) => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
         const data = { prenom: g('lr_prenom'), nom: g('lr_nom'), email: g('lr_email'), telephone: g('lr_tel'), entreprise: g('lr_entreprise'), message: g('lr_message') };
-        if (!data.email && !data.telephone) { reqStatus.hidden = false; reqStatus.style.color = 'var(--danger, #9B2C2C)'; reqStatus.textContent = tr('lr_ph_email') + ' / ' + tr('lr_ph_tel') + ' ?'; return; }
+        if (!data.email && !data.telephone) { reqStatus.hidden = false; reqStatus.style.color = 'var(--risk-hi)'; reqStatus.textContent = tr('lr_ph_email') + ' / ' + tr('lr_ph_tel') + ' ?'; return; }
         sendBtn.disabled = true; const prev = sendBtn.textContent; sendBtn.textContent = '…';
         try {
           const r = await fetch('/api/analyze', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mode: 'licence_request', data }) });
           const j = await r.json().catch(() => ({}));
           if (r.ok && j.ok) {
             reqForm.querySelectorAll('input, textarea').forEach((el) => { el.value = ''; });
-            reqStatus.hidden = false; reqStatus.style.color = 'var(--success, #137a4f)'; reqStatus.textContent = tr('licence_req_sent');
+            reqStatus.hidden = false; reqStatus.style.color = 'var(--risk-low)'; reqStatus.textContent = tr('licence_req_sent');
             setTimeout(() => { reqForm.hidden = true; reqStatus.hidden = true; }, 4000);
           } else {
-            reqStatus.hidden = false; reqStatus.style.color = 'var(--danger, #9B2C2C)'; reqStatus.textContent = tr('licence_req_error');
+            reqStatus.hidden = false; reqStatus.style.color = 'var(--risk-hi)'; reqStatus.textContent = tr('licence_req_error');
           }
         } catch (e) {
-          reqStatus.hidden = false; reqStatus.style.color = 'var(--danger, #9B2C2C)'; reqStatus.textContent = tr('licence_req_error');
+          reqStatus.hidden = false; reqStatus.style.color = 'var(--risk-hi)'; reqStatus.textContent = tr('licence_req_error');
         } finally { sendBtn.disabled = false; sendBtn.textContent = prev; }
       });
     }
