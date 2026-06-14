@@ -179,6 +179,7 @@
   let items = [];
   let requests = [];
   let fQ = ''; let fStatus = 'all';
+  let lastLoadOk = false;   /* V349 — passe à true après un chargement réussi : autorise le polling live */
   function codeStatus(l){ if(l.statut==='revoked') return 'revoked'; if(l.expiresAt && new Date(l.expiresAt) <= new Date()) return 'expired'; return 'active'; }
   function matchesText(o, fields){ if(!fQ) return true; return fields.map(f => (o[f]||'')).join(' ').toLowerCase().includes(fQ); }
   function matchesCode(l){ if(fStatus==='unbound'){ if(l.deviceId) return false; } else if(fStatus!=='all' && codeStatus(l)!==fStatus) return false; return matchesText(l, ['code','nom','prenom','email','entreprise','numeroCommande']); }
@@ -322,8 +323,9 @@
       const res = await call({ action:'licence_list' });
       items = res.items || [];
       renderRows();
+      lastLoadOk = true;
       setGlobal(items.length + ' code(s).', items.length ? 'ok' : '');
-    }catch(e){ setGlobal(e.message, 'err'); }
+    }catch(e){ lastLoadOk = false; setGlobal(e.message, 'err'); }
     loadRequests();
   }
 
@@ -462,7 +464,13 @@
     catch(e){ setGlobal(e.message, 'err'); }
   });
 
-  if(($('tok').value || '').trim()) refreshSecurity();
+  /* V349 — STABILITÉ : auto-chargement au démarrage (un refresh ne VIDE plus la
+     page — plus besoin de recliquer « Charger les codes ») + rafraîchissement LIVE
+     des demandes toutes les 20 s (en pause quand l'onglet est caché, repris au
+     retour au premier plan). */
+  if (($('tok').value || '').trim()) { refreshSecurity(); load(); }
+  setInterval(() => { if (!document.hidden && lastLoadOk) loadRequests(); }, 20000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && lastLoadOk) loadRequests(); });
 </script>
 </body>
 </html>
