@@ -1659,7 +1659,7 @@ body.has-offline-banner .info-page { top: var(--offline-banner-height, 36px); }
 .info-page-body .cmp-yes{color:var(--ink-tertiary)}
 .info-page-body .cmp-col-luc .cmp-yes{color:var(--lucens-signature);font-size:17px}
 .info-page-body .cmp-no{color:var(--ink-tertiary);opacity:.45;font-weight:500}
-.info-page-body .cmp-part{color:#BA7517;font-size:12px;font-weight:600}
+.info-page-body .cmp-part{color:var(--risk-mid);font-size:12px;font-weight:600}
 .info-page-body .cmp-foot{padding:12px 10px;background:color-mix(in srgb, var(--accent) 7%, transparent);border-top:1px solid var(--hairline);font-size:12px;font-weight:600;color:var(--accent);letter-spacing:.02em;text-align:center}
 .info-page-body .cmp-foot::before{content:'';display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--lucens-signature);margin-right:7px;vertical-align:1px}
 
@@ -8908,24 +8908,24 @@ body.lv-open { overflow: hidden; touch-action: none; }
           <span class="settings-group-label" data-i18n="settings_licence">Licence</span>
           <p id="licenceHint" style="font-size:12px;color:var(--ink-tertiary);margin:2px 0 8px;line-height:1.4" data-i18n="licence_hint">Entrez votre clé de licence pour activer l'analyse.</p>
           <div id="licenceEntry" style="display:flex;gap:8px;margin-top:4px">
-            <input type="text" id="licenceInput" placeholder="LUCENS-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" style="flex:1;min-width:0;height:38px;padding:0 10px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-low);color:var(--ink-primary)">
-            <button type="button" id="licenceActivate" data-i18n="licence_activate" style="height:38px;padding:0 14px;font-size:13px;font-weight:600;border:none;border-radius:var(--radius-md);background:var(--accent);color:#fff;cursor:pointer">Activer</button>
+            <input type="text" id="licenceInput" placeholder="LUCENS-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" style="flex:1;min-width:0;height:46px;padding:0 12px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-low);color:var(--ink-primary)">
+            <button type="button" id="licenceActivate" data-i18n="licence_activate" style="height:46px;padding:0 16px;font-size:14px;font-weight:600;border:none;border-radius:var(--radius-md);background:var(--accent);color:#fff;cursor:pointer">Activer</button>
           </div>
           <div id="licenceStatus" style="font-size:13px;margin-top:8px" hidden></div>
-          <button type="button" id="licenceRemove" data-i18n="licence_remove" hidden style="height:32px;padding:0 10px;margin-top:8px;font-size:12px;font-weight:500;border:1px solid var(--border);border-radius:var(--radius-md);background:transparent;color:var(--ink-secondary);cursor:pointer">Retirer la licence</button>
+          <button type="button" id="licenceRemove" data-i18n="licence_remove" hidden style="height:44px;padding:0 14px;margin-top:8px;font-size:13px;font-weight:500;border:1px solid var(--border);border-radius:var(--radius-md);background:transparent;color:var(--ink-secondary);cursor:pointer">Retirer la licence</button>
           <div id="licenceGet" style="margin-top:10px">
-            <button type="button" id="licenceGetBtn" data-i18n="licence_get" style="height:38px;padding:0 14px;font-size:13px;font-weight:600;border:none;border-radius:var(--radius-md);background:var(--accent);color:#fff;cursor:pointer">Obtenir une licence</button>
+            <button type="button" id="licenceGetBtn" data-i18n="licence_get" style="height:46px;padding:0 16px;font-size:14px;font-weight:600;border:none;border-radius:var(--radius-md);background:var(--accent);color:#fff;cursor:pointer">Obtenir une licence</button>
             <div id="licenceReqForm" hidden style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
               <p id="licenceReqIntro" data-i18n="licence_req_intro" style="font-size:12px;color:var(--ink-tertiary);margin:0;line-height:1.4">Laissez vos coordonnées, nous vous envoyons un code.</p>
               <div style="display:flex;gap:8px">
-                <input type="text" id="lr_prenom" autocomplete="given-name" style="flex:1;min-width:0;height:36px;padding:0 10px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-low);color:var(--ink-primary)">
-                <input type="text" id="lr_nom" autocomplete="family-name" style="flex:1;min-width:0;height:36px;padding:0 10px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-low);color:var(--ink-primary)">
+                <input type="text" id="lr_prenom" autocomplete="given-name" style="flex:1;min-width:0;height:46px;padding:0 12px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-low);color:var(--ink-primary)">
+                <input type="text" id="lr_nom" autocomplete="family-name" style="flex:1;min-width:0;height:46px;padding:0 12px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-low);color:var(--ink-primary)">
               </div>
-              <input type="email" id="lr_email" autocomplete="email" inputmode="email" style="height:36px;padding:0 10px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-low);color:var(--ink-primary)">
-              <input type="tel" id="lr_tel" autocomplete="tel" inputmode="tel" style="height:36px;padding:0 10px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-low);color:var(--ink-primary)">
-              <input type="text" id="lr_entreprise" autocomplete="organization" style="height:36px;padding:0 10px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-low);color:var(--ink-primary)">
+              <input type="email" id="lr_email" autocomplete="email" inputmode="email" style="height:46px;padding:0 12px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-low);color:var(--ink-primary)">
+              <input type="tel" id="lr_tel" autocomplete="tel" inputmode="tel" style="height:46px;padding:0 12px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-low);color:var(--ink-primary)">
+              <input type="text" id="lr_entreprise" autocomplete="organization" style="height:46px;padding:0 12px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-low);color:var(--ink-primary)">
               <textarea id="lr_message" rows="2" style="padding:8px 10px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-low);color:var(--ink-primary);resize:vertical;font-family:inherit"></textarea>
-              <button type="button" id="lr_send" data-i18n="licence_req_send" style="height:38px;padding:0 14px;font-size:13px;font-weight:600;border:none;border-radius:var(--radius-md);background:var(--accent);color:#fff;cursor:pointer">Envoyer la demande</button>
+              <button type="button" id="lr_send" data-i18n="licence_req_send" style="height:46px;padding:0 16px;font-size:14px;font-weight:600;border:none;border-radius:var(--radius-md);background:var(--accent);color:#fff;cursor:pointer">Envoyer la demande</button>
               <div id="lr_status" style="font-size:13px" hidden></div>
             </div>
           </div>
@@ -8968,7 +8968,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary);padding:2px 0;">v347</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary);padding:2px 0;">v348</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
