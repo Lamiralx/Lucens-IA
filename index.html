@@ -8836,11 +8836,10 @@ body.lv-open { overflow: hidden; touch-action: none; }
 <script>(function(){try{var e=document.getElementById('lcsLaunch');if(!e)return;if(sessionStorage.getItem('lcsLaunched')){e.style.display='none';return;}sessionStorage.setItem('lcsLaunched','1');e.addEventListener('animationend',function(a){if(a.animationName==='lcsSplashOut')e.remove();});}catch(x){}})();</script>
 <div class="app">
 
-  <!-- Bandeau offline — visible uniquement quand pas de connexion ou queue non vide -->
-  <div class="offline-banner lv-hidden" id="offlineBanner" role="status" aria-live="polite">
-    <span class="offline-banner-dot" aria-hidden="true"></span>
-    <span class="offline-banner-text" id="offlineBannerText">Hors-ligne · vos analyses partiront à la reconnexion</span>
-  </div>
+  <!-- V337 — Bandeau « offline / synchronisation » RETIRÉ. Son absence neutralise
+       tout le module OfflineUI (sa garde `if (!banner) return null`) : plus
+       d'intervalle de synchro, plus de listeners online/offline, plus de bannière
+       ni de décalage `has-offline-banner`. L'analyse est en ligne uniquement. -->
 
   <!-- HEADER — V272 : LOCKUP UNIFIÉ (wordmark LUCENS + point cuivre, sans baseline).
        Le viseur reste l'icône d'app (PWA/favicon), plus dans le lockup in-app. -->
@@ -8969,7 +8968,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v336</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v337</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -21246,20 +21245,24 @@ const Annotator = (() => {
           currentAnalyzeAbort = null;
           return;
         }
-        /* V136 — HORS-LIGNE : on NE court-circuite plus vers un écran vide. La
-           détection de fluorescence est 100% locale → on PRODUIT et AFFICHE tout
-           de suite l'analyse heuristique (fallback ci-dessous). L'appel Claude
-           reste en file et viendra AFFINER la MÊME fiche (mise à jour en place,
-           pas de doublon) au retour réseau. */
-        _offlineQueued = !!(apiErr && apiErr.code === 'OFFLINE_QUEUED');
-        if (_offlineQueued) {
-          _offlineQueueId = (apiErr && apiErr.queueId) || null;
-          console.log('[OFFLINE] File d\'attente OK (ID', _offlineQueueId, ') — analyse heuristique locale immédiate.');
-          if (window.LucensOfflineUI && window.LucensOfflineUI.refresh) {
-            window.LucensOfflineUI.refresh();
-          }
-          /* PAS de return : on tombe dans le fallback heuristique local. */
-        }
+        /* V337 — Repli « analyse locale heuristique » SUPPRIMÉ. Hors-ligne ou API
+           en panne, la détection mono-frame sans Gemini produisait un résultat
+           INCORRECT + une cartographie cassée, présentés comme un vrai verdict, et
+           déclenchait la bannière « synchronisation ». Pour un outil HACCP, pas
+           d'analyse vaut mieux qu'une fausse. On ferme proprement et on affiche
+           l'erreur sobre « Relancer ». Le verrouillage du téléphone (qui faisait
+           croire à un hors-ligne) ne détourne plus rien : la requête se poursuit /
+           réessaie et aboutit au déverrouillage. Le bloc heuristique ci-dessous
+           est désormais inatteignable (conservé inerte). */
+        loader.classList.remove('active');
+        try { stopTipRotation(); } catch (e) {}
+        try { stopMicroRotation(); } catch (e) {}
+        try { stopLoaderTimer(); } catch (e) {}
+        uploadHub.style.display = '';
+        currentAnalyzeAbort = null;
+        console.warn('[process] analyse indisponible (réseau/serveur) :', apiErr && (apiErr.message || apiErr));
+        showAnalysisError();
+        return;
         /* V83 — Fallback heuristique REFONDU pour matcher la structure canonique
            définie en V58/V62/V69 : exactement 4 observations (risk_summary,
            surface_summary, fluorescence_summary, recommendation) en mots-clés.
@@ -22464,18 +22467,10 @@ const Annotator = (() => {
       liveHints,
       spectroHints,
     };
+    /* V337 — Plus d'enveloppe « offline fallback » : on appelle directement
+       /api/analyze (avec retries) via fetchAnalyzeWithRetry ci-dessous. Aucune
+       mise en file d'attente. */
     let _offlineResult = null;
-    if (typeof submitAnalysisWithOfflineFallback === 'function') {
-      _offlineResult = await submitAnalysisWithOfflineFallback(_analyzePayload);
-      if (_offlineResult.queued) {
-        /* On a été mis en queue offline. On lance un throw spécial pour
-           que le catch ApiErr en aval bascule sur le verdict local provisoire. */
-        const queuedErr = new Error('OFFLINE_QUEUED');
-        queuedErr.code = 'OFFLINE_QUEUED';
-        queuedErr.queueId = _offlineResult.queueId;
-        throw queuedErr;
-      }
-    }
     /* V51 — Auto-retry RENFORCÉ : 3 tentatives avec backoff exponentiel + jitter.
        Objectif : éliminer les erreurs "Lucens IA indisponible" causées par des
        saturations temporaires Anthropic (529 overloaded), des timeouts Vercel,
@@ -22486,12 +22481,10 @@ const Annotator = (() => {
        backoff exponentiel + jitter aléatoire pour étaler les retries en cas
        de panne large (évite que tous les clients hit Anthropic en même temps). */
     async function fetchAnalyzeWithRetry() {
-      /* V27 — Si on devient offline en cours d'analyse, on bascule en queue. */
-      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-        const queuedErr = new Error('OFFLINE_DURING_ANALYSIS');
-        queuedErr.code = 'OFFLINE_QUEUED';
-        throw queuedErr;
-      }
+      /* V337 — Plus de bascule « hors-ligne / file d'attente ». Si le réseau est
+         absent (ou si le verrouillage du téléphone a interrompu la requête), le
+         fetch échoue normalement → retries ci-dessous → message « Relancer » sobre.
+         Aucune analyse locale, aucune file, aucune bannière de synchronisation. */
       const RETRY_STATUSES = new Set([408, 429, 500, 502, 503, 504, 529]);
       const MAX_ATTEMPTS = 4;
       const BACKOFFS_MS = [0, 1500, 3500, 7000]; /* 0=initial, puis 1.5s, 3.5s, 7s */
