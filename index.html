@@ -1247,32 +1247,18 @@ body.has-offline-banner .upload-hub {
    (gris clair sur blanc). Maintenant : surface teal foncé de la marque (accordée
    au logo LUCENS + au bouton « Analyser en direct ») → onglets clairs TRÈS
    visibles, barre clairement identifiée comme zone de navigation. */
-/* V345 — Le fond petrol #0F3D4E de la barre est réservé au THÈME CLAIR (barre de
-   nav branded, onglets clairs très lisibles). En SOMBRE, la barre reprend le fond
-   near-black du header (var(--header-bg)) via la règle de base → elle s'aligne sur
-   le reste de l'app sombre (plus de « bleu petrol » qui jure avec le quasi-noir). */
-:root[data-theme="light"] .bottom-bar {
-  background: #0F3D4E !important;
-  border-top: 1px solid rgba(255,255,255,0.10) !important;
-  box-shadow: 0 -8px 24px -14px rgba(12,14,19,0.40) !important;
-  backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
-}
-/* Onglets INACTIFS : clairs, bien lisibles sur le teal. */
+/* V346 — La barre du bas SUIT LE THÈME (comme le header) au lieu d'un fond petrol
+   fixe à icônes BLANCHES (qui jurait avec le thème du site). Fond = var(--header-bg)
+   via la règle de base (clair en mode clair, near-black en sombre). Icônes aux
+   couleurs de la marque : inactif = gris muet (--ink-tertiary, règle de base),
+   ACTIF = accent petrol/bleu (--accent) + pastille teintée accent. Zéro blanc. */
+/* Icônes + libellés en BLEU DE MARQUE (accent) dans les 2 thèmes : petrol #0F3D4E
+   en clair, #5AA6BC en sombre. Jamais blanc, jamais gris neutre → couleur du site. */
 .bottom-bar .bb-item,
 .bottom-bar .bb-item svg,
 .bottom-bar .bb-item .bb-label,
 .bottom-bar .bb-item .hdr-hist-text,
-.bottom-bar .bb-item .hdr-ctx-text,
-.bottom-bar .bb-settings-btn svg,
-.bottom-bar .bb-settings-btn .bb-label { color: rgba(255,255,255,0.76) !important; }
-/* Onglet ACTIF : blanc plein + 600 (contraste net avec les inactifs). */
-.bottom-bar .bb-item.is-active,
-.bottom-bar .bb-item.is-active svg,
-.bottom-bar .bb-item.is-active .bb-label,
-.bottom-bar .bb-item.is-active .hdr-hist-text,
-.bottom-bar .bb-item.is-active .hdr-ctx-text { color: #FFFFFF !important; font-weight: 600 !important; }
-/* V312 — état ACTIF en PASTILLE (affordance bouton + ancrage « où suis-je »).
-   Statique (zéro reflow), derrière icône+label, plus haute que large, centrée. */
+.bottom-bar .bb-item .hdr-ctx-text { color: var(--accent) !important; }
 .bottom-bar .bb-item.is-active::before {
   content: '';
   position: absolute;
@@ -1280,10 +1266,9 @@ body.has-offline-banner .upload-hub {
   left: 50%; transform: translateX(-50%);
   width: 56px; max-width: 88%;
   border-radius: 13px;
-  background: rgba(255,255,255,0.13);
+  background: var(--accent-soft);
   z-index: -1;
 }
-.bottom-bar .lang-current-code { color: rgba(255,255,255,0.88) !important; }
 
 .settings-overlay {
   position: fixed; inset: 0; z-index: 60;
@@ -8983,7 +8968,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v345</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v346</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
