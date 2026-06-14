@@ -30,14 +30,15 @@ function withTimeout(promise, ms, label = 'op') {
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
 
-/* Cascade de modèles Gemini : principal puis repli si erreur/timeout.
-   PRINCIPAL = 2.5 Pro : stable (~44s), qualité experte, ~0,07$/analyse — choix
-   produit V299.2. Le preview "gemini-3.1-pro-preview" EST accessible avec la clé
-   mais mesuré ~90s/analyse + timeouts intermittents → écarté de la cascade par
-   défaut. Pour le réactiver dès qu'il sera plus rapide/GA : remettre
-   "gemini-3.1-pro-preview" comme PRIMARY_MODEL (la tarification est déjà en table). */
-const PRIMARY_MODEL   = "gemini-2.5-pro";
-const FALLBACK_MODELS = ["gemini-2.5-flash"];
+/* Cascade de modèles Gemini : principal puis replis si erreur/timeout.
+   PRINCIPAL = 3.1 Pro preview (V349, demande utilisateur : meilleure CLASSIFICATION
+   des contaminants — mélanges chimique+organique NOMMÉS au lieu d'écrasés sur une
+   seule catégorie, moins de sur-chimique). Plus lent (~90s, OK sous le watchdog
+   client 180s + timeout serveur 110s/modèle) et parfois flaky → la cascade retombe
+   sur 2.5 Pro (stable, qualité quasi équivalente) PUIS Flash, JAMAIS direct sur
+   Flash. Réversible en 1 ligne : remettre "gemini-2.5-pro" en PRIMARY_MODEL. */
+const PRIMARY_MODEL   = "gemini-3.1-pro-preview";
+const FALLBACK_MODELS = ["gemini-2.5-pro", "gemini-2.5-flash"];
 
 /* V300 — Traduction repliée dans cet endpoint (mode:'translate') : aucun nouvel
    endpoint (limite 12 fonctions). Flash texte-seul, pensée OFF = rapide+bon marché. */
