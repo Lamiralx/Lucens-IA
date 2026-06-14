@@ -39,8 +39,14 @@
   .status{ font-size:13px; min-height:18px; margin-top:8px; }
   .status.err{ color:var(--bad); }
   .status.ok{ color:var(--ok); }
-  .tokenbar{ display:flex; gap:8px; align-items:flex-end; }
+  .tokenbar{ display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap; }
   .tokenbar label{ flex:1; margin-bottom:0; }
+  /* Mobile : le champ prend toute la largeur (lisible pour coller le token),
+     les boutons passent sur la ligne du dessous et se partagent l'espace. */
+  @media (max-width:480px){
+    .tokenbar label{ flex:1 1 100%; }
+    .tokenbar button{ flex:1; }
+  }
   .muted{ color:var(--muted); font-size:12px; }
   .filterbar{ display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
   .chips{ display:flex; gap:6px; flex-wrap:wrap; }
@@ -186,17 +192,17 @@
   function matchesReq(r){ return matchesText(r, ['nom','prenom','email','telephone','entreprise','message']); }
   function applyFilters(){ renderRows(); renderReq(); }
 
-  $('tok').value = sessionStorage.getItem(tokenKey) || '';
-  $('saveTok').addEventListener('click', () => { sessionStorage.setItem(tokenKey, $('tok').value.trim()); setGlobal('Token mémorisé pour cette session.', 'ok'); refreshSecurity(); });
+  $('tok').value = localStorage.getItem(tokenKey) || '';
+  $('saveTok').addEventListener('click', () => { localStorage.setItem(tokenKey, $('tok').value.trim()); setGlobal('Token mémorisé sur cet appareil.', 'ok'); refreshSecurity(); });
 
   function setGlobal(msg, cls){ const e = $('globalStatus'); e.textContent = msg || ''; e.className = 'status ' + (cls || ''); }
   function setForm(msg, cls){ const e = $('formStatus'); e.textContent = msg || ''; e.className = 'status ' + (cls || ''); }
 
   async function call(body){
-    const tok = ($('tok').value || sessionStorage.getItem(tokenKey) || '').trim();
+    const tok = ($('tok').value || localStorage.getItem(tokenKey) || '').trim();
     if(!tok){ throw new Error('Renseignez d’abord le token admin.'); }
     const headers = { 'content-type':'application/json', 'x-lucens-admin': tok };
-    const sess = sessionStorage.getItem(sessionKey);
+    const sess = localStorage.getItem(sessionKey);
     if(sess) headers['x-lucens-session'] = sess;
     const r = await fetch(API, { method:'POST', headers, body: JSON.stringify(body) });
     const data = await r.json().catch(() => ({}));
@@ -404,7 +410,7 @@
   }
 
   async function refreshSecurity(){
-    const tok = ($('tok').value || sessionStorage.getItem(tokenKey) || '').trim();
+    const tok = ($('tok').value || localStorage.getItem(tokenKey) || '').trim();
     if(!tok){ $('secSummary').textContent = 'Renseignez le token pour voir l’état de la 2FA.'; return; }
     try{ render2fa(await call({ action:'admin_2fa_status' })); }
     catch(e){ if(e.needs2fa) return; $('secSummary').textContent = e.message; }
@@ -448,7 +454,7 @@
     if(!code){ setGlobal('Entrez votre code.', 'err'); return; }
     try{
       const r = await call({ action:'admin_login', code });
-      sessionStorage.setItem(sessionKey, r.session);
+      localStorage.setItem(sessionKey, r.session);
       $('totpCode').value = ''; $('loginRow').style.display = 'none';
       setGlobal('Connecté.' + (r.backupRemaining != null ? ' ' + r.backupRemaining + ' code(s) de secours restant(s).' : ''), 'ok');
       await refreshSecurity(); await load();
@@ -460,7 +466,7 @@
 
   $('disableBtn').addEventListener('click', async () => {
     if(!confirm('Désactiver la double authentification ? Le token seul redonnera accès.')) return;
-    try{ await call({ action:'admin_2fa_disable' }); sessionStorage.removeItem(sessionKey); setGlobal('2FA désactivée.', 'ok'); await refreshSecurity(); }
+    try{ await call({ action:'admin_2fa_disable' }); localStorage.removeItem(sessionKey); setGlobal('2FA désactivée.', 'ok'); await refreshSecurity(); }
     catch(e){ setGlobal(e.message, 'err'); }
   });
 
