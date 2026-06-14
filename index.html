@@ -1295,7 +1295,11 @@ body.has-offline-banner .upload-hub {
   box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.28);
   /* V334 — padding-haut à 0 : l'en-tête collant couvre alors proprement jusqu'au
      bord supérieur quand le contenu défile (plus de filet qui dépasse). */
-  padding: 0 18px calc(20px + env(safe-area-inset-bottom, 0px));
+  /* V338 — clairance BAS avec plancher : comme en haut, env(safe-area-inset-bottom)
+     vaut souvent 0 dans cette PWA → 20px ne suffisaient pas et le bas (Thème /
+     Version / Mettre à jour) passait sous le home indicator quand la feuille
+     atteint sa hauteur max. max(env, 24px) garantit ≥44px de dégagement. */
+  padding: 0 18px calc(20px + max(env(safe-area-inset-bottom, 0px), 24px));
   /* V334 — la feuille est ancrée en bas et grandit vers le HAUT. Sans plafond,
      un contenu long (licence + formulaire « Obtenir ») la faisait déborder par
      le haut → en-tête/croix hors écran + collision Dynamic Island. On plafonne
@@ -8968,7 +8972,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v337</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary,#6B7280);padding:2px 0;">v338</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
