@@ -8971,7 +8971,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary);padding:2px 0;">v354</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary);padding:2px 0;">v355</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -27018,26 +27018,27 @@ const Annotator = (() => {
         const now = performance.now();
         const cacheKey = crosshairCacheKey(sample);
         const cachedVerdict = lv.validateCache.get(cacheKey);
-        /* V297 — DWELL : depuis combien de temps la signature couleur est STABLE ?
-           Elle change à chaque mouvement (balayage) → on remet le minuteur à zéro.
-           Stable ≥ LV_DWELL_MS = l'utilisateur VISE un point précis pour le juger. */
-        if (!hasSignal || cacheKey !== lv._dwellKey) {
-          lv._dwellKey = hasSignal ? cacheKey : null;
+        /* V355 — Dwell calculé sur TOUS les frames (signal ou pas). Avant : sans signal
+           _dwellKey=null → dwell jamais stable → Gemini jamais interrogé pour les objets
+           non fluorescents (surface mate, objet sombre sous UV). Maintenant le réticule
+           tenu 250ms sur n'importe quoi déclenche l'analyse visuelle complète. */
+        if (cacheKey !== lv._dwellKey) {
+          lv._dwellKey = cacheKey;
           lv._dwellSince = now;
         }
-        const _dwellStable = hasSignal && lv._dwellKey === cacheKey
+        const _dwellStable = lv._dwellKey === cacheKey
           && (now - (lv._dwellSince || now)) >= LV_DWELL_MS;
 
-        if (!hasSignal) {
-          /* Pas de signal coloré au réticule → état idle */
-          if (chCurrentVerdict.state !== 'idle' && chCurrentVerdict.state !== 'pending') {
-            setCrosshairState('idle');
-          }
-        } else if (cachedVerdict && (now - cachedVerdict.ts) < 5000) {
-          /* Cache hit récent (< 5s) → on garde l'état du verdict cached */
+        /* Pas de signal UV → idle. setCrosshairState protège les verdicts fluo/object
+           récents via hysteresis (CH_VERDICT_TTL_MS = 3s). */
+        if (!hasSignal) setCrosshairState('idle');
+
+        /* V355 — Cache valide = YES_FLUO ou NO_OBJECT UNIQUEMENT.
+           UNCERTAIN n'est jamais mis en cache → nouvelle requête dès le prochain dwell.
+           Fin de la boucle "Analyse…" de 5s sur les signaux ambigus. */
+        const _validCached = cachedVerdict && cachedVerdict.verdict !== 'UNCERTAIN' && (now - cachedVerdict.ts) < 5000;
+        if (_validCached) {
           if (cachedVerdict.verdict === 'YES_FLUO') {
-            /* V255 — Rejoue le TYPE de Claude mis en cache : la bannière garde la
-               classification précise du point au lieu de retomber sur la teinte locale. */
             if (cachedVerdict.type && cachedVerdict.type !== 'unknown' && LV_READOUT[cachedVerdict.type]) {
               const r = LV_READOUT[cachedVerdict.type];
               lv.liveType = { id: cachedVerdict.type, label: r.label, color: r.color, badge: r.badge, level: r.level };
@@ -27045,8 +27046,6 @@ const Annotator = (() => {
             setCrosshairState('fluo', cachedVerdict.reason);
           }
           else if (cachedVerdict.verdict === 'NO_OBJECT') setCrosshairState('object', cachedVerdict.reason);
-          /* UNCERTAIN en cache → garde "Analyse…" jusqu'à expiration TTL 5s. */
-          else setCrosshairState('pending');
         } else if ((now - chLastSample) >= CH_SAMPLE_EVERY_MS) {
           /* Signal présent, pas en cache, timing OK */
           chLastSample = now;
@@ -27119,9 +27118,11 @@ const Annotator = (() => {
                  parse_failed/api_error ne doivent jamais apparaître dans le badge. */
               const _TECH = ['parse_failed','api_error','licence','licence_kv'];
               const safeR = r => (r && !_TECH.includes(r)) ? r : '';
-              /* V255 — On met aussi le TYPE de Claude en cache pour que le rejeu
-                 (cache hit) réutilise la même classification. */
-              lv.validateCache.set(localKey, { verdict: v, type: res.type || 'unknown', reason: safeR(res.reason), ts: Date.now() });
+              /* UNCERTAIN n'est jamais mis en cache → nouvelle tentative au prochain dwell.
+                 YES_FLUO et NO_OBJECT mis en cache 5s pour éviter les appels redondants. */
+              if (v !== 'UNCERTAIN') {
+                lv.validateCache.set(localKey, { verdict: v, type: res.type || 'unknown', reason: safeR(res.reason), ts: Date.now() });
+              }
               if (v === 'YES_FLUO') {
                 /* V255 — Le jugement de Claude sur CE point PILOTE la bannière : si Claude
                    renvoie un type concret connu, il REMPLACE le pré-remplissage de teinte
@@ -27134,8 +27135,8 @@ const Annotator = (() => {
                 setCrosshairState('fluo', safeR(res.reason));
               }
               else if (v === 'NO_OBJECT') setCrosshairState('object', safeR(res.reason));
-              /* UNCERTAIN : Gemini n'a pas tranché. "Analyse…" jusqu'à expiration TTL 5s. */
-              else setCrosshairState('pending');
+              /* UNCERTAIN : pas en cache → prochain dwell (250ms) retentera automatiquement.
+                 L'état reste 'pending' sans action — pas de boucle de 5s. */
             })
             /* Erreur réseau → idle (signal inconnu, ré-viser pour relancer). */
             .catch(() => { _chInFlight = false; setCrosshairState('idle'); });
