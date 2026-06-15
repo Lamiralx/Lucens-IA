@@ -198,18 +198,26 @@ export default async function handler(req, res) {
     });
 
     const latencyMs = Date.now() - t0;
-    const raw = ((typeof resp?.text === 'string' && resp.text)
+    /* Les tokens de pensée (parts avec thought:true) contaminent resp.text ou le
+       fallback parts.join quand thinkingBudget > 0 — cause systématique des parse_failed.
+       On filtre explicitement les parts thought avant toute extraction. */
+    const textParts = (resp?.candidates?.[0]?.content?.parts || [])
+      .filter(p => !p?.thought)
+      .map(p => p?.text)
+      .filter(Boolean);
+    const raw = (typeof resp?.text === 'string' && resp.text.trim()
       ? resp.text
-      : (resp?.candidates?.[0]?.content?.parts || []).map(p => p?.text).filter(Boolean).join('')).trim();
+      : textParts.join('')).trim();
 
-    /* Parse JSON robuste — on accepte les variations de wrapping */
+    /* Parse JSON robuste — direct, puis cherche tous les blocs {…} plats en partant
+       de la fin (le JSON réel est toujours après les tokens de pensée résiduels). */
     let parsed = null;
     try {
       parsed = JSON.parse(raw);
     } catch {
-      const m = raw.match(/\{[^}]*"verdict"[^}]*\}/);
-      if (m) {
-        try { parsed = JSON.parse(m[0]); } catch {}
+      const cands = raw.match(/\{[^{}]*\}/g) || [];
+      for (let i = cands.length - 1; i >= 0; i--) {
+        try { const p = JSON.parse(cands[i]); if (p?.verdict) { parsed = p; break; } } catch {}
       }
     }
 

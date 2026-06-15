@@ -8971,7 +8971,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary);padding:2px 0;">v352</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary);padding:2px 0;">v353</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -27042,12 +27042,10 @@ const Annotator = (() => {
             setCrosshairState('fluo', cachedVerdict.reason);
           }
           else if (cachedVerdict.verdict === 'NO_OBJECT') setCrosshairState('object', cachedVerdict.reason);
-          /* 2026-06-15 — UNCERTAIN en cache : affiche l'estimation locale (lv.liveType)
-             avec badge "signal ambigu" au lieu de rester bloqué sur "Analyse…".
-             Les LEDs arrivent en NO_OBJECT (pas UNCERTAIN), donc aucun risque ici.
-             Le TTL expirant à 5s, le modèle retentera automatiquement. */
-          else if (lv.liveType) setCrosshairState('fluo', cachedVerdict.reason || 'signal ambigu');
-          else setCrosshairState('pending');
+          /* UNCERTAIN en cache : le type local est déjà visible (affiché dès le dwell).
+             On ne repasse pas en pending — ça créerait un flash. Le TTL 5s provoquera
+             une nouvelle requête Gemini. On ignore la reason cached (peut être technique). */
+          /* else : lv.liveType déjà affiché depuis le dwell — rien à faire */
         } else if ((now - chLastSample) >= CH_SAMPLE_EVERY_MS) {
           /* Signal présent, pas en cache, timing OK */
           chLastSample = now;
@@ -27067,8 +27065,11 @@ const Annotator = (() => {
              local / hors-ligne) : verdict LOCAL gratuit, AUCUN appel API. */
           if (!(lv.validateEnabled && navigator.onLine && _dwellStable)) {
             if (lv.validateEnabled && navigator.onLine) {
-              /* En balayage : on invite à viser ; le verdict précis arrive dès l'arrêt. */
-              if (chCurrentVerdict.state === 'idle') setCrosshairState('pending');
+              /* En balayage : affiche le type local immédiatement (quasi-instantané),
+                 Gemini confirmera ou corrigera après le dwell. */
+              if (chCurrentVerdict.state === 'idle') {
+                lv.liveType ? setCrosshairState('fluo') : setCrosshairState('pending');
+              }
             } else if (sample.brightRatio >= 0.06 || sample.avgSat >= 0.30) {
               setCrosshairState('fluo');
             } else if (chCurrentVerdict.state !== 'pending') {
@@ -27077,7 +27078,10 @@ const Annotator = (() => {
             lv.rafId = requestAnimationFrame(loop);
             return;
           }
-          if (chCurrentVerdict.state === 'idle') setCrosshairState('pending');
+          /* V353 — quasi-instantané : garde le type local visible pendant l'appel API. */
+          if (chCurrentVerdict.state !== 'fluo' && chCurrentVerdict.state !== 'object') {
+            lv.liveType ? setCrosshairState('fluo') : setCrosshairState('pending');
+          }
           /* Wrap le request pour mettre à jour le cache au retour */
           (function() {
             const localKey = cacheKey;
@@ -27111,9 +27115,13 @@ const Annotator = (() => {
             .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
             .then(res => {
               const v = res.verdict || 'UNCERTAIN';
+              /* V353 — Filtre les raisons techniques avant mise en cache :
+                 parse_failed/api_error ne doivent jamais apparaître dans le badge. */
+              const _TECH = ['parse_failed','api_error','licence','licence_kv'];
+              const safeR = r => (r && !_TECH.includes(r)) ? r : '';
               /* V255 — On met aussi le TYPE de Claude en cache pour que le rejeu
                  (cache hit) réutilise la même classification. */
-              lv.validateCache.set(localKey, { verdict: v, type: res.type || 'unknown', reason: res.reason || '', ts: Date.now() });
+              lv.validateCache.set(localKey, { verdict: v, type: res.type || 'unknown', reason: safeR(res.reason), ts: Date.now() });
               if (v === 'YES_FLUO') {
                 /* V255 — Le jugement de Claude sur CE point PILOTE la bannière : si Claude
                    renvoie un type concret connu, il REMPLACE le pré-remplissage de teinte
@@ -27123,15 +27131,12 @@ const Annotator = (() => {
                   const rd = LV_READOUT[res.type];
                   lv.liveType = { id: res.type, label: rd.label, color: rd.color, badge: rd.badge, level: rd.level };
                 }
-                setCrosshairState('fluo', res.reason || '');
+                setCrosshairState('fluo', safeR(res.reason));
               }
-              else if (v === 'NO_OBJECT') setCrosshairState('object', res.reason || '');
-              /* 2026-06-15 — UNCERTAIN : on affiche l'estimation locale (lv.liveType)
-                 plutôt que de rester bloqué sur "Analyse…" en boucle. Le type local
-                 vient du classifieur HSV frame-par-frame — moins précis que Gemini mais
-                 meilleur qu'une attente infinie. Le TTL 5s expirant, Gemini retentera. */
-              else if (lv.liveType) setCrosshairState('fluo', res.reason || 'signal ambigu');
-              else setCrosshairState('pending');
+              else if (v === 'NO_OBJECT') setCrosshairState('object', safeR(res.reason));
+              /* UNCERTAIN : le type local (lv.liveType) est déjà affiché depuis le dwell ;
+                 on le garde. Gemini retentera après expiration du TTL 5s. */
+              else if (!lv.liveType) setCrosshairState('pending');
             })
             /* Erreur réseau → idle si pas de signal local, sinon liveType comme fallback. */
             .catch(() => { if (lv.liveType) setCrosshairState('fluo', 'vérif. échouée'); else setCrosshairState('idle'); });
