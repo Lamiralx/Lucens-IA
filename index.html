@@ -8971,7 +8971,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary);padding:2px 0;">v360</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary);padding:2px 0;">v361</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -11351,7 +11351,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
 .ob-card.on svg{stroke:var(--ob-acc);}
 .ob-label-sm{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ob-ink3);margin:15px 0 8px;text-align:center;}
 .ob-roles{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
-.ob-role{display:flex;align-items:center;justify-content:center;gap:10px;height:56px;padding:0 12px;border-radius:13px;border:1px solid var(--ob-line);background:#fff;cursor:pointer;transition:.18s;text-align:center;}
+.ob-role{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:96px;padding:12px 8px;border-radius:var(--radius-md);border:1px solid var(--ob-line);background:#fff;cursor:pointer;transition:.18s;text-align:center;}
 .ob-role svg{width:20px;height:20px;stroke:var(--ob-ink3);fill:none;stroke-width:1.8;flex:0 0 20px;}
 .ob-role em{font-style:normal;font-size:13px;font-weight:600;color:var(--ob-ink2);display:block;}
 .ob-role small{font-size:10.5px;font-weight:500;color:var(--ob-ink3);}
@@ -11412,11 +11412,11 @@ body.lv-open { overflow: hidden; touch-action: none; }
 /* V352 — CONFORMITÉ CANON (annule la dérive V351 : ni gradient, ni cuivre-bouton, ni littéraux,
    ni ombres décoratives). Tokens app, échelle typo figée, rayons {6·12·16}, accent=action,
    cuivre=signature/détection seulement. Thème-aware (clair + sombre). */
-.ob-h{font-size:18px;letter-spacing:-.01em;}
+.ob-h{font-size:22px;letter-spacing:-.01em;}
 .ob-tag{font-size:22px;letter-spacing:-.01em;}
 .ob-logo b{font-size:22px;color:var(--accent);}
 .ob-sub{font-size:13px;}
-.ob-eyebrow,.ob-label-sm,.ob-scl{font-size:10px;}
+.ob-label-sm,.ob-scl{font-size:10px;}.ob-eyebrow{font-size:12px;}
 .ob-import,.ob-card>span:last-child{font-size:12px;color:var(--ink-primary);}
 .ob-role small{font-size:11px;color:var(--ink-tertiary);}
 .ob-score{font-size:24px;}.ob-score small{font-size:16px;}
@@ -11454,7 +11454,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
 @keyframes obCell{from{opacity:0}to{opacity:1}}
 /* V353 — accroche d'accueil (révélation muette) + écran AVANT/APRÈS (compréhension immédiate,
    indépendante de la langue). Photos = scène sombre type HUD (§8). */
-.ob-hero{width:100%;max-width:300px;margin:0 auto 18px;height:120px;border-radius:var(--r-lg);overflow:hidden;position:relative;background:#0b0e10;}
+.ob-hero{width:100%;max-width:300px;margin:0 auto 18px;height:220px;border-radius:var(--r-lg);overflow:hidden;position:relative;background:#0b0e10;}
 .ob-hero .ob-photo{object-position:center 62%;}
 .ob-ba{display:flex;gap:10px;justify-content:center;align-items:flex-start;}
 .ob-ba-col{flex:1;max-width:160px;margin:0;text-align:center;}
@@ -17704,7 +17704,7 @@ const Annotator = (() => {
           });
         },
         build: () =>
-        '<div class="ob-head"><div class="ob-eyebrow" style="margin-bottom:8px;">' + tr('ob_ba_ey', 'Lampe UV-A 365 nm') + '</div><div class="ob-h">' + tr('ob_ba_h', "L'invisible, révélé") + '</div><div class="ob-sub">' + tr('ob_ba_sub', 'Sous la lampe Lucens, la contamination apparaît.') + '</div></div>' +
+        '<div class="ob-head"><div class="ob-eyebrow" style="margin-bottom:8px;">' + tr('ob_ba_ey', 'Avant · Après') + '</div><div class="ob-h">' + tr('ob_ba_h', "L'invisible, révélé") + '</div><div class="ob-sub">' + tr('ob_ba_sub', 'Sous la lampe Lucens, la contamination apparaît.') + '</div></div>' +
         '<div class="ob-swipe ob-sw-auto" id="obSwipe">' +
         '<img class="ob-sw-base" src="' + PHOTO_NORMAL + '" alt="">' +
         '<div class="ob-sw-uv" id="obSwUv"><img src="' + PHOTO_UV + '" alt=""></div>' +
@@ -17714,7 +17714,7 @@ const Annotator = (() => {
         '</div>' },
 
       { build: () =>
-        '<div class="ob-head"><div class="ob-eyebrow" style="margin-bottom:8px;">' + tr('ob_sector_ey', 'Étape 1 · Votre secteur') + '</div><div class="ob-h">' + tr('ob_sector_q', 'Dans quel domaine travaillez-vous ?') + '</div></div>' +
+        '<div class="ob-head"><div class="ob-eyebrow" style="margin-bottom:8px;">' + tr('ob_sector_ey', 'Votre secteur') + '</div><div class="ob-h">' + tr('ob_sector_q', 'Dans quel domaine travaillez-vous ?') + '</div></div>' +
         '<div class="ob-grid">' +
         card('restauration', IC.resto, tr('ob_sec_resto', 'Restauration')) +
         card('agro', IC.agro, tr('ob_sec_agro', 'Agroalimentaire')) +
@@ -17727,8 +17727,8 @@ const Annotator = (() => {
         '</div>' },
 
       { build: () =>
-        '<div class="ob-head"><div class="ob-eyebrow" style="margin-bottom:8px;">' + tr('ob_role_ey', 'Étape 2 · Votre profil') + '</div><div class="ob-h">' + tr('ob_role_q', 'Quel est votre rôle ?') + '</div></div>' +
-        '<div class="ob-roles" style="grid-template-columns:1fr;">' +
+        '<div class="ob-head"><div class="ob-eyebrow" style="margin-bottom:8px;">' + tr('ob_role_ey', 'Votre profil') + '</div><div class="ob-h">' + tr('ob_role_q', 'Quel est votre rôle ?') + '</div></div>' +
+        '<div class="ob-roles" style="grid-template-columns:1fr 1fr;">' +
         role('operationnel', IC.terrain, tr('ob_role_terrain', 'Terrain'), tr('ob_role_terrain_h', 'Cuisinier, agent, technicien')) +
         role('responsable', IC.resp, tr('ob_role_resp', 'Responsable'), tr('ob_role_resp_h', 'HACCP, QSE, cadre')) +
         role('auditeur', IC.aud, tr('ob_role_aud', 'Auditeur'), tr('ob_role_aud_h', 'Inspecteur, consultant')) +
@@ -17806,8 +17806,7 @@ const Annotator = (() => {
           },35);
         },
         build: () =>
-        '<div class="ob-eyebrow" style="margin-bottom:8px;">' + tr('ob_v_eyebrow', 'Évaluation du risque') + '</div>' +
-        '<div class="ob-h" style="margin-bottom:12px;">' + tr('ob_v_title', 'Score de risque') + '</div>' +
+        '<div class="ob-h" style="margin-bottom:12px;">' + tr('ob_v_eyebrow', 'Évaluation du risque') + '</div>' +
         '<div class="ob-verdict" id="obVcard" style="animation:obSpring .5s cubic-bezier(.3,1.15,.5,1) .1s both">' +
         '<div class="ob-verdict-row"><span class="ob-verdict-lbl" id="obVlbl">' + tr('ob_v_low2','Risque faible') + '</span><span class="ob-verdict-score"><span class="ob-verdict-num" id="obVnum">0</span><span class="ob-verdict-unit">/100</span></span></div>' +
         '<div class="ob-gauge"><div class="ob-gauge-dot" id="obGaugeDot"></div></div>' +
