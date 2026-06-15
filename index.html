@@ -8971,7 +8971,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary);padding:2px 0;">v356</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary);padding:2px 0;">v357</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -11512,6 +11512,31 @@ body.lv-open { overflow: hidden; touch-action: none; }
 .ob-lv-banner[data-st="object"] i{background:rgba(255,255,255,.5);animation:none;}
 /* V356 — Card click pop */
 @keyframes obPickPop{0%{transform:scale(1)}35%{transform:scale(.93)}65%{transform:scale(1.05)}100%{transform:scale(1)}}
+/* V356.1 — LV mockup fidèle : photo, top-bar verre, crosshair cruciforme, bouton ANALYSER */
+.ob-lv .ob-photo{object-position:center 18%;}
+/* Top bar glassmorphique (fond verre + séparateurs) */
+.ob-lv-top{background:rgba(8,12,16,.62);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:999px;border:1px solid rgba(255,255,255,.11);padding:0 3px;}
+.ob-lv-top .ob-lv-banner{background:none;border-radius:0;}
+.ob-lv-sep{width:1px;height:16px;background:rgba(255,255,255,.15);flex:none;}
+/* Crosshair cruciforme avec gap central */
+.ob-lv-ch{position:absolute;transform:translate(-50%,-50%);width:60px;height:60px;z-index:2;--lvc:#FFB020;transition:left .6s cubic-bezier(.4,0,.2,1),top .6s cubic-bezier(.4,0,.2,1);}
+.ob-lv-ch::before{content:'';position:absolute;left:50%;top:0;width:1.5px;height:100%;transform:translateX(-50%);background:linear-gradient(to bottom,var(--lvc) 0 41%,transparent 41% 59%,var(--lvc) 59% 100%);}
+.ob-lv-ch::after{content:'';position:absolute;top:50%;left:0;height:1.5px;width:100%;transform:translateY(-50%);background:linear-gradient(to right,var(--lvc) 0 41%,transparent 41% 59%,var(--lvc) 59% 100%);}
+.ob-lv-ch-dot{position:absolute;left:50%;top:50%;width:5px;height:5px;border-radius:50%;background:var(--lvc);transform:translate(-50%,-50%);z-index:1;transition:box-shadow .4s;}
+.ob-lv-ch-ring{position:absolute;left:50%;top:50%;width:30px;height:30px;border:1.5px solid var(--lvc);border-radius:50%;transform:translate(-50%,-50%);opacity:0;}
+.ob-lv-ch.pulse .ob-lv-ch-ring{opacity:.9;animation:obChPulse 1.3s ease-in-out infinite;}
+@keyframes obChPulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.85}50%{transform:translate(-50%,-50%) scale(1.2);opacity:.25}}
+.ob-lv-ch.fluo{--lvc:var(--lucens-signature);}
+.ob-lv-ch.fluo .ob-lv-ch-dot{box-shadow:0 0 10px 5px var(--lucens-signature);}
+.ob-lv-ch.fluo .ob-lv-ch-ring{opacity:1;animation:obChFluo 1s ease-out forwards;}
+@keyframes obChFluo{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.4)}}
+.ob-lv-ch.object{--lvc:#94A3B8;}
+/* Bottom ANALYSER */
+.ob-lv-bottom{position:absolute;bottom:0;left:0;right:0;padding:8px 10px 13px;background:linear-gradient(0deg,rgba(0,0,0,.65) 0,transparent 100%);display:flex;justify-content:center;z-index:3;}
+.ob-lv-btn{height:42px;width:100%;border-radius:var(--radius-md);background:var(--accent);color:#fff;font-size:13px;font-weight:700;border:none;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.01em;}
+.ob-lv-btn svg{width:17px;height:17px;stroke:#fff;fill:none;stroke-width:2.2;flex:none;}
+.ob-lv-btn.ob-lv-glow{animation:obBtnGlow .8s ease-in-out 3;}
+@keyframes obBtnGlow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.28)}}
 </style>
 <div class="ob-overlay" id="onboardingOverlay" hidden role="dialog" aria-modal="true" aria-label="Présentation de Lucens">
   <div class="ob-top">
@@ -17677,20 +17702,27 @@ const Annotator = (() => {
         '</div>' },
 
       { init: function () {
-          var b = document.getElementById('obLvBanner'), l = document.getElementById('obLvLabel'), c = document.getElementById('obLvCross'), ty = document.getElementById('obLvType');
-          if (!b) return;
-          /* État initial : idle */
-          b.setAttribute('data-st', 'idle'); l.textContent = tr('lv_status_idle', 'Visez une zone'); c.className = 'ob-lv-cross'; ty.style.opacity = '0'; ty.style.borderColor = 'var(--lucens-signature)';
-          /* Analyse en cours */
-          setTimeout(function () { if (!document.body.contains(b)) return; b.setAttribute('data-st', 'pending'); l.textContent = tr('lv_status_pending', 'Analyse…'); c.className = 'ob-lv-cross'; }, 1000);
-          /* Faux positif détecté (plastique coloré) */
-          setTimeout(function () { if (!document.body.contains(b)) return; b.setAttribute('data-st', 'object'); l.textContent = tr('lv_status_object', 'Pas un résidu') + ' · ' + tr('ob_lv_fp_ex', 'plastique rouge'); c.className = 'ob-lv-cross'; ty.style.opacity = '0'; }, 2100);
-          /* Retour idle — caméra bouge */
-          setTimeout(function () { if (!document.body.contains(b)) return; b.setAttribute('data-st', 'idle'); l.textContent = tr('lv_status_idle', 'Visez une zone'); c.className = 'ob-lv-cross'; }, 3400);
-          /* Nouvelle analyse */
-          setTimeout(function () { if (!document.body.contains(b)) return; b.setAttribute('data-st', 'pending'); l.textContent = tr('lv_status_pending', 'Analyse…'); }, 4300);
-          /* Vraie fluorescence détectée */
-          setTimeout(function () { if (!document.body.contains(b)) return; b.setAttribute('data-st', 'fluo'); l.textContent = tr('lv_status_fluo', 'Résidu détecté'); c.className = 'ob-lv-cross fluo'; ty.style.opacity = '1'; }, 5400);
+          var b = document.getElementById('obLvBanner'), l = document.getElementById('obLvLabel');
+          var ch = document.getElementById('obLvCh'), ty = document.getElementById('obLvType'), btn = document.getElementById('obLvBtn');
+          if (!b || !ch) return;
+          function setB(st, txt) { b.setAttribute('data-st', st); l.textContent = txt; }
+          function moveCh(left, top, cls) { ch.style.left = left + '%'; ch.style.top = top + '%'; ch.className = 'ob-lv-ch' + (cls ? ' ' + cls : ''); }
+          /* État initial */
+          setB('idle', tr('lv_status_idle', 'Visez une zone')); moveCh(50, 52, ''); ty.style.opacity = '0';
+          /* t=0.8s — crosshair se déplace vers un objet */
+          setTimeout(function () { if (!document.body.contains(b)) return; moveCh(40, 45, ''); }, 800);
+          /* t=1.6s — analyse l'objet */
+          setTimeout(function () { if (!document.body.contains(b)) return; setB('pending', tr('lv_status_pending', 'Analyse…')); moveCh(40, 45, 'pulse'); }, 1600);
+          /* t=2.7s — faux positif */
+          setTimeout(function () { if (!document.body.contains(b)) return; setB('object', tr('lv_status_object', 'Pas un résidu') + ' · ' + tr('ob_lv_fp_ex', 'plastique rouge')); moveCh(40, 45, 'object'); }, 2700);
+          /* t=3.6s — glisse vers la zone fluorescente */
+          setTimeout(function () { if (!document.body.contains(b)) return; setB('idle', tr('lv_status_idle', 'Visez une zone')); moveCh(55, 38, ''); }, 3600);
+          /* t=4.5s — analyse la zone */
+          setTimeout(function () { if (!document.body.contains(b)) return; setB('pending', tr('lv_status_pending', 'Analyse…')); moveCh(55, 38, 'pulse'); }, 4500);
+          /* t=5.8s — détection ! */
+          setTimeout(function () { if (!document.body.contains(b)) return; setB('fluo', tr('lv_status_fluo', 'Résidu détecté')); moveCh(55, 38, 'fluo'); ty.style.left = '55%'; ty.style.opacity = '1'; }, 5800);
+          /* t=6.5s — bouton ANALYSER pulse */
+          setTimeout(function () { if (!document.body.contains(b) || !btn) return; btn.classList.add('ob-lv-glow'); }, 6500);
         },
         build: () =>
         '<div class="ob-head"><div class="ob-h">' + tr('ob_lv_h', 'Inspectez en direct') + '</div><div class="ob-sub">' + tr('ob_lv_sub', 'Visez une zone : Lucens analyse et nomme le résidu en direct.') + '</div></div>' +
@@ -17700,12 +17732,16 @@ const Annotator = (() => {
         '<span class="ob-lv-vig"></span>' +
         '<div class="ob-lv-top">' +
         '<span class="ob-lv-ic">' + svg('<path d="M15 6l-6 6 6 6"/>') + '</span>' +
+        '<span class="ob-lv-sep"></span>' +
         '<span class="ob-lv-banner" id="obLvBanner" data-st="idle"><i></i><span id="obLvLabel">' + tr('lv_status_idle', 'Visez une zone') + '</span></span>' +
+        '<span class="ob-lv-sep"></span>' +
         '<span class="ob-lv-ic">' + svg('<line x1="4" y1="8" x2="20" y2="8"/><circle cx="15" cy="8" r="2.4"/><line x1="4" y1="16" x2="20" y2="16"/><circle cx="9" cy="16" r="2.4"/>') + '</span>' +
         '</div>' +
-        '<div class="ob-lv-cross" id="obLvCross" style="left:46%;top:71%;"><span class="ring"></span><span class="cd"></span></div>' +
-        '<span class="ob-lv-type" id="obLvType" style="left:46%;top:60%;">' + tr('ob_lv_type', 'Résidus organiques') + '</span>' +
-        '<span class="ob-lv-shoot"></span>' +
+        '<div class="ob-lv-ch" id="obLvCh" style="left:50%;top:52%;"><span class="ob-lv-ch-ring"></span><span class="ob-lv-ch-dot"></span></div>' +
+        '<span class="ob-lv-type" id="obLvType" style="left:50%;top:36%;">' + tr('ob_lv_type', 'Résidus organiques') + '</span>' +
+        '<div class="ob-lv-bottom"><div class="ob-lv-btn" id="obLvBtn">' +
+        svg('<circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l4 4"/><path d="M8.5 6v5M6 8.5h5" stroke-opacity=".5"/>') +
+        tr('lv_analyze_btn', 'ANALYSER') + '</div></div>' +
         '</div>' +
         '<div class="ob-import">' + svg(IC.image) + tr('ob_lv_import', 'Ou importez une photo déjà prise') + '</div>' },
 
