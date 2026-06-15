@@ -8971,7 +8971,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary);padding:2px 0;">v353</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary);padding:2px 0;">v354</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -26520,7 +26520,10 @@ const Annotator = (() => {
      Le BALAYAGE (signature couleur qui change) ne déclenche AUCUN appel ; seul un vrai
      ciblage tenu ~0,6 s interroge le juge IA. Effet : ~90 % d'appels Haiku en moins
      (coût Live View ÷20-40), sans rien perdre AU MOMENT où tu juges un point. */
-  const LV_DWELL_MS = 600;
+  /* V354 — dwell réduit à 250ms (était 600ms) : quasi-instantané sans burst.
+     L'in-flight flag (_chInFlight) empêche les appels redondants pendant la latence API. */
+  const LV_DWELL_MS = 250;
+  let _chInFlight = false;
   let chLastVerdictTs = 0;
   let chLastSample = 0;
   let chCurrentVerdict = { state: 'idle', reason: '' };
@@ -27042,10 +27045,8 @@ const Annotator = (() => {
             setCrosshairState('fluo', cachedVerdict.reason);
           }
           else if (cachedVerdict.verdict === 'NO_OBJECT') setCrosshairState('object', cachedVerdict.reason);
-          /* UNCERTAIN en cache : le type local est déjà visible (affiché dès le dwell).
-             On ne repasse pas en pending — ça créerait un flash. Le TTL 5s provoquera
-             une nouvelle requête Gemini. On ignore la reason cached (peut être technique). */
-          /* else : lv.liveType déjà affiché depuis le dwell — rien à faire */
+          /* UNCERTAIN en cache → garde "Analyse…" jusqu'à expiration TTL 5s. */
+          else setCrosshairState('pending');
         } else if ((now - chLastSample) >= CH_SAMPLE_EVERY_MS) {
           /* Signal présent, pas en cache, timing OK */
           chLastSample = now;
@@ -27065,11 +27066,8 @@ const Annotator = (() => {
              local / hors-ligne) : verdict LOCAL gratuit, AUCUN appel API. */
           if (!(lv.validateEnabled && navigator.onLine && _dwellStable)) {
             if (lv.validateEnabled && navigator.onLine) {
-              /* En balayage : affiche le type local immédiatement (quasi-instantané),
-                 Gemini confirmera ou corrigera après le dwell. */
-              if (chCurrentVerdict.state === 'idle') {
-                lv.liveType ? setCrosshairState('fluo') : setCrosshairState('pending');
-              }
+              /* En balayage (pas encore stable) : "Analyse…" pour inviter à viser. */
+              if (chCurrentVerdict.state === 'idle') setCrosshairState('pending');
             } else if (sample.brightRatio >= 0.06 || sample.avgSat >= 0.30) {
               setCrosshairState('fluo');
             } else if (chCurrentVerdict.state !== 'pending') {
@@ -27078,10 +27076,11 @@ const Annotator = (() => {
             lv.rafId = requestAnimationFrame(loop);
             return;
           }
-          /* V353 — quasi-instantané : garde le type local visible pendant l'appel API. */
-          if (chCurrentVerdict.state !== 'fluo' && chCurrentVerdict.state !== 'object') {
-            lv.liveType ? setCrosshairState('fluo') : setCrosshairState('pending');
-          }
+          /* V354 — in-flight guard : une seule requête en vol à la fois.
+             Dwell=250ms + API ~500ms → résultat en ~750ms au lieu de ~1,3s. */
+          if (_chInFlight) { lv.rafId = requestAnimationFrame(loop); return; }
+          if (chCurrentVerdict.state === 'idle') setCrosshairState('pending');
+          _chInFlight = true;
           /* Wrap le request pour mettre à jour le cache au retour */
           (function() {
             const localKey = cacheKey;
@@ -27114,6 +27113,7 @@ const Annotator = (() => {
             })
             .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
             .then(res => {
+              _chInFlight = false;
               const v = res.verdict || 'UNCERTAIN';
               /* V353 — Filtre les raisons techniques avant mise en cache :
                  parse_failed/api_error ne doivent jamais apparaître dans le badge. */
@@ -27134,12 +27134,11 @@ const Annotator = (() => {
                 setCrosshairState('fluo', safeR(res.reason));
               }
               else if (v === 'NO_OBJECT') setCrosshairState('object', safeR(res.reason));
-              /* UNCERTAIN : le type local (lv.liveType) est déjà affiché depuis le dwell ;
-                 on le garde. Gemini retentera après expiration du TTL 5s. */
-              else if (!lv.liveType) setCrosshairState('pending');
+              /* UNCERTAIN : Gemini n'a pas tranché. "Analyse…" jusqu'à expiration TTL 5s. */
+              else setCrosshairState('pending');
             })
-            /* Erreur réseau → idle si pas de signal local, sinon liveType comme fallback. */
-            .catch(() => { if (lv.liveType) setCrosshairState('fluo', 'vérif. échouée'); else setCrosshairState('idle'); });
+            /* Erreur réseau → idle (signal inconnu, ré-viser pour relancer). */
+            .catch(() => { _chInFlight = false; setCrosshairState('idle'); });
           })();
         }
 

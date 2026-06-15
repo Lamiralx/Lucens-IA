@@ -193,7 +193,9 @@ export default async function handler(req, res) {
            raisonne "est-ce diffus comme une vraie fluo ou ponctuel comme une LED ?".
            Latence : +200-400ms → total ~600-900ms, acceptable car l'appel est
            déclenché UNIQUEMENT après le dwell 600ms (l'utilisateur vise déjà). */
-        thinkingConfig: { thinkingBudget: 1024 },
+        /* V354 — budget réduit à 512 (était 1024) : économise ~200ms de latence.
+           512 tokens suffisent pour raisonner "LED ponctuelle vs diffusion organique". */
+        thinkingConfig: { thinkingBudget: 512 },
       },
     });
 
