@@ -8971,7 +8971,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary);padding:2px 0;">v355</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary);padding:2px 0;">v356</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -11486,6 +11486,32 @@ body.lv-open { overflow: hidden; touch-action: none; }
 @keyframes obPulseRing{0%,100%{transform:scale(1);opacity:.95}50%{transform:scale(1.14);opacity:.55}}
 .ob-lv-type{position:absolute;transform:translateX(-50%);background:rgba(8,12,16,.72);border:1px solid var(--lucens-signature);color:#fff;font-size:11px;font-weight:600;padding:4px 10px;border-radius:var(--radius-sm);white-space:nowrap;z-index:2;opacity:0;transition:opacity .45s ease;}
 .ob-lv-shoot{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);width:46px;height:46px;border-radius:50%;border:3px solid rgba(255,255,255,.9);background:rgba(255,255,255,.12);z-index:2;}
+/* V356 — Swipe avant/après */
+.ob-swipe{position:relative;width:240px;height:320px;margin:0 auto;border-radius:var(--r-lg);overflow:hidden;background:#0b0e10;cursor:ew-resize;touch-action:none;}
+.ob-swipe .ob-sw-base{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;}
+.ob-sw-uv{position:absolute;top:0;bottom:0;left:0;overflow:hidden;width:50%;pointer-events:none;}
+.ob-sw-uv img{position:absolute;left:0;top:0;width:240px;height:320px;object-fit:cover;display:block;}
+.ob-sw-line{position:absolute;top:0;bottom:0;left:50%;width:2px;background:rgba(255,255,255,.82);transform:translateX(-50%);z-index:4;pointer-events:none;}
+.ob-sw-handle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;font-size:14px;color:#1a1a1a;box-shadow:0 2px 8px rgba(0,0,0,.4);}
+.ob-sw-lbl{position:absolute;top:10px;font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:rgba(255,255,255,.9);background:rgba(0,0,0,.45);padding:3px 6px;border-radius:4px;white-space:nowrap;z-index:3;}
+.ob-sw-lbl-l{left:7px;}
+.ob-sw-lbl-r{right:7px;}
+@keyframes obSwUv{0%,8%{width:12%}45%,55%{width:88%}92%,100%{width:12%}}
+@keyframes obSwLn{0%,8%{left:12%}45%,55%{left:88%}92%,100%{left:12%}}
+.ob-sw-auto .ob-sw-uv{animation:obSwUv 3.5s ease-in-out .6s infinite;}
+.ob-sw-auto .ob-sw-line{animation:obSwLn 3.5s ease-in-out .6s infinite;}
+/* V356 — Info cascade (score slide) */
+.ob-info-cascade{margin-top:12px;display:flex;flex-direction:column;gap:5px;}
+.ob-iblock{display:flex;flex-direction:column;gap:2px;background:var(--surface-hi);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 10px;opacity:0;animation:obSpring .4s cubic-bezier(.3,1.15,.5,1) both;}
+.ob-info-cascade .ob-iblock:nth-child(1){animation-delay:.45s}
+.ob-info-cascade .ob-iblock:nth-child(2){animation-delay:.65s}
+.ob-info-cascade .ob-iblock:nth-child(3){animation-delay:.85s}
+.ob-iblock-lbl{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-tertiary);}
+.ob-iblock-val{font-size:12px;font-weight:600;color:var(--ink-primary);line-height:1.3;}
+/* V356 — Banner object state (faux positif) */
+.ob-lv-banner[data-st="object"] i{background:rgba(255,255,255,.5);animation:none;}
+/* V356 — Card click pop */
+@keyframes obPickPop{0%{transform:scale(1)}35%{transform:scale(.93)}65%{transform:scale(1.05)}100%{transform:scale(1)}}
 </style>
 <div class="ob-overlay" id="onboardingOverlay" hidden role="dialog" aria-modal="true" aria-label="Présentation de Lucens">
   <div class="ob-top">
@@ -12930,6 +12956,61 @@ const I18N = {
     verif_lowconf_h:  "Zones requiring manual review",
     verif_confidence: "Avg. confidence",
     verif_confidence_h:"Overall Lucens IA reliability score",
+    ob_tag:"Control your hygiene with AI.",
+    ob_lang:"Your language",
+    ob_ba_h:"The invisible, revealed",
+    ob_ba_sub:"Under the Lucens lamp, contamination appears.",
+    ob_ba_off:"Without lamp",
+    ob_ba_on:"With Lucens lamp",
+    ob_sector_q:"Which industry do you work in?",
+    ob_sec_resto:"Food service",
+    ob_sec_agro:"Food production",
+    ob_sec_distrib:"Distribution",
+    ob_sec_sante:"Health and care",
+    ob_sec_pharma:"Pharma and lab",
+    ob_sec_indus:"Industry",
+    ob_sec_resid:"Residential",
+    ob_sec_erp:"Public venues",
+    ob_role_q:"What is your role?",
+    ob_role_terrain:"Field operator",
+    ob_role_terrain_h:"Cook, agent, technician",
+    ob_role_resp:"Manager",
+    ob_role_resp_h:"HACCP, HSE, executive",
+    ob_role_aud:"Auditor",
+    ob_role_aud_h:"Inspector, consultant",
+    ob_role_form:"Trainer",
+    ob_role_form_h:"Trainer, educator",
+    ob_lv_h:"Inspect live",
+    ob_lv_sub:"Aim at a spot: Lucens analyses and names the residue live.",
+    ob_lv_type:"Organic residues",
+    ob_lv_fp_ex:"red plastic",
+    ob_lv_import:"Or import a photo you already took",
+    ob_map_h:"Mapped on your photo",
+    ob_map_sub:"Every fluorescent cell marked, nothing invented.",
+    ob_map_zone:"Organic residues",
+    ob_v_eyebrow:"Risk assessment",
+    ob_v_low2:"Low risk",
+    ob_v_mod:"Moderate risk",
+    ob_v_low:"Low",
+    ob_v_high:"High",
+    ob_v_mod_mean:"Monitor: cleaning is recommended.",
+    ob_v_observed:"What is observed",
+    ob_v_nature:"Organic residues (contact zone)",
+    ob_v_origin:"Probable origin",
+    ob_v_origin_val:"Protein residues — food contact surface",
+    ob_v_actions:"Recommended actions",
+    ob_v_actions_val:"Enzymatic cleaning + ATP check",
+    ob_rep_h:"Document your analysis",
+    ob_rep_photos:"Photos",
+    ob_rep_photos_d:"Photo + mapping",
+    ob_rep_ess:"Essential",
+    ob_rep_reco:"Recommended",
+    ob_rep_ess_d:"+ risk score",
+    ob_rep_full:"Full report",
+    ob_rep_full_d:"+ origin & actions",
+    ob_rep_cta:"Export your analyses",
+    ob_start:"Get started",
+    ob_next:"Next",
   },
   es: {
     err_api_overloaded: "El servicio Lucens está temporalmente saturado. Espere 30 segundos y reinicie el análisis.",
@@ -13582,6 +13663,61 @@ const I18N = {
     verif_lowconf_h:  "Zonas que requieren revisión manual",
     verif_confidence: "Confianza media",
     verif_confidence_h:"Puntuación global de fiabilidad Lucens IA",
+    ob_tag:"Controla tu higiene con IA.",
+    ob_lang:"Tu idioma",
+    ob_ba_h:"Lo invisible, revelado",
+    ob_ba_sub:"Bajo la lámpara Lucens, la contaminación aparece.",
+    ob_ba_off:"Sin lámpara",
+    ob_ba_on:"Con lámpara Lucens",
+    ob_sector_q:"¿En qué sector trabaja?",
+    ob_sec_resto:"Restauración",
+    ob_sec_agro:"Agroalimentario",
+    ob_sec_distrib:"Distribución",
+    ob_sec_sante:"Salud y cuidado",
+    ob_sec_pharma:"Farmacia y laboratorio",
+    ob_sec_indus:"Industria",
+    ob_sec_resid:"Residencial",
+    ob_sec_erp:"Lugares públicos",
+    ob_role_q:"¿Cuál es su función?",
+    ob_role_terrain:"Operacional",
+    ob_role_terrain_h:"Cocinero, agente, técnico",
+    ob_role_resp:"Responsable",
+    ob_role_resp_h:"HACCP, HSE, directivo",
+    ob_role_aud:"Auditor",
+    ob_role_aud_h:"Inspector, consultor",
+    ob_role_form:"Formador",
+    ob_role_form_h:"Formador, docente",
+    ob_lv_h:"Inspeccione en directo",
+    ob_lv_sub:"Apunte una zona: Lucens analiza y nombra el residuo en directo.",
+    ob_lv_type:"Residuos orgánicos",
+    ob_lv_fp_ex:"plástico rojo",
+    ob_lv_import:"O importe una foto ya tomada",
+    ob_map_h:"Cartografiado en su foto",
+    ob_map_sub:"Cada celda fluorescente marcada, sin inventar nada.",
+    ob_map_zone:"Residuos orgánicos",
+    ob_v_eyebrow:"Evaluación del riesgo",
+    ob_v_low2:"Riesgo bajo",
+    ob_v_mod:"Riesgo moderado",
+    ob_v_low:"Bajo",
+    ob_v_high:"Alto",
+    ob_v_mod_mean:"A vigilar: se recomienda limpieza.",
+    ob_v_observed:"Lo que se observa",
+    ob_v_nature:"Residuos orgánicos (zona de contacto)",
+    ob_v_origin:"Origen probable",
+    ob_v_origin_val:"Residuos de proteínas — superficie de contacto alimentario",
+    ob_v_actions:"Acciones recomendadas",
+    ob_v_actions_val:"Limpieza enzimática + control ATP",
+    ob_rep_h:"Documente su análisis",
+    ob_rep_photos:"Fotos",
+    ob_rep_photos_d:"Foto + cartografía",
+    ob_rep_ess:"Esencial",
+    ob_rep_reco:"Recomendado",
+    ob_rep_ess_d:"+ puntuación de riesgo",
+    ob_rep_full:"Completo",
+    ob_rep_full_d:"+ origen y acciones",
+    ob_rep_cta:"Exportar sus análisis",
+    ob_start:"Empezar",
+    ob_next:"Siguiente",
   },
   de: {
     err_api_overloaded: "Der Lucens-Dienst ist vorübergehend überlastet. Warten Sie 30 Sekunden und starten Sie die Analyse erneut.",
@@ -14234,6 +14370,61 @@ const I18N = {
     verif_lowconf_h:  "Zonen mit manueller Prüfung erforderlich",
     verif_confidence: "Mittlere Konfidenz",
     verif_confidence_h:"Globaler Lucens IA-Zuverlässigkeitswert",
+    ob_tag:"Ihre Hygiene mit KI kontrollieren.",
+    ob_lang:"Ihre Sprache",
+    ob_ba_h:"Das Unsichtbare, enthüllt",
+    ob_ba_sub:"Unter der Lucens-Lampe wird Kontamination sichtbar.",
+    ob_ba_off:"Ohne Lampe",
+    ob_ba_on:"Mit Lucens-Lampe",
+    ob_sector_q:"In welchem Bereich arbeiten Sie?",
+    ob_sec_resto:"Gastronomie",
+    ob_sec_agro:"Lebensmittelproduktion",
+    ob_sec_distrib:"Handel",
+    ob_sec_sante:"Gesundheit und Pflege",
+    ob_sec_pharma:"Pharma und Labor",
+    ob_sec_indus:"Industrie",
+    ob_sec_resid:"Wohnbereich",
+    ob_sec_erp:"Öffentliche Räume",
+    ob_role_q:"Was ist Ihre Funktion?",
+    ob_role_terrain:"Operativ",
+    ob_role_terrain_h:"Koch, Agent, Techniker",
+    ob_role_resp:"Verantwortlicher",
+    ob_role_resp_h:"HACCP, QSE, Führungskraft",
+    ob_role_aud:"Prüfer",
+    ob_role_aud_h:"Inspektor, Berater",
+    ob_role_form:"Ausbilder",
+    ob_role_form_h:"Trainer, Lehrer",
+    ob_lv_h:"Live inspizieren",
+    ob_lv_sub:"Zielen Sie auf eine Zone: Lucens analysiert und benennt den Rückstand live.",
+    ob_lv_type:"Organische Rückstände",
+    ob_lv_fp_ex:"roter Kunststoff",
+    ob_lv_import:"Oder importieren Sie ein bereits aufgenommenes Foto",
+    ob_map_h:"Auf Ihrem Foto kartiert",
+    ob_map_sub:"Jede fluoreszierende Zelle markiert, nichts erfunden.",
+    ob_map_zone:"Organische Rückstände",
+    ob_v_eyebrow:"Risikobewertung",
+    ob_v_low2:"Geringes Risiko",
+    ob_v_mod:"Mittleres Risiko",
+    ob_v_low:"Gering",
+    ob_v_high:"Hoch",
+    ob_v_mod_mean:"Beobachten: Reinigung empfohlen.",
+    ob_v_observed:"Was beobachtet wird",
+    ob_v_nature:"Organische Rückstände (Kontaktzone)",
+    ob_v_origin:"Wahrscheinliche Herkunft",
+    ob_v_origin_val:"Proteinrückstände — Lebensmittelkontaktfläche",
+    ob_v_actions:"Empfohlene Maßnahmen",
+    ob_v_actions_val:"Enzymatische Reinigung + ATP-Kontrolle",
+    ob_rep_h:"Dokumentieren Sie Ihre Analyse",
+    ob_rep_photos:"Fotos",
+    ob_rep_photos_d:"Foto + Kartierung",
+    ob_rep_ess:"Wesentlich",
+    ob_rep_reco:"Empfohlen",
+    ob_rep_ess_d:"+ Risikoscore",
+    ob_rep_full:"Vollständig",
+    ob_rep_full_d:"+ Herkunft & Maßnahmen",
+    ob_rep_cta:"Analysen exportieren",
+    ob_start:"Beginnen",
+    ob_next:"Weiter",
   },
 };
 
@@ -17436,11 +17627,31 @@ const Annotator = (() => {
         '<div class="ob-chips">' + chip('fr', 'Français') + chip('en', 'English') + chip('es', 'Español') + chip('de', 'Deutsch') + '</div>' +
         '</div>' },
 
-      { build: () =>
+      { init: function () {
+          var sw = document.getElementById('obSwipe');
+          var uvD = document.getElementById('obSwUv');
+          var ln = document.getElementById('obSwLine');
+          if (!sw) return;
+          function set(p) { p = Math.max(5, Math.min(95, p)); uvD.style.width = p + '%'; ln.style.left = p + '%'; }
+          sw.addEventListener('pointerdown', function (e) {
+            sw.classList.remove('ob-sw-auto');
+            uvD.style.animation = 'none'; ln.style.animation = 'none';
+            sw.setPointerCapture(e.pointerId);
+            set(((e.clientX - sw.getBoundingClientRect().left) / sw.offsetWidth) * 100);
+          });
+          sw.addEventListener('pointermove', function (e) {
+            if (!sw.hasPointerCapture(e.pointerId)) return;
+            set(((e.clientX - sw.getBoundingClientRect().left) / sw.offsetWidth) * 100);
+          });
+        },
+        build: () =>
         '<div class="ob-head"><div class="ob-h">' + tr('ob_ba_h', "L'invisible, révélé") + '</div><div class="ob-sub">' + tr('ob_ba_sub', 'Sous la lampe Lucens, la contamination apparaît.') + '</div></div>' +
-        '<div class="ob-ba">' +
-        '<figure class="ob-ba-col"><img src="' + PHOTO_NORMAL + '" alt=""><figcaption>' + tr('ob_ba_off', 'Sans lampe') + '</figcaption></figure>' +
-        '<figure class="ob-ba-col ob-ba-on"><img class="ob-reveal2" src="' + PHOTO_UV + '" alt=""><figcaption>' + tr('ob_ba_on', 'Avec lampe Lucens') + '</figcaption></figure>' +
+        '<div class="ob-swipe ob-sw-auto" id="obSwipe">' +
+        '<img class="ob-sw-base" src="' + PHOTO_NORMAL + '" alt="">' +
+        '<div class="ob-sw-uv" id="obSwUv"><img src="' + PHOTO_UV + '" alt=""></div>' +
+        '<div class="ob-sw-line" id="obSwLine"><span class="ob-sw-handle">&#8596;</span></div>' +
+        '<span class="ob-sw-lbl ob-sw-lbl-l">' + tr('ob_ba_off', 'Sans lampe') + '</span>' +
+        '<span class="ob-sw-lbl ob-sw-lbl-r">' + tr('ob_ba_on', 'Avec lampe Lucens') + '</span>' +
         '</div>' },
 
       { build: () =>
@@ -17468,9 +17679,18 @@ const Annotator = (() => {
       { init: function () {
           var b = document.getElementById('obLvBanner'), l = document.getElementById('obLvLabel'), c = document.getElementById('obLvCross'), ty = document.getElementById('obLvType');
           if (!b) return;
-          b.setAttribute('data-st', 'idle'); l.textContent = tr('lv_status_idle', 'Visez une zone'); c.className = 'ob-lv-cross'; ty.style.opacity = '0';
-          setTimeout(function () { if (!document.body.contains(b)) return; b.setAttribute('data-st', 'pending'); l.textContent = tr('lv_status_pending', 'Analyse…'); }, 1300);
-          setTimeout(function () { if (!document.body.contains(b)) return; b.setAttribute('data-st', 'fluo'); l.textContent = tr('lv_status_fluo', 'Résidu détecté'); c.className = 'ob-lv-cross fluo'; ty.style.opacity = '1'; }, 2200);
+          /* État initial : idle */
+          b.setAttribute('data-st', 'idle'); l.textContent = tr('lv_status_idle', 'Visez une zone'); c.className = 'ob-lv-cross'; ty.style.opacity = '0'; ty.style.borderColor = 'var(--lucens-signature)';
+          /* Analyse en cours */
+          setTimeout(function () { if (!document.body.contains(b)) return; b.setAttribute('data-st', 'pending'); l.textContent = tr('lv_status_pending', 'Analyse…'); c.className = 'ob-lv-cross'; }, 1000);
+          /* Faux positif détecté (plastique coloré) */
+          setTimeout(function () { if (!document.body.contains(b)) return; b.setAttribute('data-st', 'object'); l.textContent = tr('lv_status_object', 'Pas un résidu') + ' · ' + tr('ob_lv_fp_ex', 'plastique rouge'); c.className = 'ob-lv-cross'; ty.style.opacity = '0'; }, 2100);
+          /* Retour idle — caméra bouge */
+          setTimeout(function () { if (!document.body.contains(b)) return; b.setAttribute('data-st', 'idle'); l.textContent = tr('lv_status_idle', 'Visez une zone'); c.className = 'ob-lv-cross'; }, 3400);
+          /* Nouvelle analyse */
+          setTimeout(function () { if (!document.body.contains(b)) return; b.setAttribute('data-st', 'pending'); l.textContent = tr('lv_status_pending', 'Analyse…'); }, 4300);
+          /* Vraie fluorescence détectée */
+          setTimeout(function () { if (!document.body.contains(b)) return; b.setAttribute('data-st', 'fluo'); l.textContent = tr('lv_status_fluo', 'Résidu détecté'); c.className = 'ob-lv-cross fluo'; ty.style.opacity = '1'; }, 5400);
         },
         build: () =>
         '<div class="ob-head"><div class="ob-h">' + tr('ob_lv_h', 'Inspectez en direct') + '</div><div class="ob-sub">' + tr('ob_lv_sub', 'Visez une zone : Lucens analyse et nomme le résidu en direct.') + '</div></div>' +
@@ -17516,7 +17736,11 @@ const Annotator = (() => {
         '<div class="ob-scl"><span>' + tr('ob_v_low', 'Faible') + '</span><span>' + tr('ob_v_high', 'Élevé') + '</span></div>' +
         '<div class="ob-rlab" id="obRlab">' + tr('ob_v_mod', 'Risque modéré') + '</div>' +
         '<div class="ob-rmean" id="obRmean">' + tr('ob_v_mod_mean', 'À surveiller : un nettoyage est recommandé.') + '</div>' +
-        '<div class="ob-obs"><div class="ob-eyebrow">' + tr('ob_v_observed', 'Ce qui est observé') + '</div><div style="font-size:15px;font-weight:700;color:var(--ob-ink);margin-top:4px;">' + tr('ob_v_nature', 'Résidus organiques (zone de contact)') + '</div></div>' },
+        '<div class="ob-info-cascade">' +
+        '<div class="ob-iblock"><span class="ob-iblock-lbl">' + tr('ob_v_observed', 'Ce qui est observé') + '</span><span class="ob-iblock-val">' + tr('ob_v_nature', 'Résidus organiques (zone de contact)') + '</span></div>' +
+        '<div class="ob-iblock"><span class="ob-iblock-lbl">' + tr('ob_v_origin', 'Origine probable') + '</span><span class="ob-iblock-val">' + tr('ob_v_origin_val', 'Résidus de protéines — surface de contact alimentaire') + '</span></div>' +
+        '<div class="ob-iblock"><span class="ob-iblock-lbl">' + tr('ob_v_actions', 'Actions recommandées') + '</span><span class="ob-iblock-val">' + tr('ob_v_actions_val', 'Nettoyage enzymatique + contrôle ATP') + '</span></div>' +
+        '</div>' },
 
       { build: () =>
         '<div class="ob-head"><div class="ob-h">' + tr('ob_rep_h', 'Documentez votre analyse') + '</div></div>' +
@@ -17533,6 +17757,9 @@ const Annotator = (() => {
           const g = el.getAttribute('data-grp'), v = el.getAttribute('data-val');
           st[g] = v;
           stage.querySelectorAll('[data-grp="' + g + '"]').forEach(function (s) { s.classList.toggle('on', s === el); });
+          el.style.animation = 'none';
+          void el.offsetWidth;
+          el.style.animation = 'obPickPop .28s cubic-bezier(.3,1.4,.5,1)';
         });
       });
     }
