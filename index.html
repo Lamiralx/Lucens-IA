@@ -8971,7 +8971,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary);padding:2px 0;">v357</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary);padding:2px 0;">v358</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -11508,6 +11508,28 @@ body.lv-open { overflow: hidden; touch-action: none; }
 .ob-info-cascade .ob-iblock:nth-child(3){animation-delay:.85s}
 .ob-iblock-lbl{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-tertiary);}
 .ob-iblock-val{font-size:12px;font-weight:600;color:var(--ink-primary);line-height:1.3;}
+/* V358 — Risk slide redesign: verdict hero + 3 narrative cards */
+.ob-verdict{background:var(--surface-hi);border:1px solid var(--border);border-radius:var(--radius-md);padding:13px 14px 12px;margin-bottom:11px;}
+.ob-verdict-top{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.ob-verdict-dot{width:10px;height:10px;border-radius:50%;background:var(--ob-low);flex:none;transition:background .3s,box-shadow .3s;}
+.ob-verdict-lbl{font-size:15px;font-weight:700;color:var(--ob-ink);flex:1;}
+.ob-verdict-score{display:flex;align-items:baseline;gap:1px;}
+.ob-verdict-score b{font-size:22px;font-weight:700;color:var(--ob-ink);line-height:1;}
+.ob-verdict-score small{font-size:11px;font-weight:600;color:var(--ob-ink3);}
+.ob-vbar{height:7px;border-radius:999px;background:var(--border);overflow:hidden;}
+.ob-vbar-fill{height:100%;width:0%;border-radius:999px;background:linear-gradient(to right,var(--risk-low) 0%,var(--risk-mid) 55%,var(--risk-hi) 100%);transition:width 1.1s cubic-bezier(.4,0,.2,1);}
+.ob-rcards{display:flex;flex-direction:column;gap:7px;}
+.ob-rcard{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;opacity:0;animation:obSpring .42s cubic-bezier(.3,1.15,.5,1) both;}
+.ob-rcards .ob-rcard:nth-child(1){animation-delay:.5s}
+.ob-rcards .ob-rcard:nth-child(2){animation-delay:.85s}
+.ob-rcards .ob-rcard:nth-child(3){border-color:var(--accent);animation-delay:1.2s}
+.ob-rcard-ic{width:28px;height:28px;border-radius:var(--radius-sm);background:var(--surface-page);display:flex;align-items:center;justify-content:center;flex:none;}
+.ob-rcard-ic svg{width:14px;height:14px;fill:none;stroke:var(--ink-secondary);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.ob-rcards .ob-rcard:nth-child(3) .ob-rcard-ic svg{stroke:var(--accent);}
+.ob-rcard-txt{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.ob-rcard-ey{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-tertiary);}
+.ob-rcards .ob-rcard:nth-child(3) .ob-rcard-ey{color:var(--accent);}
+.ob-rcard-val{font-size:12px;font-weight:600;color:var(--ink-primary);line-height:1.3;}
 /* V356 — Banner object state (faux positif) */
 .ob-lv-banner[data-st="object"] i{background:rgba(255,255,255,.5);animation:none;}
 /* V356 — Card click pop */
@@ -13025,6 +13047,7 @@ const I18N = {
     ob_v_origin_val:"Protein residues — food contact surface",
     ob_v_actions:"Recommended actions",
     ob_v_actions_val:"Enzymatic cleaning + ATP check",
+    ob_v_risk:"Associated risk",ob_v_risk_val:"Microbial contamination · allergens",
     ob_rep_h:"Document your analysis",
     ob_rep_photos:"Photos",
     ob_rep_photos_d:"Photo + mapping",
@@ -13732,6 +13755,7 @@ const I18N = {
     ob_v_origin_val:"Residuos de proteínas — superficie de contacto alimentario",
     ob_v_actions:"Acciones recomendadas",
     ob_v_actions_val:"Limpieza enzimática + control ATP",
+    ob_v_risk:"Riesgo asociado",ob_v_risk_val:"Contaminación microbiana · alérgenos",
     ob_rep_h:"Documente su análisis",
     ob_rep_photos:"Fotos",
     ob_rep_photos_d:"Foto + cartografía",
@@ -14439,6 +14463,7 @@ const I18N = {
     ob_v_origin_val:"Proteinrückstände — Lebensmittelkontaktfläche",
     ob_v_actions:"Empfohlene Maßnahmen",
     ob_v_actions_val:"Enzymatische Reinigung + ATP-Kontrolle",
+    ob_v_risk:"Verbundenes Risiko",ob_v_risk_val:"Mikrobielle Kontamination · Allergene",
     ob_rep_h:"Dokumentieren Sie Ihre Analyse",
     ob_rep_photos:"Fotos",
     ob_rep_photos_d:"Foto + Kartierung",
@@ -17754,28 +17779,27 @@ const Annotator = (() => {
         '</div>' },
 
       { init: function () {
-          const sc = document.getElementById('obScore'), th = document.getElementById('obThumb'), lab = document.getElementById('obRlab'), mn = document.getElementById('obRmean');
-          if (!sc || !th) return;
-          let n = 0; sc.textContent = '0'; th.style.left = '0%'; lab.textContent = tr('ob_v_low2', 'Risque faible'); lab.style.color = 'var(--ob-low)'; if (mn) mn.style.opacity = '0';
-          const iv = setInterval(function () {
-            if (!document.body.contains(sc)) { clearInterval(iv); return; }
-            n += 2; if (n >= 62) { n = 62; clearInterval(iv); if (mn) mn.style.opacity = '1'; }
-            sc.textContent = n; th.style.left = n + '%';
-            if (n < 27) { lab.textContent = tr('ob_v_low2', 'Risque faible'); lab.style.color = 'var(--ob-low)'; }
-            else { lab.textContent = tr('ob_v_mod', 'Risque modéré'); lab.style.color = 'var(--ob-mid)'; }
-          }, 34);
+          var bar = document.getElementById('obVbarFill'), num = document.getElementById('obVnum'), lbl = document.getElementById('obVlbl'), dot = document.getElementById('obVdot');
+          if (!bar || !num) return;
+          var n = 0; num.textContent = '0'; bar.style.width = '0%';
+          var iv = setInterval(function () {
+            if (!document.body.contains(bar)) { clearInterval(iv); return; }
+            n += 2; if (n >= 62) { n = 62; clearInterval(iv); }
+            num.textContent = n; bar.style.width = n + '%';
+            if (n < 27) { lbl.textContent = tr('ob_v_low2', 'Risque faible'); dot.style.background = 'var(--risk-low)'; dot.style.boxShadow = '0 0 8px var(--risk-low)'; }
+            else { lbl.textContent = tr('ob_v_mod', 'Risque modéré'); dot.style.background = 'var(--risk-mid)'; dot.style.boxShadow = '0 0 8px var(--risk-mid)'; }
+          }, 28);
         },
         build: () =>
-        '<div class="ob-eyebrow">' + tr('ob_v_eyebrow', 'Évaluation du risque') + '</div>' +
-        '<div class="ob-score"><span id="obScore">0</span><small> /100</small></div>' +
-        '<div class="ob-trk"><div class="ob-trk-bar"></div><div class="ob-thumb" id="obThumb"></div></div>' +
-        '<div class="ob-scl"><span>' + tr('ob_v_low', 'Faible') + '</span><span>' + tr('ob_v_high', 'Élevé') + '</span></div>' +
-        '<div class="ob-rlab" id="obRlab">' + tr('ob_v_mod', 'Risque modéré') + '</div>' +
-        '<div class="ob-rmean" id="obRmean">' + tr('ob_v_mod_mean', 'À surveiller : un nettoyage est recommandé.') + '</div>' +
-        '<div class="ob-info-cascade">' +
-        '<div class="ob-iblock"><span class="ob-iblock-lbl">' + tr('ob_v_observed', 'Ce qui est observé') + '</span><span class="ob-iblock-val">' + tr('ob_v_nature', 'Résidus organiques (zone de contact)') + '</span></div>' +
-        '<div class="ob-iblock"><span class="ob-iblock-lbl">' + tr('ob_v_origin', 'Origine probable') + '</span><span class="ob-iblock-val">' + tr('ob_v_origin_val', 'Résidus de protéines — surface de contact alimentaire') + '</span></div>' +
-        '<div class="ob-iblock"><span class="ob-iblock-lbl">' + tr('ob_v_actions', 'Actions recommandées') + '</span><span class="ob-iblock-val">' + tr('ob_v_actions_val', 'Nettoyage enzymatique + contrôle ATP') + '</span></div>' +
+        '<div class="ob-eyebrow" style="margin-bottom:13px;">' + tr('ob_v_eyebrow', 'Évaluation du risque') + '</div>' +
+        '<div class="ob-verdict" style="animation:obSpring .5s cubic-bezier(.3,1.15,.5,1) .1s both">' +
+        '<div class="ob-verdict-top"><span class="ob-verdict-dot" id="obVdot"></span><span class="ob-verdict-lbl" id="obVlbl">' + tr('ob_v_low2', 'Risque faible') + '</span><span class="ob-verdict-score"><b id="obVnum">0</b><small>/100</small></span></div>' +
+        '<div class="ob-vbar"><div class="ob-vbar-fill" id="obVbarFill"></div></div>' +
+        '</div>' +
+        '<div class="ob-rcards">' +
+        '<div class="ob-rcard"><span class="ob-rcard-ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg></span><span class="ob-rcard-txt"><span class="ob-rcard-ey">' + tr('ob_v_observed', 'Ce qui est observé') + '</span><span class="ob-rcard-val">' + tr('ob_v_nature', 'Résidus organiques — zone de contact') + '</span></span></div>' +
+        '<div class="ob-rcard"><span class="ob-rcard-ic"><svg viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span><span class="ob-rcard-txt"><span class="ob-rcard-ey">' + tr('ob_v_risk', 'Risque associé') + '</span><span class="ob-rcard-val">' + tr('ob_v_risk_val', 'Contamination microbienne · allergènes') + '</span></span></div>' +
+        '<div class="ob-rcard"><span class="ob-rcard-ic"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span><span class="ob-rcard-txt"><span class="ob-rcard-ey">' + tr('ob_v_actions', 'Action recommandée') + '</span><span class="ob-rcard-val">' + tr('ob_v_actions_val', 'Nettoyage enzymatique + contrôle ATP') + '</span></span></div>' +
         '</div>' },
 
       { build: () =>
