@@ -7935,6 +7935,9 @@ html.lv-open, body.lv-open { background: #000 !important; }
 .lv-badge.lv-badge-mid .lv-badge-dot { background: #F0C36B; }
 .lv-badge.lv-badge-low  { background: rgba(120,200,170,0.14); color: #A7E6CD; border: 1px solid rgba(120,200,170,0.28); }
 .lv-badge.lv-badge-low .lv-badge-dot { background: #7BD0A6; }
+/* Faux positif (NO_OBJECT) — gris ardoise neutre, discret */
+.lv-badge.lv-badge-none { background: rgba(100,116,139,0.13); color: #94A3B8; border: 1px solid rgba(100,116,139,0.22); }
+.lv-badge.lv-badge-none .lv-badge-dot { background: #64748B; }
 
 /* V26 — Banner statut MASQUÉ pendant les modes calibration (carte +
    zone propre) car il chevauche les boutons des popups. */
@@ -8968,7 +8971,7 @@ body.lv-open { overflow: hidden; touch-action: none; }
         <!-- V188 — Version déplacée ici depuis l'accueil (consultable, discrète). -->
         <div class="settings-group">
           <span class="settings-group-label" data-i18n="settings_version">Version</span>
-          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary);padding:2px 0;">v348</div>
+          <div class="settings-version-row" id="settingsVersion" style="font-size:13px;color:var(--ink-tertiary);padding:2px 0;">v352</div>
           <!-- V280 — Mise à jour INTÉGRÉE ici (fin du pop-up flottant) : la rangée
                n'apparaît QUE quand une nouvelle version attend (drapeau posé par le
                message SW_UPDATE_AVAILABLE). Un tap = rechargement, c'est tout. -->
@@ -11296,6 +11299,215 @@ body.lv-open { overflow: hidden; touch-action: none; }
     </div>
   </div>
 </div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ONBOARDING — Présentation au 1er lancement (V350).
+     Overlay plein écran, toujours CLAIR (variables --ob-* locales,
+     indépendantes du thème). Fil rouge sur une vraie photo UV.
+     Slides construits en JS (initOnboarding) ; rejouable depuis
+     Personnalisation. Aucune dépendance hors t()/setLang/LucensContext.
+     ═══════════════════════════════════════════════════════════ -->
+<style id="lcs-onboarding-css">
+.ob-overlay{position:fixed;inset:0;z-index:100001;
+  --ob-bg:var(--surface-page);--ob-card:var(--surface-hi);--ob-ink:var(--ink-primary);--ob-ink2:var(--ink-secondary);--ob-ink3:var(--ink-tertiary);
+  --ob-line:var(--border);--ob-acc:var(--accent);--ob-acc-soft:var(--accent-soft);--ob-copper:var(--lucens-signature);
+  --ob-low:var(--risk-low);--ob-mid:var(--risk-mid);--ob-hi:var(--risk-hi);--ob-fluo:var(--lucens-signature);
+  background:var(--surface-page);color:var(--ink-primary);display:flex;flex-direction:column;
+  font-family:var(--font-body);
+  -webkit-tap-highlight-color:transparent;}
+.ob-overlay[hidden]{display:none;}
+.ob-top{display:flex;align-items:center;justify-content:center;padding:calc(14px + env(safe-area-inset-top,0)) 18px 4px;}
+.ob-brand{display:flex;align-items:center;gap:6px;letter-spacing:.2em;font-size:14px;font-weight:700;color:var(--ob-acc);}
+.ob-brand i{width:6px;height:6px;border-radius:50%;background:var(--ob-copper);}
+.ob-stage{flex:1;display:flex;flex-direction:column;justify-content:center;padding:8px 22px;overflow:hidden;}
+.ob-slide{animation:obIn .42s cubic-bezier(.22,1,.36,1);}
+@keyframes obIn{from{opacity:0;transform:translateX(24px);}to{opacity:1;transform:none;}}
+.ob-foot{padding:8px 22px calc(14px + env(safe-area-inset-bottom,0));}
+.ob-dots{display:flex;justify-content:center;gap:6px;margin-bottom:13px;}
+.ob-d{height:7px;width:7px;border-radius:999px;background:var(--ob-line);transition:width .25s,background .25s;cursor:pointer;}
+.ob-d.on{width:18px;background:var(--ob-acc);}
+.ob-nav{display:flex;gap:10px;}
+.ob-prev{height:50px;flex:0 0 50px;border-radius:14px;border:1px solid var(--ob-line);background:transparent;color:var(--ob-ink2);font-size:20px;cursor:pointer;}
+.ob-next{height:50px;flex:1;border-radius:14px;border:none;background:var(--ob-acc);color:#fff;font-size:16px;font-weight:700;cursor:pointer;}
+.ob-next:active,.ob-prev:active,.ob-card:active,.ob-role:active,.ob-chip:active{transform:scale(.98);}
+.ob-skip{display:block;margin:9px auto 0;background:none;border:none;color:var(--ob-ink3);font-size:13px;cursor:pointer;padding:5px 10px;}
+.ob-eyebrow{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ob-ink3);text-align:center;}
+.ob-head{margin-bottom:18px;}
+.ob-h{font-size:21px;font-weight:700;line-height:1.22;color:var(--ob-ink);text-align:center;}
+.ob-sub{font-size:13.5px;color:var(--ob-ink2);text-align:center;line-height:1.45;margin-top:7px;}
+.ob-welcome{text-align:center;}
+.ob-logo{display:flex;justify-content:center;align-items:flex-start;gap:8px;margin-bottom:22px;}
+.ob-logo b{letter-spacing:.24em;font-size:27px;font-weight:700;color:var(--ob-acc);}
+.ob-logo i{width:8px;height:8px;border-radius:50%;background:var(--ob-copper);margin-top:8px;}
+.ob-tag{font-size:25px;font-weight:700;line-height:1.18;color:var(--ob-ink);margin-bottom:10px;}
+.ob-tagsub{font-size:14px;color:var(--ob-ink2);line-height:1.45;margin-bottom:32px;}
+.ob-chips{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:13px;}
+.ob-chip{padding:11px 18px;border-radius:999px;border:1px solid var(--ob-line);background:#fff;color:var(--ob-ink2);font-size:14px;font-weight:600;cursor:pointer;transition:.18s;}
+.ob-chip.on{background:var(--ob-acc);color:#fff;border-color:var(--ob-acc);}
+.ob-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.ob-card{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:7px;height:60px;padding:0 13px;border-radius:13px;border:1px solid var(--ob-line);background:#fff;color:var(--ob-ink2);font-size:12.5px;font-weight:600;cursor:pointer;transition:.18s;}
+.ob-card svg{width:21px;height:21px;stroke:var(--ob-ink3);fill:none;stroke-width:1.8;}
+.ob-card.on{border:1.5px solid var(--ob-acc);background:var(--ob-acc-soft);color:var(--ob-ink);}
+.ob-card.on svg{stroke:var(--ob-acc);}
+.ob-label-sm{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ob-ink3);margin:15px 0 8px;text-align:center;}
+.ob-roles{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.ob-role{display:flex;align-items:center;gap:10px;height:56px;padding:0 12px;border-radius:13px;border:1px solid var(--ob-line);background:#fff;cursor:pointer;transition:.18s;text-align:left;}
+.ob-role svg{width:20px;height:20px;stroke:var(--ob-ink3);fill:none;stroke-width:1.8;flex:0 0 20px;}
+.ob-role em{font-style:normal;font-size:13px;font-weight:600;color:var(--ob-ink2);display:block;}
+.ob-role small{font-size:10.5px;font-weight:500;color:var(--ob-ink3);}
+.ob-role.on{border:1.5px solid var(--ob-acc);background:var(--ob-acc-soft);}
+.ob-role.on svg{stroke:var(--ob-acc);} .ob-role.on em{color:var(--ob-ink);}
+.ob-scene{position:relative;width:240px;height:320px;margin:0 auto;border-radius:18px;overflow:hidden;background:#0b0e10;}
+.ob-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
+.ob-reveal{filter:brightness(.42) saturate(.5) contrast(.95) blur(3px);transform:scale(1.06);animation:obReveal 1.6s cubic-bezier(.32,.72,.2,1) .25s forwards;}
+@keyframes obReveal{to{filter:brightness(1.05) saturate(1.18) contrast(1.06) blur(0);transform:scale(1);}}
+.ob-cor{position:absolute;width:20px;height:20px;}
+.ob-cor.tl{top:12px;left:12px;border-top:2px solid rgba(255,255,255,.85);border-left:2px solid rgba(255,255,255,.85);}
+.ob-cor.tr{top:12px;right:12px;border-top:2px solid rgba(255,255,255,.85);border-right:2px solid rgba(255,255,255,.85);}
+.ob-cor.bl{bottom:12px;left:12px;border-bottom:2px solid rgba(255,255,255,.85);border-left:2px solid rgba(255,255,255,.85);}
+.ob-cor.br{bottom:12px;right:12px;border-bottom:2px solid rgba(255,255,255,.85);border-right:2px solid rgba(255,255,255,.85);}
+.ob-reticle{position:absolute;width:58px;height:58px;border:2px solid rgba(255,255,255,.92);border-radius:50%;transform:translate(-50%,-50%);opacity:0;animation:obFadeIn .5s ease 1s forwards;}
+.ob-chip-live{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);background:rgba(10,14,12,.82);border:1px solid rgba(124,255,140,.5);color:#fff;font-size:13px;font-weight:700;padding:8px 14px;border-radius:11px;display:flex;align-items:center;gap:8px;white-space:nowrap;opacity:0;animation:obRise .5s ease 1.15s forwards;}
+.ob-livedot{width:8px;height:8px;border-radius:50%;background:var(--ob-fluo);box-shadow:0 0 7px var(--ob-fluo);animation:obDot 1.3s ease-in-out infinite;}
+.ob-zone{position:absolute;border:2px solid rgba(255,255,255,.92);border-radius:8px;opacity:0;animation:obPop .45s cubic-bezier(.22,1,.36,1) forwards;}
+.ob-ztag{position:absolute;background:rgba(10,14,12,.85);color:#fff;font-size:11px;font-weight:600;padding:4px 9px;border-radius:7px;display:flex;align-items:center;gap:6px;white-space:nowrap;opacity:0;animation:obPop .45s cubic-bezier(.22,1,.36,1) forwards;}
+.ob-zdot{width:7px;height:7px;border-radius:50%;}
+.ob-import{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:14px;color:var(--ob-ink3);font-size:12.5px;font-weight:500;}
+.ob-import svg{width:16px;height:16px;stroke:var(--ob-ink3);fill:none;stroke-width:1.8;}
+.ob-score{font-size:52px;font-weight:700;color:var(--ob-ink);line-height:.9;text-align:center;margin-top:10px;}
+.ob-score small{font-size:18px;color:var(--ob-ink3);font-weight:600;}
+.ob-trk{position:relative;height:18px;margin:24px 6px 0;}
+.ob-trk-bar{position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);height:12px;border-radius:999px;background:linear-gradient(to right,var(--ob-low),var(--ob-mid) 55%,var(--ob-hi));}
+.ob-thumb{position:absolute;top:50%;left:0%;transform:translate(-50%,-50%);width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid var(--ob-ink);box-shadow:0 1px 5px rgba(0,0,0,.3);z-index:2;}
+.ob-scl{display:flex;justify-content:space-between;margin:9px 6px 0;font-size:11px;font-weight:600;color:var(--ob-ink3);}
+.ob-rlab{font-size:22px;font-weight:700;text-align:center;margin-top:22px;color:var(--ob-mid);}
+.ob-rmean{font-size:13px;color:var(--ob-ink2);text-align:center;margin-top:4px;transition:opacity .4s ease;}
+.ob-obs{border-top:1px solid var(--ob-line);margin-top:20px;padding-top:14px;text-align:center;}
+.ob-vrow{display:flex;align-items:center;justify-content:center;gap:9px;}
+.ob-vthumb{width:38px;height:38px;border-radius:9px;object-fit:cover;}
+.ob-tier{display:flex;align-items:center;gap:9px;padding:13px 14px;border-radius:12px;border:1px solid var(--ob-line);margin-bottom:10px;}
+.ob-tier.reco{border:1.5px solid var(--ob-acc);background:var(--ob-acc-soft);}
+.ob-tier b{font-size:14px;font-weight:600;color:var(--ob-ink);}
+.ob-tier .rb{font-size:10px;font-weight:600;color:var(--ob-acc);background:#fff;border:1px solid var(--ob-acc);padding:2px 7px;border-radius:999px;}
+.ob-tier span{font-size:12px;color:var(--ob-ink3);margin-left:auto;text-align:right;}
+.ob-cta{height:50px;border-radius:13px;background:var(--ob-acc);color:#fff;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;}
+.ob-cta svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;}
+@keyframes obFadeIn{to{opacity:1;}}
+@keyframes obRise{from{opacity:0;transform:translateX(-50%) translateY(8px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+@keyframes obPop{from{opacity:0;transform:scale(.82);}to{opacity:1;transform:scale(1);}}
+@keyframes obDot{0%,100%{opacity:.4;}50%{opacity:1;}}
+@media (prefers-reduced-motion:reduce){.ob-slide,.ob-reveal,.ob-reticle,.ob-chip-live,.ob-zone,.ob-ztag{animation:none!important;filter:none!important;opacity:1!important;}}
+/* V350.1 (assaini V352) — structure seulement (skip en haut, chevron retour, cartes en ligne, tuile) */
+.ob-top{position:relative;}
+.ob-overlay.ob-first .ob-brand{visibility:hidden;}
+.ob-skip{position:absolute;right:12px;top:calc(15px + env(safe-area-inset-top,0px));margin:0;display:inline-block;font-weight:600;}
+.ob-prev{display:flex;align-items:center;justify-content:center;}
+.ob-prev svg{width:22px;height:22px;}
+.ob-card{flex-direction:row;align-items:center;gap:11px;height:62px;}
+.ob-ic{width:34px;height:34px;display:flex;align-items:center;justify-content:center;flex:0 0 34px;}
+.ob-ic svg{width:19px;height:19px;fill:none;stroke-width:1.9;}
+.ob-role .ob-ic{flex:0 0 34px;width:34px;height:34px;}
+/* V350.3 — colonne centrée : évite l'étirement plein écran sur ordinateur/grand écran */
+.ob-top,.ob-stage,.ob-foot{width:100%;max-width:430px;margin-left:auto;margin-right:auto;}
+/* V352 — CONFORMITÉ CANON (annule la dérive V351 : ni gradient, ni cuivre-bouton, ni littéraux,
+   ni ombres décoratives). Tokens app, échelle typo figée, rayons {6·12·16}, accent=action,
+   cuivre=signature/détection seulement. Thème-aware (clair + sombre). */
+.ob-h{font-size:18px;letter-spacing:-.01em;}
+.ob-tag{font-size:22px;letter-spacing:-.01em;}
+.ob-logo b{font-size:22px;color:var(--accent);}
+.ob-sub{font-size:13px;}
+.ob-eyebrow,.ob-label-sm,.ob-scl{font-size:10px;}
+.ob-import,.ob-card>span:last-child{font-size:12px;color:var(--ink-primary);}
+.ob-role small{font-size:11px;color:var(--ink-tertiary);}
+.ob-score{font-size:24px;}.ob-score small{font-size:16px;}
+.ob-rlab{font-size:18px;}
+.ob-prev,.ob-next,.ob-cta,.ob-card,.ob-tier,.ob-chip-live{border-radius:var(--radius-md);}
+.ob-scene{border-radius:var(--r-lg);}
+.ob-ztag,.ob-ic{border-radius:var(--radius-sm);}
+.ob-prev,.ob-next,.ob-cta{height:52px;}
+.ob-next{box-shadow:none;}
+.ob-card,.ob-role,.ob-chip,.ob-tier{background:var(--surface-hi);border:1px solid var(--border);}
+.ob-role em{font-size:14px;color:var(--ink-primary);}
+.ob-tier b{color:var(--ink-primary);}.ob-tier span{color:var(--ink-tertiary);}
+.ob-card.on,.ob-role.on,.ob-tier.reco{border:1.5px solid var(--accent);background:var(--accent-soft);}
+.ob-tier .rb{color:var(--accent);background:var(--surface-hi);border:1px solid var(--accent);}
+.ob-chip{color:var(--ink-secondary);}
+.ob-chip.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+.ob-prev{background:var(--surface-hi);border:1px solid var(--border);color:var(--ink-secondary);}
+.ob-d{background:var(--border);}.ob-d.on{background:var(--accent);}
+.ob-skip{color:var(--ink-tertiary);}
+.ob-obs{border-top:1px solid var(--border);}
+.ob-rmean{color:var(--ink-secondary);}
+.ob-ic{background:var(--accent-soft);}.ob-ic svg{stroke:var(--accent);}
+.ob-trk-bar{background:linear-gradient(to right,var(--risk-low) 0 27%,var(--risk-mid) 27% 62%,var(--risk-hi) 62% 100%);}
+.ob-thumb{background:var(--surface-hi);border-color:var(--risk-mid);box-shadow:none;}
+.ob-reticle{border-color:var(--lucens-signature);}
+.ob-chip-live{border:1px solid var(--lucens-signature);font-weight:600;}
+.ob-livedot{background:var(--lucens-signature);box-shadow:none;}
+@keyframes obSpring{0%{opacity:0;transform:translateY(14px) scale(.98)}70%{opacity:1;transform:translateY(-2px)}100%{transform:none}}
+.ob-card,.ob-role{animation:obSpring .45s cubic-bezier(.3,1.15,.5,1) both;}
+.ob-grid .ob-card:nth-child(2){animation-delay:.05s}.ob-grid .ob-card:nth-child(3){animation-delay:.1s}.ob-grid .ob-card:nth-child(4){animation-delay:.15s}.ob-grid .ob-card:nth-child(5){animation-delay:.2s}.ob-grid .ob-card:nth-child(6){animation-delay:.25s}.ob-grid .ob-card:nth-child(7){animation-delay:.3s}.ob-grid .ob-card:nth-child(8){animation-delay:.35s}
+.ob-roles .ob-role:nth-child(2){animation-delay:.06s}.ob-roles .ob-role:nth-child(3){animation-delay:.12s}.ob-roles .ob-role:nth-child(4){animation-delay:.18s}
+/* V351.1 — CARTOGRAPHIE FIDÈLE : mosaïque ambre rgb(236,170,60) à 55%, blocs nets (le vrai
+   rendu Lucens V274), les cellules détectées apparaissent une à une. Aucune barre de scan. */
+.ob-cell{position:absolute;width:16px;height:16px;background:rgba(236,170,60,.55);opacity:0;animation:obCell .3s ease both;pointer-events:none;}
+@keyframes obCell{from{opacity:0}to{opacity:1}}
+/* V353 — accroche d'accueil (révélation muette) + écran AVANT/APRÈS (compréhension immédiate,
+   indépendante de la langue). Photos = scène sombre type HUD (§8). */
+.ob-hero{width:100%;max-width:300px;margin:0 auto 18px;height:120px;border-radius:var(--r-lg);overflow:hidden;position:relative;background:#0b0e10;}
+.ob-hero .ob-photo{object-position:center 62%;}
+.ob-ba{display:flex;gap:10px;justify-content:center;align-items:flex-start;}
+.ob-ba-col{flex:1;max-width:160px;margin:0;text-align:center;}
+.ob-ba-col img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:var(--radius-md);display:block;background:#0b0e10;}
+.ob-ba-col figcaption{font-size:11px;font-weight:600;color:var(--ink-secondary);margin-top:8px;}
+.ob-ba-on figcaption{color:var(--accent);}
+.ob-reveal2{filter:brightness(.42) saturate(.5) contrast(.95) blur(3px);transform:scale(1.06);animation:obReveal 1.6s cubic-bezier(.32,.72,.2,1) .4s forwards;}
+/* V355 — révélation = fondu "sans lampe" -> "avec lampe" : la fluorescence apparaît DANS la photo
+   (clichés alignés). L'image normale (dessus) s'efface et découvre la vue UV (fluorescence). */
+.ob-fade{z-index:1;animation:obFade 1.7s cubic-bezier(.4,0,.2,1) .35s forwards;}
+@keyframes obFade{0%,15%{opacity:1}100%{opacity:0}}
+/* V354 — Live View FIDÈLE : le vrai HUD (barre + bandeau statut + réticule + capture) par-dessus
+   la photo en fond caméra. Palette HUD §1 (sombre quel que soit le thème). */
+.ob-lv{position:relative;width:240px;height:320px;margin:0 auto;border-radius:var(--r-lg);overflow:hidden;background:#0b0e10;}
+.ob-lv .ob-photo{object-position:center 55%;}
+.ob-lv-vig{position:absolute;inset:0;background:radial-gradient(125% 85% at 50% 45%, transparent 52%, rgba(0,0,0,.45));pointer-events:none;}
+.ob-lv-top{position:absolute;top:10px;left:8px;right:8px;display:flex;align-items:center;gap:7px;z-index:2;}
+.ob-lv-ic{width:32px;height:32px;border-radius:50%;background:rgba(8,12,16,.5);display:flex;align-items:center;justify-content:center;flex:0 0 32px;}
+.ob-lv-ic svg{width:17px;height:17px;stroke:#fff;fill:none;stroke-width:2;}
+.ob-lv-banner{flex:1;height:32px;border-radius:999px;background:rgba(8,12,16,.55);display:flex;align-items:center;justify-content:center;gap:7px;color:#fff;font-size:12px;font-weight:600;}
+.ob-lv-banner i{width:8px;height:8px;border-radius:50%;background:#FFB020;animation:obDot 1.2s ease-in-out infinite;}
+.ob-lv-banner[data-st="idle"] i{background:rgba(255,255,255,.55);animation:none;}
+.ob-lv-banner[data-st="fluo"] i{background:var(--lucens-signature);box-shadow:0 0 6px var(--lucens-signature);animation:none;}
+.ob-lv-cross{position:absolute;transform:translate(-50%,-50%);width:56px;height:56px;z-index:2;opacity:0;animation:obFadeIn .5s ease .35s forwards;--lvc:#FFB020;}
+.ob-lv-cross .ring{position:absolute;inset:0;border:2px solid var(--lvc);border-radius:50%;animation:obPulseRing 1.5s ease-in-out infinite;}
+.ob-lv-cross .cd{position:absolute;left:50%;top:50%;width:8px;height:8px;border-radius:50%;background:var(--lvc);transform:translate(-50%,-50%);}
+.ob-lv-cross.fluo{--lvc:var(--lucens-signature);}
+.ob-lv-cross.fluo .ring{animation:none;}
+@keyframes obPulseRing{0%,100%{transform:scale(1);opacity:.95}50%{transform:scale(1.14);opacity:.55}}
+.ob-lv-type{position:absolute;transform:translateX(-50%);background:rgba(8,12,16,.72);border:1px solid var(--lucens-signature);color:#fff;font-size:11px;font-weight:600;padding:4px 10px;border-radius:var(--radius-sm);white-space:nowrap;z-index:2;opacity:0;transition:opacity .45s ease;}
+.ob-lv-shoot{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);width:46px;height:46px;border-radius:50%;border:3px solid rgba(255,255,255,.9);background:rgba(255,255,255,.12);z-index:2;}
+</style>
+<div class="ob-overlay" id="onboardingOverlay" hidden role="dialog" aria-modal="true" aria-label="Présentation de Lucens">
+  <div class="ob-top">
+    <span class="ob-brand" id="obBrand">LUCENS<i></i></span>
+    <button type="button" class="ob-skip" id="obSkip">Passer</button>
+  </div>
+  <div class="ob-stage" id="obStage"></div>
+  <div class="ob-foot">
+    <div class="ob-dots" id="obDots"></div>
+    <div class="ob-nav">
+      <button type="button" class="ob-prev" id="obPrev" aria-label="Précédent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <button type="button" class="ob-next" id="obNext">Suivant</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL CONTEXTE UTILISATEUR (Sprint 1)
+     Affichée au premier upload pour calibrer l'analyse selon le
+     type d'établissement. Sauvegardée en localStorage, jamais
+     réaffichée sauf si l'utilisateur clique sur Modifier.
+     ═══════════════════════════════════════════════════════════ -->
 
 <!-- ═══════════════════════════════════════════════════════════
      MODAL CONTEXTE UTILISATEUR (Sprint 1)
@@ -17141,6 +17353,246 @@ const Annotator = (() => {
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !overlay.hidden) close(); });
     /* Choisir une langue applique + ferme le panneau. */
     overlay.querySelectorAll('.lang-btn').forEach(b => { b.addEventListener('click', () => { setTimeout(close, 90); }); });
+  })();
+
+  /* V350 — ONBOARDING (présentation au 1er lancement). 7 écrans : Bienvenue+Langue,
+     Secteur, Rôle, Live View, Cartographie, Verdict, Rapport. Fil rouge sur une vraie
+     photo UV (assets/onboarding/biofilm.jpg). Écrit la langue (setLang) + le contexte
+     (LucensContext / localStorage) et pose le drapeau lucens_onboarded_v1. Rejouable
+     depuis Personnalisation. Textes via tr() (repli FR ; clés i18n ajoutées en phase 2).
+     Rendu via DOMParser (pas d'innerHTML ; contenu interne, aucun script exécuté). */
+  (function initOnboarding() {
+    const ov = document.getElementById('onboardingOverlay');
+    const stage = document.getElementById('obStage');
+    const dotsEl = document.getElementById('obDots');
+    const prevB = document.getElementById('obPrev');
+    const nextB = document.getElementById('obNext');
+    const skipB = document.getElementById('obSkip');
+    if (!ov || !stage || !dotsEl || !nextB) return;
+
+    const FLAG = 'lucens_onboarded_v1';
+    const PHOTO_UV = 'assets/onboarding/uv.jpg';
+    const PHOTO_NORMAL = 'assets/onboarding/normal.jpg';
+    const PHOTO = PHOTO_UV;
+    const tr = (k, fb) => { try { if (typeof t === 'function') { const v = t(k); if (v && v !== k) return v; } } catch (e) {} return fb; };
+    /* Pose un fragment HTML STATIQUE (construit ici, aucune entrée utilisateur) via
+       DOMParser : pas d'exécution de script, pas d'innerHTML. */
+    function setFrag(el, html) {
+      const doc = new DOMParser().parseFromString('<body>' + html + '</body>', 'text/html');
+      el.replaceChildren.apply(el, Array.prototype.slice.call(doc.body.childNodes));
+    }
+
+    const detLang = (function () {
+      try { if (typeof currentLang === 'string' && currentLang) return currentLang; } catch (e) {}
+      try { const s = localStorage.getItem('uvLang'); if (s) return s; } catch (e) {}
+      const n = (navigator.language || 'fr').slice(0, 2).toLowerCase();
+      return ['fr', 'en', 'es', 'de'].indexOf(n) >= 0 ? n : 'fr';
+    })();
+    const st = { lang: detLang, sector: null, role: null };
+
+    const IC = {
+      resto: '<path d="M4 3v6a3 3 0 0 0 6 0V3M7 3v18M20 3c-2 0-3 2-3 5s1 4 3 4v9"/>',
+      agro: '<path d="M3 21V9l5 3V9l5 3V6l5 3v12z"/>',
+      distrib: '<rect x="1" y="6" width="13" height="10" rx="1"/><path d="M14 9h4l3 3v4h-7z"/><circle cx="6" cy="18" r="1.7"/><circle cx="18" cy="18" r="1.7"/>',
+      sante: '<path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/>',
+      pharma: '<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/>',
+      indus: '<path d="M3 21V10l5 3V10l5 3V7l5 3v11z"/>',
+      resid: '<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>',
+      erp: '<rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2"/>',
+      terrain: '<path d="M14 7a4 4 0 0 0-5 5l-7 7 2 2 7-7a4 4 0 0 0 5-5l-2.5 2.5L13 9.5z"/>',
+      resp: '<path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/>',
+      aud: '<circle cx="11" cy="11" r="6"/><path d="m20 20-4-4"/>',
+      form: '<rect x="3" y="4" width="18" height="12" rx="1"/><path d="M8 20l4-4 4 4"/>',
+      image: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5L9 20"/>',
+      download: '<path d="M12 3v12M7 11l5 5 5-5M5 21h14"/>'
+    };
+    const svg = (p) => '<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">' + p + '</svg>';
+    const TINT = { restauration: '#B54A2A', agro: '#2E7D32', distrib: '#2563EB', medical: '#BE123C', pharma: '#7C3AED', industrial: '#475569', residential: '#B7791F', erp: '#0E7490' };
+    const tile = (ic, color, bg) => '<span class="ob-ic" style="background:' + bg + ';"><svg viewBox="0 0 24 24" stroke="' + color + '" stroke-linecap="round" stroke-linejoin="round">' + ic + '</svg></span>';
+    const chip = (l, lab) => '<button type="button" class="ob-chip' + (st.lang === l ? ' on' : '') + '" data-ob-pick data-grp="lang" data-val="' + l + '">' + lab + '</button>';
+    const card = (v, ic, lab) => '<button type="button" class="ob-card' + (st.sector === v ? ' on' : '') + '" data-ob-pick data-grp="sector" data-val="' + v + '">' + tile(ic, 'var(--ob-acc)', 'var(--ob-acc-soft)') + '<span>' + lab + '</span></button>';
+    const role = (v, ic, ti, hi) => '<button type="button" class="ob-role' + (st.role === v ? ' on' : '') + '" data-ob-pick data-grp="role" data-val="' + v + '">' + tile(ic, 'var(--ob-acc)', 'var(--ob-acc-soft)') + '<span><em>' + ti + '</em><small>' + hi + '</small></span></button>';
+    /* Mosaïque de cartographie : cluster de cellules ambre (16px) sur la contamination
+       sous les boutons (scène 240x320 ; photo 480x640 = même ratio, pas de recadrage).
+       Les cellules apparaissent une à une (le vrai rendu V274 qui se fait). */
+    function mosaic() {
+      /* Forme RÉELLE du bleu cyan, détectée sur la photo (grille 15x20, cellule 16px ;
+         le moteur a marqué les pavés fluorescents, pas un bloc géométrique). */
+      const pat = ['000000100000000', '000011100000000', '000001000000000', '000111111111110', '000110111011111', '000100010001001', '000110111011111', '001111111111111', '001111111111111', '000111111111111', '000011111111111', '000001111111111', '000000111111110', '000000011110000'];
+      const x0 = 0, y0 = 96, cs = 16; let k = 0, h = '';
+      for (let r = 0; r < pat.length; r++) for (let c = 0; c < pat[r].length; c++) {
+        if (pat[r].charAt(c) === '1') { h += '<span class="ob-cell" style="left:' + (x0 + c * cs) + 'px;top:' + (y0 + r * cs) + 'px;animation-delay:' + (0.2 + k * 0.012).toFixed(3) + 's;"></span>'; k++; }
+      }
+      return h;
+    }
+
+    const SLIDES = [
+      { build: () =>
+        '<div class="ob-welcome">' +
+        '<div class="ob-hero"><img class="ob-photo" src="' + PHOTO_UV + '" alt=""><img class="ob-photo ob-fade" src="' + PHOTO_NORMAL + '" alt=""></div>' +
+        '<div class="ob-logo"><b>LUCENS</b><i></i></div>' +
+        '<div class="ob-tag">' + tr('ob_tag', "Contrôlez votre hygiène grâce à l'IA.") + '</div>' +
+        '<div class="ob-eyebrow" style="margin-top:18px;">' + tr('ob_lang', 'Votre langue') + '</div>' +
+        '<div class="ob-chips">' + chip('fr', 'Français') + chip('en', 'English') + chip('es', 'Español') + chip('de', 'Deutsch') + '</div>' +
+        '</div>' },
+
+      { build: () =>
+        '<div class="ob-head"><div class="ob-h">' + tr('ob_ba_h', "L'invisible, révélé") + '</div><div class="ob-sub">' + tr('ob_ba_sub', 'Sous la lampe Lucens, la contamination apparaît.') + '</div></div>' +
+        '<div class="ob-ba">' +
+        '<figure class="ob-ba-col"><img src="' + PHOTO_NORMAL + '" alt=""><figcaption>' + tr('ob_ba_off', 'Sans lampe') + '</figcaption></figure>' +
+        '<figure class="ob-ba-col ob-ba-on"><img class="ob-reveal2" src="' + PHOTO_UV + '" alt=""><figcaption>' + tr('ob_ba_on', 'Avec lampe Lucens') + '</figcaption></figure>' +
+        '</div>' },
+
+      { build: () =>
+        '<div class="ob-head"><div class="ob-h">' + tr('ob_sector_q', 'Dans quel domaine travaillez-vous ?') + '</div></div>' +
+        '<div class="ob-grid">' +
+        card('restauration', IC.resto, tr('ob_sec_resto', 'Restauration')) +
+        card('agro', IC.agro, tr('ob_sec_agro', 'Agroalimentaire')) +
+        card('distrib', IC.distrib, tr('ob_sec_distrib', 'Distribution')) +
+        card('medical', IC.sante, tr('ob_sec_sante', 'Santé et soin')) +
+        card('pharma', IC.pharma, tr('ob_sec_pharma', 'Pharma et labo')) +
+        card('industrial', IC.indus, tr('ob_sec_indus', 'Industrie')) +
+        card('residential', IC.resid, tr('ob_sec_resid', 'Résidentiel')) +
+        card('erp', IC.erp, tr('ob_sec_erp', 'Lieux publics')) +
+        '</div>' },
+
+      { build: () =>
+        '<div class="ob-head"><div class="ob-h">' + tr('ob_role_q', 'Quel est votre rôle ?') + '</div></div>' +
+        '<div class="ob-roles" style="grid-template-columns:1fr;">' +
+        role('operationnel', IC.terrain, tr('ob_role_terrain', 'Terrain'), tr('ob_role_terrain_h', 'Cuisinier, agent, technicien')) +
+        role('responsable', IC.resp, tr('ob_role_resp', 'Responsable'), tr('ob_role_resp_h', 'HACCP, QSE, cadre')) +
+        role('auditeur', IC.aud, tr('ob_role_aud', 'Auditeur'), tr('ob_role_aud_h', 'Inspecteur, consultant')) +
+        role('formateur', IC.form, tr('ob_role_form', 'Formateur'), tr('ob_role_form_h', 'Formateur, enseignant')) +
+        '</div>' },
+
+      { init: function () {
+          var b = document.getElementById('obLvBanner'), l = document.getElementById('obLvLabel'), c = document.getElementById('obLvCross'), ty = document.getElementById('obLvType');
+          if (!b) return;
+          b.setAttribute('data-st', 'idle'); l.textContent = tr('lv_status_idle', 'Visez une zone'); c.className = 'ob-lv-cross'; ty.style.opacity = '0';
+          setTimeout(function () { if (!document.body.contains(b)) return; b.setAttribute('data-st', 'pending'); l.textContent = tr('lv_status_pending', 'Analyse…'); }, 1300);
+          setTimeout(function () { if (!document.body.contains(b)) return; b.setAttribute('data-st', 'fluo'); l.textContent = tr('lv_status_fluo', 'Résidu détecté'); c.className = 'ob-lv-cross fluo'; ty.style.opacity = '1'; }, 2200);
+        },
+        build: () =>
+        '<div class="ob-head"><div class="ob-h">' + tr('ob_lv_h', 'Inspectez en direct') + '</div><div class="ob-sub">' + tr('ob_lv_sub', 'Visez une zone : Lucens analyse et nomme le résidu en direct.') + '</div></div>' +
+        '<div class="ob-lv">' +
+        '<img class="ob-photo" src="' + PHOTO_UV + '" alt="">' +
+        '<img class="ob-photo ob-fade" src="' + PHOTO_NORMAL + '" alt="">' +
+        '<span class="ob-lv-vig"></span>' +
+        '<div class="ob-lv-top">' +
+        '<span class="ob-lv-ic">' + svg('<path d="M15 6l-6 6 6 6"/>') + '</span>' +
+        '<span class="ob-lv-banner" id="obLvBanner" data-st="idle"><i></i><span id="obLvLabel">' + tr('lv_status_idle', 'Visez une zone') + '</span></span>' +
+        '<span class="ob-lv-ic">' + svg('<line x1="4" y1="8" x2="20" y2="8"/><circle cx="15" cy="8" r="2.4"/><line x1="4" y1="16" x2="20" y2="16"/><circle cx="9" cy="16" r="2.4"/>') + '</span>' +
+        '</div>' +
+        '<div class="ob-lv-cross" id="obLvCross" style="left:46%;top:71%;"><span class="ring"></span><span class="cd"></span></div>' +
+        '<span class="ob-lv-type" id="obLvType" style="left:46%;top:60%;">' + tr('ob_lv_type', 'Résidus organiques') + '</span>' +
+        '<span class="ob-lv-shoot"></span>' +
+        '</div>' +
+        '<div class="ob-import">' + svg(IC.image) + tr('ob_lv_import', 'Ou importez une photo déjà prise') + '</div>' },
+
+      { build: () =>
+        '<div class="ob-head"><div class="ob-h">' + tr('ob_map_h', 'Cartographié sur votre photo') + '</div><div class="ob-sub">' + tr('ob_map_sub', 'Chaque cellule fluorescente est marquée, sans rien inventer.') + '</div></div>' +
+        '<div class="ob-scene">' +
+        '<img class="ob-photo" src="' + PHOTO_UV + '" alt="">' +
+        mosaic() +
+        '<span class="ob-ztag" style="left:22%;top:46%;animation-delay:1.15s;"><span class="ob-zdot" style="background:#ECAA3C;"></span>' + tr('ob_map_zone', 'Résidus organiques') + '</span>' +
+        '</div>' },
+
+      { init: function () {
+          const sc = document.getElementById('obScore'), th = document.getElementById('obThumb'), lab = document.getElementById('obRlab'), mn = document.getElementById('obRmean');
+          if (!sc || !th) return;
+          let n = 0; sc.textContent = '0'; th.style.left = '0%'; lab.textContent = tr('ob_v_low2', 'Risque faible'); lab.style.color = 'var(--ob-low)'; if (mn) mn.style.opacity = '0';
+          const iv = setInterval(function () {
+            if (!document.body.contains(sc)) { clearInterval(iv); return; }
+            n += 2; if (n >= 62) { n = 62; clearInterval(iv); if (mn) mn.style.opacity = '1'; }
+            sc.textContent = n; th.style.left = n + '%';
+            if (n < 27) { lab.textContent = tr('ob_v_low2', 'Risque faible'); lab.style.color = 'var(--ob-low)'; }
+            else { lab.textContent = tr('ob_v_mod', 'Risque modéré'); lab.style.color = 'var(--ob-mid)'; }
+          }, 34);
+        },
+        build: () =>
+        '<div class="ob-eyebrow">' + tr('ob_v_eyebrow', 'Évaluation du risque') + '</div>' +
+        '<div class="ob-score"><span id="obScore">0</span><small> /100</small></div>' +
+        '<div class="ob-trk"><div class="ob-trk-bar"></div><div class="ob-thumb" id="obThumb"></div></div>' +
+        '<div class="ob-scl"><span>' + tr('ob_v_low', 'Faible') + '</span><span>' + tr('ob_v_high', 'Élevé') + '</span></div>' +
+        '<div class="ob-rlab" id="obRlab">' + tr('ob_v_mod', 'Risque modéré') + '</div>' +
+        '<div class="ob-rmean" id="obRmean">' + tr('ob_v_mod_mean', 'À surveiller : un nettoyage est recommandé.') + '</div>' +
+        '<div class="ob-obs"><div class="ob-eyebrow">' + tr('ob_v_observed', 'Ce qui est observé') + '</div><div style="font-size:15px;font-weight:700;color:var(--ob-ink);margin-top:4px;">' + tr('ob_v_nature', 'Résidus organiques (zone de contact)') + '</div></div>' },
+
+      { build: () =>
+        '<div class="ob-head"><div class="ob-h">' + tr('ob_rep_h', 'Documentez votre analyse') + '</div></div>' +
+        '<div class="ob-tier"><b>' + tr('ob_rep_photos', 'Photos') + '</b><span>' + tr('ob_rep_photos_d', 'Photo + cartographie') + '</span></div>' +
+        '<div class="ob-tier reco"><b>' + tr('ob_rep_ess', 'Essentiel') + '</b><span class="rb">' + tr('ob_rep_reco', 'Conseillé') + '</span><span>' + tr('ob_rep_ess_d', '+ score de risque') + '</span></div>' +
+        '<div class="ob-tier"><b>' + tr('ob_rep_full', 'Complet') + '</b><span>' + tr('ob_rep_full_d', '+ origine & actions') + '</span></div>' +
+        '<div class="ob-cta">' + svg(IC.download) + tr('ob_rep_cta', 'Exporter vos analyses') + '</div>' }
+    ];
+
+    let idx = 0;
+    function wirePicks() {
+      stage.querySelectorAll('[data-ob-pick]').forEach(function (el) {
+        el.addEventListener('click', function () {
+          const g = el.getAttribute('data-grp'), v = el.getAttribute('data-val');
+          st[g] = v;
+          stage.querySelectorAll('[data-grp="' + g + '"]').forEach(function (s) { s.classList.toggle('on', s === el); });
+        });
+      });
+    }
+    function render() {
+      const s = SLIDES[idx];
+      setFrag(stage, '<div class="ob-slide">' + s.build() + '</div>');
+      stage.scrollTop = 0;
+      ov.classList.toggle('ob-first', idx === 0);
+      wirePicks();
+      if (s.init) setTimeout(function () { try { s.init(); } catch (e) {} }, 24);
+      let d = '';
+      for (let k = 0; k < SLIDES.length; k++) d += '<span class="ob-d' + (k === idx ? ' on' : '') + '" data-k="' + k + '"></span>';
+      setFrag(dotsEl, d);
+      dotsEl.querySelectorAll('.ob-d').forEach(function (c) { c.addEventListener('click', function () { idx = +c.getAttribute('data-k'); render(); }); });
+      prevB.style.visibility = idx === 0 ? 'hidden' : 'visible';
+      nextB.textContent = idx === SLIDES.length - 1 ? tr('ob_start', 'Commencer') : tr('ob_next', 'Suivant');
+      skipB.style.visibility = idx === SLIDES.length - 1 ? 'hidden' : 'visible';
+    }
+    function finish() {
+      try { if (st.lang) { if (typeof setLang === 'function') setLang(st.lang); else { localStorage.setItem('uvLang', st.lang); if (typeof applyLang === 'function') applyLang(); } } } catch (e) {}
+      try {
+        if (st.sector) {
+          if (typeof LucensContext !== 'undefined' && LucensContext && LucensContext.save) LucensContext.save(st.sector, st.role);
+          else localStorage.setItem('lucens_user_context_v1', JSON.stringify({ establishmentType: st.sector, role: st.role || null, askedOnce: true, savedAt: Date.now() }));
+        }
+      } catch (e) {}
+      try { localStorage.setItem(FLAG, '1'); } catch (e) {}
+      hide();
+    }
+    function show() { ov.hidden = false; idx = 0; render(); try { document.documentElement.style.overflow = 'hidden'; } catch (e) {} }
+    function hide() { ov.hidden = true; try { document.documentElement.style.overflow = ''; } catch (e) {} }
+
+    prevB.onclick = function () { if (idx > 0) { idx--; render(); } };
+    nextB.onclick = function () { if (idx < SLIDES.length - 1) { idx++; render(); } else finish(); };
+    skipB.onclick = function () { finish(); };
+    ov.addEventListener('keydown', function (e) { if (e.key === 'Escape') finish(); });
+
+    /* Premier lancement : après le splash, si jamais vu. */
+    function maybeFirst() { try { if (localStorage.getItem(FLAG)) return; } catch (e) {} show(); }
+    const splash = document.getElementById('lcsLaunch');
+    if (splash && document.body.contains(splash)) {
+      let done = false; const go = function () { if (done) return; done = true; maybeFirst(); };
+      splash.addEventListener('animationend', function (a) { if (a.animationName === 'lcsSplashOut') setTimeout(go, 90); });
+      setTimeout(go, 2700);
+    } else {
+      setTimeout(maybeFirst, 350);
+    }
+
+    /* Rejouable depuis Personnalisation. */
+    try {
+      const pbody = document.getElementById('persoBody');
+      if (pbody && !document.getElementById('obReplayBtn')) {
+        const grp = document.createElement('div');
+        grp.className = 'settings-group';
+        setFrag(grp, '<span class="settings-group-label">Présentation</span><button type="button" id="obReplayBtn" class="settings-btn">Revoir la présentation</button>');
+        pbody.appendChild(grp);
+        document.getElementById('obReplayBtn').addEventListener('click', function () { if (typeof window.__closePersonalization === 'function') window.__closePersonalization(); show(); });
+      }
+    } catch (e) {}
+    window.__openOnboarding = show;
   })();
 
   /* V326 — LICENCE (Réglages uniquement). Saisie + activation + statut (2 dates).
@@ -26258,14 +26710,34 @@ const Annotator = (() => {
       if (state === 'fluo' && lv.liveType && lv.liveType.label) {
         const lt = lv.liveType;
         if (banner) banner.style.setProperty('--lv-type-color', lt.color || '#D84315');
-        /* V245 — Direction C : « Résidu X » + BADGE de risque tinté (vrai marqueur).
-           DOM sûr, valeurs 100% issues de LV_READOUT (statique). */
         while (label.firstChild) label.removeChild(label.firstChild);
         const resEl = document.createElement('b'); resEl.className = 'lv-res'; resEl.textContent = lt.label;
         const badgeEl = document.createElement('span'); badgeEl.className = 'lv-badge lv-badge-' + (lt.level || 'low');
         const bdot = document.createElement('span'); bdot.className = 'lv-badge-dot';
-        badgeEl.appendChild(bdot); badgeEl.appendChild(document.createTextNode(lt.badge || ''));
+        badgeEl.appendChild(bdot);
+        /* 2026-06-15 — Affiche l'observation RÉELLE de Gemini (reason) si disponible,
+           sinon retombe sur le badge de risque statique. Le reason est généré par
+           validate-cluster en 4-8 mots décrivant ce que le modèle voit (ex : "film
+           lisse bleuté sur surface", "tache blanche granuleuse compacte"). */
+        badgeEl.appendChild(document.createTextNode(reason || lt.badge || ''));
         label.appendChild(resEl); label.appendChild(badgeEl);
+      } else if (state === 'object') {
+        /* 2026-06-15 — Faux positif identifié : on montre ce que le modèle a réellement
+           vu (matériau / objet) plutôt qu'un générique "Pas un résidu". Exemple :
+           "Pas un résidu · bois clair texturé", "Pas un résidu · LED blanche allumée". */
+        if (banner) banner.style.setProperty('--lv-type-color', '#64748B');
+        while (label.firstChild) label.removeChild(label.firstChild);
+        const fpEl = document.createElement('b'); fpEl.className = 'lv-res';
+        fpEl.textContent = txt;   /* "Pas un résidu" traduit */
+        if (reason) {
+          const fpBadge = document.createElement('span'); fpBadge.className = 'lv-badge lv-badge-none';
+          const fpDot = document.createElement('span'); fpDot.className = 'lv-badge-dot';
+          fpBadge.appendChild(fpDot); fpBadge.appendChild(document.createTextNode(reason));
+          label.appendChild(fpEl); label.appendChild(fpBadge);
+        } else {
+          label.appendChild(fpEl);
+          fitLvStatusLabel();
+        }
       } else {
         if (banner) banner.style.removeProperty('--lv-type-color');
         label.textContent = txt;
@@ -26570,31 +27042,25 @@ const Annotator = (() => {
             setCrosshairState('fluo', cachedVerdict.reason);
           }
           else if (cachedVerdict.verdict === 'NO_OBJECT') setCrosshairState('object', cachedVerdict.reason);
-          /* V278 — même biais présence sur le rejeu de cache : un UNCERTAIN mis en
-             cache ne doit pas faire disparaître une fluo locale franche. */
-          else if (sample.brightRatio >= 0.06 || sample.avgSat >= 0.30) setCrosshairState('fluo', cachedVerdict.reason);
-          else setCrosshairState('idle');
+          /* 2026-06-15 — UNCERTAIN en cache : affiche l'estimation locale (lv.liveType)
+             avec badge "signal ambigu" au lieu de rester bloqué sur "Analyse…".
+             Les LEDs arrivent en NO_OBJECT (pas UNCERTAIN), donc aucun risque ici.
+             Le TTL expirant à 5s, le modèle retentera automatiquement. */
+          else if (lv.liveType) setCrosshairState('fluo', cachedVerdict.reason || 'signal ambigu');
+          else setCrosshairState('pending');
         } else if ((now - chLastSample) >= CH_SAMPLE_EVERY_MS) {
           /* Signal présent, pas en cache, timing OK */
           chLastSample = now;
-          /* V28 — Fast path : signal HSV très évident → on confirme FLUO
-             instantanément sans attendre Claude. Bénéfice = feedback réactif. */
-          if ((sample.brightRatio >= CH_OBVIOUS_BRIGHT_RATIO && sample.avgSat >= CH_OBVIOUS_SAT_AVG)
-              || (sample.brightRatio >= 0.06 && sample.avgVal >= 0.85)) {
-            /* V278 — 2ᵉ voie : fluo TRÈS lumineuse (avgVal≥0.85) confirme aussi en
-               local, même peu saturée → couvre la fluo pâle franche sans Claude. */
-            setCrosshairState('fluo', 'signal net');
-            /* V255 — Fast path « signal net » : pas d'appel Claude, donc pas de type
-               affiné → on garde le pré-remplissage de teinte locale (lv.liveType déjà
-               posé) ; type:'unknown' en cache pour une forme cohérente (le rejeu
-               ignore 'unknown' et conserve la teinte locale). */
-            lv.validateCache.set(cacheKey, {
-              verdict: 'YES_FLUO', type: 'unknown', reason: 'signal net', ts: Date.now(),
-            });
-            /* Skip le fetch Claude, on garde l'état */
-            lv.rafId = requestAnimationFrame(loop);
-            return;
-          }
+          /* 2026-06-15 — Fast-path LOCAL SUPPRIMÉ. Il confirmait instantanément
+             YES_FLUO sur tout signal "bright+saturé" (= exactement la signature
+             d'une LED colorée ou d'une surface inox) SANS jamais appeler Gemini.
+             Le dwell trouvait un cache YES_FLUO et ne rerequêtait jamais le modèle.
+             Résultat : LED → toujours FLUO, inox → toujours FLUO, faux positifs
+             constants. Sans le fast-path, tout signal non-caché attend le dwell
+             puis passe par Gemini avec thinking → discrimination réelle. Contrepartie :
+             ~600ms de "Analyse…" avant le verdict (dwell 600ms + ~600-900ms modèle).
+             C'est le prix à payer pour un verdict fiable. */
+
           /* V297 — STABLE-ONLY + mode local : Claude n'est interrogé QUE si le réticule
              est resté STABLE (même signature) ≥ LV_DWELL_MS — donc quand tu VISES un
              point pour le juger, pas en plein balayage. Hors stabilité (ou mode 100 %
@@ -26660,18 +27126,15 @@ const Annotator = (() => {
                 setCrosshairState('fluo', res.reason || '');
               }
               else if (v === 'NO_OBJECT') setCrosshairState('object', res.reason || '');
-              /* V278 — UNCERTAIN ne doit PLUS effacer un signal colorimétrique FORT :
-                 un crop JPEG étiré depuis 240×180 fait facilement hésiter le juge
-                 distant → il renvoyait 'idle' sur une vraie fluo (« clignote puis
-                 disparaît »). Biais présence : signal local franc = on AFFICHE fluo. */
-              else if (sample.brightRatio >= 0.06 || sample.avgSat >= 0.30) setCrosshairState('fluo', res.reason || '');
-              else setCrosshairState('idle');
+              /* 2026-06-15 — UNCERTAIN : on affiche l'estimation locale (lv.liveType)
+                 plutôt que de rester bloqué sur "Analyse…" en boucle. Le type local
+                 vient du classifieur HSV frame-par-frame — moins précis que Gemini mais
+                 meilleur qu'une attente infinie. Le TTL 5s expirant, Gemini retentera. */
+              else if (lv.liveType) setCrosshairState('fluo', res.reason || 'signal ambigu');
+              else setCrosshairState('pending');
             })
-            /* V278 — une erreur réseau ne doit JAMAIS effacer un signal local fort. */
-            .catch(() => {
-              if (sample.brightRatio >= 0.06 || sample.avgSat >= 0.30) setCrosshairState('fluo');
-              else setCrosshairState('idle');
-            });
+            /* Erreur réseau → idle si pas de signal local, sinon liveType comme fallback. */
+            .catch(() => { if (lv.liveType) setCrosshairState('fluo', 'vérif. échouée'); else setCrosshairState('idle'); });
           })();
         }
 

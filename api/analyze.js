@@ -31,14 +31,14 @@ function withTimeout(promise, ms, label = 'op') {
 }
 
 /* Cascade de modèles Gemini : principal puis replis si erreur/timeout.
-   PRINCIPAL = 3.1 Pro preview (V349, demande utilisateur : meilleure CLASSIFICATION
-   des contaminants — mélanges chimique+organique NOMMÉS au lieu d'écrasés sur une
-   seule catégorie, moins de sur-chimique). Plus lent (~90s, OK sous le watchdog
-   client 180s + timeout serveur 110s/modèle) et parfois flaky → la cascade retombe
-   sur 2.5 Pro (stable, qualité quasi équivalente) PUIS Flash, JAMAIS direct sur
-   Flash. Réversible en 1 ligne : remettre "gemini-2.5-pro" en PRIMARY_MODEL. */
-const PRIMARY_MODEL   = "gemini-3.1-pro-preview";
-const FALLBACK_MODELS = ["gemini-2.5-pro", "gemini-2.5-flash"];
+   REVERT 2026-06-15 — 3.1 Pro preview (V349) repassé en repli : trop lent (~90s) et
+   flaky, en limite des timeouts (serveur 110s/modèle, client 180s, fonction Vercel) →
+   il provoquait des analyses EN ERREUR EN BOUCLE chez un client licencié. PRINCIPAL =
+   2.5 Pro STABLE (~25-44s, éprouvé) ; replis Flash. 3.1 reste testable via benchModel.
+   Réversible : remettre "gemini-3.1-pro-preview" en PRIMARY_MODEL si la latence est
+   résolue côté Google. */
+const PRIMARY_MODEL   = "gemini-2.5-pro";
+const FALLBACK_MODELS = ["gemini-2.5-flash"];
 
 /* V300 — Traduction repliée dans cet endpoint (mode:'translate') : aucun nouvel
    endpoint (limite 12 fonctions). Flash texte-seul, pensée OFF = rapide+bon marché. */
@@ -1025,6 +1025,16 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(204).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
+  /* 2026-06-15 — BUDGET DE TEMPS FONCTION. Le plan Vercel est HOBBY → cap DUR de
+     60s par invocation (le `maxDuration: 300` de vercel.json est SANS EFFET sur
+     Hobby, silencieusement ramené à 60s). Au-delà, la plateforme tue la fonction
+     (FUNCTION_INVOCATION_TIMEOUT) → le client reçoit une erreur brute → « erreur
+     interne, relancer » EN BOUCLE sur les vraies photos (lentes). On démarre le
+     chrono ici pour dimensionner les appels modèle et rendre une réponse AVANT le
+     kill plateforme. Le vrai correctif définitif reste de passer le projet en Pro
+     (cap 300s) — voir mémoire lucens-cout-api. */
+  const _fnStart = Date.now();
+
   if (!genai) {
     return res.status(500).json({ error: "Server not configured: missing Gemini_API_KEY" });
   }
@@ -1098,7 +1108,22 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { image, mediaType, detectedZones, zoneCrops, lang, userContext, liveHints, spectroHints } = req.body || {};
+    let { image, mediaType, detectedZones, zoneCrops, lang, userContext, liveHints, spectroHints } = req.body || {};
+    /* 2026-06-15 — PLAFOND DE CROPS (cap latence, cause racine des timeouts 60s).
+       Chaque crop dédié = une image inline supplémentaire que le modèle doit
+       « regarder » : 20+ crops faisaient dépasser les 60s du plan Hobby → kill
+       plateforme → « erreur interne » en boucle sur les vraies photos. L'image
+       GLOBALE couvre déjà toute la scène et le prompt traite explicitement les
+       crops comme des indices optionnels (« à valider, pas une contrainte » ;
+       « estime l'aire totale indépendamment du nombre de crops ») → on garde au
+       plus MAX_CROPS crops, alignés avec leurs zones. Aucune perte de détection
+       globale. (Relâchable une fois le projet en Pro — cap 300s.) */
+    const MAX_CROPS = 8;
+    if (Array.isArray(zoneCrops) && Array.isArray(detectedZones)
+        && zoneCrops.length === detectedZones.length && zoneCrops.length > MAX_CROPS) {
+      detectedZones = detectedZones.slice(0, MAX_CROPS);
+      zoneCrops     = zoneCrops.slice(0, MAX_CROPS);
+    }
     if (!image) return res.status(400).json({ error: "Missing 'image' (base64 string)" });
     if (!mediaType) return res.status(400).json({ error: "Missing 'mediaType' (e.g. image/jpeg)" });
     /* Validation taille image : refuse les payloads anormalement gros qui
@@ -1398,21 +1423,32 @@ Fin : respecte strictement la langue ${langName} et retourne uniquement le JSON.
       return parts;
     };
 
-    const buildConfig = () => ({
+    /* 2026-06-15 — thinkingBudget explicite.
+       La PENSÉE DYNAMIQUE (défaut sans thinkingConfig) peut consommer 40-60s à
+       elle seule sur 2.5-pro, dépassant le cap 60s du plan Hobby avant que le
+       modèle ait rendu un seul token de réponse. On passe à un budget fixe de
+       4096 tokens (réflexion courte mais conservée → qualité proche du max, latence
+       ~10-20s garantie). Sur Pro (300s), on pourra remonter à 16384 ou laisser
+       dynamique. La cible `api/validate-cluster` (Live View) garde thinkingBudget:0
+       pour tenir <800ms — ça reste inchangé. */
+    const buildConfig = (thinkingBudget = 4096) => ({
       systemInstruction: SYSTEM_PROMPT + GEMINI_ADDENDUM,
       temperature: 0.1,
       maxOutputTokens: 16384,
       responseMimeType: "application/json",
+      thinkingConfig: { thinkingBudget },
     });
 
     /* callModel : un appel Gemini non-streamé, normalisé vers la forme qu'attend
        le reste du handler ({ text, model, stop_reason, usage }) — ainsi le code
        en aval (parsing, normalisation, log de coût, _meta) reste inchangé. */
+    /* Flash n'a pas besoin de thinking : pensée OFF pour rester <15s. */
     const callModel = async (modelId) => {
+      const isFlash = modelId.includes('flash');
       const resp = await genai.models.generateContent({
         model: modelId,
         contents: buildParts(),
-        config: buildConfig(),
+        config: buildConfig(isFlash ? 0 : 4096),
       });
       const text = (typeof resp?.text === "string" && resp.text)
         ? resp.text
@@ -1436,7 +1472,8 @@ Fin : respecte strictement la langue ${langName} et retourne uniquement le JSON.
     /* Cascade : modèle préféré → repli Pro stable → Flash. On retombe sur le
        suivant à la MOINDRE erreur (ID preview non exposé pour la clé, 404/429/5xx,
        timeout, réponse vide) car l'incertitude principale est la disponibilité de
-       l'ID preview. withTimeout 110s : cap dur côté serveur (marge avant 300s). */
+       l'ID preview. Le timeout par tentative est dimensionné dynamiquement sur le
+       budget fonction restant (voir boucle ci-dessous) — cap Hobby 60s. */
     /* Benchmark A/B : override de modèle, UNIQUEMENT si le header admin correspond
        au token (les clients normaux ne peuvent pas le déclencher → pas de coût
        subi). Force un SEUL modèle (pas de repli) pour mesurer sa qualité pure. */
@@ -1450,11 +1487,37 @@ Fin : respecte strictement la langue ${langName} et retourne uniquement le JSON.
     let usedFallback = false;
     let lastErr = null;
     const _chain = [];   /* diagnostic : tentative par modèle (exposé dans _meta.chain) */
+    /* 2026-06-15 — Budget de temps RÉEL avec créneau garanti pour Flash.
+       Plan Hobby = 60s dur. 2.5-pro avec thinkingBudget=4096 → ~10-25s.
+       On réserve TOUJOURS un créneau MIN_FLASH_MS pour Flash en repli (même si
+       2.5-pro a pris du temps) : le modèle principal reçoit au plus
+       PRIMARY_MAX_MS, Flash hérite du reste. Si plus rien pour Flash → on rend
+       un 504 propre AVANT le kill plateforme. (Sur Pro 300s, ces caps disparaissent.) */
+    const FN_BUDGET_MS   = 54000;
+    const PRIMARY_MAX_MS = 32000;
+    const MIN_FLASH_MS   = 16000;
     for (let i = 0; i < MODEL_CHAIN.length; i++) {
       const modelId = MODEL_CHAIN[i];
       const _t = Date.now();
+      const _elapsed = Date.now() - _fnStart;
+      const _remaining = FN_BUDGET_MS - _elapsed;
+      const isFirst = i === 0;
+      /* créneau : premier modèle plafonné à PRIMARY_MAX_MS ; replis ont le reste
+         moins 3s de marge sérialisation — mais jamais moins de MIN_FLASH_MS. */
+      const _budget = isFirst
+        ? Math.min(PRIMARY_MAX_MS, _remaining - MIN_FLASH_MS - 2000)
+        : _remaining - 2000;
+      if (_budget < 8000) {
+        if (!lastErr) {
+          lastErr = new Error(`budget fonction épuisé avant ${modelId} (${Math.round(_elapsed / 1000)}s)`);
+          lastErr.name = 'TimeoutError';
+        }
+        _chain.push({ model: modelId, ok: false, ms: 0, error: 'budget fonction épuisé (cap Hobby)' });
+        break;
+      }
+      const _attemptMs = Math.min(110000, _budget);
       try {
-        const m = await withTimeout(callModel(modelId), 110000, `Gemini:${modelId}`);
+        const m = await withTimeout(callModel(modelId), _attemptMs, `Gemini:${modelId}`);
         if (!m.text) throw new Error(`réponse vide (finish=${m.stop_reason})`);
         message = m;
         usedFallback = i > 0;

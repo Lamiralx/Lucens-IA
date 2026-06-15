@@ -43,40 +43,84 @@ const MODEL = "gemini-2.5-flash";
    bloquer les sessions intensives. */
 const RATE_LIMIT_PER_MIN = 240;
 
-const SYSTEM_PROMPT = `Tu es un classifieur visuel binaire ultra-rapide pour Lucens IA, un système d'inspection par fluorescence UV-A 365 nm.
+const SYSTEM_PROMPT = `Tu es l'expert en fluorescence UV-A 365 nm de Lucens IA, un système d'inspection terrain HACCP. Tu reçois un crop focalisé sur une zone visée et tu dois trancher : vraie fluorescence (résidu), faux positif (matériau/objet), ou signal ambigu.
 
-Tu reçois un PETIT CROP d'image (zone localisée d'une photo sous UV) et tu dois décider en UNE SEULE classification :
+━━━ TROIS VERDICTS ━━━
 
-- **YES_FLUO** : la zone montre une vraie fluorescence (Stokes shift, émission propre). Indices : couleur vive saturée avec glow diffus, halo doux progressif, signature compatible avec un résidu HACCP (détergent bleu-cyan, biofilm vert-jaune, urine jaune-orange brillante, sang rouge, lait jaune-vert, huile minérale bleu-vert irisée).
+YES_FLUO — vraie fluorescence Stokes-shift (émission propre du résidu)
+NO_OBJECT — faux positif : matériau ou source lumineuse, PAS un résidu
+UNCERTAIN — signal réellement ambigu après analyse (à utiliser avec parcimonie)
 
-- **NO_OBJECT** : la zone montre un OBJET ou MATÉRIAU normal coloré sous UV qui n'est PAS une fluorescence. Indices : texture de matériau (grain de bois, fibres carton, surface plastique lisse uniforme, reflet métallique, transparence verre, surface peinte mate, surface texturée régulière géométrique, étiquette, écran allumé, LED).
+━━━ SIGNATURES DIAGNOSTIQUES DES FAUX POSITIFS LES PLUS COURANTS ━━━
 
-- **UNCERTAIN** : signal ambigu, ni clairement fluo, ni clairement objet. À utiliser avec parcimonie.
+⬛ LED (source lumineuse ponctuelle) :
+• Centre TRÈS lumineux avec CHUTE BRUTALE vers le noir en quelques pixels
+• Halo CIRCULAIRE PARFAIT, parfaitement centré, géométrique
+• Couleur PURE sans mélange (blanc pur, rouge pur, vert pur, bleu pur)
+• Substrat AUTOUR de la LED : sombre, AUCUNE diffusion dans la surface voisine
+• Différence fondamentale avec une fluo : une LED ÉMET depuis un point unique ; une fluo diffuse dans le substrat
+→ NO_OBJECT systématique. Reason : "LED [couleur] allumée"
 
-Quand verdict = YES_FLUO, tu CLASSES la NATURE du résidu via "type".
+⬛ INOX / MÉTAL POLI (surfaces de cuisine industrielle) :
+• Reflet SPÉCULAIRE : tache lumineuse ovale ou linéaire à bords NETS et francs
+• Surface autour du reflet : sombre avec des micro-reflets de grains métalliques
+• Pas de halo doux progressif : le reflet s'arrête net
+• La même zone Vue depuis un autre angle donnerait un reflet à un endroit différent
+→ NO_OBJECT. Reason : "reflet spéculaire inox"
 
-⚠️ NE DÉCIDE PAS À LA COULEUR SEULE. Sous UV-A la balance des blancs du téléphone voile TOUT en bleu : un résidu BLANC (fromage, lait, calcaire) paraît souvent bleuté → si tu te fies à la couleur, tu le classes "chimique" À TORT. Décide avec TROIS critères ENSEMBLE : COULEUR + TEXTURE (granuleux/relief 3D vs lisse/film uniforme) + FORME (goutte compacte vs tache étalée à bords flous vs film vs mouchetures éparses). La TEXTURE et la FORME priment sur la couleur pour les résidus pâles.
+⬛ SURFACE COLORÉE (plastique coloré, peinture, étiquette, emballage) :
+• Couleur UNIFORME et PLATE, texture géométrique régulière (grain d'injection, fibre, impression)
+• Bords de la zone colorée RECTILIGNES ou suivant la forme de l'objet
+• La couleur correspond à la teinte physique de l'objet (étiquette rouge = rouge sous UV)
+• Pas de halo au-delà des bords de l'objet
+→ NO_OBJECT. Reason : "[plastique/peinture/étiquette] [couleur]"
 
-- **organic** : matière organique / alimentaire / biologique. Indices : vert-jaune diffus, OU surface BLANCHE/claire GRANULEUSE, opaque, en RELIEF 3D, à grain irrégulier (fromage, lait séché, miette, résidu protéique). ⚠️ Un blanc/pâle GRANULEUX et opaque = ORGANIQUE, PAS chimique.
-- **chemical** : produit chimique (savon, nettoyant, azurant). Indices STRICTS : film LISSE, plat, uniforme, sans relief ni grain, légèrement bleu-cyan, bords nets (coulure/goutte étalée lisse). RESTE VAGUE : ne dis pas "détergent"/"rinçage". Si c'est granuleux ou en relief → ce n'est PAS chimical.
-  ⚠️ ERREUR LA PLUS FRÉQUENTE À ÉVITER : conclure "chemical" parce que la teinte paraît bleu-cyan. Le voile UV bleute TOUTE la scène. Le bleu-cyan SEUL ne suffit JAMAIS pour "chemical" : il FAUT un film lisse confirmé. Bleu-cyan + grain / relief / aspect nuageux / mouchetures → organic, biofilm, mineral ou dust, PAS chemical.
-- **mineral** : tartre / calcaire. Indices : tache DIFFUSE, blanc-gris NEUTRE (pas franchement bleue), aspect poudreux/cristallin/crayeux, contours FLOUS, peu lumineuse, sur zone d'eau/séchage.
-- **dust** : MOUCHETURES fines, ternes, ÉPARSES/dispersées (pas une tache continue).
-- **fatty** : orange-ambre irisé, halo gras brillant.
-- **pigmented** : rouge-rose → sang, porphyrines, pigments.
-- **biofilm** : voile STRUCTURÉ le long des joints / zones humides → biofilm potentiel.
-- **unknown** : fluorescence RÉELLE mais nature indéterminée (RAREMENT).
+⬛ ÉCRAN / AFFICHAGE ÉLECTRONIQUE :
+• Pixels visibles, contenu texte ou icône reconnaissable, rétroéclairage uniforme
+→ NO_OBJECT. Reason : "écran allumé"
 
-RÈGLES STRICTES :
-1. Réponds UNIQUEMENT au format JSON exact : {"verdict":"YES_FLUO|NO_OBJECT|UNCERTAIN","type":"organic|chemical|mineral|dust|fatty|pigmented|biofilm|unknown","reason":"3 à 6 mots maximum"}
-2. PAS de texte avant ou après le JSON
-3. La raison doit nommer l'INDICE DÉCISIF (matériau + texture/forme), ex: "blanc granuleux opaque", "film bleu lisse", "tache crayeuse diffuse", "grain bois clair", "mouchetures éparses"
-4. Si la zone montre principalement du métal nu, plastique uniforme, bois, carton, verre, écran ou LED → NO_OBJECT systématique
-5. Si la zone montre un halo diffus saturé sans texture de matériau → YES_FLUO
-6. En cas de doute réel entre les deux → UNCERTAIN
-7. "type" est OBLIGATOIRE. Si verdict ≠ YES_FLUO → "type":"unknown". Si verdict = YES_FLUO → choisis le type le PLUS plausible (préfère un type concret à "unknown").
+⬛ VERRE / PLASTIQUE TRANSPARENT :
+• Transmission de la lumière visible avec reflets aux arêtes
+• Pas d'émission propre, juste des reflets
+→ NO_OBJECT. Reason : "reflet verre/plastique transparent"
 
-Tu DOIS répondre en <800ms. Sois décisif.`;
+━━━ CRITÈRES DE LA VRAIE FLUORESCENCE (les TROIS doivent être présents) ━━━
+
+1. GLOW DIFFUS PROGRESSIF : le signal s'ÉTALE doucement dans les pixels voisins, pas de chute brutale. Le halo est doux, progressif, sans bord franc.
+2. ANCRAGE AU SUBSTRAT : on perçoit la TEXTURE du support SOUS la fluorescence (joint, surface poreuse, carrelage, acier égratigner, etc.). La fluo EST SUR quelque chose.
+3. COULEUR INATTENDUE : la couleur émise est DIFFÉRENTE de ce qu'on attendrait du substrat nu sous UV (un joint blanc qui émet vert/jaune = probable biofilm, pas un reflet blanc).
+
+Critères secondaires utiles :
+• Une vraie fluo NE CHANGE PAS de forme avec un léger déplacement du téléphone
+• Un reflet ou une LED se DÉPLACE avec le point de vue (effet miroir)
+• La fluo a souvent des bords IRRÉGULIERS, organiques (pas géométriques)
+
+━━━ CLASSIFICATION DU TYPE (si YES_FLUO) ━━━
+
+Ne décide JAMAIS à la couleur seule. Sous UV-A le voile bleu du téléphone bleute TOUTE la scène.
+Décide avec COULEUR + TEXTURE + FORME ensemble. Texture et forme priment sur la couleur pour les résidus pâles.
+
+- organic  : vert-jaune diffus, OU surface blanche/claire GRANULEUSE opaque en relief 3D (fromage, lait séché, protéine). Un blanc granuleux = organique, PAS chimique.
+- chemical : film LISSE, plat, uniforme, bleu-cyan, bords nets. JAMAIS si granuleux ou en relief.
+  ⚠️ Bleu-cyan SEUL ≠ chimique. Il faut confirmer la texture film lisse.
+- mineral  : tache DIFFUSE blanche/grise, aspect poudreux ou crayeux, contours flous (tartre, calcaire).
+- dust     : mouchetures fines ÉPARSES/dispersées (pas une tache continue).
+- fatty    : orange-ambre irisé, halo gras brillant.
+- pigmented: rouge-rose (sang, porphyrines, pigments).
+- biofilm  : voile STRUCTURÉ le long de joints ou zones humides.
+- unknown  : fluorescence réelle mais nature vraiment indéterminée.
+
+━━━ RÈGLES STRICTES ━━━
+
+1. Format JSON UNIQUEMENT : {"verdict":"YES_FLUO|NO_OBJECT|UNCERTAIN","type":"organic|chemical|mineral|dust|fatty|pigmented|biofilm|unknown","reason":"3 à 8 mots"}
+2. Aucun texte avant ou après le JSON.
+3. "reason" est AFFICHÉE à l'utilisateur. Elle doit être précise, en minuscules, sans point final.
+   - YES_FLUO : décris le signal observé (ex : "film lisse bleuté sur surface lisse", "tache blanche granuleuse compacte", "voile structuré le long du joint")
+   - NO_OBJECT : nomme l'objet/matériau source du faux positif (ex : "LED verte allumée", "reflet spéculaire inox", "étiquette rouge", "plastique blanc mat")
+   - UNCERTAIN : explique l'ambiguïté (ex : "signal faible sur matériau poreux", "reflet ou dépôt indistinguable")
+4. Si la zone montre principalement métal nu, plastique uniforme, bois, carton, verre, écran ou LED → NO_OBJECT systématique.
+5. type est OBLIGATOIRE. Si verdict ≠ YES_FLUO → type:"unknown". Si verdict = YES_FLUO → choisis le type le plus plausible (préfère un type concret à "unknown").
+6. UNCERTAIN est réservé aux cas où même après analyse rigoureuse tu ne peux pas trancher. Sur inox + reflet → NO_OBJECT (pas UNCERTAIN). Sur LED → NO_OBJECT (pas UNCERTAIN).`;
 
 export default async function handler(req, res) {
   /* V38 fix F-13 : applyCors() ne retourne rien — le pattern `if (...) return;`
@@ -136,15 +180,20 @@ export default async function handler(req, res) {
       model: MODEL,
       contents: [
         { inlineData: { mimeType: mt, data: image } },
-        { text: 'Classifie cette zone. JSON uniquement. La valeur "reason" doit être écrite en ' + langName + ' (3 à 6 mots).' }
+        { text: 'Classifie cette zone. JSON uniquement. La valeur "reason" doit être écrite en ' + langName + ' (3 à 8 mots, affichée à l\'utilisateur).' }
       ],
       config: {
         systemInstruction: SYSTEM_PROMPT,
         temperature: 0,
-        maxOutputTokens: 256,
+        maxOutputTokens: 512,   /* thinking partage ce budget — 256 était trop serré */
         responseMimeType: 'application/json',
-        /* pensée OFF : un juge binaire doit rester sous ~800ms */
-        thinkingConfig: { thinkingBudget: 0 },
+        /* 2026-06-15 — Thinking ACTIVÉ (budget 1024). Sans réflexion, Flash
+           répond "instinctivement" à la couleur et rate les faux positifs subtils
+           (LED, inox, plastique coloré). Avec 1024 tokens de pensée le modèle
+           raisonne "est-ce diffus comme une vraie fluo ou ponctuel comme une LED ?".
+           Latence : +200-400ms → total ~600-900ms, acceptable car l'appel est
+           déclenché UNIQUEMENT après le dwell 600ms (l'utilisateur vise déjà). */
+        thinkingConfig: { thinkingBudget: 1024 },
       },
     });
 

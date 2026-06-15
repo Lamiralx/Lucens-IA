@@ -91,7 +91,14 @@ export async function checkForAnalysis(kv, code, deviceId, now = new Date()) {
   if (!lic) return { ok: false, reason: "unknown" };
   if (lic.statut === "revoked") return { ok: false, reason: "revoked" };
   if (!lic.expiresAt || new Date(lic.expiresAt) <= now) return { ok: false, reason: "expired" };
-  if (!lic.deviceId || lic.deviceId !== deviceId) return { ok: false, reason: "device" };
+  /* 2026-06-15 — NE JAMAIS bloquer une licence VALIDE sur l'appareil. Cause des
+     « licence active mais analyse refusée » : l'appareil lié ne correspondait pas
+     (iOS Safari ↔ PWA = localStorage séparés, ou changement d'appareil). On RE-LIE
+     automatiquement à l'appareil courant ("dernier l'emporte") au lieu de refuser.
+     Le verrou reste fort : code valide + non révoqué + non expiré. */
+  if (deviceId && lic.deviceId !== deviceId) {
+    try { lic.deviceId = deviceId; lic.reboundAt = now.toISOString(); await save(kv, lic); } catch (e) {}
+  }
   return { ok: true, expiresAt: lic.expiresAt };
 }
 
