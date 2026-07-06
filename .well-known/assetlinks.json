@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.lucenstechnologies.app27200.twa",
+        "sha256_cert_fingerprints": ["3F:74:FA:05:F1:92:7E:38:0C:47:76:1D:6F:8E:02:59:FF:36:73:34:47:F4:49:92:0B:6D:86:E0:63:50:7B:3F"]
+      }
+    }]
